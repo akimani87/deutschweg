@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Module 5: The Akkusativ Case</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --nom:#3498db; --akk:#e67e22; --der-c:#3498db; --die-c:#e74c3c; --das-c:#27ae60;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--gold); color:var(--gold); }
+
+  .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:rgba(10,10,10,0.96); backdrop-filter:blur(20px); border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:12px 0 20px; z-index:100; }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:8px 16px; border-radius:12px; transition:all 0.2s; border:none; background:none; color:var(--gray); }
+  .nav-item:hover, .nav-item.active { color:var(--gold); }
+  .nav-icon { font-size:20px; }
+  .nav-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; font-family:'DM Mono',monospace; }
+
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--gold); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--gold); width:22px; border-radius:4px; }
+
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--gold); color:var(--black); width:100%; }
+  .btn-primary:hover { background:var(--gold-light); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(201,168,76,0.2); }
+  .speak-btn.speaking { background:var(--gold); color:var(--black); }
+
+  /* CASE TABLE — the central visual of this module */
+  .case-table { width:100%; border-collapse:collapse; margin:16px 0; }
+  .case-table th { padding:10px 14px; text-align:center; font-size:11px; letter-spacing:2px; font-family:'DM Mono',monospace; border-bottom:2px solid var(--border); }
+  .case-table td { padding:11px 14px; text-align:center; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'DM Mono',monospace; font-size:15px; }
+  .case-table tr:last-child td { border-bottom:none; }
+  .th-gender { color:var(--gray); font-size:10px; }
+  .th-nom { color:var(--nom); }
+  .th-akk { color:var(--akk); }
+  .td-der { color:var(--der-c); }
+  .td-die { color:var(--die-c); }
+  .td-das { color:var(--das-c); }
+  .td-akk-change { color:var(--akk); font-weight:700; background:rgba(230,126,34,0.08); border-radius:6px; }
+  .td-same { color:var(--gray); }
+  .row-label { text-align:left; color:var(--gray); font-size:12px; font-family:'DM Sans',sans-serif; letter-spacing:0; }
+
+  /* SENTENCE ANATOMY */
+  .anatomy { background:rgba(201,168,76,0.04); border:1px solid var(--border); border-radius:14px; padding:20px; margin:14px 0; text-align:center; }
+  .anatomy-de { font-family:'DM Mono',monospace; font-size:18px; line-height:2.2; }
+  .a-subj { color:var(--nom); }
+  .a-verb { color:var(--gold); }
+  .a-obj { color:var(--akk); }
+  .a-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; }
+  .a-label-subj { color:var(--nom); }
+  .a-label-verb { color:var(--gold); }
+  .a-label-obj { color:var(--akk); }
+  .anatomy-row { display:flex; justify-content:center; gap:24px; margin-top:6px; font-size:11px; }
+
+  /* EXAMPLE CARDS */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-case-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; background:rgba(230,126,34,0.12); color:var(--akk); }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-akk { color:var(--akk); font-weight:700; }
+  .ex-en { font-size:12px; color:var(--gray); margin-bottom:6px; }
+  .ex-note { font-size:12px; color:var(--cream); line-height:1.6; }
+
+  /* VERB LIST */
+  .verb-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:10px; margin:14px 0; }
+  .verb-card { background:var(--card2-bg); border:1px solid rgba(230,126,34,0.2); border-radius:12px; padding:14px; cursor:pointer; transition:all 0.2s; }
+  .verb-card:hover, .verb-card.speaking { border-color:var(--akk); background:rgba(230,126,34,0.08); }
+  .vc-de { font-family:'DM Mono',monospace; font-size:15px; color:var(--akk); margin-bottom:3px; }
+  .vc-en { font-size:12px; color:var(--gray); margin-bottom:3px; }
+  .vc-ex { font-size:11px; color:var(--cream); font-style:italic; }
+  .vc-tap { font-size:10px; color:var(--gold); opacity:0.6; margin-top:4px; }
+
+  /* TRANSFORMATION DISPLAY */
+  .transform { display:flex; align-items:center; gap:12px; margin:10px 0; flex-wrap:wrap; }
+  .t-before { background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.3); border-radius:10px; padding:10px 16px; font-family:'DM Mono',monospace; font-size:15px; color:var(--der-c); }
+  .t-after { background:rgba(230,126,34,0.08); border:1px solid rgba(230,126,34,0.3); border-radius:10px; padding:10px 16px; font-family:'DM Mono',monospace; font-size:15px; color:var(--akk); font-weight:700; }
+  .t-arrow { font-size:18px; color:var(--gray); }
+  .t-label { font-size:11px; color:var(--gray); font-family:'DM Mono',monospace; }
+
+  /* NEGATION */
+  .neg-table { width:100%; border-collapse:collapse; margin:12px 0; font-size:14px; }
+  .neg-table th { text-align:left; padding:9px 12px; border-bottom:1px solid var(--border); color:var(--gray); font-size:11px; }
+  .neg-table td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04); vertical-align:top; }
+  .neg-table tr:last-child td { border-bottom:none; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Sans',sans-serif; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--gold); background:rgba(201,168,76,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(201,168,76,0.1); border-radius:8px; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(201,168,76,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(201,168,76,0.08); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(201,168,76,0.12); border:1px solid var(--gold); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--gold); font-size:18px; margin:18px 0; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+
+  @media(max-width:600px){
+    .verb-grid { grid-template-columns:1fr 1fr; }
+    .lesson-h { font-size:22px; }
+    .anatomy-de { font-size:15px; }
+    .transform { gap:8px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================================================================
+  OVERVIEW
+================================================================ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">MODULE 5</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">A1 · Grammar Core</div>
+    <h1 class="lesson-h" style="font-size:36px;">The <span style="color:var(--akk)">Akkusativ</span> Case<br>Objects in German</h1>
+    <p class="body-text">The Akkusativ is the first case change you encounter in German. It affects the article in front of a noun when that noun is the object of a verb. Only one article actually changes — but getting it right or wrong is the difference between a correct and incorrect sentence every time you use a transitive verb.</p>
+    <div class="info-box"><strong style="color:var(--gold)">The good news:</strong> Only the masculine article changes in the Akkusativ. <span style="color:var(--der-c)">der → <span style="color:var(--akk)">den</span></span>. die stays die. das stays das. Learn one change and you know the Akkusativ.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">🎯</div><div><div class="lc-title">Lesson 1 — What is the Akkusativ?</div><div class="lc-desc">Subject vs object. Why cases exist. The logic of der → den.</div></div><div class="lc-tag" style="color:var(--gold);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">📋</div><div><div class="lc-title">Lesson 2 — The Article Changes</div><div class="lc-desc">The full table. What changes, what stays the same, and why.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">⚡</div><div><div class="lc-title">Lesson 3 — Akkusativ Verbs</div><div class="lc-desc">The verbs that always take an Akkusativ object. Learn the list.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">❌</div><div><div class="lc-title">Lesson 4 — Negation: kein and nicht</div><div class="lc-desc">How to say "no" and "not" — and how kein changes in Akkusativ.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">📍</div><div><div class="lc-title">Lesson 5 — Akkusativ Prepositions</div><div class="lc-desc">durch, für, gegen, ohne, um — always Akkusativ.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🎓</div><div><div class="lc-title">Lesson 6 — Akkusativ in Goethe Sentences</div><div class="lc-desc">The real exam sentences where Akkusativ is tested.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Begin Lesson 1 →</button>
+  </div>
+</div>
+
+<!-- ================================================================
+  LESSON SCREEN
+================================================================ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lessons</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ===== LESSON 1: What is Akkusativ ===== -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">Module 5 · Lesson 1 of 6</div>
+          <h2 class="lesson-h">Subject vs Object — why the article changes</h2>
+          <p class="body-text">In German, the article in front of a noun changes to show its role in the sentence. The <strong style="color:var(--nom)">Nominativ</strong> (subject) is who is doing the action. The <strong style="color:var(--akk)">Akkusativ</strong> (direct object) is what is being acted upon.</p>
+
+          <div class="anatomy">
+            <div class="anatomy-de">
+              <span class="a-subj">Der Mann</span> &nbsp;<span class="a-verb">kauft</span>&nbsp; <span class="a-obj">einen Kaffee</span>.
+            </div>
+            <div class="anatomy-row">
+              <div><div class="a-label a-label-subj">SUBJECT (Nominativ)</div><div style="font-size:11px;color:var(--gray);">who is buying</div></div>
+              <div><div class="a-label a-label-verb">VERB</div><div style="font-size:11px;color:var(--gray);">the action</div></div>
+              <div><div class="a-label a-label-obj">OBJECT (Akkusativ)</div><div style="font-size:11px;color:var(--gray);">what is bought</div></div>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Der Mann kauft einen Kaffee.')">🔊 Hear it</button>
+
+          <p class="body-text">In English, word order tells you who is doing what. "The dog bites the man" vs "The man bites the dog" — same words, different meaning, because of position. In German, cases carry that information. So German can rearrange words for emphasis — the case endings signal the role, not the position.</p>
+
+          <div class="anatomy" style="margin-top:16px;">
+            <div class="anatomy-de">
+              <span class="a-obj">Den Mann</span> &nbsp;<span class="a-verb">beißt</span>&nbsp; <span class="a-subj">der Hund</span>.
+            </div>
+            <div class="anatomy-row">
+              <div><div class="a-label a-label-obj">OBJECT (Akkusativ)</div><div style="font-size:11px;color:var(--gray);">being bitten</div></div>
+              <div><div class="a-label a-label-verb">VERB</div></div>
+              <div><div class="a-label a-label-subj">SUBJECT (Nominativ)</div><div style="font-size:11px;color:var(--gray);">doing the biting</div></div>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Den Mann beißt der Hund.')">🔊 Hear it</button>
+
+          <div class="info-box" style="margin-top:14px;"><strong style="color:var(--gold)">The key insight:</strong> "Den Mann beißt der Hund" = "The man is bitten by the dog." The word order changed for emphasis — but "den" signals that Mann is still the object, not the subject. Without cases, this rearrangement would be impossible. Cases give German its word-order flexibility.</div>
+
+          <div class="danger-box"><strong style="color:#e74c3c;">The change you must know:</strong><br><br>
+            <span style="color:var(--der-c);font-family:'DM Mono',monospace;">der</span> (masculine Nominativ) → <span style="color:var(--akk);font-family:'DM Mono',monospace;font-weight:700;">den</span> (masculine Akkusativ)<br>
+            <span style="color:var(--die-c);font-family:'DM Mono',monospace;">die</span> (feminine) → stays <span style="color:var(--die-c);font-family:'DM Mono',monospace;">die</span><br>
+            <span style="color:var(--das-c);font-family:'DM Mono',monospace;">das</span> (neuter) → stays <span style="color:var(--das-c);font-family:'DM Mono',monospace;">das</span><br>
+            <span style="color:var(--die-c);font-family:'DM Mono',monospace;">die</span> (plural) → stays <span style="color:var(--die-c);font-family:'DM Mono',monospace;">die</span>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Continue →</button></div>
+      </div>
+
+      <div class="step" id="l0-s1">
+        <div class="card">
+          <div class="concept-tag">Module 5 · Lesson 1 · Quiz</div>
+          <h2 class="lesson-h">Subject and Object Quiz</h2>
+          <div id="qz-0"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ===== LESSON 2: The Article Changes ===== -->
+    <div id="lesson-1" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">Module 5 · Lesson 2 of 6</div>
+          <h2 class="lesson-h">The article table — what changes and what stays</h2>
+          <p class="body-text">This table is the core of the Akkusativ. Study it until you can produce the correct form without thinking. The orange cells are the changes — everything else stays the same as the Nominativ.</p>
+
+          <div class="sec-label">Definite Articles (the)</div>
+          <table class="case-table">
+            <tr>
+              <th class="th-gender">Gender</th>
+              <th class="th-nom">NOMINATIV (subject)</th>
+              <th class="th-akk">AKKUSATIV (object)</th>
+              <th style="color:var(--gray);font-size:10px;letter-spacing:1px;">Change?</th>
+            </tr>
+            <tr>
+              <td class="row-label">Masculine</td>
+              <td class="td-der">der</td>
+              <td class="td-akk-change">den</td>
+              <td style="font-size:12px;color:var(--akk);">⚠️ changes</td>
+            </tr>
+            <tr>
+              <td class="row-label">Feminine</td>
+              <td class="td-die">die</td>
+              <td class="td-same">die</td>
+              <td style="font-size:12px;color:var(--gray);">— same</td>
+            </tr>
+            <tr>
+              <td class="row-label">Neuter</td>
+              <td class="td-das">das</td>
+              <td class="td-same">das</td>
+              <td style="font-size:12px;color:var(--gray);">— same</td>
+            </tr>
+            <tr>
+              <td class="row-label">Plural</td>
+              <td class="td-die">die</td>
+              <td class="td-same">die</td>
+              <td style="font-size:12px;color:var(--gray);">— same</td>
+            </tr>
+          </table>
+
+          <div class="sec-label">Indefinite Articles (a/an)</div>
+          <table class="case-table">
+            <tr>
+              <th class="th-gender">Gender</th>
+              <th class="th-nom">NOMINATIV</th>
+              <th class="th-akk">AKKUSATIV</th>
+              <th style="color:var(--gray);font-size:10px;letter-spacing:1px;">Change?</th>
+            </tr>
+            <tr>
+              <td class="row-label">Masculine</td>
+              <td class="td-der">ein</td>
+              <td class="td-akk-change">einen</td>
+              <td style="font-size:12px;color:var(--akk);">⚠️ changes</td>
+            </tr>
+            <tr>
+              <td class="row-label">Feminine</td>
+              <td class="td-die">eine</td>
+              <td class="td-same">eine</td>
+              <td style="font-size:12px;color:var(--gray);">— same</td>
+            </tr>
+            <tr>
+              <td class="row-label">Neuter</td>
+              <td class="td-das">ein</td>
+              <td class="td-same">ein</td>
+              <td style="font-size:12px;color:var(--gray);">— same</td>
+            </tr>
+            <tr>
+              <td class="row-label">Plural</td>
+              <td class="td-die">—</td>
+              <td class="td-same">—</td>
+              <td style="font-size:12px;color:var(--gray);">— same</td>
+            </tr>
+          </table>
+
+          <div class="success-box"><strong style="color:var(--green)">The whole Akkusativ in one sentence:</strong> Masculine articles gain an -n. der → den. ein → einen. kein → keinen. mein → meinen. That -n ending on the masculine object is the entire Akkusativ case change at A1 level. Everything else is identical to the Nominativ.</div>
+
+          <div class="sec-label">The transformation — masculine only</div>
+          <div class="transform">
+            <div class="t-label">der Mann (subject)</div>
+            <div class="t-before">der Mann</div>
+            <div class="t-arrow">→</div>
+            <div class="t-after">den Mann</div>
+            <div class="t-label">(object)</div>
+          </div>
+          <div class="transform">
+            <div class="t-label">ein Mann (subject)</div>
+            <div class="t-before">ein Mann</div>
+            <div class="t-arrow">→</div>
+            <div class="t-after">einen Mann</div>
+            <div class="t-label">(object)</div>
+          </div>
+          <div class="transform" style="opacity:0.5;">
+            <div class="t-label">die Frau (subject)</div>
+            <div class="t-before" style="color:var(--die-c);">die Frau</div>
+            <div class="t-arrow">→</div>
+            <div class="t-before" style="color:var(--die-c);">die Frau</div>
+            <div class="t-label">(object — no change)</div>
+          </div>
+          <div class="transform" style="opacity:0.5;">
+            <div class="t-label">das Kind (subject)</div>
+            <div class="t-before" style="color:var(--das-c);">das Kind</div>
+            <div class="t-arrow">→</div>
+            <div class="t-before" style="color:var(--das-c);">das Kind</div>
+            <div class="t-label">(object — no change)</div>
+          </div>
+
+          <div class="sec-label">Hear the difference — tap each</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="speak-btn" onclick="speakSentence(this,'Der Kaffee ist gut.')">🔊 Der Kaffee (subject)</button>
+            <button class="speak-btn" onclick="speakSentence(this,'Ich trinke einen Kaffee.')">🔊 einen Kaffee (object)</button>
+            <button class="speak-btn" onclick="speakSentence(this,'Der Mann kommt.')">🔊 Der Mann (subject)</button>
+            <button class="speak-btn" onclick="speakSentence(this,'Ich sehe den Mann.')">🔊 den Mann (object)</button>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Continue →</button></div>
+      </div>
+
+      <div class="step" id="l1-s1">
+        <div class="card">
+          <div class="concept-tag">Module 5 · Lesson 2 · Quiz</div>
+          <h2 class="lesson-h">Article Changes Quiz</h2>
+          <div id="qz-1"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ===== LESSON 3: Akkusativ Verbs ===== -->
+    <div id="lesson-2" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">Module 5 · Lesson 3 of 6</div>
+          <h2 class="lesson-h">Verbs that take the Akkusativ</h2>
+          <p class="body-text">Transitive verbs — verbs that pass their action onto an object — take the Akkusativ. These are the most common action verbs in German. When you use any of these verbs, the direct object takes the Akkusativ article. Tap each card to hear a sentence.</p>
+
+          <div class="verb-grid">
+            <div class="verb-card" onclick="speakVerb(this,'Ich kaufe einen Apfel.')">
+              <div class="vc-de">kaufen</div>
+              <div class="vc-en">to buy</div>
+              <div class="vc-ex">Ich kaufe einen Apfel.</div>
+              <div class="vc-tap">🔊 tap</div>
+            </div>
+            <div class="verb-card" onclick="speakVerb(this,'Ich esse einen Burger.')">
+              <div class="vc-de">essen</div>
+              <div class="vc-en">to eat</div>
+              <div class="vc-ex">Ich esse einen Burger.</div>
+              <div class="vc-tap">🔊 tap</div>
+            </div>
+            <div class="verb-card" onclick="speakVerb(this,'Ich trinke einen Kaffee.')">
+              <div class="vc-de">trinken</div>
+              <div class="vc-en">to drink</div>
+              <div class="vc-ex">Ich trinke einen Kaffee.</div>
+              <div class="vc-tap">🔊 tap</div>
+            </div>
+            <div class="verb-card" onclick="speakVerb(this,'Ich sehe den Film.')">
+              <div class="vc-de">sehen</div>
+              <div class="vc-en">to see / watch</div>
+              <div class="vc-ex">Ich sehe den Film.</div>
+              <div class="vc-tap">🔊 tap</div>
+            </div>
+            <div class="verb-card" onclick="speakVerb(this,'Ich brauche einen Arzt.')">
+              <div class="vc-de">brauchen</div>
+              <div class="vc-en">to need</div>
+              <div class="vc-ex">Ich brauche einen Arzt.</div>
+              <div class="vc-tap">🔊 tap</div>
+            </div>
+            <div class="verb-card" onclick="speakVerb(this,'Ich nehme den Bus.')">
+              <div class="vc-de">nehmen</div>
+              <div class="vc-en">to take</div>
+              <div class="vc-ex">Ich nehme den Bus.</div>
+              <div class="vc-tap">🔊 tap</div>
+            </div>
+            <div class="verb-card" onclick="speakVerb(this,'Ich habe einen Termin.')">
+              <div class="vc-de">haben</div>
+              <div class="vc-en">to have</div>
+              <div class="vc-ex">Ich habe einen Termin.</div>
+              <div class="vc-tap">🔊 tap</div>
+            </div>
+            <div class="verb-card" onclick="speakVerb(this,'Ich suche einen Job.')">
+              <div class="vc-de">suchen</div>
+              <div class="vc-en">to look for</div>
+              <div class="vc-ex">Ich suche einen Job.</div>
+              <div class="vc-tap">🔊 tap</div>
+            </div>
+            <div class="verb-card" onclick="speakVerb(this,'Ich lerne einen neuen Wort.')">
+              <div class="vc-de">lernen</div>
+              <div class="vc-en">to learn</div>
+              <div class="vc-ex">Ich lerne Deutsch.</div>
+              <div class="vc-tap">🔊 tap</div>
+            </div>
+            <div class="verb-card" onclick="speakVerb(this,'Ich lese den Brief.')">
+              <div class="vc-de">lesen</div>
+              <div class="vc-en">to read</div>
+              <div class="vc-ex">Ich lese den Brief.</div>
+              <div class="vc-tap">🔊 tap</div>
+            </div>
+            <div class="verb-card" onclick="speakVerb(this,'Er besucht seinen Vater.')">
+              <div class="vc-de">besuchen</div>
+              <div class="vc-en">to visit</div>
+              <div class="vc-ex">Er besucht seinen Vater.</div>
+              <div class="vc-tap">🔊 tap</div>
+            </div>
+            <div class="verb-card" onclick="speakVerb(this,'Sie schreibt einen Brief.')">
+              <div class="vc-de">schreiben</div>
+              <div class="vc-en">to write</div>
+              <div class="vc-ex">Sie schreibt einen Brief.</div>
+              <div class="vc-tap">🔊 tap</div>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue)">The test to apply:</strong> Ask "what?" or "whom?" after the verb. If there is an answer, that answer takes the Akkusativ.<br><br>
+            "Ich kaufe ___ ?" → einen Apfel (Akkusativ) ✓<br>
+            "Ich gehe ___ ?" → nowhere — gehen has no object. No Akkusativ.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Continue →</button></div>
+      </div>
+
+      <div class="step" id="l2-s1">
+        <div class="card">
+          <div class="concept-tag">Module 5 · Lesson 3 · Quiz</div>
+          <h2 class="lesson-h">Akkusativ Verbs Quiz</h2>
+          <div id="qz-2"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ===== LESSON 4: Negation ===== -->
+    <div id="lesson-3" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">Module 5 · Lesson 4 of 6</div>
+          <h2 class="lesson-h">Negation — kein and nicht</h2>
+          <p class="body-text">German has two ways to say "no/not" — <strong style="color:var(--akk)">kein</strong> and <strong style="color:var(--akk)">nicht</strong>. Choosing the wrong one is one of the most common A1 mistakes. The rule is simple once you see it.</p>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0;">
+            <div style="background:rgba(230,126,34,0.06);border:1px solid rgba(230,126,34,0.25);border-radius:14px;padding:18px;">
+              <div style="font-size:11px;color:var(--akk);letter-spacing:2px;font-family:'DM Mono',monospace;margin-bottom:10px;">KEIN — use for nouns</div>
+              <div style="font-size:13px;color:var(--cream);line-height:1.8;">Negates a <strong>noun</strong>.<br>Replaces ein/eine/ein.<br>Also negates nouns with no article.<br><br>
+                <span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--gray);">Ich habe kein Geld.<br>Ich habe keine Zeit.<br>Ich habe keinen Bruder.</span>
+              </div>
+            </div>
+            <div style="background:rgba(52,152,219,0.06);border:1px solid rgba(52,152,219,0.25);border-radius:14px;padding:18px;">
+              <div style="font-size:11px;color:var(--blue);letter-spacing:2px;font-family:'DM Mono',monospace;margin-bottom:10px;">NICHT — use for everything else</div>
+              <div style="font-size:13px;color:var(--cream);line-height:1.8;">Negates a <strong>verb</strong>, adjective, or specific noun with definite article.<br><br>
+                <span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--gray);">Ich arbeite nicht.<br>Das ist nicht gut.<br>Ich nehme nicht den Bus.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">kein in Akkusativ — it changes too</div>
+          <p class="body-text">kein follows the same pattern as ein/eine/ein — so in the Akkusativ, masculine kein adds -en just like ein → einen.</p>
+
+          <table class="neg-table">
+            <tr><th>Gender</th><th>Nominativ</th><th>Akkusativ</th><th>Example</th></tr>
+            <tr>
+              <td style="font-size:13px;color:var(--cream);">Masculine</td>
+              <td style="font-family:'DM Mono',monospace;color:var(--gray);">kein</td>
+              <td style="font-family:'DM Mono',monospace;color:var(--akk);font-weight:700;">keinen</td>
+              <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--cream);">Ich habe keinen Bruder.</td>
+            </tr>
+            <tr>
+              <td style="font-size:13px;color:var(--cream);">Feminine</td>
+              <td style="font-family:'DM Mono',monospace;color:var(--gray);">keine</td>
+              <td style="font-family:'DM Mono',monospace;color:var(--gray);">keine</td>
+              <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--cream);">Ich habe keine Zeit.</td>
+            </tr>
+            <tr>
+              <td style="font-size:13px;color:var(--cream);">Neuter</td>
+              <td style="font-family:'DM Mono',monospace;color:var(--gray);">kein</td>
+              <td style="font-family:'DM Mono',monospace;color:var(--gray);">kein</td>
+              <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--cream);">Ich habe kein Geld.</td>
+            </tr>
+            <tr>
+              <td style="font-size:13px;color:var(--cream);">Plural</td>
+              <td style="font-family:'DM Mono',monospace;color:var(--gray);">keine</td>
+              <td style="font-family:'DM Mono',monospace;color:var(--gray);">keine</td>
+              <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--cream);">Ich habe keine Kinder.</td>
+            </tr>
+          </table>
+
+          <div class="sec-label">Negation in real sentences — tap to hear</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-case-tag">KEIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich habe <span class="ex-akk">keinen</span> Hunger.</div>
+                <div class="ex-en">I am not hungry. (literally: I have no hunger.)</div>
+                <div class="ex-note">Hunger is a masculine noun (der Hunger) → keinen in Akkusativ. "Ich habe nicht Hunger" is wrong — nouns take kein, not nicht.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich habe keinen Hunger.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-case-tag">NICHT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich arbeite heute <span class="ex-akk" style="color:var(--blue);">nicht</span>.</div>
+                <div class="ex-en">I am not working today.</div>
+                <div class="ex-note">Negating a verb (arbeiten) → nicht. Position: nicht goes after the verb and all complements, usually near the end.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich arbeite heute nicht.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-case-tag">KEIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Wir haben <span class="ex-akk">keine</span> Zeit.</div>
+                <div class="ex-en">We have no time.</div>
+                <div class="ex-note">Zeit is feminine (die Zeit) → keine in Akkusativ. Feminine kein stays keine — same in Nominativ and Akkusativ.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wir haben keine Zeit.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-case-tag">NICHT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das ist <span class="ex-akk" style="color:var(--blue);">nicht</span> richtig.</div>
+                <div class="ex-en">That is not correct.</div>
+                <div class="ex-note">Negating an adjective (richtig) → nicht. "Das ist kein richtig" is completely wrong — kein only works before nouns.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das ist nicht richtig.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Continue →</button></div>
+      </div>
+
+      <div class="step" id="l3-s1">
+        <div class="card">
+          <div class="concept-tag">Module 5 · Lesson 4 · Quiz</div>
+          <h2 class="lesson-h">Negation Quiz</h2>
+          <div id="qz-3"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ===== LESSON 5: Akkusativ Prepositions ===== -->
+    <div id="lesson-4" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">Module 5 · Lesson 5 of 6</div>
+          <h2 class="lesson-h">Akkusativ prepositions — always den, never der</h2>
+          <p class="body-text">Certain prepositions always take the Akkusativ. This means the noun after them always uses the Akkusativ article — even if it would otherwise be the subject of a sentence. Memorise this list. It is short and fixed.</p>
+
+          <div class="info-box"><strong style="color:var(--gold)">The five Akkusativ prepositions — memory trick:</strong><br><br>
+            <span style="font-family:'DM Mono',monospace;font-size:16px;color:var(--akk);">durch · für · gegen · ohne · um</span><br><br>
+            Memory: <strong>d</strong>urch <strong>f</strong>ür <strong>g</strong>egen <strong>o</strong>hne <strong>u</strong>m → "<strong>dfgou</strong>" or just practise each one with an example sentence.
+          </div>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-case-tag">DURCH</div>
+              <div style="flex:1;">
+                <div class="ex-de">Wir fahren <span class="ex-akk">durch den</span> Tunnel.</div>
+                <div class="ex-en">We drive through the tunnel.</div>
+                <div class="ex-note">durch = through. Tunnel is masculine (der Tunnel) → durch den Tunnel (Akkusativ).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wir fahren durch den Tunnel.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-case-tag">FÜR</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das ist <span class="ex-akk">für einen</span> Freund.</div>
+                <div class="ex-en">That is for a friend.</div>
+                <div class="ex-note">für = for. Freund is masculine (der Freund) → für einen Freund (Akkusativ). "für ein Freund" is wrong.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das ist für einen Freund.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-case-tag">GEGEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich bin <span class="ex-akk">gegen den</span> Plan.</div>
+                <div class="ex-en">I am against the plan.</div>
+                <div class="ex-note">gegen = against. Plan is masculine (der Plan) → gegen den Plan.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich bin gegen den Plan.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-case-tag">OHNE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich trinke Kaffee <span class="ex-akk">ohne</span> Zucker.</div>
+                <div class="ex-en">I drink coffee without sugar.</div>
+                <div class="ex-note">ohne = without. Zucker is masculine (der Zucker) → ohne den Zucker or ohne Zucker (no article when speaking generally).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich trinke Kaffee ohne Zucker.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-case-tag">UM</div>
+              <div style="flex:1;">
+                <div class="ex-de">Wir treffen uns <span class="ex-akk">um</span> drei Uhr.</div>
+                <div class="ex-en">We meet at three o'clock.</div>
+                <div class="ex-note">um = at (time) / around. "um drei Uhr" is the standard time expression. Also: um die Ecke (around the corner).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wir treffen uns um drei Uhr.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue)">Für is the most common in Goethe:</strong> "Das ist für Sie" (That is for you — formal), "ein Kurs für Anfänger" (a course for beginners), "für wie lange?" (for how long?). It appears in nearly every Goethe section. Always triggers Akkusativ after it.</div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Continue →</button></div>
+      </div>
+
+      <div class="step" id="l4-s1">
+        <div class="card">
+          <div class="concept-tag">Module 5 · Lesson 5 · Quiz</div>
+          <h2 class="lesson-h">Prepositions Quiz</h2>
+          <div id="qz-4"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ===== LESSON 6: Akkusativ in Goethe ===== -->
+    <div id="lesson-5" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">Module 5 · Lesson 6 of 6</div>
+          <h2 class="lesson-h">Akkusativ in real Goethe sentences</h2>
+          <p class="body-text">The Akkusativ appears in every section of the Goethe exam. These are the real sentence patterns the examiner uses. Read, hear, and internalise each one.</p>
+
+          <div class="sec-label">Goethe Sprechen — introduction sentences</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-case-tag">AKK</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich habe <span class="ex-akk">einen Bruder</span> und <span class="ex-akk">eine Schwester</span>.</div>
+                <div class="ex-en">I have a brother and a sister.</div>
+                <div class="ex-note">haben takes Akkusativ. Bruder (m) → einen. Schwester (f) → eine (no change for feminine).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich habe einen Bruder und eine Schwester.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-case-tag">AKK</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich suche <span class="ex-akk">einen Kurs</span> für Anfänger.</div>
+                <div class="ex-en">I am looking for a beginner course.</div>
+                <div class="ex-note">suchen takes Akkusativ. Kurs (m) → einen Kurs. für also takes Akkusativ: für Anfänger.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich suche einen Kurs für Anfänger.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Goethe Hören — sentences to recognise</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-case-tag">AKK</div>
+              <div style="flex:1;">
+                <div class="ex-de">Nehmen Sie <span class="ex-akk">den Bus</span> Nummer zwölf.</div>
+                <div class="ex-en">Take bus number twelve.</div>
+                <div class="ex-note">nehmen takes Akkusativ. Bus (m) → den Bus. This appears in Goethe Hören transport directions.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Nehmen Sie den Bus Nummer zwölf.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-case-tag">AKK</div>
+              <div style="flex:1;">
+                <div class="ex-de">Bitte füllen Sie <span class="ex-akk">den Antrag</span> vollständig aus.</div>
+                <div class="ex-en">Please fill in the form completely.</div>
+                <div class="ex-note">ausfüllen takes Akkusativ. Antrag (m) → den Antrag. Common in Goethe Hören office and administration contexts.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Bitte füllen Sie den Antrag vollständig aus.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Goethe Schreiben — sentences you write</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-case-tag">AKK</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich möchte <span class="ex-akk">einen Termin</span> machen.</div>
+                <div class="ex-en">I would like to make an appointment.</div>
+                <div class="ex-note">möchte (would like) takes Akkusativ on its object. Termin (m) → einen Termin. The standard phrase for booking appointments — appears in Schreiben task 2.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich möchte einen Termin machen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-case-tag">AKK</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich brauche <span class="ex-akk">keinen</span> Kaffee, danke.</div>
+                <div class="ex-en">I don't need any coffee, thank you.</div>
+                <div class="ex-note">brauchen takes Akkusativ. Kaffee (m) → keinen Kaffee (negated with kein in Akkusativ).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich brauche keinen Kaffee, danke.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-case-tag">AKK</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das Geschenk ist <span class="ex-akk">für meinen</span> Vater.</div>
+                <div class="ex-en">The gift is for my father.</div>
+                <div class="ex-note">für takes Akkusativ. mein (possessive) also adds -en for masculine Akkusativ: meinen Vater.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das Geschenk ist für meinen Vater.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="success-box"><strong style="color:var(--green)">What to listen for in Goethe Hören:</strong> When you hear "den" before a masculine noun, you know the noun is an object. This is a comprehension clue. "Nehmen Sie den Bus" — you immediately know the bus is what you should take (object), not a new subject. Cases help you understand sentences faster.</div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Start Final Quiz →</button></div>
+      </div>
+
+      <div class="step" id="l5-s1">
+        <div class="card">
+          <div class="concept-tag">Module 5 · Final Quiz</div>
+          <h2 class="lesson-h">Module Complete — Final Check</h2>
+          <div id="qz-5"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Previous</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="showOverview()"><span class="nav-icon">📚</span><span class="nav-label">Overview</span></button>
+  <button class="nav-item" onclick="resumeLesson()"><span class="nav-icon">▶️</span><span class="nav-label">Resume</span></button>
+</nav>
+
+<script>
+// SPEECH — Chrome Android safe
+var synth=(typeof window!=='undefined'&&window.speechSynthesis)?window.speechSynthesis:null;
+var deVoice=null,speechUnlocked=false;
+function loadVoices(){ if(!synth)return; try{ var v=synth.getVoices(); deVoice=v.find(function(x){return x.lang==='de-DE';})||v.find(function(x){return x.lang&&x.lang.startsWith('de');})||null; }catch(e){} }
+if(synth){ try{ loadVoices(); if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadVoices; }catch(e){} }
+function unlockSpeech(){ if(speechUnlocked||!synth)return; try{ var s=new SpeechSynthesisUtterance(''); s.volume=0; synth.speak(s); speechUnlocked=true; }catch(e){} }
+document.addEventListener('touchstart',unlockSpeech,{once:true,passive:true});
+document.addEventListener('click',unlockSpeech,{once:true});
+function speakDE(text){ if(!synth)return null; try{ if(!deVoice)loadVoices(); synth.cancel(); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; u.pitch=1.0; u.volume=1.0; if(deVoice)u.voice=deVoice; synth.speak(u); return u; }catch(e){return null;} }
+function speakSentence(btn,text){ unlockSpeech(); document.querySelectorAll('.speak-btn').forEach(function(b){b.classList.remove('speaking');}); if(btn&&btn.classList)btn.classList.add('speaking'); var u=speakDE(text); if(u){ u.onend=function(){if(btn&&btn.classList)btn.classList.remove('speaking');}; u.onerror=function(){if(btn&&btn.classList)btn.classList.remove('speaking');}; }else{ setTimeout(function(){if(btn&&btn.classList)btn.classList.remove('speaking');},1500); } }
+function speakVerb(card,text){ unlockSpeech(); document.querySelectorAll('.verb-card').forEach(function(c){c.classList.remove('speaking');}); card.classList.add('speaking'); var u=speakDE(text); if(u){ u.onend=function(){card.classList.remove('speaking');}; u.onerror=function(){card.classList.remove('speaking');}; }else{ setTimeout(function(){card.classList.remove('speaking');},900); } }
+
+// STATE
+var currentLesson=0,xp=0,TOTAL=6;
+
+// QUIZ DATA
+var QD={
+  0:[
+    {q:'In "Der Hund beißt den Mann" — what role is "den Mann" playing?',hint:'den = Akkusativ. What does Akkusativ signal?',opts:['Subject — doing the biting','Object — being bitten','Verb — the action','Neither — it is a location'],ans:1,exp:'"den Mann" is the direct object — being bitten. "den" (Akkusativ of der) signals object. "Der Hund" (Nominativ = der, unchanged) is the subject doing the biting. The case endings tell you the role, regardless of word order.',rule:'Nominativ (der/die/das) = subject. Akkusativ (den/die/das) = direct object.'},
+    {q:'Which sentence has a direct object in the Akkusativ?',hint:'Look for a verb that acts on something',opts:['Ich gehe nach Hause.','Ich schlafe gut.','Ich kaufe einen Kaffee.','Es regnet heute.'],ans:2,exp:'"Ich kaufe einen Kaffee." — kaufen is a transitive verb, and "einen Kaffee" is its direct object (Akkusativ). "Ich gehe" and "Es regnet" have no direct objects. "Ich schlafe gut" — gut is an adverb, not an object.',rule:'Transitive verbs (kaufen, sehen, essen...) take direct objects → Akkusativ.'},
+    {q:'Why does German use cases like Nominativ and Akkusativ?',hint:'Think about word order flexibility',opts:['To make German harder to learn','To show the role of a noun regardless of word order','To replace verbs in certain sentences','To indicate formality level'],ans:1,exp:'Cases show the role of a noun (subject, object, etc.) through the article ending rather than word order. This gives German flexible word order — "Den Mann beißt der Hund" is as clear as "Der Hund beißt den Mann" because "den" always signals object.',rule:'Cases = noun role markers. German uses cases instead of strict word order.'},
+  ],
+  1:[
+    {q:'What is the Akkusativ form of "der Bus"?',hint:'Only masculine articles change in Akkusativ',opts:['der Bus','die Bus','den Bus','das Bus'],ans:2,exp:'"den Bus" — masculine definite article der becomes den in the Akkusativ. This is the only change: der → den. "Nehmen Sie den Bus" = Take the bus (Bus is the object of nehmen).',rule:'Masculine definite: der (Nom) → den (Akk). Only masculine changes.'},
+    {q:'"Ich kaufe ___ Apfel." (Apfel is masculine — der Apfel)',hint:'Indefinite article, masculine, in the Akkusativ',opts:['ein Apfel','einen Apfel','eine Apfel','dem Apfel'],ans:1,exp:'"einen Apfel" — the indefinite masculine article ein becomes einen in the Akkusativ. This mirrors the definite change: der→den, ein→einen. The -en ending signals masculine Akkusativ.',rule:'Masculine indefinite: ein (Nom) → einen (Akk). Pattern: add -en.'},
+    {q:'"Ich sehe ___ Frau." Which article is correct?',hint:'Frau is feminine — what happens to die in Akkusativ?',opts:['den Frau','die Frau','der Frau','das Frau'],ans:1,exp:'"die Frau" — feminine articles do NOT change in the Akkusativ. die stays die. eine stays eine. Only the masculine article changes (der→den, ein→einen). This is the key fact: memorise that feminine, neuter, and plural stay the same.',rule:'Feminine: die (Nom) → die (Akk). No change. Only masculine changes.'},
+  ],
+  2:[
+    {q:'Which verb always takes a direct object in the Akkusativ?',hint:'Which of these can you "do" to something?',opts:['gehen (to go)','schlafen (to sleep)','kaufen (to buy)','ankommen (to arrive)'],ans:2,exp:'"kaufen" (to buy) is a transitive verb — you always buy something, and that something takes the Akkusativ. gehen, schlafen, and ankommen are intransitive — they describe an action or state without a direct object.',rule:'Transitive verbs = take Akkusativ objects. Ask "what?" after the verb — if there is an answer, it takes Akkusativ.'},
+    {q:'"Ich nehme ___ Zug." (Zug is masculine — der Zug)',hint:'nehmen = to take. Zug = object of taking.',opts:['der Zug','den Zug','dem Zug','die Zug'],ans:1,exp:'"den Zug" — nehmen is a transitive verb. Der Zug becomes den Zug in the Akkusativ (masculine: der→den). "Ich nehme den Zug" = I take the train. Very common in Goethe Hören transport contexts.',rule:'nehmen + Akkusativ. Masculine: den. Ich nehme den Zug/Bus/Lift.'},
+    {q:'"Sie besucht ___ Arzt." (Arzt is masculine — der Arzt)',hint:'besuchen = to visit. Arzt is the object being visited.',opts:['der Arzt','dem Arzt','einen Arzt','die Arzt'],ans:2,exp:'"einen Arzt" — besuchen takes Akkusativ. If using the indefinite article: ein → einen (masculine Akkusativ). "Sie besucht einen Arzt" = She visits a doctor. With definite: "Sie besucht den Arzt" (the specific doctor she knows).',rule:'besuchen + Akkusativ. einen (indef.) / den (def.) for masculine nouns.'},
+  ],
+  3:[
+    {q:'"Ich habe ___ Auto." (negated — I have no car)',hint:'Auto is neuter. kein negates nouns.',opts:['nicht Auto','kein Auto','keine Auto','keinen Auto'],ans:1,exp:'"kein Auto" — Auto is neuter (das Auto). kein for neuter is "kein" in both Nominativ and Akkusativ — no change. "Ich habe nicht Auto" is wrong — nicht does not negate nouns directly. kein replaces ein before nouns.',rule:'Neuter noun negation: kein Auto (no -en change for neuter).'},
+    {q:'"Ich habe ___ Bruder." (negated — I have no brother)',hint:'Bruder is masculine. kein in the Akkusativ for masculine?',opts:['kein Bruder','keine Bruder','keinen Bruder','nicht Bruder'],ans:2,exp:'"keinen Bruder" — Bruder is masculine (der Bruder). In the Akkusativ, masculine kein adds -en: keinen. This mirrors ein → einen. "Ich habe keinen Bruder" = I have no brother / I don\'t have a brother.',rule:'Masculine Akkusativ negation: kein → keinen. Mirrors ein → einen.'},
+    {q:'When do you use "nicht" instead of "kein"?',hint:'kein replaces ein before nouns. What does nicht negate?',opts:['Before any noun','Before masculine nouns only','Before verbs, adjectives, or nouns with definite articles','After prepositions only'],ans:2,exp:'nicht negates verbs ("Ich arbeite nicht"), adjectives ("Das ist nicht gut"), and nouns with definite articles ("Ich nehme nicht den Bus — I\'m not taking that specific bus"). kein negates nouns that would take ein/eine/ein or no article at all.',rule:'kein = negates nouns (replaces ein). nicht = negates verbs, adjectives, or definite-article nouns.'},
+  ],
+  4:[
+    {q:'Which preposition always takes the Akkusativ?',hint:'Think: durch für gegen ohne um',opts:['mit','in','auf','für'],ans:3,exp:'"für" always takes the Akkusativ. The five Akkusativ prepositions are: durch, für, gegen, ohne, um. "mit" takes Dativ. "in" and "auf" are two-way prepositions (Akkusativ for direction, Dativ for location).',rule:'Akkusativ prepositions: durch · für · gegen · ohne · um. Always.'},
+    {q:'"Das Geschenk ist für ___ Mann." (the specific man)',hint:'für takes Akkusativ. Mann is masculine.',opts:['der Mann','dem Mann','den Mann','die Mann'],ans:2,exp:'"für den Mann" — für takes Akkusativ. Mann is masculine → der becomes den in Akkusativ. "für den Mann" = for the man. The preposition für forces Akkusativ regardless of where the noun appears in the sentence.',rule:'für + Akkusativ always. Masculine definite: für den.'},
+    {q:'"Ohne ___ Schlüssel kann ich nicht rein." (without the key)',hint:'ohne takes Akkusativ. Schlüssel is masculine.',opts:['der Schlüssel','dem Schlüssel','den Schlüssel','die Schlüssel'],ans:2,exp:'"ohne den Schlüssel" — ohne takes Akkusativ. Schlüssel is masculine (der Schlüssel) → den Schlüssel. "Without the key I can\'t get in." The Akkusativ preposition ohne forces den for masculine nouns.',rule:'ohne + Akkusativ. Masculine: ohne den. Feminine: ohne die. Neuter: ohne das.'},
+  ],
+  5:[
+    {q:'"Ich möchte ___ Termin machen." (an appointment)',hint:'möchte takes Akkusativ. Termin is masculine.',opts:['ein Termin','einen Termin','dem Termin','der Termin'],ans:1,exp:'"einen Termin" — möchte (would like) takes Akkusativ on its object. Termin is masculine (der Termin) → einen Termin (indefinite Akkusativ). "Ich möchte einen Termin machen" is the standard phrase for booking appointments in Goethe Schreiben.',rule:'Möchte + Akkusativ. Masculine indefinite: einen. Standard phrase: einen Termin machen.'},
+    {q:'"Nehmen Sie ___ Bus Nummer acht." Which is correct?',hint:'nehmen takes Akkusativ. Bus is masculine.',opts:['der Bus','ein Bus','den Bus','dem Bus'],ans:2,exp:'"den Bus" — nehmen takes Akkusativ. Bus is masculine → den Bus. This is a definite article (the specific bus number 8). Appears constantly in Goethe Hören directions. "Nehmen Sie den Bus" = Take the bus.',rule:'Nehmen Sie den Bus/Zug/Lift. Masculine Akkusativ: den.'},
+    {q:'What does the article "den" tell you when you hear it in a Goethe listening text?',hint:'Think about what Akkusativ signals',opts:['The noun is the subject doing the action','The noun is a direct object or follows an Akkusativ preposition','The noun is feminine','The noun is in the plural'],ans:1,exp:'"den" signals masculine Akkusativ — the noun is either a direct object or follows an Akkusativ preposition (durch/für/gegen/ohne/um). This is a comprehension shortcut: when you hear "den," you know immediately that noun is being acted upon, not acting.',rule:'"den" = masculine Akkusativ. Signals direct object or Akkusativ preposition.'},
+  ],
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){
+  var el=document.getElementById('qz-'+li); if(!el)return;
+  var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;}
+  var q=qs[s.cur];
+  el.innerHTML='<div class="quiz-qnum">QUESTION '+(s.cur+1)+' OF '+qs.length+'</div>'+
+    '<div class="quiz-q">'+q.q+'</div><div class="quiz-hint">'+q.hint+'</div>'+
+    '<div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div>'+
+    '<div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div>'+
+    '<div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Next Question →':'See Results →')+'</button></div>';
+}
+function pickQ(li,idx){
+  var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans;
+  if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';}
+  document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');});
+  var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no');
+  var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Correct!':'✗ Not quite';
+  document.getElementById('qz'+li+'-fbb').textContent=q.exp;
+  document.getElementById('qz'+li+'-fbr').textContent=q.rule;
+  document.getElementById('qz'+li+'-nx').classList.add('show');
+}
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){
+  var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5;
+  el.innerHTML='<div style="text-align:center;padding:16px 0;">'+
+    '<div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div>'+
+    '<div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' correct</div>'+
+    '<div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfect.':pct>=60?'Good work.':'Review and try again.')+'</div>'+
+    '<div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.12);border:1px solid var(--gold);border-radius:50px;padding:9px 22px;color:var(--gold);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+
+    (isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Complete Module 5 →</button>':
+     '<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Next Lesson →</button>')+'</div>';
+}
+function showCompletion(){
+  var el=document.querySelector('#lesson-5 .step.active');
+  el.innerHTML='<div class="complete-wrap"><div class="complete-icon">🎯</div>'+
+    '<h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Module 5 Complete!</h2>'+
+    '<p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">The Akkusativ is yours. One change — der becomes den — and the pattern behind every transitive verb and Akkusativ preposition. The case system has begun.</p>'+
+    '<div class="xp-badge">⚡ '+xp+' XP Earned</div>'+
+    '<p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Next: Module 6 — The Dativ Case</p>'+
+    '<button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Back to Overview</button></div>';
+}
+
+// NAV
+function showOverview(){document.getElementById('screen-overview').classList.add('active');document.getElementById('screen-lesson').classList.remove('active');}
+function resumeLesson(){goLesson(currentLesson);}
+function goLesson(idx){
+  currentLesson=idx;
+  document.getElementById('screen-overview').classList.remove('active');
+  document.getElementById('screen-lesson').classList.add('active');
+  document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';});
+  var pane=document.getElementById('lesson-'+idx);
+  if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});}
+  renderDots();updateProg(idx,0);window.scrollTo(0,0);
+}
+function nextStep(li,si){
+  var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1;
+  if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}
+  else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();}
+}
+function prevStep(li,si){
+  if(si===0){showOverview();return;}
+  var steps=document.getElementById('lesson-'+li).querySelectorAll('.step');
+  steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0);
+}
+function renderDots(){
+  var row=document.getElementById('dotRow');row.innerHTML='';
+  for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);}
+}
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+</body>
+</html>

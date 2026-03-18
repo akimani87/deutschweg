@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Module 10: Plural Forms of Nouns</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --p1:#3498db; --p2:#e67e22; --p3:#9b59b6; --verb:#c9a84c;
+    --pl1:#8e9eab; --pl2:#3498db; --pl3:#e67e22; --pl4:#9b59b6; --pl5:#c9a84c;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:rgba(10,10,10,0.96); backdrop-filter:blur(20px); border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:12px 0 20px; z-index:100; }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:8px 16px; border-radius:12px; transition:all 0.2s; border:none; background:none; color:var(--gray); }
+  .nav-item:hover, .nav-item.active { color:var(--gold); }
+  .nav-icon { font-size:20px; }
+  .nav-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; font-family:'DM Mono',monospace; }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--gold); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--gold); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--gold); color:var(--black); width:100%; }
+  .btn-primary:hover { background:var(--gold-light); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(201,168,76,0.2); }
+  .speak-btn.speaking { background:var(--gold); color:var(--black); }
+
+  /* SENTENCE BLOCKS */
+  .sent-block { margin:14px 0; }
+  .sent-de { display:flex; flex-wrap:wrap; gap:6px; align-items:flex-end; margin-bottom:10px; }
+  .stoken { display:flex; flex-direction:column; align-items:center; }
+  .sw { font-family:'DM Mono',monospace; font-size:16px; padding:8px 12px; border-radius:8px; font-weight:600; }
+  .sl { font-size:9px; letter-spacing:1.5px; text-align:center; margin-top:4px; font-family:'DM Mono',monospace; }
+  .sw-p1 { background:rgba(52,152,219,0.12); border:1px solid rgba(52,152,219,0.3); color:var(--p1); }
+  .sl-p1 { color:var(--p1); }
+  .sw-verb { background:rgba(201,168,76,0.12); border:1px solid rgba(201,168,76,0.35); color:var(--verb); }
+  .sl-verb { color:var(--verb); }
+  .sw-p2 { background:rgba(230,126,34,0.1); border:1px solid rgba(230,126,34,0.3); color:var(--p2); }
+  .sl-p2 { color:var(--p2); }
+  .sw-p3 { background:rgba(155,89,182,0.1); border:1px solid rgba(155,89,182,0.3); color:var(--p3); }
+  .sl-p3 { color:var(--p3); }
+  .sw-gold { background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.35); color:var(--gold); }
+  .sl-gold { color:var(--gold); }
+  .sw-gray { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); color:var(--cream); }
+  .sl-gray { color:var(--gray); }
+  .sent-en { font-size:13px; color:var(--gray); margin-top:4px; padding-left:2px; }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-en { font-size:12px; color:var(--gray); margin-bottom:6px; }
+  .ex-note { font-size:12px; color:var(--cream); line-height:1.6; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Sans',sans-serif; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--gold); background:rgba(201,168,76,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(201,168,76,0.1); border-radius:8px; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(201,168,76,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(201,168,76,0.08); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(201,168,76,0.12); border:1px solid var(--gold); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--gold); font-size:18px; margin:18px 0; }
+
+  /* PLURAL PATTERN CARDS */
+  .pattern-cards { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin:16px 0; }
+  .pcard { border-radius:12px; padding:14px 10px; text-align:center; }
+  .pc-num { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:6px; opacity:0.75; }
+  .pc-suffix { font-family:'DM Mono',monospace; font-size:22px; font-weight:700; margin-bottom:8px; }
+  .pc-ex { font-size:10px; line-height:1.7; opacity:0.85; }
+  .pcard-1 { background:rgba(142,158,171,0.08); border:1px solid rgba(142,158,171,0.3); }
+  .pcard-1 .pc-suffix, .pcard-1 .pc-num { color:var(--pl1); }
+  .pcard-2 { background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.3); }
+  .pcard-2 .pc-suffix, .pcard-2 .pc-num { color:var(--pl2); }
+  .pcard-3 { background:rgba(230,126,34,0.08); border:1px solid rgba(230,126,34,0.3); }
+  .pcard-3 .pc-suffix, .pcard-3 .pc-num { color:var(--pl3); }
+  .pcard-4 { background:rgba(155,89,182,0.08); border:1px solid rgba(155,89,182,0.3); }
+  .pcard-4 .pc-suffix, .pcard-4 .pc-num { color:var(--pl4); }
+  .pcard-5 { background:rgba(201,168,76,0.08); border:1px solid rgba(201,168,76,0.35); }
+  .pcard-5 .pc-suffix, .pcard-5 .pc-num { color:var(--pl5); }
+
+  /* NOUN TRIO ROWS */
+  .nt-row { display:flex; align-items:center; gap:8px; margin:6px 0; }
+  .nt-arrow { color:var(--gray); font-size:18px; flex-shrink:0; }
+  .nt-sg { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:9px; padding:10px 14px; min-width:140px; }
+  .nt-pl { border-radius:9px; padding:10px 14px; min-width:140px; }
+  .nt-art { font-size:10px; color:var(--gray); font-family:'DM Mono',monospace; letter-spacing:1px; margin-bottom:3px; }
+  .nt-word { font-family:'DM Mono',monospace; font-size:15px; font-weight:700; color:var(--cream); }
+  .nt-pl1 { background:rgba(142,158,171,0.07); border:1px solid rgba(142,158,171,0.25); }
+  .nt-pl1 .nt-art { color:var(--pl1); } .nt-pl1 .nt-word { color:var(--pl1); }
+  .nt-pl2 { background:rgba(52,152,219,0.07); border:1px solid rgba(52,152,219,0.25); }
+  .nt-pl2 .nt-art { color:var(--pl2); } .nt-pl2 .nt-word { color:var(--pl2); }
+  .nt-pl3 { background:rgba(230,126,34,0.07); border:1px solid rgba(230,126,34,0.25); }
+  .nt-pl3 .nt-art { color:var(--pl3); } .nt-pl3 .nt-word { color:var(--pl3); }
+  .nt-pl4 { background:rgba(155,89,182,0.07); border:1px solid rgba(155,89,182,0.25); }
+  .nt-pl4 .nt-art { color:var(--pl4); } .nt-pl4 .nt-word { color:var(--pl4); }
+  .nt-pl5 { background:rgba(201,168,76,0.07); border:1px solid rgba(201,168,76,0.3); }
+  .nt-pl5 .nt-art { color:var(--pl5); } .nt-pl5 .nt-word { color:var(--pl5); }
+
+  /* A1 EXAM REFERENCE TABLE */
+  .a1-table { display:grid; grid-template-columns:1fr 1fr auto; gap:4px; margin:14px 0; }
+  .at-h { background:rgba(255,255,255,0.04); border-radius:6px; padding:8px 12px; font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; color:var(--gray); }
+  .at-sg { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:8px; padding:9px 14px; font-size:13px; color:var(--cream); font-family:'DM Mono',monospace; }
+  .at-pl { border-radius:8px; padding:9px 14px; font-family:'DM Mono',monospace; font-size:13px; font-weight:600; }
+  .at-p1 { background:rgba(142,158,171,0.07); border:1px solid rgba(142,158,171,0.2); color:var(--pl1); }
+  .at-p2 { background:rgba(52,152,219,0.07); border:1px solid rgba(52,152,219,0.2); color:var(--pl2); }
+  .at-p3 { background:rgba(230,126,34,0.07); border:1px solid rgba(230,126,34,0.2); color:var(--pl3); }
+  .at-p4 { background:rgba(155,89,182,0.07); border:1px solid rgba(155,89,182,0.2); color:var(--pl4); }
+  .at-p5 { background:rgba(201,168,76,0.07); border:1px solid rgba(201,168,76,0.25); color:var(--pl5); }
+
+  /* WRONG/RIGHT COMPARE */
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:12px 14px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:12px 14px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:15px; font-weight:700; line-height:2; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .sw{font-size:13px;padding:6px 8px;} .lesson-h{font-size:22px;} .pattern-cards{grid-template-columns:repeat(3,1fr);} .wr-grid{grid-template-columns:1fr;} .nt-row{flex-wrap:wrap;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">MODULE 10</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">A1 · Vocabulary Foundation</div>
+    <h1 class="lesson-h" style="font-size:36px;">Plural Forms<br><span style="color:var(--verb)">of Nouns</span></h1>
+    <p class="body-text">In English, almost everything gets an –s to become plural: book → books, car → cars, day → days. German does not work like that. German has five plural patterns and none of them are predictable just by looking at the singular. This module shows you every pattern, gives you the A1 exam vocabulary, and teaches you the one strategy that prevents every mistake.</p>
+    <div class="info-box"><strong style="color:var(--gold)">The golden rule of German plurals:</strong> Always learn every noun as a <em>trio</em> — singular article + singular noun + plural form. For example: <span style="font-family:'DM Mono',monospace;color:var(--gold)">der Freund / die Freunde</span>. Never learn a noun without its plural. The exam will test it.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">❓</div><div><div class="lc-title">Lesson 1 — Why Plurals Are Unpredictable</div><div class="lc-desc">The English –s trap. The golden rule. The one consistent rule.</div></div><div class="lc-tag" style="color:var(--gold);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">🔵</div><div><div class="lc-title">Lesson 2 — Pattern 1: No Change · Pattern 2: +e</div><div class="lc-desc">Der Lehrer → die Lehrer. Der Tag → die Tage.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">🟠</div><div><div class="lc-title">Lesson 3 — Pattern 3: +er · Pattern 4: +en/+n</div><div class="lc-desc">Das Kind → die Kinder. Die Frau → die Frauen.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">🟡</div><div><div class="lc-title">Lesson 4 — Pattern 5: +s and the English Trap</div><div class="lc-desc">Das Auto → die Autos. Why –s is a minority pattern.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">📋</div><div><div class="lc-title">Lesson 5 — The Golden Rule and A1 Exam Plurals</div><div class="lc-desc">The 12 most important noun+plural pairs for Goethe A1.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lesson 6 — Kwame, Amina, Kofi, Fatima</div><div class="lc-desc">All five patterns in African-context sentences.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Begin Lesson 1 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lessons</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LESSON 1: Why Plurals Are Unpredictable ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">Module 10 · Lesson 1 of 6</div>
+          <h2 class="lesson-h">Why German plurals are unpredictable</h2>
+          <p class="body-text">In English the plural rule is almost universal: add –s (or –es). Book → books. Car → cars. Day → days. You can guess an English plural you have never seen before and be right 95% of the time. German cannot be guessed. The same ending can appear on completely different nouns, and many nouns change their vowel entirely in the plural.</p>
+
+          <div class="sec-label">English vs German — the same nouns</div>
+          <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);border-radius:14px;overflow:hidden;margin:14px 0;">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;">
+              <div style="padding:10px 14px;background:rgba(255,255,255,0.03);font-size:10px;letter-spacing:2px;font-family:'DM Mono',monospace;color:var(--gray);">ENGLISH</div>
+              <div style="padding:10px 14px;background:rgba(255,255,255,0.03);font-size:10px;letter-spacing:2px;font-family:'DM Mono',monospace;color:var(--gray);">→ PLURAL</div>
+              <div style="padding:10px 14px;background:rgba(255,255,255,0.03);font-size:10px;letter-spacing:2px;font-family:'DM Mono',monospace;color:var(--gold);">GERMAN plural</div>
+              <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);color:var(--cream);font-family:'DM Mono',monospace;font-size:13px;">book</div>
+              <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);color:var(--p2);font-family:'DM Mono',monospace;font-size:13px;">book<strong>s</strong></div>
+              <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);color:var(--pl3);font-family:'DM Mono',monospace;font-size:13px;">die Büch<strong>er</strong> <span style="color:var(--gray);font-size:11px;">(+er, ü)</span></div>
+              <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);color:var(--cream);font-family:'DM Mono',monospace;font-size:13px;">day</div>
+              <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);color:var(--p2);font-family:'DM Mono',monospace;font-size:13px;">day<strong>s</strong></div>
+              <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);color:var(--pl2);font-family:'DM Mono',monospace;font-size:13px;">die Tag<strong>e</strong> <span style="color:var(--gray);font-size:11px;">(+e)</span></div>
+              <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);color:var(--cream);font-family:'DM Mono',monospace;font-size:13px;">teacher</div>
+              <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);color:var(--p2);font-family:'DM Mono',monospace;font-size:13px;">teacher<strong>s</strong></div>
+              <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);color:var(--pl1);font-family:'DM Mono',monospace;font-size:13px;">die Lehrer <span style="color:var(--gray);font-size:11px;">(no change)</span></div>
+              <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);color:var(--cream);font-family:'DM Mono',monospace;font-size:13px;">car</div>
+              <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);color:var(--p2);font-family:'DM Mono',monospace;font-size:13px;">car<strong>s</strong></div>
+              <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);color:var(--pl5);font-family:'DM Mono',monospace;font-size:13px;">die Auto<strong>s</strong> <span style="color:var(--gray);font-size:11px;">(+s)</span></div>
+            </div>
+          </div>
+          <p class="body-text">There is no shortcut to predicting which pattern a noun follows — but there are tendencies you can learn. More importantly, there is <strong style="color:var(--gold)">one strategy that removes all guessing</strong>.</p>
+
+          <div class="sec-label">The golden rule — the trio</div>
+          <div class="info-box"><strong style="color:var(--gold)">Learn every noun as a trio:</strong><br><br>
+            <span style="font-family:'DM Mono',monospace;color:var(--gold);">article + singular + plural</span><br><br>
+            <span style="font-family:'DM Mono',monospace;">der Freund / die Freunde</span><br>
+            <span style="font-family:'DM Mono',monospace;">das Kind / die Kinder</span><br>
+            <span style="font-family:'DM Mono',monospace;">die Frau / die Frauen</span><br><br>
+            Never write down a new noun without also writing its plural. The Goethe A1 exam tests plural forms directly — in Lesen, Hören, and Schreiben.
+          </div>
+
+          <div class="sec-label">The one consistent rule — plural article</div>
+          <div class="success-box"><strong style="color:var(--green)">ALL German plurals use "die" — no exceptions.</strong><br><br>
+            Der Mann (masculine) → <strong>die</strong> Männer<br>
+            Das Kind (neuter) → <strong>die</strong> Kinder<br>
+            Die Frau (feminine) → <strong>die</strong> Frauen<br><br>
+            Whatever the singular article is, the plural is always <span style="font-family:'DM Mono',monospace;color:var(--gold)">die</span>. This is the only plural rule you can rely on without memorising.
+          </div>
+
+          <div class="sec-label">Preview — the five patterns</div>
+          <div class="pattern-cards">
+            <div class="pcard pcard-1"><div class="pc-num">PATTERN 1</div><div class="pc-suffix">∅</div><div class="pc-ex">No change<br>der Lehrer<br>→ die Lehrer</div></div>
+            <div class="pcard pcard-2"><div class="pc-num">PATTERN 2</div><div class="pc-suffix">+e</div><div class="pc-ex">Add –e<br>der Tag<br>→ die Tage</div></div>
+            <div class="pcard pcard-3"><div class="pc-num">PATTERN 3</div><div class="pc-suffix">+er</div><div class="pc-ex">Add –er<br>das Kind<br>→ die Kinder</div></div>
+            <div class="pcard pcard-4"><div class="pc-num">PATTERN 4</div><div class="pc-suffix">+en</div><div class="pc-ex">Add –en<br>die Frau<br>→ die Frauen</div></div>
+            <div class="pcard pcard-5"><div class="pc-num">PATTERN 5</div><div class="pc-suffix">+s</div><div class="pc-ex">Add –s<br>das Auto<br>→ die Autos</div></div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'der Lehrer, die Lehrer. der Tag, die Tage. das Kind, die Kinder. die Frau, die Frauen. das Auto, die Autos.')">🔊 Hear all five plural forms</button>
+
+          <div class="warn-box"><strong style="color:var(--blue)">Dictionary notation:</strong> German dictionaries show plurals in abbreviated form after the noun entry. For example: <span style="font-family:'DM Mono',monospace;">der Tag, –e</span> means add –e. <span style="font-family:'DM Mono',monospace;">der Lehrer, –</span> means no change. When you look up a word, always check the plural notation and write it down with the entry.</div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">Module 10 · Lesson 1 · Quiz</div><h2 class="lesson-h">The Plural Rule Quiz</h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 2: Pattern 1 (No Change) & Pattern 2 (+e) ── -->
+    <div id="lesson-1" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">Module 10 · Lesson 2 of 6</div>
+          <h2 class="lesson-h">Pattern 1: No change · Pattern 2: +e</h2>
+
+          <div class="sec-label" style="margin-top:4px;">Pattern 1 — no change (∅)</div>
+          <p class="body-text">The singular and plural forms look completely identical. You can only tell them apart from the article: <span style="font-family:'DM Mono',monospace;color:var(--pl1)">der Lehrer</span> (one teacher) vs <span style="font-family:'DM Mono',monospace;color:var(--pl1)">die Lehrer</span> (multiple teachers). The article does all the work.</p>
+
+          <div style="background:var(--card2-bg);border:1px solid rgba(142,158,171,0.2);border-radius:14px;padding:18px;margin:14px 0;">
+            <div style="font-size:10px;letter-spacing:2px;font-family:'DM Mono',monospace;color:var(--pl1);margin-bottom:14px;">PATTERN 1 · NO CHANGE · WHO USES IT?</div>
+            <p style="font-size:13px;color:var(--cream);line-height:1.8;margin-bottom:12px;">Mostly masculine and neuter nouns ending in <span style="font-family:'DM Mono',monospace;color:var(--pl1)">–er</span>, <span style="font-family:'DM Mono',monospace;color:var(--pl1)">–el</span>, or <span style="font-family:'DM Mono',monospace;color:var(--pl1)">–en</span>, and all diminutives ending in <span style="font-family:'DM Mono',monospace;color:var(--pl1)">–chen</span> or <span style="font-family:'DM Mono',monospace;color:var(--pl1)">–lein</span>.</p>
+
+            <div class="nt-row">
+              <div class="nt-sg"><div class="nt-art">SINGULAR</div><div class="nt-word">der Lehrer</div></div>
+              <div class="nt-arrow">→</div>
+              <div class="nt-pl nt-pl1"><div class="nt-art">PLURAL · no change</div><div class="nt-word">die Lehrer</div></div>
+            </div>
+            <div class="nt-row">
+              <div class="nt-sg"><div class="nt-art">SINGULAR</div><div class="nt-word">das Mädchen</div></div>
+              <div class="nt-arrow">→</div>
+              <div class="nt-pl nt-pl1"><div class="nt-art">PLURAL · no change</div><div class="nt-word">die Mädchen</div></div>
+            </div>
+            <div class="nt-row">
+              <div class="nt-sg"><div class="nt-art">SINGULAR</div><div class="nt-word">das Zimmer</div></div>
+              <div class="nt-arrow">→</div>
+              <div class="nt-pl nt-pl1"><div class="nt-art">PLURAL · no change</div><div class="nt-word">die Zimmer</div></div>
+            </div>
+            <div class="nt-row">
+              <div class="nt-sg"><div class="nt-art">SINGULAR</div><div class="nt-word">der Schüler</div></div>
+              <div class="nt-arrow">→</div>
+              <div class="nt-pl nt-pl1"><div class="nt-art">PLURAL · no change</div><div class="nt-word">die Schüler</div></div>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'der Lehrer, die Lehrer. das Mädchen, die Mädchen. das Zimmer, die Zimmer.')">🔊 Hear Pattern 1</button>
+
+          <div class="warn-box"><strong style="color:var(--blue)">Umlaut variant of Pattern 1:</strong> Some Pattern 1 nouns add an umlaut (vowel change) but still no ending. For example: <span style="font-family:'DM Mono',monospace;">der Vater → die Väter</span>, <span style="font-family:'DM Mono',monospace;">der Bruder → die Brüder</span>. The stem changes but nothing is added. Dictionaries show this as: der Vater, –ä–.</div>
+
+          <div class="sec-label">Pattern 2 — add –e</div>
+          <p class="body-text">Add –e to the end of the noun. Some nouns also add an umlaut (vowel change) on the main vowel, but many do not. This is the most common pattern for <strong>masculine</strong> nouns and many <strong>neuter</strong> nouns.</p>
+
+          <div style="background:var(--card2-bg);border:1px solid rgba(52,152,219,0.2);border-radius:14px;padding:18px;margin:14px 0;">
+            <div style="font-size:10px;letter-spacing:2px;font-family:'DM Mono',monospace;color:var(--pl2);margin-bottom:14px;">PATTERN 2 · ADD –e · WITH OR WITHOUT UMLAUT</div>
+
+            <div style="font-size:11px;color:var(--gray);font-family:'DM Mono',monospace;letter-spacing:1.5px;margin-bottom:8px;">WITHOUT UMLAUT</div>
+            <div class="nt-row">
+              <div class="nt-sg"><div class="nt-art">SINGULAR</div><div class="nt-word">der Tag</div></div>
+              <div class="nt-arrow">→</div>
+              <div class="nt-pl nt-pl2"><div class="nt-art">PLURAL · +e</div><div class="nt-word">die Tage</div></div>
+            </div>
+            <div class="nt-row">
+              <div class="nt-sg"><div class="nt-art">SINGULAR</div><div class="nt-word">das Jahr</div></div>
+              <div class="nt-arrow">→</div>
+              <div class="nt-pl nt-pl2"><div class="nt-art">PLURAL · +e</div><div class="nt-word">die Jahre</div></div>
+            </div>
+            <div class="nt-row">
+              <div class="nt-sg"><div class="nt-art">SINGULAR</div><div class="nt-word">der Beruf</div></div>
+              <div class="nt-arrow">→</div>
+              <div class="nt-pl nt-pl2"><div class="nt-art">PLURAL · +e</div><div class="nt-word">die Berufe</div></div>
+            </div>
+
+            <div style="font-size:11px;color:var(--gray);font-family:'DM Mono',monospace;letter-spacing:1.5px;margin:12px 0 8px;">WITH UMLAUT (vowel changes: a→ä, o→ö, u→ü)</div>
+            <div class="nt-row">
+              <div class="nt-sg"><div class="nt-art">SINGULAR</div><div class="nt-word">die Stadt</div></div>
+              <div class="nt-arrow">→</div>
+              <div class="nt-pl nt-pl2"><div class="nt-art">PLURAL · +e, a→ä</div><div class="nt-word">die Städte</div></div>
+            </div>
+            <div class="nt-row">
+              <div class="nt-sg"><div class="nt-art">SINGULAR</div><div class="nt-word">der Sohn</div></div>
+              <div class="nt-arrow">→</div>
+              <div class="nt-pl nt-pl2"><div class="nt-art">PLURAL · +e, o→ö</div><div class="nt-word">die Söhne</div></div>
+            </div>
+            <div class="nt-row">
+              <div class="nt-sg"><div class="nt-art">SINGULAR</div><div class="nt-word">der Freund</div></div>
+              <div class="nt-arrow">→</div>
+              <div class="nt-pl nt-pl2"><div class="nt-art">PLURAL · +e</div><div class="nt-word">die Freunde</div></div>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'der Tag, die Tage. das Jahr, die Jahre. die Stadt, die Städte. der Freund, die Freunde.')">🔊 Hear Pattern 2</button>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--pl2);">PATTERN 2</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi arbeitet fünf <span style="color:var(--pl2);font-weight:700;">Tage</span> pro Woche.</div>
+                <div class="ex-en">Kofi works five days a week.</div>
+                <div class="ex-note">der Tag → die Tage (+e, no umlaut)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi arbeitet fünf Tage pro Woche.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--pl2);">PATTERN 2</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame und Amina sind gute <span style="color:var(--pl2);font-weight:700;">Freunde</span>.</div>
+                <div class="ex-en">Kwame and Amina are good friends.</div>
+                <div class="ex-note">der Freund → die Freunde (+e, no umlaut)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame und Amina sind gute Freunde.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">Module 10 · Lesson 2 · Quiz</div><h2 class="lesson-h">Pattern 1 &amp; 2 Quiz</h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 3: Pattern 3 (+er) & Pattern 4 (+en/+n) ── -->
+    <div id="lesson-2" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">Module 10 · Lesson 3 of 6</div>
+          <h2 class="lesson-h">Pattern 3: +er · Pattern 4: +en/+n</h2>
+
+          <div class="sec-label" style="margin-top:4px;">Pattern 3 — add –er</div>
+          <p class="body-text">Add –er to the stem. Nouns with the vowels a, o, u, or au almost always add an umlaut as well. Pattern 3 is most common with <strong>short neuter nouns</strong>, but also appears with some masculine nouns like der Mann.</p>
+
+          <div style="background:var(--card2-bg);border:1px solid rgba(230,126,34,0.2);border-radius:14px;padding:18px;margin:14px 0;">
+            <div style="font-size:10px;letter-spacing:2px;font-family:'DM Mono',monospace;color:var(--pl3);margin-bottom:14px;">PATTERN 3 · ADD –er · USUALLY WITH UMLAUT</div>
+
+            <div style="font-size:11px;color:var(--gray);font-family:'DM Mono',monospace;letter-spacing:1.5px;margin-bottom:8px;">WITHOUT UMLAUT</div>
+            <div class="nt-row">
+              <div class="nt-sg"><div class="nt-art">SINGULAR</div><div class="nt-word">das Kind</div></div>
+              <div class="nt-arrow">→</div>
+              <div class="nt-pl nt-pl3"><div class="nt-art">PLURAL · +er</div><div class="nt-word">die Kinder</div></div>
+            </div>
+            <div class="nt-row">
+              <div class="nt-sg"><div class="nt-art">SINGULAR</div><div class="nt-word">das Bild</div></div>
+              <div class="nt-arrow">→</div>
+              <div class="nt-pl nt-pl3"><div class="nt-art">PLURAL · +er</div><div class="nt-word">die Bilder</div></div>
+            </div>
+
+            <div style="font-size:11px;color:var(--gray);font-family:'DM Mono',monospace;letter-spacing:1.5px;margin:12px 0 8px;">WITH UMLAUT</div>
+            <div class="nt-row">
+              <div class="nt-sg"><div class="nt-art">SINGULAR</div><div class="nt-word">das Buch</div></div>
+              <div class="nt-arrow">→</div>
+              <div class="nt-pl nt-pl3"><div class="nt-art">PLURAL · +er, u→ü</div><div class="nt-word">die Bücher</div></div>
+            </div>
+            <div class="nt-row">
+              <div class="nt-sg"><div class="nt-art">SINGULAR</div><div class="nt-word">das Haus</div></div>
+              <div class="nt-arrow">→</div>
+              <div class="nt-pl nt-pl3"><div class="nt-art">PLURAL · +er, au→äu</div><div class="nt-word">die Häuser</div></div>
+            </div>
+            <div class="nt-row">
+              <div class="nt-sg"><div class="nt-art">SINGULAR</div><div class="nt-word">der Mann</div></div>
+              <div class="nt-arrow">→</div>
+              <div class="nt-pl nt-pl3"><div class="nt-art">PLURAL · +er, a→ä</div><div class="nt-word">die Männer</div></div>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'das Kind, die Kinder. das Buch, die Bücher. das Haus, die Häuser. der Mann, die Männer.')">🔊 Hear Pattern 3</button>
+
+          <div class="sec-label">Pattern 4 — add –en or –n</div>
+          <p class="body-text">This is the <strong>most common pattern for feminine nouns</strong>. If a noun ends in a consonant, add <span style="font-family:'DM Mono',monospace;color:var(--pl4)">–en</span>. If a noun already ends in –e, just add <span style="font-family:'DM Mono',monospace;color:var(--pl4)">–n</span>. A special rule applies to feminine nouns ending in <span style="font-family:'DM Mono',monospace;color:var(--pl4)">–in</span>: they add <span style="font-family:'DM Mono',monospace;color:var(--pl4)">–nen</span>.</p>
+
+          <div style="background:var(--card2-bg);border:1px solid rgba(155,89,182,0.2);border-radius:14px;padding:18px;margin:14px 0;">
+            <div style="font-size:10px;letter-spacing:2px;font-family:'DM Mono',monospace;color:var(--pl4);margin-bottom:14px;">PATTERN 4 · ADD –en OR –n · MAINLY FEMININE NOUNS</div>
+
+            <div style="font-size:11px;color:var(--gray);font-family:'DM Mono',monospace;letter-spacing:1.5px;margin-bottom:8px;">ADD –en (ends in consonant)</div>
+            <div class="nt-row">
+              <div class="nt-sg"><div class="nt-art">SINGULAR</div><div class="nt-word">die Frau</div></div>
+              <div class="nt-arrow">→</div>
+              <div class="nt-pl nt-pl4"><div class="nt-art">PLURAL · +en</div><div class="nt-word">die Frauen</div></div>
+            </div>
+            <div class="nt-row">
+              <div class="nt-sg"><div class="nt-art">SINGULAR</div><div class="nt-word">die Uhr</div></div>
+              <div class="nt-arrow">→</div>
+              <div class="nt-pl nt-pl4"><div class="nt-art">PLURAL · +en</div><div class="nt-word">die Uhren</div></div>
+            </div>
+
+            <div style="font-size:11px;color:var(--gray);font-family:'DM Mono',monospace;letter-spacing:1.5px;margin:12px 0 8px;">ADD –n (already ends in –e)</div>
+            <div class="nt-row">
+              <div class="nt-sg"><div class="nt-art">SINGULAR</div><div class="nt-word">die Schule</div></div>
+              <div class="nt-arrow">→</div>
+              <div class="nt-pl nt-pl4"><div class="nt-art">PLURAL · +n</div><div class="nt-word">die Schulen</div></div>
+            </div>
+            <div class="nt-row">
+              <div class="nt-sg"><div class="nt-art">SINGULAR</div><div class="nt-word">die Blume</div></div>
+              <div class="nt-arrow">→</div>
+              <div class="nt-pl nt-pl4"><div class="nt-art">PLURAL · +n</div><div class="nt-word">die Blumen</div></div>
+            </div>
+
+            <div style="font-size:11px;color:var(--gray);font-family:'DM Mono',monospace;letter-spacing:1.5px;margin:12px 0 8px;">SPECIAL: –in → –innen</div>
+            <div class="nt-row">
+              <div class="nt-sg"><div class="nt-art">SINGULAR</div><div class="nt-word">die Lehrerin</div></div>
+              <div class="nt-arrow">→</div>
+              <div class="nt-pl nt-pl4"><div class="nt-art">PLURAL · +nen</div><div class="nt-word">die Lehrerinnen</div></div>
+            </div>
+            <div class="nt-row">
+              <div class="nt-sg"><div class="nt-art">SINGULAR</div><div class="nt-word">die Studentin</div></div>
+              <div class="nt-arrow">→</div>
+              <div class="nt-pl nt-pl4"><div class="nt-art">PLURAL · +nen</div><div class="nt-word">die Studentinnen</div></div>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'die Frau, die Frauen. die Schule, die Schulen. die Lehrerin, die Lehrerinnen.')">🔊 Hear Pattern 4</button>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--pl3);">PATTERN 3</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina hat drei <span style="color:var(--pl3);font-weight:700;">Kinder</span>.</div>
+                <div class="ex-en">Amina has three children.</div>
+                <div class="ex-note">das Kind → die Kinder (+er, no umlaut for i)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina hat drei Kinder.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--pl4);">PATTERN 4</div>
+              <div style="flex:1;">
+                <div class="ex-de">In Accra gibt es viele <span style="color:var(--pl4);font-weight:700;">Schulen</span>.</div>
+                <div class="ex-en">In Accra there are many schools.</div>
+                <div class="ex-note">die Schule → die Schulen (+n, ends in –e)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'In Accra gibt es viele Schulen.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="success-box"><strong style="color:var(--green)">Quick rule of thumb for feminine nouns:</strong><br><br>
+            If a feminine noun ends in a consonant → add <span style="font-family:'DM Mono',monospace;">–en</span> (die Frau → die Frauen)<br>
+            If it ends in –e → add <span style="font-family:'DM Mono',monospace;">–n</span> (die Schule → die Schulen)<br>
+            If it ends in –in → add <span style="font-family:'DM Mono',monospace;">–nen</span> (die Lehrerin → die Lehrerinnen)<br><br>
+            Pattern 4 covers the <em>majority</em> of feminine nouns in German. If you see die, Pattern 4 is your first guess.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">Module 10 · Lesson 3 · Quiz</div><h2 class="lesson-h">Pattern 3 &amp; 4 Quiz</h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 4: Pattern 5 (+s) and the English Trap ── -->
+    <div id="lesson-3" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">Module 10 · Lesson 4 of 6</div>
+          <h2 class="lesson-h">Pattern 5: +s · and the English trap</h2>
+
+          <div class="sec-label" style="margin-top:4px;">Pattern 5 — add –s</div>
+          <p class="body-text">Add –s to the end of the noun — exactly like English. But this is the <strong style="color:var(--gold)">minority pattern</strong> in German. It applies mainly to foreign loanwords, words ending in a vowel that is not –e, and abbreviations. Only about 5–10% of German nouns use this pattern.</p>
+
+          <div style="background:var(--card2-bg);border:1px solid rgba(201,168,76,0.25);border-radius:14px;padding:18px;margin:14px 0;">
+            <div style="font-size:10px;letter-spacing:2px;font-family:'DM Mono',monospace;color:var(--pl5);margin-bottom:14px;">PATTERN 5 · ADD –s · FOREIGN LOANWORDS &amp; ABBREVIATIONS</div>
+            <div class="nt-row">
+              <div class="nt-sg"><div class="nt-art">SINGULAR</div><div class="nt-word">das Auto</div></div>
+              <div class="nt-arrow">→</div>
+              <div class="nt-pl nt-pl5"><div class="nt-art">PLURAL · +s</div><div class="nt-word">die Autos</div></div>
+            </div>
+            <div class="nt-row">
+              <div class="nt-sg"><div class="nt-art">SINGULAR</div><div class="nt-word">das Hotel</div></div>
+              <div class="nt-arrow">→</div>
+              <div class="nt-pl nt-pl5"><div class="nt-art">PLURAL · +s</div><div class="nt-word">die Hotels</div></div>
+            </div>
+            <div class="nt-row">
+              <div class="nt-sg"><div class="nt-art">SINGULAR</div><div class="nt-word">das Café</div></div>
+              <div class="nt-arrow">→</div>
+              <div class="nt-pl nt-pl5"><div class="nt-art">PLURAL · +s</div><div class="nt-word">die Cafés</div></div>
+            </div>
+            <div class="nt-row">
+              <div class="nt-sg"><div class="nt-art">SINGULAR</div><div class="nt-word">das Handy</div></div>
+              <div class="nt-arrow">→</div>
+              <div class="nt-pl nt-pl5"><div class="nt-art">PLURAL · +s</div><div class="nt-word">die Handys</div></div>
+            </div>
+            <div class="nt-row">
+              <div class="nt-sg"><div class="nt-art">SINGULAR</div><div class="nt-word">das Büro</div></div>
+              <div class="nt-arrow">→</div>
+              <div class="nt-pl nt-pl5"><div class="nt-art">PLURAL · +s</div><div class="nt-word">die Büros</div></div>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'das Auto, die Autos. das Hotel, die Hotels. das Café, die Cafés. das Handy, die Handys.')">🔊 Hear Pattern 5</button>
+
+          <div class="info-box"><strong style="color:var(--gold)">How to recognise a Pattern 5 noun:</strong> Ask yourself — does this word sound foreign? Was it borrowed from English, French, or another language? Does it end in –o, –a (not a German word), –i, –y, or –é? If yes, it is probably Pattern 5. Auto (from Latin/Italian), Hotel (English/French), Café (French), Handy (English-style), Büro (French bureau).</div>
+
+          <div class="sec-label">The English trap — adding –s to native German nouns</div>
+          <p class="body-text">Because English uses –s for almost everything, learners naturally want to do the same in German. This is one of the most common and most clearly wrong mistakes a learner can make. Native German nouns <strong style="color:var(--red)">never</strong> use –s in the plural.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">WRONG — never say this</div>
+              <div class="wr-word">die Manns<br>die Kinds<br>die Tags<br>die Buchs<br>die Schulens</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT — say this</div>
+              <div class="wr-word">die Männer<br>die Kinder<br>die Tage<br>die Bücher<br>die Schulen</div>
+            </div>
+          </div>
+
+          <div class="danger-box"><strong style="color:#e74c3c;">The –s trap in the Goethe exam:</strong><br><br>
+            If you write <span style="font-family:'DM Mono',monospace;">"Ich habe zwei Kinds"</span> or <span style="font-family:'DM Mono',monospace;">"drei Manns"</span> in the Schreiben section, the grader will mark it wrong immediately. These forms do not exist in German. Native speakers find them as strange as "three childs" sounds to an English speaker.<br><br>
+            The –s pattern in German is specifically for loanwords. Applying it to core German vocabulary signals that you have not learned the plural forms. Always memorise the correct plural when you learn a new noun.
+          </div>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.12);color:var(--gold);">PATTERN 5</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima arbeitet in zwei <span style="color:var(--pl5);font-weight:700;">Büros</span> in Lagos.</div>
+                <div class="ex-en">Fatima works in two offices in Lagos.</div>
+                <div class="ex-note">das Büro → die Büros (+s, French loanword ending in –o)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima arbeitet in zwei Büros in Lagos.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.12);color:var(--gold);">PATTERN 5</div>
+              <div style="flex:1;">
+                <div class="ex-de">In Kumasi gibt es viele <span style="color:var(--pl5);font-weight:700;">Hotels</span>.</div>
+                <div class="ex-en">In Kumasi there are many hotels.</div>
+                <div class="ex-note">das Hotel → die Hotels (+s, loanword)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'In Kumasi gibt es viele Hotels.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">Module 10 · Lesson 4 · Quiz</div><h2 class="lesson-h">Pattern 5 &amp; English Trap Quiz</h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 5: The Golden Rule & A1 Exam Plurals ── -->
+    <div id="lesson-4" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">Module 10 · Lesson 5 of 6</div>
+          <h2 class="lesson-h">The golden rule in practice</h2>
+          <p class="body-text">You now know all five patterns. The question is: how do you remember which noun uses which pattern? The answer is the golden rule in action: <strong style="color:var(--gold)">never learn a noun without its plural</strong>. Treat the trio as one unit of vocabulary, not as three separate things.</p>
+
+          <div class="sec-label">How to memorise — context, not lists</div>
+          <div class="info-box"><strong style="color:var(--gold)">Do this every time you learn a new noun:</strong><br><br>
+            1. Write the full trio in your notebook: <span style="font-family:'DM Mono',monospace;">das Kind / die Kinder</span><br>
+            2. Say both forms out loud: <em>"das Kind... die Kinder"</em><br>
+            3. Use the plural in a sentence immediately: <em>"Kwame hat drei Kinder."</em><br><br>
+            Memorising from a list in isolation is the hardest method. Sentences stick. The Goethe exam always tests plurals in sentence context — so practise them in sentences.
+          </div>
+
+          <div class="sec-label">A1 exam essential plurals — know these cold</div>
+          <div class="a1-table">
+            <div class="at-h">SINGULAR</div>
+            <div class="at-h">PLURAL</div>
+            <div class="at-h">PATTERN</div>
+
+            <div class="at-sg">der Mann</div>
+            <div class="at-pl at-p3">die Männer</div>
+            <div class="at-pl at-p3" style="text-align:center;font-size:11px;">+er, ä</div>
+
+            <div class="at-sg">die Frau</div>
+            <div class="at-pl at-p4">die Frauen</div>
+            <div class="at-pl at-p4" style="text-align:center;font-size:11px;">+en</div>
+
+            <div class="at-sg">das Kind</div>
+            <div class="at-pl at-p3">die Kinder</div>
+            <div class="at-pl at-p3" style="text-align:center;font-size:11px;">+er</div>
+
+            <div class="at-sg">der Tag</div>
+            <div class="at-pl at-p2">die Tage</div>
+            <div class="at-pl at-p2" style="text-align:center;font-size:11px;">+e</div>
+
+            <div class="at-sg">das Jahr</div>
+            <div class="at-pl at-p2">die Jahre</div>
+            <div class="at-pl at-p2" style="text-align:center;font-size:11px;">+e</div>
+
+            <div class="at-sg">der Freund</div>
+            <div class="at-pl at-p2">die Freunde</div>
+            <div class="at-pl at-p2" style="text-align:center;font-size:11px;">+e</div>
+
+            <div class="at-sg">das Buch</div>
+            <div class="at-pl at-p3">die Bücher</div>
+            <div class="at-pl at-p3" style="text-align:center;font-size:11px;">+er, ü</div>
+
+            <div class="at-sg">die Schule</div>
+            <div class="at-pl at-p4">die Schulen</div>
+            <div class="at-pl at-p4" style="text-align:center;font-size:11px;">+n</div>
+
+            <div class="at-sg">die Stadt</div>
+            <div class="at-pl at-p2">die Städte</div>
+            <div class="at-pl at-p2" style="text-align:center;font-size:11px;">+e, ä</div>
+
+            <div class="at-sg">das Zimmer</div>
+            <div class="at-pl at-p1">die Zimmer</div>
+            <div class="at-pl at-p1" style="text-align:center;font-size:11px;">∅</div>
+
+            <div class="at-sg">der Lehrer</div>
+            <div class="at-pl at-p1">die Lehrer</div>
+            <div class="at-pl at-p1" style="text-align:center;font-size:11px;">∅</div>
+
+            <div class="at-sg">das Auto</div>
+            <div class="at-pl at-p5">die Autos</div>
+            <div class="at-pl at-p5" style="text-align:center;font-size:11px;">+s</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'der Mann, die Männer. die Frau, die Frauen. das Kind, die Kinder. der Tag, die Tage. das Buch, die Bücher.')">🔊 Hear key plurals</button>
+
+          <div class="sec-label">Pattern distribution in everyday German</div>
+          <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:18px;margin:14px 0;">
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--pl4);width:60px;">+en/+n</div>
+                <div style="flex:1;background:rgba(155,89,182,0.15);border-radius:4px;height:12px;position:relative;"><div style="width:45%;height:100%;background:var(--pl4);border-radius:4px;"></div></div>
+                <div style="font-size:12px;color:var(--gray);width:50px;">~45%</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--pl2);width:60px;">+e</div>
+                <div style="flex:1;background:rgba(52,152,219,0.1);border-radius:4px;height:12px;"><div style="width:25%;height:100%;background:var(--pl2);border-radius:4px;"></div></div>
+                <div style="font-size:12px;color:var(--gray);width:50px;">~25%</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--pl1);width:60px;">∅</div>
+                <div style="flex:1;background:rgba(142,158,171,0.1);border-radius:4px;height:12px;"><div style="width:15%;height:100%;background:var(--pl1);border-radius:4px;"></div></div>
+                <div style="font-size:12px;color:var(--gray);width:50px;">~15%</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--pl3);width:60px;">+er</div>
+                <div style="flex:1;background:rgba(230,126,34,0.1);border-radius:4px;height:12px;"><div style="width:8%;height:100%;background:var(--pl3);border-radius:4px;"></div></div>
+                <div style="font-size:12px;color:var(--gray);width:50px;">~8%</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--pl5);width:60px;">+s</div>
+                <div style="flex:1;background:rgba(201,168,76,0.1);border-radius:4px;height:12px;"><div style="width:7%;height:100%;background:var(--pl5);border-radius:4px;"></div></div>
+                <div style="font-size:12px;color:var(--gray);width:50px;">~7%</div>
+              </div>
+            </div>
+          </div>
+          <p class="body-text" style="font-size:13px;color:var(--gray);">Pattern 4 (+en/+n) covers nearly half of all German nouns because it handles almost all feminine nouns. Knowing this guides your guessing when you have not memorised a plural yet.</p>
+
+          <div class="success-box"><strong style="color:var(--green)">Goethe A1 plural strategy:</strong><br><br>
+            ✓ Know the 12 essential plurals in the table above — these appear constantly in A1 exams<br>
+            ✓ When writing, if unsure: feminine nouns → try +en first (correct ~45% of the time)<br>
+            ✓ Never use –s on a native German noun<br>
+            ✓ The article always becomes <span style="font-family:'DM Mono',monospace;">die</span> in the plural — this is always correct
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">Module 10 · Lesson 5 · Quiz</div><h2 class="lesson-h">Golden Rule Quiz</h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 6: African Context Review ── -->
+    <div id="lesson-5" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">Module 10 · Lesson 6 of 6</div>
+          <h2 class="lesson-h">Kwame, Amina, Kofi, Fatima — all five patterns</h2>
+          <p class="body-text">Every pattern you have learned now appears in African-context sentences. Notice how the plural article is always <span style="font-family:'DM Mono',monospace;color:var(--gold)">die</span> regardless of the singular article — that rule never changes.</p>
+
+          <div class="sec-label">Pattern 1 — no change</div>
+          <div class="sent-block">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Kofi</span><span class="sl sl-p1">SUBJECT</span></div>
+              <div class="stoken"><span class="sw sw-verb">unterrichtet</span><span class="sl sl-verb">VERB</span></div>
+              <div class="stoken"><span class="sw sw-gold">dreißig</span><span class="sl sl-gold">number</span></div>
+              <div class="stoken"><span class="sw sw-p3">Schüler</span><span class="sl sl-p3">PUPILS · P1</span></div>
+              <div class="stoken"><span class="sw sw-gray">in Kumasi.</span><span class="sl sl-gray">place</span></div>
+            </div>
+            <div class="sent-en">Kofi teaches thirty pupils in Kumasi. (der Schüler → die Schüler, no change)</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Kofi unterrichtet dreißig Schüler in Kumasi.')">🔊</button>
+
+          <div class="sec-label">Pattern 2 — +e</div>
+          <div class="sent-block">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Kwame</span><span class="sl sl-p1">SUBJECT</span></div>
+              <div class="stoken"><span class="sw sw-verb">hat</span><span class="sl sl-verb">VERB</span></div>
+              <div class="stoken"><span class="sw sw-p2">viele</span><span class="sl sl-p2">many</span></div>
+              <div class="stoken"><span class="sw sw-p3">Freunde</span><span class="sl sl-p3">FRIENDS · P2</span></div>
+              <div class="stoken"><span class="sw sw-gray">in Accra.</span><span class="sl sl-gray">place</span></div>
+            </div>
+            <div class="sent-en">Kwame has many friends in Accra. (der Freund → die Freunde, +e)</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Kwame hat viele Freunde in Accra.')">🔊</button>
+
+          <div class="sec-label">Pattern 3 — +er</div>
+          <div class="sent-block">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Amina</span><span class="sl sl-p1">SUBJECT</span></div>
+              <div class="stoken"><span class="sw sw-verb">kauft</span><span class="sl sl-verb">VERB</span></div>
+              <div class="stoken"><span class="sw sw-gold">drei</span><span class="sl sl-gold">number</span></div>
+              <div class="stoken"><span class="sw sw-p3">Bücher</span><span class="sl sl-p3">BOOKS · P3</span></div>
+              <div class="stoken"><span class="sw sw-gray">für die Schule.</span><span class="sl sl-gray">purpose</span></div>
+            </div>
+            <div class="sent-en">Amina buys three books for school. (das Buch → die Bücher, +er with u→ü)</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Amina kauft drei Bücher für die Schule.')">🔊</button>
+
+          <div class="sec-label">Pattern 4 — +en/+n</div>
+          <div class="sent-block">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Fatima</span><span class="sl sl-p1">SUBJECT</span></div>
+              <div class="stoken"><span class="sw sw-verb">studiert</span><span class="sl sl-verb">VERB</span></div>
+              <div class="stoken"><span class="sw sw-gray">an zwei</span><span class="sl sl-gray"></span></div>
+              <div class="stoken"><span class="sw sw-p3">Schulen</span><span class="sl sl-p3">SCHOOLS · P4</span></div>
+              <div class="stoken"><span class="sw sw-gray">in Lagos.</span><span class="sl sl-gray">place</span></div>
+            </div>
+            <div class="sent-en">Fatima studies at two schools in Lagos. (die Schule → die Schulen, +n)</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Fatima studiert an zwei Schulen in Lagos.')">🔊</button>
+
+          <div class="sec-label">Pattern 5 — +s</div>
+          <div class="sent-block">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Kofi</span><span class="sl sl-p1">SUBJECT</span></div>
+              <div class="stoken"><span class="sw sw-verb">hat</span><span class="sl sl-verb">VERB</span></div>
+              <div class="stoken"><span class="sw sw-gold">zwei</span><span class="sl sl-gold">number</span></div>
+              <div class="stoken"><span class="sw sw-p3">Handys</span><span class="sl sl-p3">PHONES · P5</span></div>
+              <div class="stoken"><span class="sw sw-gray">und ein Büro.</span><span class="sl sl-gray"></span></div>
+            </div>
+            <div class="sent-en">Kofi has two mobile phones and an office. (das Handy → die Handys, +s)</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Kofi hat zwei Handys und ein Büro.')">🔊</button>
+
+          <div class="sec-label">Quick-reference — all five patterns</div>
+          <div class="pattern-cards">
+            <div class="pcard pcard-1"><div class="pc-num">P1 · ∅</div><div class="pc-suffix">no change</div><div class="pc-ex">der Schüler<br>→ die Schüler</div></div>
+            <div class="pcard pcard-2"><div class="pc-num">P2 · +e</div><div class="pc-suffix">add –e</div><div class="pc-ex">der Freund<br>→ die Freunde</div></div>
+            <div class="pcard pcard-3"><div class="pc-num">P3 · +er</div><div class="pc-suffix">add –er</div><div class="pc-ex">das Buch<br>→ die Bücher</div></div>
+            <div class="pcard pcard-4"><div class="pc-num">P4 · +en</div><div class="pc-suffix">add –en</div><div class="pc-ex">die Schule<br>→ die Schulen</div></div>
+            <div class="pcard pcard-5"><div class="pc-num">P5 · +s</div><div class="pc-suffix">add –s</div><div class="pc-ex">das Handy<br>→ die Handys</div></div>
+          </div>
+
+          <div class="success-box">
+            <strong style="color:var(--green)">What you now know:</strong><br><br>
+            ✓ Why German plurals cannot be guessed — and the strategy that removes guessing<br>
+            ✓ All five plural patterns with examples<br>
+            ✓ ALL plurals use die — the one consistent rule<br>
+            ✓ The English –s trap — never on native German nouns<br>
+            ✓ The 12 essential A1 exam plural pairs<br><br>
+            The golden rule is the key: every noun you learn from now on must come with its plural form. Article + singular + plural. Trio.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Start Final Quiz →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">Module 10 · Final Quiz</div><h2 class="lesson-h">Module Complete — Final Check</h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Previous</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="showOverview()"><span class="nav-icon">📚</span><span class="nav-label">Overview</span></button>
+  <button class="nav-item" onclick="resumeLesson()"><span class="nav-icon">▶️</span><span class="nav-label">Resume</span></button>
+</nav>
+
+<script>
+var synth=(typeof window!=='undefined'&&window.speechSynthesis)?window.speechSynthesis:null;
+var deVoice=null,speechUnlocked=false;
+function loadVoices(){ if(!synth)return; try{ var v=synth.getVoices(); deVoice=v.find(function(x){return x.lang==='de-DE';})||v.find(function(x){return x.lang&&x.lang.startsWith('de');})||null; }catch(e){} }
+if(synth){ try{ loadVoices(); if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadVoices; }catch(e){} }
+function unlockSpeech(){ if(speechUnlocked||!synth)return; try{ var s=new SpeechSynthesisUtterance(''); s.volume=0; synth.speak(s); speechUnlocked=true; }catch(e){} }
+document.addEventListener('touchstart',unlockSpeech,{once:true,passive:true});
+document.addEventListener('click',unlockSpeech,{once:true});
+function speakDE(t){ if(!synth)return null; try{ if(!deVoice)loadVoices(); synth.cancel(); var u=new SpeechSynthesisUtterance(t); u.lang='de-DE'; u.rate=0.85; u.pitch=1.0; u.volume=1.0; if(deVoice)u.voice=deVoice; synth.speak(u); return u; }catch(e){return null;} }
+function speakSentence(btn,text){ unlockSpeech(); document.querySelectorAll('.speak-btn').forEach(function(b){b.classList.remove('speaking');}); if(btn&&btn.classList)btn.classList.add('speaking'); var u=speakDE(text); if(u){ u.onend=function(){if(btn&&btn.classList)btn.classList.remove('speaking');}; u.onerror=function(){if(btn&&btn.classList)btn.classList.remove('speaking');}; }else{ setTimeout(function(){if(btn&&btn.classList)btn.classList.remove('speaking');},1500); } }
+
+var currentLesson=0, xp=0, TOTAL=6;
+
+var QD={
+  0:[
+    {q:'What article do ALL German plural nouns use, regardless of their singular article?',
+     hint:'Der Mann, das Kind, die Frau — what do they ALL become in the plural?',
+     opts:['der','die','das','ein'],
+     ans:1,
+     exp:'"die" — Every German plural noun uses the article die, without exception. Der Mann (masculine singular) → die Männer (plural). Das Kind (neuter singular) → die Kinder (plural). Die Frau (feminine singular) → die Frauen (plural). Whatever the singular article is, the plural is always die. This is the one consistent rule in the entire German plural system.',
+     rule:'ALL plurals = die. Der/die/das → always die in the plural. No exceptions.'}
+  ],
+  1:[
+    {q:'Kofi arbeitet jeden Tag. Er hat viele ___. (der Tag = day) Choose the correct plural.',
+     hint:'Tag is a masculine noun. Which of the five patterns does it follow? Does it add –e, –er, –en, or –s?',
+     opts:['die Tags','die Tage','die Täge','die Tagen'],
+     ans:1,
+     exp:'"die Tage" — Tag follows Pattern 2: add –e. The stem is unchanged (no umlaut for Tag) and –e is added: Tag + e = Tage. "die Tags" applies the English –s rule incorrectly to a native German noun. "die Täge" adds a wrong umlaut — Tag does not take one. "die Tagen" would be used only in the dative case, not as the standard plural form.',
+     rule:'der Tag → die Tage (+e, no umlaut). Pattern 2 applies to most short masculine nouns: Tag, Beruf, Weg, Beruf. Remember the trio: der Tag / die Tage.'}
+  ],
+  2:[
+    {q:'Amina hat drei ___. (das Kind = child) Choose the correct plural.',
+     hint:'Kind is a neuter noun. Short neuter nouns often follow which pattern?',
+     opts:['die Kinder','die Kinds','die Kinde','die Kinden'],
+     ans:0,
+     exp:'"die Kinder" — Kind follows Pattern 3: add –er. The stem stays unchanged (i does not take an umlaut) and –er is added: Kind + er = Kinder. "die Kinds" applies the English –s rule to a native German noun — wrong. "die Kinde" would be Pattern 2 (+e) — also wrong for Kind. "die Kinden" is not a real pattern in German.',
+     rule:'das Kind → die Kinder (+er, no umlaut). Pattern 3 (+er) is most common with short neuter nouns. Remember: Kind, Bild, Lied all follow +er.'}
+  ],
+  3:[
+    {q:'Which of these plural forms is correct German?',
+     hint:'Think about which nouns use the –s pattern and which never do.',
+     opts:['die Frauns (Frau + s)','die Männs (Mann + s)','die Schulen (Schule + en/n)','die Kinds (Kind + s)'],
+     ans:2,
+     exp:'"die Schulen" is correct — die Schule follows Pattern 4 (+n), giving die Schulen. The other three options all add –s to native German nouns, which is never correct. "die Frauns", "die Männs", and "die Kinds" do not exist in German. The –s pattern only applies to foreign loanwords like Auto, Hotel, Café, and Handy — not to core German vocabulary.',
+     rule:'The –s plural only applies to foreign loanwords. Native German nouns NEVER use –s. die Schule → die Schulen (Pattern 4, +n).'}
+  ],
+  4:[
+    {q:'Fatima says: "Ich habe zwei Manns gesehen." What is wrong with this sentence?',
+     hint:'Think about which plural pattern der Mann uses — and whether –s ever works on native German nouns.',
+     opts:['"Manns" should be "Männer" — Mann takes Pattern 3 (+er with umlaut a→ä)','Nothing is wrong — this sentence is correct','"zwei" is wrong — use "ein paar" with plural nouns','"gesehen" should be "gesehen haben"'],
+     ans:0,
+     exp:'"Manns" does not exist. der Mann follows Pattern 3: add –er and change a → ä. Mann → Männ + er = Männer. The correct sentence is: "Ich habe zwei Männer gesehen." The –s ending on a native German noun like Mann is completely wrong and immediately recognisable as an error. Never apply the English –s rule to native German nouns, even when guessing.',
+     rule:'der Mann → die Männer (+er with umlaut: a→ä). Never "die Manns". The –s pattern is for loanwords only: Autos, Hotels, Cafés, Handys.'}
+  ],
+  5:[
+    {q:'Kwame kauft drei ___. (das Buch = book) Choose the correct plural form.',
+     hint:'Buch is a neuter noun with the vowel u. Pattern 3 (+er) often changes vowels — what happens to u?',
+     opts:['die Buchs','die Buche','die Bücher','die Büche'],
+     ans:2,
+     exp:'"die Bücher" — das Buch follows Pattern 3: add –er, and the vowel u changes to ü (umlaut). Buch → Büch + er = Bücher. "die Buchs" applies the English –s rule to a native German noun — wrong. "die Buche" is actually a German word but it means "beech tree", not the plural of Buch. "die Büche" is not a valid form. The trio is: das Buch / die Bücher.',
+     rule:'das Buch → die Bücher (+er with umlaut: u→ü). Same pattern: das Haus → die Häuser, das Buch → die Bücher. Always learn as a trio.'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">QUESTION '+(s.cur+1)+' OF '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint">'+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Next Question →':'See Results →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Correct!':'✗ Not quite'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent=q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' correct</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfect.':pct>=60?'Good work.':'Review and try again.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.12);border:1px solid var(--gold);border-radius:50px;padding:9px 22px;color:var(--gold);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Complete Module 10 →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Next Lesson →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">📚</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Module 10 Complete!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">All five plural patterns mastered. The golden rule locked in. The English –s trap avoided. Every noun you learn from now on comes with its plural — article, singular, plural. Trio.</p><div class="xp-badge">⚡ '+xp+' XP Earned</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Next: Module 11 — Past Tense &amp; Perfekt</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Back to Overview</button></div>'; }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function resumeLesson(){ goLesson(currentLesson); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+</body>
+</html>

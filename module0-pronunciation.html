@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Module 0: Pronunciation</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --white: #f5f0e8;
+    --cream: #ede8dc;
+    --gold: #c9a84c;
+    --gold-light: #e8c96a;
+    --red: #c0392b;
+    --green: #27ae60;
+    --blue: #3498db;
+    --purple: #9b59b6;
+    --gray: #6b6b6b;
+    --card-bg: #141414;
+    --card2-bg: #1a1a1a;
+    --border: rgba(201,168,76,0.2);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; }
+
+  /* LAYOUT */
+  .screen { display:none; min-height:100vh; flex-direction:column; }
+  .screen.active { display:flex; }
+  .pb { padding-bottom: 100px; }
+
+  /* NAV */
+  .top-nav {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 24px; border-bottom:1px solid var(--border);
+    background:rgba(10,10,10,0.9); backdrop-filter:blur(20px);
+    position:sticky; top:0; z-index:50;
+  }
+  .nav-logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .nav-logo span { color:var(--gold); }
+  .nav-module { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:3px; text-transform:uppercase; }
+  .nav-progress { display:flex; gap:6px; align-items:center; }
+  .nav-dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); transition:all 0.3s; }
+  .nav-dot.done { background:var(--green); }
+  .nav-dot.active { background:var(--gold); width:20px; border-radius:4px; }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position:fixed; bottom:0; left:0; right:0;
+    background:rgba(10,10,10,0.96); backdrop-filter:blur(20px);
+    border-top:1px solid var(--border);
+    display:flex; justify-content:space-around;
+    padding:12px 0 20px; z-index:100;
+  }
+  .nav-item {
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    cursor:pointer; padding:8px 16px; border-radius:12px;
+    transition:all 0.2s; border:none; background:none; color:var(--gray);
+  }
+  .nav-item:hover, .nav-item.active { color:var(--gold); }
+  .nav-icon { font-size:20px; }
+  .nav-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; font-family:'DM Mono',monospace; }
+
+  /* BUTTONS */
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s ease; text-align:center; }
+  .btn-primary { background:var(--gold); color:var(--black); }
+  .btn-primary:hover { background:var(--gold-light); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+  .btn-sm { padding:10px 20px; font-size:13px; }
+
+  /* CARDS */
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:32px; }
+  .card2 { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:24px; }
+
+  /* TYPOGRAPHY */
+  .lesson-concept { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-title { font-family:'Playfair Display',serif; font-size:30px; line-height:1.2; margin-bottom:20px; }
+  .lesson-body { color:var(--cream); line-height:1.85; font-size:15px; }
+  .section-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:16px; font-family:'DM Mono',monospace; }
+
+  /* SOUND CARDS */
+  .sound-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px; margin:20px 0; }
+  .sound-card {
+    background:var(--card2-bg); border:1px solid rgba(255,255,255,0.08);
+    border-radius:14px; padding:20px; cursor:pointer; transition:all 0.2s;
+    text-align:center; position:relative; overflow:hidden;
+  }
+  .sound-card:hover { border-color:var(--gold); transform:translateY(-2px); }
+  .sound-card.playing { border-color:var(--gold); background:rgba(201,168,76,0.1); }
+  .sound-letter { font-family:'Playfair Display',serif; font-size:40px; color:var(--gold); margin-bottom:8px; }
+  .sound-ipa { font-family:'DM Mono',monospace; font-size:13px; color:var(--blue); margin-bottom:4px; }
+  .sound-like { font-size:13px; color:var(--gray); margin-bottom:10px; }
+  .sound-example { font-size:14px; color:var(--cream); font-weight:600; }
+  .sound-translation { font-size:12px; color:var(--gray); }
+  .play-btn { position:absolute; top:10px; right:10px; background:rgba(201,168,76,0.15); border:none; border-radius:50%; width:28px; height:28px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--gold); transition:all 0.2s; }
+  .play-btn:hover { background:var(--gold); color:var(--black); }
+
+  /* COMPARISON TABLE */
+  .compare-table { width:100%; border-collapse:collapse; margin:20px 0; font-size:14px; }
+  .compare-table th { text-align:left; padding:10px 14px; border-bottom:1px solid var(--border); color:var(--gray); font-size:12px; font-weight:500; }
+  .compare-table td { padding:12px 14px; border-bottom:1px solid rgba(255,255,255,0.04); }
+  .compare-table tr:last-child td { border-bottom:none; }
+  .de-word { font-family:'DM Mono',monospace; color:var(--gold); font-size:15px; }
+  .sound-tag { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; font-family:'DM Mono',monospace; }
+  .tag-gold { background:rgba(201,168,76,0.15); color:var(--gold); }
+  .tag-blue { background:rgba(52,152,219,0.15); color:var(--blue); }
+  .tag-green { background:rgba(39,174,96,0.15); color:var(--green); }
+  .tag-red { background:rgba(192,57,43,0.15); color:var(--red); }
+  .tag-purple { background:rgba(155,89,182,0.15); color:var(--purple); }
+
+  /* VOWEL DISPLAY */
+  .vowel-row { display:flex; gap:12px; flex-wrap:wrap; margin:16px 0; }
+  .vowel-card {
+    flex:1; min-width:120px; background:var(--card2-bg);
+    border:1px solid rgba(255,255,255,0.08); border-radius:14px;
+    padding:16px; text-align:center; transition:all 0.2s; cursor:pointer;
+  }
+  .vowel-card:hover { border-color:var(--gold); }
+  .vowel-char { font-family:'Playfair Display',serif; font-size:36px; margin-bottom:6px; }
+  .vowel-short { color:var(--blue); }
+  .vowel-long { color:var(--gold); }
+  .vowel-desc { font-size:12px; color:var(--gray); line-height:1.6; }
+  .vowel-example { font-family:'DM Mono',monospace; font-size:13px; color:var(--cream); margin-top:8px; }
+
+  /* MOUTH DIAGRAM */
+  .mouth-tip {
+    display:flex; gap:16px; align-items:flex-start;
+    background:rgba(52,152,219,0.06); border:1px solid rgba(52,152,219,0.2);
+    border-radius:12px; padding:16px; margin:12px 0;
+  }
+  .mouth-icon { font-size:28px; flex-shrink:0; }
+  .mouth-text { font-size:14px; color:var(--cream); line-height:1.7; }
+  .mouth-text strong { color:var(--blue); }
+
+  /* MINIMAL PAIR */
+  .minimal-pair {
+    display:flex; align-items:center; gap:16px; padding:14px 16px;
+    background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06);
+    border-radius:12px; margin:8px 0;
+  }
+  .pair-word { font-family:'Playfair Display',serif; font-size:20px; flex:1; text-align:center; }
+  .pair-meaning { font-size:12px; color:var(--gray); text-align:center; flex:1; }
+  .pair-vs { font-family:'DM Mono',monospace; font-size:11px; color:var(--gray); }
+
+  /* STRESS DISPLAY */
+  .stress-word { font-family:'Playfair Display',serif; font-size:28px; margin:8px 0; }
+  .stressed { color:var(--gold); text-decoration:underline; text-decoration-color:var(--gold); text-underline-offset:6px; }
+  .unstressed { color:var(--gray); font-size:22px; }
+  .stress-row { display:flex; align-items:baseline; gap:2px; margin:12px 0; flex-wrap:wrap; }
+
+  /* PRACTICE QUIZ */
+  .quiz-card { background:var(--card-bg); border:1px solid var(--border); border-radius:16px; padding:28px; margin-top:24px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:8px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:20px; }
+  .quiz-options { display:flex; flex-direction:column; gap:10px; }
+  .quiz-option {
+    padding:14px 18px; border:1px solid rgba(255,255,255,0.1);
+    border-radius:12px; cursor:pointer; transition:all 0.2s;
+    font-size:14px; background:transparent; color:var(--white);
+    font-family:'DM Sans',sans-serif; text-align:left;
+    display:flex; align-items:center; gap:12px;
+  }
+  .quiz-option:hover { border-color:var(--gold); background:rgba(201,168,76,0.06); }
+  .quiz-option.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .quiz-option.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .quiz-letter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; transition:all 0.2s; }
+  .quiz-option.correct .quiz-letter { background:var(--green); color:white; }
+  .quiz-option.wrong .quiz-letter { background:var(--red); color:white; }
+  .quiz-feedback { margin-top:16px; padding:16px; border-radius:12px; display:none; }
+  .quiz-feedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .quiz-feedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .quiz-feedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .quiz-fb-title { font-weight:700; font-size:14px; margin-bottom:6px; }
+  .quiz-fb-title.ok { color:var(--green); }
+  .quiz-fb-title.no { color:#e74c3c; }
+  .quiz-fb-body { font-size:13px; color:var(--cream); line-height:1.7; }
+  .quiz-fb-rule { margin-top:10px; padding:8px 12px; background:rgba(201,168,76,0.1); border-radius:8px; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; }
+
+  /* READING ALOUD */
+  .read-aloud-box {
+    background:rgba(201,168,76,0.05); border:1px solid var(--border);
+    border-radius:14px; padding:24px; margin:20px 0;
+  }
+  .read-aloud-title { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:16px; font-family:'DM Mono',monospace; }
+  .read-aloud-text { font-family:'DM Mono',monospace; font-size:16px; color:var(--cream); line-height:2.2; }
+  .phonetic { font-size:12px; color:var(--gray); font-style:italic; }
+
+  /* INTRO SCRIPT */
+  .intro-script { background:rgba(201,168,76,0.06); border:1px solid var(--border); border-radius:14px; padding:24px; }
+  .intro-line { margin-bottom:16px; }
+  .intro-german { font-family:'DM Mono',monospace; font-size:16px; color:var(--cream); line-height:1.8; }
+  .intro-phonetic { font-size:13px; color:var(--blue); margin-top:2px; font-style:italic; }
+  .intro-english { font-size:13px; color:var(--gray); margin-top:2px; }
+  .stress-mark { color:var(--gold); font-weight:700; text-transform:uppercase; }
+
+  /* PROGRESS BAR */
+  .lesson-progress { height:3px; background:rgba(255,255,255,0.08); }
+  .lesson-progress-fill { height:100%; background:var(--gold); transition:width 0.5s ease; }
+
+  /* INFO BOX */
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:16px 0; font-size:14px; color:var(--cream); line-height:1.7; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:16px 0; font-size:14px; color:var(--cream); line-height:1.7; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:16px 0; font-size:14px; color:var(--cream); line-height:1.7; }
+
+  /* YOUTUBE PLACEHOLDER */
+  .yt-placeholder {
+    background:rgba(255,0,0,0.06); border:1px dashed rgba(255,80,80,0.3);
+    border-radius:14px; padding:24px; text-align:center; margin:20px 0;
+  }
+  .yt-icon { font-size:36px; margin-bottom:10px; }
+  .yt-title { font-weight:600; margin-bottom:6px; }
+  .yt-desc { font-size:13px; color:var(--gray); line-height:1.6; }
+  .yt-tag { display:inline-block; margin-top:12px; padding:6px 16px; background:rgba(255,0,0,0.15); color:#ff6b6b; border-radius:20px; font-size:12px; font-family:'DM Mono',monospace; }
+
+  /* LESSON NAV DOTS */
+  .dot-row { display:flex; gap:8px; justify-content:center; padding:16px 0; }
+  .lesson-dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); transition:all 0.3s; cursor:pointer; }
+  .lesson-dot.active { background:var(--gold); width:24px; border-radius:4px; }
+  .lesson-dot.done { background:var(--green); }
+
+  /* LESSON COMPLETE */
+  .complete-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:60px 24px; min-height:60vh; }
+  .complete-icon { font-size:72px; margin-bottom:20px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .complete-title { font-family:'Playfair Display',serif; font-size:32px; margin-bottom:12px; }
+  .complete-body { color:var(--gray); font-size:15px; line-height:1.7; max-width:400px; margin:0 auto 32px; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(201,168,76,0.15); border:1px solid var(--gold); border-radius:50px; padding:10px 24px; font-weight:700; color:var(--gold); font-size:18px; margin-bottom:32px; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+  @media(max-width:600px){
+    .sound-grid{grid-template-columns:repeat(2,1fr);}
+    .vowel-row{flex-direction:column;}
+    .lesson-title{font-size:24px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- =====================
+  MODULE OVERVIEW SCREEN
+===================== -->
+<div id="overview" class="screen active pb">
+  <div class="top-nav">
+    <div class="nav-logo">Deutsch<span>Weg</span></div>
+    <div class="nav-module">Module 0</div>
+  </div>
+
+  <div style="padding:40px 24px;max-width:700px;margin:0 auto;width:100%;">
+    <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:12px;font-family:'DM Mono',monospace;">Before You Begin</div>
+    <h1 style="font-family:'Playfair Display',serif;font-size:40px;line-height:1.15;margin-bottom:16px;">German Pronunciation<br><span style="color:var(--gold)">& Sounds</span></h1>
+    <p style="color:var(--gray);font-size:16px;line-height:1.8;margin-bottom:32px;">This module comes before grammar, before vocabulary, before everything. Here is why: if you cannot recognise how German sounds, listening exercises will feel impossible no matter how much vocabulary you know.</p>
+
+    <div class="info-box">
+      <strong style="color:var(--gold)">Good news first:</strong> German is almost perfectly phonetic. Once you learn how each letter sounds, you can read any German word correctly — even words you have never seen before. English is not like this. German rewards you for learning its system.
+    </div>
+
+    <!-- 4 LESSON CARDS -->
+    <div style="display:grid;gap:14px;margin:32px 0;">
+      <div class="card2" style="cursor:pointer;transition:all 0.2s;border-color:rgba(201,168,76,0.3);" onclick="startLesson(0)">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div style="width:48px;height:48px;border-radius:12px;background:rgba(201,168,76,0.1);border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">📖</div>
+          <div style="flex:1;">
+            <div style="font-weight:600;font-size:16px;margin-bottom:3px;">Lesson 1 — German is Phonetic</div>
+            <div style="font-size:13px;color:var(--gray);">The 5 key differences from English · Learn to read any German word</div>
+          </div>
+          <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--gold);">START →</div>
+        </div>
+      </div>
+      <div class="card2" style="cursor:pointer;transition:all 0.2s;" onclick="startLesson(1)">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div style="width:48px;height:48px;border-radius:12px;background:rgba(52,152,219,0.1);border:1px solid rgba(52,152,219,0.4);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🔵</div>
+          <div style="flex:1;">
+            <div style="font-weight:600;font-size:16px;margin-bottom:3px;">Lesson 2 — Vowels, Length & Umlauts</div>
+            <div style="font-size:13px;color:var(--gray);">Short vs long vowels · ä, ö, ü — the sounds English doesn't have</div>
+          </div>
+          <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--gray);">LESSON 2</div>
+        </div>
+      </div>
+      <div class="card2" style="cursor:pointer;transition:all 0.2s;" onclick="startLesson(2)">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div style="width:48px;height:48px;border-radius:12px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.4);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🌀</div>
+          <div style="flex:1;">
+            <div style="font-weight:600;font-size:16px;margin-bottom:3px;">Lesson 3 — Consonant Combinations</div>
+            <div style="font-size:13px;color:var(--gray);">CH, SCH, SP, ST · The sounds that trip up learners most</div>
+          </div>
+          <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--gray);">LESSON 3</div>
+        </div>
+      </div>
+      <div class="card2" style="cursor:pointer;transition:all 0.2s;" onclick="startLesson(3)">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div style="width:48px;height:48px;border-radius:12px;background:rgba(39,174,96,0.1);border:1px solid rgba(39,174,96,0.4);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🎵</div>
+          <div style="flex:1;">
+            <div style="font-weight:600;font-size:16px;margin-bottom:3px;">Lesson 4 — Rhythm, Stress & Sounding Natural</div>
+            <div style="font-size:13px;color:var(--gray);">Word stress · Compound nouns · Full introduction practice</div>
+          </div>
+          <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--gray);">LESSON 4</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" style="width:100%;" onclick="startLesson(0)">Begin Lesson 1 →</button>
+  </div>
+</div>
+
+<!-- =====================
+  LESSON SCREEN
+===================== -->
+<div id="lessonScreen" class="screen pb">
+  <div class="lesson-progress"><div class="lesson-progress-fill" id="lessonProgressFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button onclick="showScreen('overview')" style="background:none;border:1px solid var(--border);color:var(--white);padding:8px 16px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;transition:all 0.2s;">← Lessons</button>
+    <div class="dot-row" id="lessonDots"></div>
+    <div id="lessonXPDisplay" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">⚡ 0 XP</div>
+  </div>
+
+  <div id="lessonBody" style="max-width:680px;margin:0 auto;width:100%;padding:24px;"></div>
+</div>
+
+<!-- =====================
+  BOTTOM NAV
+===================== -->
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="showScreen('overview')">
+    <span class="nav-icon">📚</span><span class="nav-label">Module 0</span>
+  </button>
+  <button class="nav-item" onclick="startLesson(currentLesson)">
+    <span class="nav-icon">▶️</span><span class="nav-label">Resume</span>
+  </button>
+  <button class="nav-item" onclick="showScreen('overview')">
+    <span class="nav-icon">🗺️</span><span class="nav-label">Overview</span>
+  </button>
+</nav>
+
+<script>
+// ============================================================
+//  STATE
+// ============================================================
+let currentLesson = 0;
+let currentStep = 0;
+let xp = 0;
+let lessonProgress = [0,0,0,0]; // steps completed per lesson
+let quizAnswered = false;
+
+// ============================================================
+//  LESSON DATA
+// ============================================================
+const lessonData = [
+
+  // ============================
+  // LESSON 1 — GERMAN IS PHONETIC
+  // ============================
+  {
+    title: "German is Phonetic",
+    concept: "Module 0 · Lesson 1",
+    totalSteps: 4,
+    steps: [
+
+      // STEP 0 — INTRO
+      () => `
+        <div class="card" style="animation:fadeUp 0.4s ease both;">
+          <div class="lesson-concept">Module 0 · Lesson 1 of 4</div>
+          <div class="lesson-title">German is Phonetic — and that is the best news you will hear today</div>
+          <div class="lesson-body">
+            Think about English spelling for a moment. These three words look similar but sound completely different:
+          </div>
+          <div style="display:flex;gap:12px;margin:20px 0;flex-wrap:wrap;">
+            ${['tough /tʌf/','through /θruː/','thought /θɔːt/'].map(w=>`<div style="background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.3);border-radius:10px;padding:12px 16px;font-family:'DM Mono',monospace;font-size:15px;color:#e74c3c;">${w}</div>`).join('')}
+          </div>
+          <div class="lesson-body">
+            German does not do this. In German, every letter has <strong style="color:var(--gold)">one sound</strong> and that sound is <strong style="color:var(--gold)">always the same</strong>. Once you learn the system — which takes about two hours — you can read any German word correctly, even words you have never seen.
+          </div>
+          <div class="success-box" style="margin-top:20px;">
+            <strong style="color:var(--green)">This is why Module 0 exists before grammar.</strong> A student who understands German sounds will recognise words in the Goethe Hören (listening) section even when spoken fast. A student who skipped this module will hear a blur.
+          </div>
+        </div>`,
+
+      // STEP 1 — THE 5 KEY DIFFERENCES
+      () => `
+        <div class="card" style="animation:fadeUp 0.4s ease both;">
+          <div class="lesson-concept">Module 0 · Lesson 1</div>
+          <div class="lesson-title">The 5 letters that sound different from English</div>
+          <div class="lesson-body" style="margin-bottom:24px;">
+            Most German letters sound exactly like their English equivalents. These five do not. Learn these and you will immediately read German more accurately.
+          </div>
+
+          <div class="sound-grid">
+            <div class="sound-card">
+              <div class="sound-letter">W</div>
+              <div class="sound-ipa">sounds like English V</div>
+              <div class="sound-like">Not like English "W"</div>
+              <div class="sound-example">Wasser</div>
+              <div class="sound-translation">"VAH-ser" = water</div>
+            </div>
+            <div class="sound-card">
+              <div class="sound-letter">V</div>
+              <div class="sound-ipa">sounds like English F</div>
+              <div class="sound-like">Not like English "V"</div>
+              <div class="sound-example">Vater</div>
+              <div class="sound-translation">"FAH-ter" = father</div>
+            </div>
+            <div class="sound-card">
+              <div class="sound-letter">Z</div>
+              <div class="sound-ipa">sounds like English TS</div>
+              <div class="sound-like">Like "ts" in "bits"</div>
+              <div class="sound-example">Zeit</div>
+              <div class="sound-translation">"TSAIT" = time</div>
+            </div>
+            <div class="sound-card">
+              <div class="sound-letter">J</div>
+              <div class="sound-ipa">sounds like English Y</div>
+              <div class="sound-like">Like "y" in "yes"</div>
+              <div class="sound-example">Jahr</div>
+              <div class="sound-translation">"YAHR" = year</div>
+            </div>
+            <div class="sound-card">
+              <div class="sound-letter">S</div>
+              <div class="sound-ipa">before vowel = English Z</div>
+              <div class="sound-like">Like "z" in "zero"</div>
+              <div class="sound-example">See</div>
+              <div class="sound-translation">"ZEH" = lake / sea</div>
+            </div>
+            <div class="sound-card">
+              <div class="sound-letter">ß</div>
+              <div class="sound-ipa">= double S sound</div>
+              <div class="sound-like">Like "ss" in "boss"</div>
+              <div class="sound-example">Straße</div>
+              <div class="sound-translation">"SHTRAH-se" = street</div>
+            </div>
+          </div>
+
+          <div class="warn-box">
+            <strong style="color:var(--blue)">Goethe tip:</strong> In the Hören section, words with W and V are often confused by learners because English trained your ear the opposite way. The German word "Wasser" sounds like "Vasser" — the examiner will use it. Your ear needs to know this.
+          </div>
+        </div>`,
+
+      // STEP 2 — READ ALOUD PRACTICE
+      () => `
+        <div class="card" style="animation:fadeUp 0.4s ease both;">
+          <div class="lesson-concept">Module 0 · Lesson 1 · Practice</div>
+          <div class="lesson-title">Read these aloud — applying the 5 rules</div>
+          <div class="lesson-body" style="margin-bottom:24px;">
+            Apply what you just learned. Read each word aloud using the phonetic guide. Do not rush. Accuracy before speed.
+          </div>
+
+          <div class="read-aloud-box">
+            <div class="read-aloud-title">🔊 Read Aloud Practice</div>
+            <table style="width:100%;border-collapse:collapse;">
+              <tr style="border-bottom:1px solid var(--border);">
+                <th style="text-align:left;padding:8px 12px;color:var(--gray);font-size:12px;font-weight:500;">German Word</th>
+                <th style="text-align:left;padding:8px 12px;color:var(--gray);font-size:12px;font-weight:500;">How to Pronounce</th>
+                <th style="text-align:left;padding:8px 12px;color:var(--gray);font-size:12px;font-weight:500;">Meaning</th>
+                <th style="text-align:left;padding:8px 12px;color:var(--gray);font-size:12px;font-weight:500;">Rule</th>
+              </tr>
+              ${[
+                ['Wohnung','VOH-nung','apartment','W → V sound'],
+                ['Vater','FAH-ter','father','V → F sound'],
+                ['Zeit','TSAIT','time','Z → TS sound'],
+                ['ja','YAH','yes','J → Y sound'],
+                ['Sommer','ZO-mer','summer','S before vowel → Z'],
+                ['zwei','TSVAI','two','Z → TS, W → V'],
+                ['Straße','SHTRAH-se','street','ß → SS'],
+                ['Wasser','VAH-ser','water','W → V sound'],
+              ].map(([w,p,m,r])=>`<tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                <td style="padding:10px 12px;font-family:'DM Mono',monospace;color:var(--gold);font-size:15px;">${w}</td>
+                <td style="padding:10px 12px;font-family:'DM Mono',monospace;color:var(--blue);font-size:13px;">${p}</td>
+                <td style="padding:10px 12px;font-size:13px;color:var(--gray);">${m}</td>
+                <td style="padding:10px 12px;"><span class="sound-tag tag-gold">${r}</span></td>
+              </tr>`).join('')}
+            </table>
+          </div>
+
+          <div class="yt-placeholder">
+            <div class="yt-icon">▶️</div>
+            <div class="yt-title">Video: German Alphabet & Pronunciation</div>
+            <div class="yt-desc">Here you will embed a YouTube video of a native German speaker reading these sounds clearly. Recommended: "Learn German with Anja" alphabet video or "Get Germanised" pronunciation guide.</div>
+            <div class="yt-tag">📌 YouTube embed goes here</div>
+          </div>
+        </div>`,
+
+      // STEP 3 — QUIZ
+      () => buildQuiz({
+        concept: "Module 0 · Lesson 1 · Quiz",
+        title: "Quick Check",
+        questions: [
+          { q: "How is the German letter W pronounced?", hint: "Think of a German word: Wasser (water)", options:["Like English W (wet)","Like English V (vet)","Like English B","Silent"], correct:1, explanation:"German W always sounds like English V. So 'Wasser' (water) is pronounced 'VAH-ser', not 'WAH-ser'. This is one of the most important differences to retrain your ear on.", rule:"German W → sounds like English V, always." },
+          { q: "How do you pronounce the German Z?", hint: "Think: Zeit (time), zwei (two)", options:["Like English Z in 'zero'","Like English S","Like English TS in 'bits'","Silent"], correct:2, explanation:"German Z always makes the TS sound — like the end of 'bits' or 'cats'. So 'Zeit' sounds like 'TSAIT' and 'zwei' sounds like 'TSVAI'. English speakers often say 'ZAIT' — that is wrong.", rule:"German Z → TS sound. Zeit = TSAIT. zwei = TSVAI." },
+          { q: "The German word 'Vater' (father) — how does the V sound?", hint: "German V is the opposite of what you expect", options:["Like English V (voice)","Like English F (father)","Like English W","Like English B"], correct:1, explanation:"German V sounds like English F. So 'Vater' is pronounced 'FAH-ter' not 'VAH-ter'. In German, the letter that sounds like English V is actually written as W.", rule:"German V → F sound. German W → V sound. They swap!" }
+        ]
+      })
+    ]
+  },
+
+  // ============================
+  // LESSON 2 — VOWELS & UMLAUTS
+  // ============================
+  {
+    title: "Vowels, Length & Umlauts",
+    concept: "Module 0 · Lesson 2",
+    totalSteps: 4,
+    steps: [
+
+      // STEP 0 — SHORT VS LONG
+      () => `
+        <div class="card" style="animation:fadeUp 0.4s ease both;">
+          <div class="lesson-concept">Module 0 · Lesson 2 of 4</div>
+          <div class="lesson-title">Vowels — short, long, and why it matters</div>
+          <div class="lesson-body">
+            German vowels have two versions: <strong style="color:var(--blue)">short</strong> and <strong style="color:var(--gold)">long</strong>. The difference is not just pronunciation — it changes the meaning of the word entirely. This is called a <em>minimal pair</em> — two words that sound almost identical but have one different sound and completely different meanings.
+          </div>
+
+          <div style="margin:24px 0;">
+            <div style="font-size:13px;color:var(--gray);margin-bottom:12px;letter-spacing:2px;text-transform:uppercase;font-family:'DM Mono',monospace;">Minimal Pairs — Same Letters, Different Sound, Different Meaning</div>
+            ${[
+              ['Bett','BET (short e)','bed','Beet','BEHT (long e)','flower bed'],
+              ['Stadt','SHTAT (short a)','city','Staat','SHTAHT (long a)','state/country'],
+              ['offen','OF-fen (short o)','open','Ofen','OH-fen (long o)','oven'],
+              ['Kamm','KAM (short a)','comb','kam','KAHM (long a)','came (verb)'],
+            ].map(([w1,p1,m1,w2,p2,m2])=>`
+              <div class="minimal-pair">
+                <div style="flex:1;text-align:center;">
+                  <div class="pair-word" style="color:var(--blue);">${w1}</div>
+                  <div class="pair-meaning">${p1}</div>
+                  <div class="pair-meaning">"${m1}"</div>
+                </div>
+                <div class="pair-vs">vs</div>
+                <div style="flex:1;text-align:center;">
+                  <div class="pair-word" style="color:var(--gold);">${w2}</div>
+                  <div class="pair-meaning">${p2}</div>
+                  <div class="pair-meaning">"${m2}"</div>
+                </div>
+              </div>`).join('')}
+          </div>
+
+          <div class="info-box">
+            <strong>How to know if a vowel is long or short:</strong> If the vowel is followed by a double consonant (nn, tt, mm, ff) it is almost always short. If it is followed by a single consonant or an H (Ofen, Jahr, Beet) it is usually long. This is not perfect but it covers 80% of cases.
+          </div>
+        </div>`,
+
+      // STEP 1 — THE UMLAUTS
+      () => `
+        <div class="card" style="animation:fadeUp 0.4s ease both;">
+          <div class="lesson-concept">Module 0 · Lesson 2</div>
+          <div class="lesson-title">ä, ö, ü — the three sounds English doesn't have</div>
+          <div class="lesson-body" style="margin-bottom:24px;">
+            These three letters — called <strong style="color:var(--gold)">Umlauts</strong> — are unique to German. They do not exist in English. Many learners simply replace them with the nearest English sound, which makes them immediately sound non-native and costs marks in the Sprechen section.<br><br>The good news is that each one can be learned with a simple physical instruction.
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:16px;margin:20px 0;">
+            <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px;">
+              <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px;">
+                <div style="font-family:'Playfair Display',serif;font-size:48px;color:var(--gold);width:60px;text-align:center;">ä</div>
+                <div>
+                  <div style="font-weight:700;font-size:16px;margin-bottom:4px;">The Ä sound</div>
+                  <div style="font-size:13px;color:var(--gray);">Closest English equivalent: the "ai" in "air" — but without the R.</div>
+                </div>
+              </div>
+              <div class="mouth-tip">
+                <div class="mouth-icon">👄</div>
+                <div class="mouth-text">Open your mouth as if to say English "A" (like in "cat"). That is very close to the German <strong>ä</strong>. It is an open, front vowel. Say "Männer" (men) = <strong>MEN-er</strong>, not "MAHN-er".</div>
+              </div>
+              <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
+                ${[['Männer','men'],['Bäcker','baker'],['Städte','cities'],['spät','late']].map(([w,m])=>`<div style="background:rgba(201,168,76,0.08);border-radius:8px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:13px;"><span style="color:var(--gold)">${w}</span> <span style="color:var(--gray);font-size:11px;">= ${m}</span></div>`).join('')}
+              </div>
+            </div>
+
+            <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px;">
+              <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px;">
+                <div style="font-family:'Playfair Display',serif;font-size:48px;color:var(--blue);width:60px;text-align:center;">ö</div>
+                <div>
+                  <div style="font-weight:700;font-size:16px;margin-bottom:4px;">The Ö sound</div>
+                  <div style="font-size:13px;color:var(--gray);">No direct English equivalent. It is between "uh" and "er".</div>
+                </div>
+              </div>
+              <div class="mouth-tip">
+                <div class="mouth-icon">👄</div>
+                <div class="mouth-text">Say the English letter <strong>E</strong> (as in "see"). Now, <strong>keep your tongue in that position</strong> but round your lips as if you are about to whistle. That rounded E sound is the German <strong>ö</strong>.</div>
+              </div>
+              <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
+                ${[['hören','to hear'],['schön','beautiful'],['Öl','oil'],['möchten','would like']].map(([w,m])=>`<div style="background:rgba(52,152,219,0.08);border-radius:8px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:13px;"><span style="color:var(--blue)">${w}</span> <span style="color:var(--gray);font-size:11px;">= ${m}</span></div>`).join('')}
+              </div>
+            </div>
+
+            <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px;">
+              <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px;">
+                <div style="font-family:'Playfair Display',serif;font-size:48px;color:var(--purple);width:60px;text-align:center;">ü</div>
+                <div>
+                  <div style="font-weight:700;font-size:16px;margin-bottom:4px;">The Ü sound</div>
+                  <div style="font-size:13px;color:var(--gray);">Like the French "u" — no English equivalent.</div>
+                </div>
+              </div>
+              <div class="mouth-tip">
+                <div class="mouth-icon">👄</div>
+                <div class="mouth-text">Say the English word <strong>"see"</strong> — your lips are spread wide. Now <strong>keep your tongue there</strong> but round your lips forward as if blowing out a candle. That pursed-lip EE sound is the German <strong>ü</strong>.</div>
+              </div>
+              <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
+                ${[['über','above/over'],['fünf','five'],['Tür','door'],['müde','tired']].map(([w,m])=>`<div style="background:rgba(155,89,182,0.08);border-radius:8px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:13px;"><span style="color:var(--purple)">${w}</span> <span style="color:var(--gray);font-size:11px;">= ${m}</span></div>`).join('')}
+              </div>
+            </div>
+          </div>
+        </div>`,
+
+      // STEP 2 — YT PLACEHOLDER + PRACTICE PAIRS
+      () => `
+        <div class="card" style="animation:fadeUp 0.4s ease both;">
+          <div class="lesson-concept">Module 0 · Lesson 2 · Practice</div>
+          <div class="lesson-title">Practise the Umlauts</div>
+          <div class="lesson-body" style="margin-bottom:20px;">These sentences use all three umlauts. Read them aloud slowly, focusing on the correct lip position for each umlaut sound.</div>
+
+          <div class="read-aloud-box">
+            <div class="read-aloud-title">🔊 Read Aloud — Umlaut Sentences</div>
+            ${[
+              ['Ich möchte fünf Türen öffnen.','IH MOEH-te FÜNF TÜ-ren ÖF-nen','I would like to open five doors.'],
+              ['Die Männer hören schöne Musik.','DEE MEN-er HÖ-ren SHÖH-ne mu-ZIK','The men hear beautiful music.'],
+              ['Ich bin müde, aber ich stehe früh auf.','IH bin MÜ-de AH-ber IH SHTE-he FRÜ auf','I am tired but I get up early.'],
+              ['Über dem Haus ist ein schöner Mond.','Ü-ber dem HAUS ist ain SHÖH-ner MOHNT','Above the house is a beautiful moon.'],
+            ].map(([de,ph,en])=>`
+              <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.06);">
+                <div style="font-family:'DM Mono',monospace;font-size:15px;color:var(--cream);margin-bottom:4px;">${de}</div>
+                <div style="font-size:12px;color:var(--blue);font-style:italic;margin-bottom:4px;">${ph}</div>
+                <div style="font-size:12px;color:var(--gray);">${en}</div>
+              </div>`).join('')}
+          </div>
+
+          <div class="yt-placeholder">
+            <div class="yt-icon">▶️</div>
+            <div class="yt-title">Video: German Umlauts ä, ö, ü Explained</div>
+            <div class="yt-desc">Embed a clear native-speaker video here demonstrating mouth position for each umlaut. Recommended: "Learn German with Jenny" umlaut guide, or "Deutsch für Euch" vowel series.</div>
+            <div class="yt-tag">📌 YouTube embed goes here</div>
+          </div>
+        </div>`,
+
+      // STEP 3 — QUIZ
+      () => buildQuiz({
+        concept: "Module 0 · Lesson 2 · Quiz",
+        title: "Vowel Check",
+        questions: [
+          { q: "How do you produce the German ö sound?", hint: "Think about your lip position", options:["Say English 'O' as normal","Say English 'E' but round your lips forward","Say English 'A' with an open mouth","Just say English 'O' with more emphasis"], correct:1, explanation:"The ö is made by positioning your tongue as if saying English E (as in 'see') and then rounding your lips forward. It is the lip rounding that creates the ö — without it you just get a plain E sound.", rule:"ö = E tongue position + rounded lips. Practice: schön, hören, möchten." },
+          { q: "Which of these is a minimal pair where vowel length changes the meaning?", hint: "Look for the pair where only vowel length differs", options:["Hund / Mund (dog / mouth)","Bett / Beet (bed / flower bed)","Haus / Maus (house / mouse)","Tisch / Fisch (table / fish)"], correct:1, explanation:"Bett (bed) has a short E sound. Beet (flower bed) has a long E sound. Same letters, same consonants — only the vowel length changes, and the meaning is completely different. This is why vowel length matters.", rule:"Short vowel before double consonant (Bett). Long vowel before single consonant (Beet)." }
+        ]
+      })
+    ]
+  },
+
+  // ============================
+  // LESSON 3 — CONSONANT COMBOS
+  // ============================
+  {
+    title: "Consonant Combinations",
+    concept: "Module 0 · Lesson 3",
+    totalSteps: 4,
+    steps: [
+
+      // STEP 0 — CH SOUND
+      () => `
+        <div class="card" style="animation:fadeUp 0.4s ease both;">
+          <div class="lesson-concept">Module 0 · Lesson 3 of 4</div>
+          <div class="lesson-title">The CH sound — German's most misunderstood consonant</div>
+          <div class="lesson-body" style="margin-bottom:24px;">
+            CH is the consonant that trips up almost every learner. It is not a sound that exists in English, so your mouth has no memory for it. But here is the key: CH has <strong style="color:var(--gold)">two different sounds</strong> depending on what comes before it.
+          </div>
+
+          <div style="display:grid;gap:16px;margin:20px 0;">
+            <div style="background:rgba(192,57,43,0.06);border:1px solid rgba(192,57,43,0.2);border-radius:14px;padding:20px;">
+              <div style="font-weight:700;font-size:16px;margin-bottom:4px;color:#e74c3c;">CH after A, O, U, AU → Hard CH</div>
+              <div style="font-size:13px;color:var(--gray);margin-bottom:14px;">Made at the back of the throat. Like clearing your throat softly, or the Scottish "loch", or the Arabic "kh" sound in "Khalid".</div>
+              <div class="mouth-tip">
+                <div class="mouth-icon">👄</div>
+                <div class="mouth-text">Open your mouth slightly. Place the back of your tongue against your soft palate (the back part of the roof of your mouth). <strong>Push air through without fully blocking</strong> — like a controlled gargle.</div>
+              </div>
+              <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+                ${[['Bach','bah-CH','stream'],['Buch','boo-CH','book'],['Nacht','nah-CHT','night'],['auch','ou-CH','also']].map(([w,p,m])=>`<div style="background:rgba(192,57,43,0.08);border-radius:8px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:13px;"><span style="color:#e74c3c;">${w}</span> <span style="color:var(--blue);font-size:11px;">[${p}]</span> <span style="color:var(--gray);font-size:11px;">= ${m}</span></div>`).join('')}
+              </div>
+            </div>
+
+            <div style="background:rgba(52,152,219,0.06);border:1px solid rgba(52,152,219,0.2);border-radius:14px;padding:20px;">
+              <div style="font-weight:700;font-size:16px;margin-bottom:4px;color:var(--blue);">CH after E, I, Ä, Ö, Ü, EI → Soft CH</div>
+              <div style="font-size:13px;color:var(--gray);margin-bottom:14px;">Made further forward in the mouth. Like an exaggerated English H, or the sound a cat makes when hissing softly. This is the "ich" sound — the word you use for "I" in every sentence you ever produce.</div>
+              <div class="mouth-tip">
+                <div class="mouth-icon">👄</div>
+                <div class="mouth-text">Say English "H" as in "huge" or "human". That soft friction at the front of the mouth is close to the soft CH. For <strong>ich</strong>, spread your lips slightly (as for a smile) and push air gently forward.</div>
+              </div>
+              <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+                ${[['ich','iH-CH','I'],['nicht','niHt','not'],['Milch','mil-CH','milk'],['Mädchen','MEHT-chen','girl']].map(([w,p,m])=>`<div style="background:rgba(52,152,219,0.08);border-radius:8px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:13px;"><span style="color:var(--blue);">${w}</span> <span style="color:var(--blue);font-size:11px;">[${p}]</span> <span style="color:var(--gray);font-size:11px;">= ${m}</span></div>`).join('')}
+              </div>
+            </div>
+          </div>
+
+          <div class="warn-box">
+            <strong style="color:var(--blue)">Why this matters for Goethe:</strong> The word "ich" (I) appears in nearly every sentence you produce in the Sprechen section. If you say it with a K sound ("ik") or an SH sound ("ish"), trained examiners notice immediately. The soft CH of "ich" is one of the first things they listen for.
+          </div>
+        </div>`,
+
+      // STEP 1 — SP ST SCH
+      () => `
+        <div class="card" style="animation:fadeUp 0.4s ease both;">
+          <div class="lesson-concept">Module 0 · Lesson 3</div>
+          <div class="lesson-title">SP, ST, SCH — the combinations that hide their sound</div>
+
+          <div class="lesson-body" style="margin-bottom:24px;">Three more combinations that look simple but behave unexpectedly. Once you know these, a huge number of German words that previously sounded like noise will snap into clarity in listening sections.</div>
+
+          <div style="display:flex;flex-direction:column;gap:14px;margin:20px 0;">
+            <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px;">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                <div style="font-family:'DM Mono',monospace;font-size:28px;color:var(--gold);width:70px;">SP</div>
+                <div><div style="font-weight:600;">at the START of a word = SHP</div><div style="font-size:13px;color:var(--gray);">The S becomes SH before P at the beginning</div></div>
+              </div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                ${[['sprechen','SHP-rechen','to speak'],['Spaß','SHPASS','fun'],['Sport','SHPORT','sport'],['spät','SHPAYT','late']].map(([w,p,m])=>`<div style="background:rgba(201,168,76,0.06);border-radius:8px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:13px;"><span style="color:var(--gold);">${w}</span> <span style="color:var(--blue);font-size:11px;">${p}</span> <span style="color:var(--gray);font-size:11px;">= ${m}</span></div>`).join('')}
+              </div>
+            </div>
+
+            <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px;">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                <div style="font-family:'DM Mono',monospace;font-size:28px;color:var(--blue);width:70px;">ST</div>
+                <div><div style="font-weight:600;">at the START of a word = SHT</div><div style="font-size:13px;color:var(--gray);">Same rule — S becomes SH before T at the beginning</div></div>
+              </div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                ${[['Stadt','SHTAT','city'],['stehen','SHTE-hen','to stand'],['Straße','SHTRAH-se','street'],['studieren','shtu-DEE-ren','to study']].map(([w,p,m])=>`<div style="background:rgba(52,152,219,0.06);border-radius:8px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:13px;"><span style="color:var(--blue);">${w}</span> <span style="color:var(--blue);font-size:11px;">${p}</span> <span style="color:var(--gray);font-size:11px;">= ${m}</span></div>`).join('')}
+              </div>
+            </div>
+
+            <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px;">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                <div style="font-family:'DM Mono',monospace;font-size:28px;color:var(--green);width:70px;">SCH</div>
+                <div><div style="font-weight:600;">always = SH (as in "ship")</div><div style="font-size:13px;color:var(--gray);">This one is consistent. SCH always makes the English SH sound.</div></div>
+              </div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                ${[['schön','SHÖN','beautiful'],['Schule','SHOO-le','school'],['schwer','SHVAYR','difficult'],['schreiben','SHRAI-ben','to write']].map(([w,p,m])=>`<div style="background:rgba(39,174,96,0.06);border-radius:8px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:13px;"><span style="color:var(--green);">${w}</span> <span style="color:var(--blue);font-size:11px;">${p}</span> <span style="color:var(--gray);font-size:11px;">= ${m}</span></div>`).join('')}
+              </div>
+            </div>
+          </div>
+
+          <div class="yt-placeholder">
+            <div class="yt-icon">▶️</div>
+            <div class="yt-title">Video: German Consonant Sounds CH, SCH, SP, ST</div>
+            <div class="yt-desc">Embed a native speaker demonstrating these sounds clearly with mouth position. Recommended: "Easy German" pronunciation videos, or "German with Laura" consonant guide.</div>
+            <div class="yt-tag">📌 YouTube embed goes here</div>
+          </div>
+        </div>`,
+
+      // STEP 2 — FULL SENTENCE PRACTICE
+      () => `
+        <div class="card" style="animation:fadeUp 0.4s ease both;">
+          <div class="lesson-concept">Module 0 · Lesson 3 · Practice</div>
+          <div class="lesson-title">Read aloud — all consonant rules combined</div>
+          <div class="lesson-body" style="margin-bottom:20px;">These sentences use CH, SCH, SP, and ST. Read each one slowly, applying the correct sound for each combination. Then read faster until it flows naturally.</div>
+
+          <div class="read-aloud-box">
+            <div class="read-aloud-title">🔊 Consonant Combination Sentences</div>
+            ${[
+              ['Ich spreche ein bisschen Deutsch.','IH SHPRE-che ain BIS-chen DOYTSH.','I speak a little German.','CH × 2, SP'],
+              ['Die Schule ist in der Stadt.','DEE SHOO-le ist in der SHTAT.','The school is in the city.','SCH, ST'],
+              ['Das Buch ist nicht schwer.','Das BOOK ist niHt SHVAYR.','The book is not difficult.','CH × 2, SCH'],
+              ['Ich studiere Sprachen in Köln.','IH shtu-DEE-re SHPRAH-chen in KÖLN.','I study languages in Cologne.','ST, SP, CH'],
+              ['Er spricht schön und deutlich.','Ehr SHPRIHT SHÖN und DOYT-liH.','He speaks beautifully and clearly.','SP, SCH, CH'],
+            ].map(([de,ph,en,rules])=>`
+              <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.06);">
+                <div style="font-family:'DM Mono',monospace;font-size:15px;color:var(--cream);margin-bottom:4px;">${de}</div>
+                <div style="font-size:12px;color:var(--blue);font-style:italic;margin-bottom:4px;">${ph}</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <div style="font-size:12px;color:var(--gray);">${en}</div>
+                  <span class="sound-tag tag-gold" style="font-size:10px;">${rules}</span>
+                </div>
+              </div>`).join('')}
+          </div>
+        </div>`,
+
+      // STEP 3 — QUIZ
+      () => buildQuiz({
+        concept: "Module 0 · Lesson 3 · Quiz",
+        title: "Consonant Check",
+        questions: [
+          { q: "How is SP pronounced at the START of a German word?", hint: "Think: sprechen, Spaß, Sport", options:["Like English SP (spoon)","Like SHP (shpoon)","Like ZP","Like SKP"], correct:1, explanation:"At the start of a German word, SP is pronounced SHP. So 'sprechen' (to speak) sounds like 'SHPrechen', not 'SPrechen'. This rule also applies to ST at the start of a word → SHT.", rule:"SP at start of word → SHP. ST at start of word → SHT." },
+          { q: "The word 'ich' (I) — which CH sound does it use?", hint: "Look at what comes before CH: the letter I", options:["Hard CH (back of throat, like 'loch')","Soft CH (front of mouth, like 'h' in huge)","K sound","SH sound"], correct:1, explanation:"CH after I, E, Ä, Ö, Ü makes the SOFT CH — produced at the front of the mouth, almost like a hissed H. 'Ich' uses the soft CH because it follows I. This is the most important CH sound to master since you say 'ich' constantly.", rule:"CH after I, E, ä, ö, ü → soft CH (front of mouth). After A, O, U → hard CH (back of throat)." }
+        ]
+      })
+    ]
+  },
+
+  // ============================
+  // LESSON 4 — RHYTHM & STRESS
+  // ============================
+  {
+    title: "Rhythm, Stress & Sounding Natural",
+    concept: "Module 0 · Lesson 4",
+    totalSteps: 4,
+    steps: [
+
+      // STEP 0 — WORD STRESS
+      () => `
+        <div class="card" style="animation:fadeUp 0.4s ease both;">
+          <div class="lesson-concept">Module 0 · Lesson 4 of 4</div>
+          <div class="lesson-title">Word stress — the rhythm that makes German sound German</div>
+          <div class="lesson-body" style="margin-bottom:24px;">
+            Every language has a rhythm. German is a <strong style="color:var(--gold)">stress-timed language</strong> — like English. Some syllables are strong and long; others are weak and short. A student who speaks German with equal stress on every syllable sounds robotic. The examiner hears it immediately in the Sprechen section.<br><br>The good news: German stress follows clear, learnable rules.
+          </div>
+
+          <div class="section-label">Main Stress Rules</div>
+
+          <div style="display:flex;flex-direction:column;gap:12px;margin:16px 0 24px;">
+            <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:18px;">
+              <div style="font-weight:600;margin-bottom:10px;color:var(--gold);">Rule 1: Most German words — stress the first syllable</div>
+              <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                ${[['KOM-men','to come'],['AR-beit','work'],['WOH-nung','apartment'],['LER-nen','to learn']].map(([w,m])=>`<div class="stress-row"><span class="stressed">${w.split('-')[0]}</span><span class="unstressed">-${w.split('-')[1]}</span> <span style="font-size:12px;color:var(--gray);margin-left:4px;">${m}</span></div>`).join('')}
+              </div>
+            </div>
+
+            <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:18px;">
+              <div style="font-weight:600;margin-bottom:10px;color:var(--blue);">Rule 2: Compound nouns — stress the FIRST part, always</div>
+              <div style="font-size:13px;color:var(--gray);margin-bottom:12px;">German loves combining words into long compound nouns. Always stress the first element.</div>
+              <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                ${[['KRANKEN-haus','hospital'],['HAUS-aufgabe','homework'],['BAHN-hof','train station'],['ARZT-praxis','doctor\'s practice']].map(([w,m])=>`<div style="margin-bottom:8px;"><div class="stress-row"><span class="stressed" style="font-size:22px;">${w.split('-')[0]}</span><span class="unstressed">-${w.split('-')[1]}</span></div><div style="font-size:12px;color:var(--gray);">${m}</div></div>`).join('')}
+              </div>
+            </div>
+
+            <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:18px;">
+              <div style="font-weight:600;margin-bottom:10px;color:var(--green);">Rule 3: Separable verbs — stress the PREFIX</div>
+              <div style="font-size:13px;color:var(--gray);margin-bottom:12px;">Verbs like aufstehen, einkaufen, anrufen always stress the first part (the prefix) even when it splits to the end of the sentence.</div>
+              <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                ${[['AUF-stehen','to get up'],['EIN-kaufen','to shop'],['AN-rufen','to call'],['MIT-kommen','to come along']].map(([w,m])=>`<div><div class="stress-row"><span class="stressed" style="font-size:20px;">${w.split('-')[0]}</span><span class="unstressed">-${w.split('-')[1]}</span></div><div style="font-size:12px;color:var(--gray);">${m}</div></div>`).join('')}
+              </div>
+            </div>
+          </div>
+        </div>`,
+
+      // STEP 1 — FUNCTION WORDS & RHYTHM
+      () => `
+        <div class="card" style="animation:fadeUp 0.4s ease both;">
+          <div class="lesson-concept">Module 0 · Lesson 4</div>
+          <div class="lesson-title">Function words — the quiet glue of German sentences</div>
+          <div class="lesson-body" style="margin-bottom:24px;">
+            In natural German speech, not every word gets equal weight. <strong style="color:var(--gold)">Content words</strong> — nouns, main verbs, adjectives — are stressed and clear. <strong style="color:var(--gray)">Function words</strong> — articles, prepositions, conjunctions — are spoken quickly and reduced. This rhythm is what separates natural German from robotic German.
+          </div>
+
+          <div style="background:rgba(201,168,76,0.05);border:1px solid var(--border);border-radius:14px;padding:20px;margin:20px 0;">
+            <div class="section-label" style="margin-bottom:16px;">Sentence Rhythm — Strong and Weak Syllables</div>
+            ${[
+              {de:'Ich WOHN-e in NAI-ro-bi.', en:'I live in Nairobi.', note:'ich and in are reduced (quiet). wohne and Nairobi carry full stress.'},
+              {de:'Der MANN trinkt KAFFEE.', en:'The man drinks coffee.', note:'Der is reduced. Mann and Kaffee are stressed. trinkt gets medium stress as the main verb.'},
+              {de:'Ich MÖCHte nach DEUTSCH-land FAHR-en.', en:'I would like to travel to Germany.', note:'nach and nach are quiet. möchte, Deutschland, fahren carry the meaning — they get stress.'},
+            ].map(o=>`<div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.06);">
+              <div style="font-family:'DM Mono',monospace;font-size:16px;color:var(--cream);margin-bottom:4px;">${o.de}</div>
+              <div style="font-size:13px;color:var(--gray);margin-bottom:4px;">${o.en}</div>
+              <div style="font-size:12px;color:var(--blue);font-style:italic;">${o.note}</div>
+            </div>`).join('')}
+          </div>
+
+          <div class="info-box">
+            <strong>Practical tip for Goethe listening:</strong> In the Hören section, audio is recorded with natural German rhythm. If you are listening for every word equally, you will miss things. Train yourself to listen for the <em>stressed words</em> — those carry the meaning. The unstressed words around them are context.
+          </div>
+        </div>`,
+
+      // STEP 2 — FULL INTRODUCTION SCRIPT
+      () => `
+        <div class="card" style="animation:fadeUp 0.4s ease both;">
+          <div class="lesson-concept">Module 0 · Lesson 4 · Goethe Sprechen Prep</div>
+          <div class="lesson-title">Your Goethe introduction — with stress and rhythm marked</div>
+          <div class="lesson-body" style="margin-bottom:24px;">
+            This is the self-introduction you will use in the Sprechen section. Every capitalised syllable is stressed. Every lower case syllable is reduced. Read it aloud until the rhythm feels natural — not words, but music.
+          </div>
+
+          <div class="intro-script">
+            <div class="read-aloud-title" style="margin-bottom:20px;">🎯 Goethe A1 — Self-Introduction Script</div>
+
+            ${[
+              {de:'HAL-lo, ich HEI-ße [IHR NA-me].', ph:'HAL-loh, iH HAI-se [eer NAH-me]', en:'Hello, my name is [Your Name].', note:'Stress: Hallo, heißen. "ich" is quiet.'},
+              {de:'Ich KOM-me aus KE-ni-a, aus NAI-ro-bi.', ph:'iH KOM-me aus KE-ni-a', en:'I come from Kenya, from Nairobi.', note:'Stress: komme, Kenia, Nairobi. "aus" is quiet.'},
+              {de:'Ich BIN KRAN-ken-schwes-ter von BE-ruf.', ph:'iH bin KRAN-ken-shves-ter fon be-ROOF', en:'I am a nurse by profession.', note:'Stress: bin, KRANKen- (first syllable of compound), Beruf.'},
+              {de:'Ich LER-ne DEUTSCH, weil ich in DEUTSCH-land ar-BEI-ten MÖCH-te.', ph:'iH LER-ne DOYTSH, vail iH in DOYTSH-land ar-BAI-ten MÖHH-te', en:'I am learning German because I want to work in Germany.', note:'Stress: lerne, Deutsch, Deutschland, arbeiten, möchte. "weil, ich, in" are quiet.'},
+              {de:'Ich WOHN-e jetzt in NAI-ro-bi, a-ber ich MÖCH-te bald nach DEUTSCH-land ZIE-hen.', ph:'iH VOH-ne yetzt in NAI-ro-bi, AH-ber iH MÖHH-te balt nah DOYTSH-land TSEE-hen', en:'I currently live in Nairobi but I would like to move to Germany soon.', note:'Stress: wohne, Nairobi, möchte, Deutschland, ziehen. Short function words are unstressed.'},
+            ].map(l=>`
+              <div class="intro-line">
+                <div class="intro-german">${l.de}</div>
+                <div class="intro-phonetic">${l.ph}</div>
+                <div class="intro-english">${l.en}</div>
+                <div style="font-size:11px;color:var(--gold);margin-top:4px;font-family:'DM Mono',monospace;">↳ ${l.note}</div>
+              </div>`).join('')}
+          </div>
+
+          <div class="yt-placeholder" style="margin-top:20px;">
+            <div class="yt-icon">▶️</div>
+            <div class="yt-title">Video: Goethe A1 Speaking Section — Model Introduction</div>
+            <div class="yt-desc">Embed a video of a Goethe examiner or qualified teacher demonstrating a model A1 self-introduction with natural rhythm and stress. Students watch, then repeat.</div>
+            <div class="yt-tag">📌 YouTube embed goes here</div>
+          </div>
+        </div>`,
+
+      // STEP 3 — FINAL QUIZ + COMPLETION
+      () => buildQuiz({
+        concept: "Module 0 · Final Quiz",
+        title: "Module 0 Complete — Final Check",
+        isLast: true,
+        questions: [
+          { q: "In compound nouns like 'Krankenhaus', which syllable is stressed?", hint: "German compound noun stress rule", options:["The last syllable (haus)","The middle syllable (ken)","The first syllable (KRAN)","All syllables equally"], correct:2, explanation:"In German compound nouns, stress always falls on the FIRST element — KRANKenhaus, not krankenHAUS. This applies to all compound nouns: BAHNhof, HAUSaufgabe, ARZTpraxis. The first element carries the meaning anchor.", rule:"Compound nouns: ALWAYS stress the first element." },
+          { q: "In natural German speech, which words are spoken most clearly and strongly?", hint: "Think about what carries meaning vs what is grammatical glue", options:["Articles and prepositions","Conjunctions and pronouns","Nouns, main verbs, and adjectives","All words equally"], correct:2, explanation:"German is stress-timed. Content words — nouns, main verbs, adjectives — carry stress and meaning and are spoken clearly. Function words — articles (der, die), prepositions (in, auf), conjunctions (und, aber) — are reduced and spoken quietly. This rhythm is what makes German sound natural.", rule:"Content words (nouns, verbs, adjectives) = stressed. Function words (articles, prepositions) = reduced." }
+        ]
+      })
+    ]
+  }
+];
+
+// ============================================================
+//  QUIZ BUILDER
+// ============================================================
+function buildQuiz({ concept, title, questions, isLast }) {
+  const state = { current: 0, answered: false, correct: 0 };
+  window._quizState = state;
+  window._quizData = questions;
+  window._quizIsLast = isLast || false;
+
+  return renderQuizQuestion(0, questions, state, isLast);
+}
+
+function renderQuizQuestion(idx, questions, state, isLast) {
+  if (idx >= questions.length) {
+    xp += state.correct * 15;
+    updateXPDisplay();
+    if (isLast) {
+      return `
+        <div class="complete-screen">
+          <div class="complete-icon">🎉</div>
+          <h2 class="complete-title">Module 0 Complete!</h2>
+          <p class="complete-body">You have finished the German Pronunciation module. Your ear is now trained for the sounds that trip up most learners — and your mouth knows what to do for the Goethe Sprechen section.</p>
+          <div class="xp-badge">⚡ +${xp} XP Earned</div>
+          <p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Next: Module 1 — Numbers, Time & Dates</p>
+          <button class="btn btn-primary" style="width:100%;max-width:360px;" onclick="showScreen('overview')">← Back to Module Overview</button>
+        </div>`;
+    }
+    return `
+      <div class="quiz-card" style="text-align:center;">
+        <div style="font-size:48px;margin-bottom:12px;">${state.correct === questions.length ? '🌟' : state.correct >= questions.length/2 ? '👍' : '💪'}</div>
+        <div style="font-family:'Playfair Display',serif;font-size:24px;margin-bottom:8px;">Quiz Complete — ${state.correct}/${questions.length}</div>
+        <div style="color:var(--gray);font-size:14px;margin-bottom:24px;line-height:1.7;">${state.correct === questions.length ? 'Perfect. These rules are now in your memory.' : 'Review the explanations above and revisit the lesson if anything felt unclear.'}</div>
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.12);border:1px solid var(--gold);border-radius:50px;padding:10px 24px;color:var(--gold);font-weight:700;margin-bottom:24px;">⚡ +${state.correct * 15} XP</div>
+        <br>
+        <button class="btn btn-primary" style="width:100%;" onclick="nextStep()">Continue to Next Lesson →</button>
+      </div>`;
+  }
+
+  const q = questions[idx];
+  return `
+    <div class="quiz-card" style="animation:fadeUp 0.3s ease both;">
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--blue);letter-spacing:2px;margin-bottom:12px;">QUESTION ${idx+1} OF ${questions.length}</div>
+      <div class="quiz-q">${q.q}</div>
+      <div class="quiz-hint">${q.hint}</div>
+      <div class="quiz-options">
+        ${q.options.map((opt,i)=>`
+          <button class="quiz-option" onclick="selectQuizOption(${i})" id="qopt${i}">
+            <span class="quiz-letter">${['A','B','C','D'][i]}</span>${opt}
+          </button>`).join('')}
+      </div>
+      <div class="quiz-feedback" id="quizFeedback">
+        <div class="quiz-fb-title" id="quizFbTitle"></div>
+        <div class="quiz-fb-body" id="quizFbBody"></div>
+        <div class="quiz-fb-rule" id="quizFbRule"></div>
+      </div>
+      <div id="quizNextWrap" style="margin-top:16px;display:none;">
+        <button class="btn btn-primary" style="width:100%;" onclick="nextQuizQ()">
+          ${idx < questions.length-1 ? 'Next Question →' : 'See Results →'}
+        </button>
+      </div>
+    </div>`;
+}
+
+function selectQuizOption(idx) {
+  const state = window._quizState;
+  const questions = window._quizData;
+  const q = questions[state.current];
+  const ok = idx === q.correct;
+  if (ok) state.correct++;
+
+  document.querySelectorAll('.quiz-option').forEach((el,i) => {
+    el.style.pointerEvents = 'none';
+    if (i === q.correct) el.classList.add('correct');
+    if (i === idx && !ok) el.classList.add('wrong');
+  });
+
+  const fb = document.getElementById('quizFeedback');
+  fb.classList.add('show', ok ? 'ok' : 'no');
+  document.getElementById('quizFbTitle').className = 'quiz-fb-title ' + (ok ? 'ok' : 'no');
+  document.getElementById('quizFbTitle').textContent = ok ? '✓ Correct!' : '✗ Not quite';
+  document.getElementById('quizFbBody').textContent = q.explanation;
+  document.getElementById('quizFbRule').textContent = q.rule;
+  document.getElementById('quizNextWrap').style.display = 'block';
+}
+
+function nextQuizQ() {
+  const state = window._quizState;
+  const questions = window._quizData;
+  state.current++;
+  document.getElementById('lessonBody').innerHTML = renderQuizQuestion(state.current, questions, state, window._quizIsLast);
+  window.scrollTo(0,0);
+}
+
+// ============================================================
+//  LESSON NAVIGATION
+// ============================================================
+function startLesson(lessonIdx) {
+  currentLesson = lessonIdx;
+  currentStep = 0;
+  quizAnswered = false;
+  showScreen('lessonScreen');
+  renderLessonStep();
+}
+
+function renderLessonStep() {
+  const lesson = lessonData[currentLesson];
+  const totalSteps = lesson.totalSteps;
+  const pct = (currentStep / totalSteps) * 100;
+
+  // progress bar
+  document.getElementById('lessonProgressFill').style.width = pct + '%';
+
+  // dots
+  const dots = document.getElementById('lessonDots');
+  dots.innerHTML = lessonData.map((_,i) => `<div class="lesson-dot ${i < currentLesson ? 'done' : i === currentLesson ? 'active' : ''}" onclick="startLesson(${i})"></div>`).join('');
+
+  updateXPDisplay();
+
+  // render content
+  document.getElementById('lessonBody').innerHTML = lesson.steps[currentStep]();
+
+  // scroll up
+  window.scrollTo(0,0);
+
+  // add next button at bottom if not quiz/complete step
+  const body = document.getElementById('lessonBody');
+  const isQuizStep = currentStep === lesson.totalSteps - 1;
+  if (!isQuizStep) {
+    const navDiv = document.createElement('div');
+    navDiv.style.cssText = 'display:flex;gap:12px;margin:24px 0;padding:0;';
+    if (currentStep > 0) {
+      const prev = document.createElement('button');
+      prev.className = 'btn btn-outline';
+      prev.style.cssText = 'width:auto;padding:14px 24px;';
+      prev.textContent = '← Previous';
+      prev.onclick = prevStep;
+      navDiv.appendChild(prev);
+    }
+    const next = document.createElement('button');
+    next.className = 'btn btn-primary';
+    next.style.flex = '1';
+    next.textContent = currentStep < lesson.totalSteps - 1 ? 'Continue →' : 'Start Quiz →';
+    next.onclick = nextStep;
+    navDiv.appendChild(next);
+    body.appendChild(navDiv);
+  }
+}
+
+function nextStep() {
+  const lesson = lessonData[currentLesson];
+  if (currentStep < lesson.totalSteps - 1) {
+    currentStep++;
+    lessonProgress[currentLesson] = Math.max(lessonProgress[currentLesson], currentStep);
+    renderLessonStep();
+  } else {
+    // Move to next lesson
+    if (currentLesson < lessonData.length - 1) {
+      currentLesson++;
+      currentStep = 0;
+      renderLessonStep();
+    } else {
+      showScreen('overview');
+    }
+  }
+}
+
+function prevStep() {
+  if (currentStep > 0) { currentStep--; renderLessonStep(); }
+  else { showScreen('overview'); }
+}
+
+function updateXPDisplay() {
+  document.getElementById('lessonXPDisplay').textContent = '⚡ ' + xp + ' XP';
+}
+
+// ============================================================
+//  SCREEN MANAGEMENT
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>

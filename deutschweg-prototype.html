@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — A1 Course</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:var(--black);color:var(--white);
+    font-family:'DM Sans',sans-serif;min-height:100vh;
+    opacity:0;transition:opacity 0.25s ease;
+  }
+  body.ready{opacity:1;}
+
+  /* ── TOP NAV ── */
+  .top-nav{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 24px;
+    border-bottom:1px solid var(--border);
+    background:rgba(10,10,10,0.95);backdrop-filter:blur(20px);
+    position:sticky;top:0;z-index:50;
+  }
+  .logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:900;}
+  .logo span{color:var(--gold);}
+  .xp-display{
+    display:flex;align-items:center;gap:8px;
+    background:rgba(201,168,76,0.08);border:1px solid var(--border);
+    border-radius:20px;padding:7px 16px;
+    font-family:'DM Mono',monospace;font-size:12px;color:var(--gold);
+  }
+  .xp-star{font-size:14px;}
+
+  /* ── MAIN ── */
+  .main{max-width:680px;margin:0 auto;padding:36px 24px 120px;}
+
+  /* ── COURSE HEADER ── */
+  .course-header{margin-bottom:32px;}
+  .course-eyebrow{
+    font-family:'DM Mono',monospace;font-size:11px;letter-spacing:3px;
+    color:var(--gold);margin-bottom:10px;
+  }
+  .course-title{
+    font-family:'Playfair Display',serif;font-size:32px;font-weight:900;
+    margin-bottom:10px;
+  }
+  .course-title span{color:var(--gold);}
+  .course-sub{font-size:15px;color:var(--cream);line-height:1.8;opacity:0.82;margin-bottom:22px;}
+
+  /* ── OVERALL PROGRESS ── */
+  .overall-progress{
+    background:var(--card-bg);border:1px solid var(--border);
+    border-radius:16px;padding:20px 22px;margin-bottom:32px;
+    display:flex;align-items:center;gap:20px;
+  }
+  .op-ring{
+    width:56px;height:56px;border-radius:50%;flex-shrink:0;
+    background:conic-gradient(var(--gold) 0%, rgba(255,255,255,0.06) 0%);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Playfair Display',serif;font-size:15px;font-weight:900;color:var(--gold);
+    position:relative;
+  }
+  .op-ring::before{
+    content:'';position:absolute;inset:6px;border-radius:50%;background:var(--card-bg);
+  }
+  .op-ring-num{position:relative;z-index:1;}
+  .op-info{flex:1;}
+  .op-label{font-size:13px;color:var(--gray);margin-bottom:6px;}
+  .op-bar{height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden;}
+  .op-fill{height:100%;background:var(--gold);border-radius:3px;transition:width 0.6s ease;width:0%;}
+  .op-stat{
+    text-align:right;font-family:'DM Mono',monospace;font-size:11px;color:var(--gray);
+    line-height:1.8;
+  }
+  .op-stat strong{display:block;font-size:20px;color:var(--gold);font-family:'Playfair Display',serif;}
+
+  /* ── SECTION LABEL ── */
+  .sec-label{
+    font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;
+    color:var(--blue);margin:28px 0 14px;text-transform:uppercase;
+  }
+
+  /* ── MODULE CARD ── */
+  .module-card{
+    background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);
+    border-radius:16px;padding:18px 20px;
+    cursor:pointer;transition:all 0.2s;
+    display:flex;align-items:center;gap:16px;
+    text-decoration:none;color:inherit;
+    margin-bottom:10px;
+  }
+  .module-card:hover{
+    border-color:rgba(201,168,76,0.4);
+    background:rgba(201,168,76,0.04);
+    transform:translateX(3px);
+  }
+  .mc-icon{
+    width:48px;height:48px;border-radius:13px;
+    background:rgba(201,168,76,0.07);border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px;flex-shrink:0;
+  }
+  .mc-body{flex:1;min-width:0;}
+  .mc-num{
+    font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;
+    color:var(--gold);margin-bottom:4px;
+  }
+  .mc-title{font-size:15px;font-weight:600;margin-bottom:3px;color:var(--white);}
+  .mc-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;}
+  .mc-tag{
+    font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;
+    background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);
+    border-radius:20px;padding:3px 10px;color:var(--gray);
+  }
+  .mc-right{
+    display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;
+  }
+  .mc-arrow{
+    font-size:16px;color:var(--gold);opacity:0.6;
+    transition:all 0.2s;
+  }
+  .module-card:hover .mc-arrow{opacity:1;transform:translateX(3px);}
+  .mc-badge{
+    font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;
+    padding:3px 10px;border-radius:20px;
+  }
+  .badge-unlocked{
+    background:rgba(39,174,96,0.1);border:1px solid rgba(39,174,96,0.3);
+    color:var(--green);
+  }
+  .badge-done{
+    background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);
+    color:var(--gold);
+  }
+
+  /* ── BOTTOM NAV ── */
+  .bottom-nav{
+    position:fixed;bottom:0;left:0;right:0;
+    background:rgba(10,10,10,0.96);backdrop-filter:blur(20px);
+    border-top:1px solid var(--border);
+    display:flex;justify-content:space-around;padding:12px 0 20px;z-index:100;
+  }
+  .nav-item{
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+    cursor:pointer;padding:8px 16px;border-radius:12px;
+    transition:all 0.2s;border:none;background:none;color:var(--gray);
+    text-decoration:none;
+  }
+  .nav-item:hover,.nav-item.active{color:var(--gold);}
+  .nav-icon{font-size:20px;}
+  .nav-label{font-size:10px;letter-spacing:1px;text-transform:uppercase;font-family:'DM Mono',monospace;}
+
+  /* ── EXAM TIP BOX ── */
+  .tip-box{
+    background:rgba(201,168,76,0.05);border:1px solid var(--border);
+    border-radius:14px;padding:18px 20px;margin-bottom:10px;
+    display:flex;gap:14px;align-items:flex-start;
+  }
+  .tip-icon{font-size:24px;flex-shrink:0;}
+  .tip-title{font-size:13px;font-weight:600;color:var(--gold);margin-bottom:4px;}
+  .tip-body{font-size:13px;color:var(--gray);line-height:1.75;}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  @media(max-width:480px){
+    .main{padding:28px 16px 120px;}
+    .overall-progress{flex-wrap:wrap;gap:14px;}
+    .op-stat{text-align:left;}
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="top-nav">
+  <div class="logo">Deutsch<span>Weg</span></div>
+  <div class="xp-display">
+    <span class="xp-star">✦</span>
+    <span id="xpDisp">0 XP</span>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+  <!-- COURSE HEADER -->
+  <div class="course-header">
+    <div class="course-eyebrow">GOETHE A1 · FULL COURSE</div>
+    <h1 class="course-title">Your <span>Learning</span><br>Dashboard</h1>
+    <p class="course-sub">13 modules covering every topic on the Goethe A1 exam. All modules are unlocked — work through them in order for the best results.</p>
+  </div>
+
+  <!-- OVERALL PROGRESS -->
+  <div class="overall-progress">
+    <div class="op-ring">
+      <span class="op-ring-num" id="pctDisp">0%</span>
+    </div>
+    <div class="op-info">
+      <div class="op-label">Overall A1 Progress</div>
+      <div class="op-bar"><div class="op-fill" id="overallBar"></div></div>
+    </div>
+    <div class="op-stat">
+      <strong id="modDoneDisp">0/13</strong>
+      modules done
+    </div>
+  </div>
+
+  <!-- EXAM TIP -->
+  <div class="tip-box">
+    <div class="tip-icon">🎯</div>
+    <div>
+      <div class="tip-title">Recommended order</div>
+      <div class="tip-body">Start from Module 0 and go in sequence. Each module builds on the last. If you're preparing fast, prioritise Modules 7–12 — those cover the most exam-heavy grammar.</div>
+    </div>
+  </div>
+
+  <!-- FOUNDATION MODULES 0–3 -->
+  <div class="sec-label">FOUNDATION — START HERE</div>
+
+  <a class="module-card" href="module0-pronunciation.html">
+    <div class="mc-icon">🔤</div>
+    <div class="mc-body">
+      <div class="mc-num">MODULE 00</div>
+      <div class="mc-title">Pronunciation &amp; Alphabet</div>
+      <div class="mc-tags">
+        <span class="mc-tag">ALPHABET</span>
+        <span class="mc-tag">UMLAUTS</span>
+        <span class="mc-tag">ß</span>
+        <span class="mc-tag">SOUNDS</span>
+      </div>
+    </div>
+    <div class="mc-right">
+      <span class="mc-badge badge-unlocked">UNLOCKED</span>
+      <span class="mc-arrow">→</span>
+    </div>
+  </a>
+
+  <a class="module-card" href="module1-numbers.html">
+    <div class="mc-icon">🔢</div>
+    <div class="mc-body">
+      <div class="mc-num">MODULE 01</div>
+      <div class="mc-title">Numbers &amp; Time</div>
+      <div class="mc-tags">
+        <span class="mc-tag">1–1000</span>
+        <span class="mc-tag">ORDINALS</span>
+        <span class="mc-tag">CLOCK</span>
+        <span class="mc-tag">DATES</span>
+      </div>
+    </div>
+    <div class="mc-right">
+      <span class="mc-badge badge-unlocked">UNLOCKED</span>
+      <span class="mc-arrow">→</span>
+    </div>
+  </a>
+
+  <a class="module-card" href="module2-greetings.html">
+    <div class="mc-icon">👋</div>
+    <div class="mc-body">
+      <div class="mc-num">MODULE 02</div>
+      <div class="mc-title">Greetings &amp; Introductions</div>
+      <div class="mc-tags">
+        <span class="mc-tag">HALLO</span>
+        <span class="mc-tag">GUTEN TAG</span>
+        <span class="mc-tag">FORMAL</span>
+        <span class="mc-tag">INFORMAL</span>
+      </div>
+    </div>
+    <div class="mc-right">
+      <span class="mc-badge badge-unlocked">UNLOCKED</span>
+      <span class="mc-arrow">→</span>
+    </div>
+  </a>
+
+  <a class="module-card" href="module3-haben-sein.html">
+    <div class="mc-icon">⚡</div>
+    <div class="mc-body">
+      <div class="mc-num">MODULE 03</div>
+      <div class="mc-title">haben &amp; sein</div>
+      <div class="mc-tags">
+        <span class="mc-tag">TO HAVE</span>
+        <span class="mc-tag">TO BE</span>
+        <span class="mc-tag">IRREGULAR</span>
+        <span class="mc-tag">CORE VERBS</span>
+      </div>
+    </div>
+    <div class="mc-right">
+      <span class="mc-badge badge-unlocked">UNLOCKED</span>
+      <span class="mc-arrow">→</span>
+    </div>
+  </a>
+
+  <!-- GRAMMAR MODULES 4–7 -->
+  <div class="sec-label">GRAMMAR CORE — CASES &amp; STRUCTURE</div>
+
+  <a class="module-card" href="module4-nouns-gender.html">
+    <div class="mc-icon">🏷️</div>
+    <div class="mc-body">
+      <div class="mc-num">MODULE 04</div>
+      <div class="mc-title">Noun Gender (der / die / das)</div>
+      <div class="mc-tags">
+        <span class="mc-tag">DER</span>
+        <span class="mc-tag">DIE</span>
+        <span class="mc-tag">DAS</span>
+        <span class="mc-tag">GENDER RULES</span>
+      </div>
+    </div>
+    <div class="mc-right">
+      <span class="mc-badge badge-unlocked">UNLOCKED</span>
+      <span class="mc-arrow">→</span>
+    </div>
+  </a>
+
+  <a class="module-card" href="module5-akkusativ.html">
+    <div class="mc-icon">🎯</div>
+    <div class="mc-body">
+      <div class="mc-num">MODULE 05</div>
+      <div class="mc-title">Akkusativ Case</div>
+      <div class="mc-tags">
+        <span class="mc-tag">DEN TRAP</span>
+        <span class="mc-tag">DIRECT OBJECT</span>
+        <span class="mc-tag">EINEN</span>
+        <span class="mc-tag">KEIN</span>
+      </div>
+    </div>
+    <div class="mc-right">
+      <span class="mc-badge badge-unlocked">UNLOCKED</span>
+      <span class="mc-arrow">→</span>
+    </div>
+  </a>
+
+  <a class="module-card" href="module6-dativ.html">
+    <div class="mc-icon">📍</div>
+    <div class="mc-body">
+      <div class="mc-num">MODULE 06</div>
+      <div class="mc-title">Dativ Case</div>
+      <div class="mc-tags">
+        <span class="mc-tag">MIT</span>
+        <span class="mc-tag">BEI</span>
+        <span class="mc-tag">VON</span>
+        <span class="mc-tag">ZU</span>
+        <span class="mc-tag">PREPOSITIONS</span>
+      </div>
+    </div>
+    <div class="mc-right">
+      <span class="mc-badge badge-unlocked">UNLOCKED</span>
+      <span class="mc-arrow">→</span>
+    </div>
+  </a>
+
+  <a class="module-card" href="module7-word-order.html">
+    <div class="mc-icon">📐</div>
+    <div class="mc-body">
+      <div class="mc-num">MODULE 07</div>
+      <div class="mc-title">Sentence Structure</div>
+      <div class="mc-tags">
+        <span class="mc-tag">VERB 2ND</span>
+        <span class="mc-tag">QUESTIONS</span>
+        <span class="mc-tag">WEIL</span>
+        <span class="mc-tag">WORD ORDER</span>
+      </div>
+    </div>
+    <div class="mc-right">
+      <span class="mc-badge badge-unlocked">UNLOCKED</span>
+      <span class="mc-arrow">→</span>
+    </div>
+  </a>
+
+  <!-- VERBS & PRONOUNS 8–9 -->
+  <div class="sec-label">VERBS &amp; PRONOUNS</div>
+
+  <a class="module-card" href="module8-present-tense.html">
+    <div class="mc-icon">🔄</div>
+    <div class="mc-body">
+      <div class="mc-num">MODULE 08</div>
+      <div class="mc-title">Present Tense Conjugation</div>
+      <div class="mc-tags">
+        <span class="mc-tag">REGULAR</span>
+        <span class="mc-tag">IRREGULAR</span>
+        <span class="mc-tag">STEM CHANGES</span>
+        <span class="mc-tag">ALL PERSONS</span>
+      </div>
+    </div>
+    <div class="mc-right">
+      <span class="mc-badge badge-unlocked">UNLOCKED</span>
+      <span class="mc-arrow">→</span>
+    </div>
+  </a>
+
+  <a class="module-card" href="module9-personal-pronouns.html">
+    <div class="mc-icon">👤</div>
+    <div class="mc-body">
+      <div class="mc-num">MODULE 09</div>
+      <div class="mc-title">Personal Pronouns</div>
+      <div class="mc-tags">
+        <span class="mc-tag">ICH · DU · ER</span>
+        <span class="mc-tag">SIE FORMAL</span>
+        <span class="mc-tag">WIR · IHR</span>
+        <span class="mc-tag">SIE/SIE TRAP</span>
+      </div>
+    </div>
+    <div class="mc-right">
+      <span class="mc-badge badge-unlocked">UNLOCKED</span>
+      <span class="mc-arrow">→</span>
+    </div>
+  </a>
+
+  <!-- EXAM GRAMMAR 10–12 -->
+  <div class="sec-label">EXAM GRAMMAR — HIGH IMPACT</div>
+
+  <a class="module-card" href="module10-plural-nouns.html">
+    <div class="mc-icon">✦</div>
+    <div class="mc-body">
+      <div class="mc-num">MODULE 10</div>
+      <div class="mc-title">Plural Forms of Nouns</div>
+      <div class="mc-tags">
+        <span class="mc-tag">5 PATTERNS</span>
+        <span class="mc-tag">GOLDEN RULE</span>
+        <span class="mc-tag">A1 EXAM LIST</span>
+        <span class="mc-tag">DIE PLURAL</span>
+      </div>
+    </div>
+    <div class="mc-right">
+      <span class="mc-badge badge-unlocked">UNLOCKED</span>
+      <span class="mc-arrow">→</span>
+    </div>
+  </a>
+
+  <a class="module-card" href="module11-negation.html">
+    <div class="mc-icon">🚫</div>
+    <div class="mc-body">
+      <div class="mc-num">MODULE 11</div>
+      <div class="mc-title">Negation (nicht / kein)</div>
+      <div class="mc-tags">
+        <span class="mc-tag">NICHT</span>
+        <span class="mc-tag">KEIN</span>
+        <span class="mc-tag">POSITION</span>
+        <span class="mc-tag">SCHREIBEN POINTS</span>
+      </div>
+    </div>
+    <div class="mc-right">
+      <span class="mc-badge badge-unlocked">UNLOCKED</span>
+      <span class="mc-arrow">→</span>
+    </div>
+  </a>
+
+  <a class="module-card" href="module12-modal-verbs.html">
+    <div class="mc-icon">🎓</div>
+    <div class="mc-body">
+      <div class="mc-num">MODULE 12</div>
+      <div class="mc-title">Modal Verbs</div>
+      <div class="mc-tags">
+        <span class="mc-tag">KÖNNEN</span>
+        <span class="mc-tag">MÜSSEN</span>
+        <span class="mc-tag">MÖCHTEN</span>
+        <span class="mc-tag">SPRECHEN EXAM</span>
+      </div>
+    </div>
+    <div class="mc-right">
+      <span class="mc-badge badge-unlocked">UNLOCKED</span>
+      <span class="mc-arrow">→</span>
+    </div>
+  </a>
+
+  <!-- BOTTOM TIP -->
+  <div class="tip-box" style="margin-top:28px;">
+    <div class="tip-icon">💡</div>
+    <div>
+      <div class="tip-title">Exam tip — Modules 10, 11, 12 are worth the most points</div>
+      <div class="tip-body">Plurals appear in every Lesen task. Nicht/kein appears in every Schreiben task. Modal verbs are tested in every Sprechen section. If your exam is coming up, start here.</div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <a class="nav-item active" href="deutschweg-prototype.html">
+    <span class="nav-icon">📚</span>
+    <span class="nav-label">Modules</span>
+  </a>
+  <a class="nav-item" href="#">
+    <span class="nav-icon">🤖</span>
+    <span class="nav-label">AI Tutor</span>
+  </a>
+  <a class="nav-item" href="#">
+    <span class="nav-icon">✍️</span>
+    <span class="nav-label">Schreiben</span>
+  </a>
+  <a class="nav-item" href="#">
+    <span class="nav-icon">👤</span>
+    <span class="nav-label">Profile</span>
+  </a>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  document.body.classList.add('ready');
+
+  // Read XP from localStorage (shared with module files)
+  var xp = parseInt(localStorage.getItem('dw_xp') || '0');
+  document.getElementById('xpDisp').textContent = xp + ' XP';
+
+  // Read per-module completion from localStorage
+  // Each module stores 'dw_mod_N_done' = '1' when completed
+  var done = 0;
+  for (var i = 0; i <= 12; i++) {
+    if (localStorage.getItem('dw_mod_' + i + '_done') === '1') {
+      done++;
+      // Mark the card visually
+      var cards = document.querySelectorAll('.module-card');
+      var card = cards[i];
+      if (card) {
+        var badge = card.querySelector('.mc-badge');
+        if (badge) { badge.textContent = 'DONE'; badge.classList.remove('badge-unlocked'); badge.classList.add('badge-done'); }
+        card.style.borderColor = 'rgba(201,168,76,0.25)';
+      }
+    }
+  }
+
+  var pct = Math.round((done / 13) * 100);
+  document.getElementById('pctDisp').textContent = pct + '%';
+  document.getElementById('overallBar').style.width = pct + '%';
+  document.getElementById('modDoneDisp').textContent = done + '/13';
+
+  // Update ring colour proportion
+  var ring = document.querySelector('.op-ring');
+  if (ring) {
+    ring.style.background = 'conic-gradient(var(--gold) ' + pct + '%, rgba(255,255,255,0.06) 0%)';
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Module 4: Nouns and Gender</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --der:#3498db; --die:#e74c3c; --das:#27ae60;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--gold); color:var(--gold); }
+
+  .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:rgba(10,10,10,0.96); backdrop-filter:blur(20px); border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:12px 0 20px; z-index:100; }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:8px 16px; border-radius:12px; transition:all 0.2s; border:none; background:none; color:var(--gray); }
+  .nav-item:hover, .nav-item.active { color:var(--gold); }
+  .nav-icon { font-size:20px; }
+  .nav-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; font-family:'DM Mono',monospace; }
+
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--gold); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--gold); width:22px; border-radius:4px; }
+
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--gold); color:var(--black); width:100%; }
+  .btn-primary:hover { background:var(--gold-light); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(201,168,76,0.2); }
+  .speak-btn.speaking { background:var(--gold); color:var(--black); }
+
+  /* GENDER CARDS — the core visual */
+  .gender-trio { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin:16px 0; }
+  .gender-card { border-radius:16px; padding:20px; text-align:center; }
+  .gc-der { background:rgba(52,152,219,0.08); border:2px solid rgba(52,152,219,0.35); }
+  .gc-die { background:rgba(231,76,60,0.08); border:2px solid rgba(231,76,60,0.35); }
+  .gc-das { background:rgba(39,174,96,0.08); border:2px solid rgba(39,174,96,0.35); }
+  .gc-art { font-size:36px; font-family:'Playfair Display',serif; font-weight:900; margin-bottom:4px; }
+  .gc-der .gc-art { color:var(--der); }
+  .gc-die .gc-art { color:var(--die); }
+  .gc-das .gc-art { color:var(--das); }
+  .gc-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .gc-der .gc-label { color:var(--der); }
+  .gc-die .gc-label { color:var(--die); }
+  .gc-das .gc-label { color:var(--das); }
+  .gc-examples { font-size:12px; color:var(--cream); line-height:1.8; }
+
+  /* NOUN GRID */
+  .noun-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; margin:14px 0; }
+  .noun-cell { border-radius:12px; padding:14px 12px; cursor:pointer; transition:all 0.2s; user-select:none; text-align:center; }
+  .nc-der { background:rgba(52,152,219,0.07); border:1px solid rgba(52,152,219,0.25); }
+  .nc-die { background:rgba(231,76,60,0.07); border:1px solid rgba(231,76,60,0.25); }
+  .nc-das { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); }
+  .nc-der:hover, .nc-der.speaking { border-color:var(--der); background:rgba(52,152,219,0.15); }
+  .nc-die:hover, .nc-die.speaking { border-color:var(--die); background:rgba(231,76,60,0.15); }
+  .nc-das:hover, .nc-das.speaking { border-color:var(--das); background:rgba(39,174,96,0.15); }
+  .nc-art { font-size:11px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:4px; }
+  .nc-der .nc-art { color:var(--der); }
+  .nc-die .nc-art { color:var(--die); }
+  .nc-das .nc-art { color:var(--das); }
+  .nc-word { font-family:'DM Mono',monospace; font-size:15px; color:var(--cream); font-weight:600; margin-bottom:3px; }
+  .nc-en { font-size:11px; color:var(--gray); }
+  .nc-tap { font-size:10px; color:var(--gold); opacity:0.6; margin-top:4px; }
+
+  /* RULE CARDS */
+  .rule-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:18px; margin:10px 0; display:flex; gap:14px; }
+  .rule-icon { font-size:26px; flex-shrink:0; }
+  .rule-title { font-weight:700; font-size:14px; margin-bottom:4px; }
+  .rule-desc { font-size:13px; color:var(--gray); line-height:1.65; }
+  .rule-ex { font-family:'DM Mono',monospace; font-size:12px; margin-top:8px; line-height:1.9; }
+
+  /* PLURAL TABLE */
+  .dtable { width:100%; border-collapse:collapse; margin:12px 0; font-size:14px; }
+  .dtable th { text-align:left; padding:9px 12px; border-bottom:1px solid var(--border); color:var(--gray); font-size:11px; font-weight:500; }
+  .dtable td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04); vertical-align:top; }
+  .dtable tr:last-child td { border-bottom:none; }
+  .de { font-family:'DM Mono',monospace; color:var(--gold); font-size:14px; }
+  .de-der { font-family:'DM Mono',monospace; color:var(--der); font-size:14px; }
+  .de-die { font-family:'DM Mono',monospace; color:var(--die); font-size:14px; }
+  .de-das { font-family:'DM Mono',monospace; color:var(--das); font-size:14px; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Sans',sans-serif; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--gold); background:rgba(201,168,76,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(201,168,76,0.1); border-radius:8px; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(201,168,76,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(201,168,76,0.08); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(201,168,76,0.12); border:1px solid var(--gold); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--gold); font-size:18px; margin:18px 0; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+
+  @media(max-width:600px){
+    .gender-trio { grid-template-columns:1fr 1fr 1fr; gap:8px; }
+    .gc-art { font-size:26px; }
+    .noun-grid { grid-template-columns:repeat(2,1fr); }
+    .lesson-h { font-size:22px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================================================================
+  OVERVIEW
+================================================================ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">MODULE 4</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">A1 · Grammar Core</div>
+    <h1 class="lesson-h" style="font-size:36px;"><span style="color:var(--der)">der</span> · <span style="color:var(--die)">die</span> · <span style="color:var(--das)">das</span><br>Nouns and Gender</h1>
+    <p class="body-text">Every German noun has a gender — masculine, feminine, or neuter. The article (der, die, das) tells you the gender. This is not optional information. Gender controls the article, the adjective endings, and the case system. Get the gender wrong and every sentence about that noun is wrong.</p>
+    <div class="info-box"><strong style="color:var(--gold)">The golden rule of German nouns:</strong> Always learn a noun with its article. Never learn "Tisch" — learn "<span style="color:var(--der)">der</span> Tisch." Never learn "Frau" — learn "<span style="color:var(--die)">die</span> Frau." The article is part of the word. It must become automatic.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">🔵🔴🟢</div><div><div class="lc-title">Lesson 1 — The Three Genders</div><div class="lc-desc">What der, die, das mean and how to remember them.</div></div><div class="lc-tag" style="color:var(--gold);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">📏</div><div><div class="lc-title">Lesson 2 — Gender Rules and Patterns</div><div class="lc-desc">Endings that almost always predict the gender. Learn the patterns, not just the words.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">🏠</div><div><div class="lc-title">Lesson 3 — High-Frequency Nouns (Home & Daily Life)</div><div class="lc-desc">The 30 nouns that appear most in Goethe A1 — with articles.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">💼</div><div><div class="lc-title">Lesson 4 — High-Frequency Nouns (Work & People)</div><div class="lc-desc">Professions, family members, places — all with articles.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">🔢</div><div><div class="lc-title">Lesson 5 — Plural Forms</div><div class="lc-desc">All plurals use die. The five plural patterns and how to spot them.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🎯</div><div><div class="lc-title">Lesson 6 — Gender in Goethe Sentences</div><div class="lc-desc">Gender in real exam sentences — Schreiben form-filling and Hören.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Begin Lesson 1 →</button>
+  </div>
+</div>
+
+<!-- ================================================================
+  LESSON SCREEN
+================================================================ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lessons</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ===== LESSON 1: The Three Genders ===== -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">Module 4 · Lesson 1 of 6</div>
+          <h2 class="lesson-h">The three genders — masculine, feminine, neuter</h2>
+          <p class="body-text">In German, every noun is one of three genders. The gender is shown by the definite article before the noun. Unlike biological gender, grammatical gender in German is not always logical — a girl (das Mädchen) is neuter, a key (der Schlüssel) is masculine. You must learn the article with every noun.</p>
+
+          <div class="gender-trio">
+            <div class="gender-card gc-der">
+              <div class="gc-art">der</div>
+              <div class="gc-label">MASCULINE</div>
+              <div class="gc-examples">der Mann<br>der Tisch<br>der Hund<br>der Januar</div>
+            </div>
+            <div class="gender-card gc-die">
+              <div class="gc-art">die</div>
+              <div class="gc-label">FEMININE</div>
+              <div class="gc-examples">die Frau<br>die Schule<br>die Stadt<br>die Zeit</div>
+            </div>
+            <div class="gender-card gc-das">
+              <div class="gc-art">das</div>
+              <div class="gc-label">NEUTER</div>
+              <div class="gc-examples">das Kind<br>das Haus<br>das Buch<br>das Auto</div>
+            </div>
+          </div>
+
+          <div class="danger-box"><strong style="color:#e74c3c;">Why gender matters beyond the article:</strong> Gender affects every part of the sentence around the noun. When you say "I see a man" — the article for "man" changes from der to <strong>den</strong> (Akkusativ). When you say "I give the woman" — the article changes from die to <strong>der</strong> (Dativ). You cannot learn cases without knowing gender first. Every wrong gender creates a chain of wrong forms.</div>
+
+          <div class="sec-label">The indefinite article (a/an) also changes by gender</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:14px 0;">
+            <div style="background:rgba(52,152,219,0.07);border:1px solid rgba(52,152,219,0.25);border-radius:12px;padding:14px;text-align:center;">
+              <div style="font-size:11px;color:var(--der);letter-spacing:2px;font-family:'DM Mono',monospace;margin-bottom:6px;">MASCULINE</div>
+              <div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--der);margin-bottom:4px;">ein</div>
+              <div style="font-size:12px;color:var(--gray);">ein Mann<br>ein Tisch</div>
+            </div>
+            <div style="background:rgba(231,76,60,0.07);border:1px solid rgba(231,76,60,0.25);border-radius:12px;padding:14px;text-align:center;">
+              <div style="font-size:11px;color:var(--die);letter-spacing:2px;font-family:'DM Mono',monospace;margin-bottom:6px;">FEMININE</div>
+              <div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--die);margin-bottom:4px;">eine</div>
+              <div style="font-size:12px;color:var(--gray);">eine Frau<br>eine Schule</div>
+            </div>
+            <div style="background:rgba(39,174,96,0.07);border:1px solid rgba(39,174,96,0.25);border-radius:12px;padding:14px;text-align:center;">
+              <div style="font-size:11px;color:var(--das);letter-spacing:2px;font-family:'DM Mono',monospace;margin-bottom:6px;">NEUTER</div>
+              <div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--das);margin-bottom:4px;">ein</div>
+              <div style="font-size:12px;color:var(--gray);">ein Kind<br>ein Buch</div>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue)">Masculine and neuter share "ein"</strong> — only feminine gets "eine." This matters in writing but not in speech (they sound different in sentences). The distinction between ein and eine is the first gender test in Goethe Schreiben form-filling.</div>
+
+          <div class="sec-label">Hear the articles — tap each</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;">
+            <button class="speak-btn" onclick="speakSentence(this,'der Mann')">🔊 der Mann</button>
+            <button class="speak-btn" onclick="speakSentence(this,'die Frau')">🔊 die Frau</button>
+            <button class="speak-btn" onclick="speakSentence(this,'das Kind')">🔊 das Kind</button>
+            <button class="speak-btn" onclick="speakSentence(this,'ein Mann')">🔊 ein Mann</button>
+            <button class="speak-btn" onclick="speakSentence(this,'eine Frau')">🔊 eine Frau</button>
+            <button class="speak-btn" onclick="speakSentence(this,'ein Kind')">🔊 ein Kind</button>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Continue →</button></div>
+      </div>
+
+      <div class="step" id="l0-s1">
+        <div class="card">
+          <div class="concept-tag">Module 4 · Lesson 1 · Quiz</div>
+          <h2 class="lesson-h">Gender Basics Quiz</h2>
+          <div id="qz-0"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ===== LESSON 2: Rules and Patterns ===== -->
+    <div id="lesson-1" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">Module 4 · Lesson 2 of 6</div>
+          <h2 class="lesson-h">Gender rules — patterns you can use right now</h2>
+          <p class="body-text">You cannot memorise the gender of every German noun. But you can learn the patterns that predict gender most of the time. These rules cover the majority of the vocabulary in Goethe A1.</p>
+
+          <div class="sec-label" style="color:var(--der);">Rules for der — masculine</div>
+          <div class="rule-card">
+            <div class="rule-icon">👨</div>
+            <div>
+              <div class="rule-title" style="color:var(--der);">Male people and male animals</div>
+              <div class="rule-desc">Any noun referring to a male person or male animal is grammatically masculine.</div>
+              <div class="rule-ex"><span style="color:var(--der);">der</span> Vater (father) · <span style="color:var(--der);">der</span> Bruder (brother) · <span style="color:var(--der);">der</span> Hund (male dog) · <span style="color:var(--der);">der</span> Lehrer (male teacher)</div>
+            </div>
+          </div>
+          <div class="rule-card">
+            <div class="rule-icon">📅</div>
+            <div>
+              <div class="rule-title" style="color:var(--der);">Days, months, seasons</div>
+              <div class="rule-desc">You learned this in Module 1 — all three categories are masculine.</div>
+              <div class="rule-ex"><span style="color:var(--der);">der</span> Montag · <span style="color:var(--der);">der</span> Januar · <span style="color:var(--der);">der</span> Sommer · <span style="color:var(--der);">der</span> Herbst</div>
+            </div>
+          </div>
+          <div class="rule-card">
+            <div class="rule-icon">🔤</div>
+            <div>
+              <div class="rule-title" style="color:var(--der);">Endings: -er, -en, -el, -ling, -ig, -ismus</div>
+              <div class="rule-desc">Nouns ending in these suffixes are usually masculine.</div>
+              <div class="rule-ex"><span style="color:var(--der);">der</span> Lehrer (-er) · <span style="color:var(--der);">der</span> Wagen (-en) · <span style="color:var(--der);">der</span> Schlüssel (-el) · <span style="color:var(--der);">der</span> Frühling (-ling)</div>
+            </div>
+          </div>
+
+          <div class="sec-label" style="color:var(--die);">Rules for die — feminine</div>
+          <div class="rule-card">
+            <div class="rule-icon">👩</div>
+            <div>
+              <div class="rule-title" style="color:var(--die);">Female people and female animals</div>
+              <div class="rule-desc">Any noun referring to a female person or female animal is grammatically feminine.</div>
+              <div class="rule-ex"><span style="color:var(--die);">die</span> Mutter (mother) · <span style="color:var(--die);">die</span> Schwester (sister) · <span style="color:var(--die);">die</span> Ärztin (female doctor)</div>
+            </div>
+          </div>
+          <div class="rule-card">
+            <div class="rule-icon">🔤</div>
+            <div>
+              <div class="rule-title" style="color:var(--die);">Endings: -ung, -heit, -keit, -schaft, -ion, -ik, -tät, -enz</div>
+              <div class="rule-desc">These endings are almost always feminine. If a noun ends in -ung, it is die — no exceptions.</div>
+              <div class="rule-ex"><span style="color:var(--die);">die</span> Wohnung (-ung) · <span style="color:var(--die);">die</span> Freiheit (-heit) · <span style="color:var(--die);">die</span> Möglichkeit (-keit) · <span style="color:var(--die);">die</span> Nation (-ion) · <span style="color:var(--die);">die</span> Universität (-tät)</div>
+            </div>
+          </div>
+
+          <div class="sec-label" style="color:var(--das);">Rules for das — neuter</div>
+          <div class="rule-card">
+            <div class="rule-icon">🔤</div>
+            <div>
+              <div class="rule-title" style="color:var(--das);">Endings: -chen, -lein, -ment, -um, -tum</div>
+              <div class="rule-desc">Diminutives ending in -chen or -lein are always neuter — even if they refer to a female person (das Mädchen = the girl).</div>
+              <div class="rule-ex"><span style="color:var(--das);">das</span> Mädchen (girl) · <span style="color:var(--das);">das</span> Häuschen (little house) · <span style="color:var(--das);">das</span> Argument (-ment) · <span style="color:var(--das);">das</span> Zentrum (-um)</div>
+            </div>
+          </div>
+          <div class="rule-card">
+            <div class="rule-icon">🌍</div>
+            <div>
+              <div class="rule-title" style="color:var(--das);">Most countries and continents</div>
+              <div class="rule-desc">Most country names have no article (in Kenia, in Deutschland). But the few that do take an article are neuter: das Deutschland (only used in "das schöne Deutschland"). Exceptions: die Türkei, die Schweiz, die USA (plural).</div>
+              <div class="rule-ex"><span style="color:var(--das);">das</span> Europa · <span style="color:var(--das);">das</span> Afrika · but: <span style="color:var(--die);">die</span> Türkei · <span style="color:var(--die);">die</span> Schweiz</div>
+            </div>
+          </div>
+
+          <div class="success-box"><strong style="color:var(--green)">The most powerful rule:</strong> -ung is always die. Every single noun ending in -ung is feminine. Wohnung, Zeitung, Öffnungszeit, Entschuldigung, Übung — all die. Memorise this one ending and you cover dozens of common nouns.</div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Continue →</button></div>
+      </div>
+
+      <div class="step" id="l1-s1">
+        <div class="card">
+          <div class="concept-tag">Module 4 · Lesson 2 · Quiz</div>
+          <h2 class="lesson-h">Gender Rules Quiz</h2>
+          <div id="qz-1"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ===== LESSON 3: Home & Daily Life Nouns ===== -->
+    <div id="lesson-2" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">Module 4 · Lesson 3 of 6</div>
+          <h2 class="lesson-h">Home and daily life — the nouns Goethe tests most</h2>
+          <p class="body-text">These are the nouns that appear most frequently in Goethe A1 Hören and Lesen. Learn each one with its colour-coded article. Tap any card to hear the German.</p>
+          <div class="info-box"><strong style="color:var(--gold)">Colour system:</strong> <span style="color:var(--der);">Blue = der</span> · <span style="color:var(--die);">Red = die</span> · <span style="color:var(--das);">Green = das</span> — use the colours to build visual memory.</div>
+
+          <div class="sec-label">Home and Living</div>
+          <div class="noun-grid">
+            <div class="noun-cell nc-das" onclick="speakNoun(this,'das Haus')"><div class="nc-art">das</div><div class="nc-word">Haus</div><div class="nc-en">house</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-die" onclick="speakNoun(this,'die Wohnung')"><div class="nc-art">die</div><div class="nc-word">Wohnung</div><div class="nc-en">apartment</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-das" onclick="speakNoun(this,'das Zimmer')"><div class="nc-art">das</div><div class="nc-word">Zimmer</div><div class="nc-en">room</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-die" onclick="speakNoun(this,'die Küche')"><div class="nc-art">die</div><div class="nc-word">Küche</div><div class="nc-en">kitchen</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-das" onclick="speakNoun(this,'das Badezimmer')"><div class="nc-art">das</div><div class="nc-word">Badezimmer</div><div class="nc-en">bathroom</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-der" onclick="speakNoun(this,'der Schlüssel')"><div class="nc-art">der</div><div class="nc-word">Schlüssel</div><div class="nc-en">key</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-der" onclick="speakNoun(this,'der Tisch')"><div class="nc-art">der</div><div class="nc-word">Tisch</div><div class="nc-en">table</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-der" onclick="speakNoun(this,'der Stuhl')"><div class="nc-art">der</div><div class="nc-word">Stuhl</div><div class="nc-en">chair</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-das" onclick="speakNoun(this,'das Bett')"><div class="nc-art">das</div><div class="nc-word">Bett</div><div class="nc-en">bed</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-der" onclick="speakNoun(this,'der Kühlschrank')"><div class="nc-art">der</div><div class="nc-word">Kühlschrank</div><div class="nc-en">fridge</div><div class="nc-tap">🔊 tap</div></div>
+          </div>
+
+          <div class="sec-label">Food and Daily Life</div>
+          <div class="noun-grid">
+            <div class="noun-cell nc-das" onclick="speakNoun(this,'das Frühstück')"><div class="nc-art">das</div><div class="nc-word">Frühstück</div><div class="nc-en">breakfast</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-das" onclick="speakNoun(this,'das Mittagessen')"><div class="nc-art">das</div><div class="nc-word">Mittagessen</div><div class="nc-en">lunch</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-das" onclick="speakNoun(this,'das Abendessen')"><div class="nc-art">das</div><div class="nc-word">Abendessen</div><div class="nc-en">dinner</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-der" onclick="speakNoun(this,'der Kaffee')"><div class="nc-art">der</div><div class="nc-word">Kaffee</div><div class="nc-en">coffee</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-das" onclick="speakNoun(this,'das Wasser')"><div class="nc-art">das</div><div class="nc-word">Wasser</div><div class="nc-en">water</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-das" onclick="speakNoun(this,'das Brot')"><div class="nc-art">das</div><div class="nc-word">Brot</div><div class="nc-en">bread</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-die" onclick="speakNoun(this,'die Milch')"><div class="nc-art">die</div><div class="nc-word">Milch</div><div class="nc-en">milk</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-der" onclick="speakNoun(this,'der Supermarkt')"><div class="nc-art">der</div><div class="nc-word">Supermarkt</div><div class="nc-en">supermarket</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-die" onclick="speakNoun(this,'die Apotheke')"><div class="nc-art">die</div><div class="nc-word">Apotheke</div><div class="nc-en">pharmacy</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-der" onclick="speakNoun(this,'der Arzt')"><div class="nc-art">der</div><div class="nc-word">Arzt</div><div class="nc-en">doctor (m)</div><div class="nc-tap">🔊 tap</div></div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Continue →</button></div>
+      </div>
+
+      <div class="step" id="l2-s1">
+        <div class="card">
+          <div class="concept-tag">Module 4 · Lesson 3 · Quiz</div>
+          <h2 class="lesson-h">Home and Life Nouns Quiz</h2>
+          <div id="qz-2"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ===== LESSON 4: Work & People ===== -->
+    <div id="lesson-3" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">Module 4 · Lesson 4 of 6</div>
+          <h2 class="lesson-h">Work, people, and places — tap to hear each</h2>
+
+          <div class="sec-label">Family and People</div>
+          <div class="noun-grid">
+            <div class="noun-cell nc-der" onclick="speakNoun(this,'der Mann')"><div class="nc-art">der</div><div class="nc-word">Mann</div><div class="nc-en">man / husband</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-die" onclick="speakNoun(this,'die Frau')"><div class="nc-art">die</div><div class="nc-word">Frau</div><div class="nc-en">woman / wife</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-das" onclick="speakNoun(this,'das Kind')"><div class="nc-art">das</div><div class="nc-word">Kind</div><div class="nc-en">child</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-der" onclick="speakNoun(this,'der Vater')"><div class="nc-art">der</div><div class="nc-word">Vater</div><div class="nc-en">father</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-die" onclick="speakNoun(this,'die Mutter')"><div class="nc-art">die</div><div class="nc-word">Mutter</div><div class="nc-en">mother</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-der" onclick="speakNoun(this,'der Bruder')"><div class="nc-art">der</div><div class="nc-word">Bruder</div><div class="nc-en">brother</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-die" onclick="speakNoun(this,'die Schwester')"><div class="nc-art">die</div><div class="nc-word">Schwester</div><div class="nc-en">sister</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-das" onclick="speakNoun(this,'das Mädchen')"><div class="nc-art">das</div><div class="nc-word">Mädchen</div><div class="nc-en">girl ⚠️ neuter!</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-der" onclick="speakNoun(this,'der Junge')"><div class="nc-art">der</div><div class="nc-word">Junge</div><div class="nc-en">boy</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-die" onclick="speakNoun(this,'die Eltern')"><div class="nc-art">die</div><div class="nc-word">Eltern</div><div class="nc-en">parents (plural)</div><div class="nc-tap">🔊 tap</div></div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue)">das Mädchen — the most famous gender trap:</strong> "Girl" is grammatically neuter in German because it ends in -chen (diminutive). The biology says female; the grammar says neuter. The grammar wins. Always: das Mädchen, es ist... (not sie ist in a grammar context).</div>
+
+          <div class="sec-label">Professions — pairs</div>
+          <table class="dtable">
+            <tr><th>Masculine (der)</th><th>Feminine (die)</th><th>English</th></tr>
+            <tr><td class="de-der">der Arzt</td><td class="de-die">die Ärztin</td><td style="font-size:13px;color:var(--gray);">doctor</td></tr>
+            <tr><td class="de-der">der Lehrer</td><td class="de-die">die Lehrerin</td><td style="font-size:13px;color:var(--gray);">teacher</td></tr>
+            <tr><td class="de-der">der Krankenpfleger</td><td class="de-die">die Krankenschwester</td><td style="font-size:13px;color:var(--gray);">nurse</td></tr>
+            <tr><td class="de-der">der Verkäufer</td><td class="de-die">die Verkäuferin</td><td style="font-size:13px;color:var(--gray);">sales assistant</td></tr>
+            <tr><td class="de-der">der Ingenieur</td><td class="de-die">die Ingenieurin</td><td style="font-size:13px;color:var(--gray);">engineer</td></tr>
+            <tr><td class="de-der">der Student</td><td class="de-die">die Studentin</td><td style="font-size:13px;color:var(--gray);">student</td></tr>
+          </table>
+
+          <div class="sec-label">Places and Transport</div>
+          <div class="noun-grid">
+            <div class="noun-cell nc-der" onclick="speakNoun(this,'der Bahnhof')"><div class="nc-art">der</div><div class="nc-word">Bahnhof</div><div class="nc-en">train station</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-der" onclick="speakNoun(this,'der Zug')"><div class="nc-art">der</div><div class="nc-word">Zug</div><div class="nc-en">train</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-das" onclick="speakNoun(this,'das Auto')"><div class="nc-art">das</div><div class="nc-word">Auto</div><div class="nc-en">car</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-die" onclick="speakNoun(this,'die Straße')"><div class="nc-art">die</div><div class="nc-word">Straße</div><div class="nc-en">street</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-die" onclick="speakNoun(this,'die Schule')"><div class="nc-art">die</div><div class="nc-word">Schule</div><div class="nc-en">school</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-das" onclick="speakNoun(this,'das Krankenhaus')"><div class="nc-art">das</div><div class="nc-word">Kranken­haus</div><div class="nc-en">hospital</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-das" onclick="speakNoun(this,'das Büro')"><div class="nc-art">das</div><div class="nc-word">Büro</div><div class="nc-en">office</div><div class="nc-tap">🔊 tap</div></div>
+            <div class="noun-cell nc-die" onclick="speakNoun(this,'die Stadt')"><div class="nc-art">die</div><div class="nc-word">Stadt</div><div class="nc-en">city / town</div><div class="nc-tap">🔊 tap</div></div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Continue →</button></div>
+      </div>
+
+      <div class="step" id="l3-s1">
+        <div class="card">
+          <div class="concept-tag">Module 4 · Lesson 4 · Quiz</div>
+          <h2 class="lesson-h">People and Places Quiz</h2>
+          <div id="qz-3"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ===== LESSON 5: Plurals ===== -->
+    <div id="lesson-4" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">Module 4 · Lesson 5 of 6</div>
+          <h2 class="lesson-h">Plural forms — all plurals use <span style="color:var(--die)">die</span></h2>
+          <p class="body-text">The good news: every German noun, regardless of its singular gender, uses <strong style="color:var(--die)">die</strong> in the plural. der Tisch → <strong style="color:var(--die)">die</strong> Tische. das Kind → <strong style="color:var(--die)">die</strong> Kinder. die Frau → <strong style="color:var(--die)">die</strong> Frauen. The article is always die in the plural.</p>
+          <p class="body-text">The hard part is that the noun itself changes — and there are five different plural patterns. You must learn the plural form of each noun along with its gender.</p>
+
+          <div class="info-box"><strong style="color:var(--gold)">Learn three things with every noun:</strong> Article + singular + plural. For example: <span style="color:var(--der);">der</span> Tisch / <span style="color:var(--die);">die</span> Tische. Always. Every time you learn a noun, this is what you learn.</div>
+
+          <div class="sec-label">The five plural patterns</div>
+          <table class="dtable">
+            <tr><th>Pattern</th><th>Example singular</th><th>Plural</th><th>Change</th></tr>
+            <tr><td style="font-size:13px;color:var(--cream);">No change</td><td class="de-der">der Lehrer</td><td class="de-die">die Lehrer</td><td style="font-size:12px;color:var(--gray);">Identical — many -er nouns</td></tr>
+            <tr><td style="font-size:13px;color:var(--cream);">Add umlaut</td><td class="de-der">der Vater</td><td class="de-die">die Väter</td><td style="font-size:12px;color:var(--gray);">Vowel changes a→ä, u→ü, o→ö</td></tr>
+            <tr><td style="font-size:13px;color:var(--cream);">Add -e</td><td class="de-der">der Tisch</td><td class="de-die">die Tische</td><td style="font-size:12px;color:var(--gray);">Most common for masculine nouns</td></tr>
+            <tr><td style="font-size:13px;color:var(--cream);">Add -er</td><td class="de-das">das Kind</td><td class="de-die">die Kinder</td><td style="font-size:12px;color:var(--gray);">Common for neuter nouns</td></tr>
+            <tr><td style="font-size:13px;color:var(--cream);">Add -en / -n</td><td class="de-die">die Frau</td><td class="de-die">die Frauen</td><td style="font-size:12px;color:var(--gray);">Most common for feminine nouns</td></tr>
+            <tr><td style="font-size:13px;color:var(--cream);">Add -s</td><td class="de-das">das Auto</td><td class="de-die">die Autos</td><td style="font-size:12px;color:var(--gray);">Foreign loanwords, abbreviations</td></tr>
+          </table>
+
+          <div class="sec-label">Plurals in Goethe sentences — tap to hear</div>
+          <div style="display:flex;flex-direction:column;gap:10px;margin:14px 0;">
+            <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+              <div>
+                <div style="font-family:'DM Mono',monospace;font-size:14px;color:var(--cream);">Ich habe <span style="color:var(--die);font-weight:700;">zwei Kinder</span>.</div>
+                <div style="font-size:12px;color:var(--gray);margin-top:3px;">I have two children. (Kinder = plural of Kind)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich habe zwei Kinder.')">🔊</button>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+              <div>
+                <div style="font-family:'DM Mono',monospace;font-size:14px;color:var(--cream);">Die <span style="color:var(--die);font-weight:700;">Züge</span> fahren um acht Uhr ab.</div>
+                <div style="font-size:12px;color:var(--gray);margin-top:3px;">The trains depart at eight. (Züge = plural of Zug)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Die Züge fahren um acht Uhr ab.')">🔊</button>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+              <div>
+                <div style="font-family:'DM Mono',monospace;font-size:14px;color:var(--cream);">Die <span style="color:var(--die);font-weight:700;">Ärzte</span> sind im Krankenhaus.</div>
+                <div style="font-size:12px;color:var(--gray);margin-top:3px;">The doctors are in the hospital. (Ärzte = plural of Arzt)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Die Ärzte sind im Krankenhaus.')">🔊</button>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+              <div>
+                <div style="font-family:'DM Mono',monospace;font-size:14px;color:var(--cream);">Wir haben drei <span style="color:var(--die);font-weight:700;">Zimmer</span> in der Wohnung.</div>
+                <div style="font-size:12px;color:var(--gray);margin-top:3px;">We have three rooms in the apartment. (Zimmer = no change in plural)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wir haben drei Zimmer in der Wohnung.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Continue →</button></div>
+      </div>
+
+      <div class="step" id="l4-s1">
+        <div class="card">
+          <div class="concept-tag">Module 4 · Lesson 5 · Quiz</div>
+          <h2 class="lesson-h">Plurals Quiz</h2>
+          <div id="qz-4"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ===== LESSON 6: Gender in Goethe Sentences ===== -->
+    <div id="lesson-5" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">Module 4 · Lesson 6 of 6</div>
+          <h2 class="lesson-h">Gender in real Goethe sentences</h2>
+          <p class="body-text">The Goethe exam tests gender in several ways: form-filling (writing the correct article), Lesen (choosing the right sentence), and Schreiben (producing sentences). These are the patterns that appear most often.</p>
+
+          <div class="sec-label">Form-filling — Goethe Schreiben Part 1</div>
+          <p class="body-text">The first Schreiben task is a form where you fill in personal information. Gender appears here because German forms use articles before categories.</p>
+
+          <div style="background:rgba(201,168,76,0.04);border:1px solid var(--border);border-radius:14px;padding:20px;margin:14px 0;">
+            <div style="font-size:11px;letter-spacing:3px;color:var(--gold);font-family:'DM Mono',monospace;margin-bottom:16px;">TYPICAL GOETHE A1 FORM FIELDS</div>
+            <table class="dtable">
+              <tr><th>Field</th><th>Article</th><th>Why</th></tr>
+              <tr><td style="font-size:13px;color:var(--cream);">Name</td><td class="de-der">der Name</td><td style="font-size:12px;color:var(--gray);">masculine — ends in -e but irregular</td></tr>
+              <tr><td style="font-size:13px;color:var(--cream);">Adresse</td><td class="de-die">die Adresse</td><td style="font-size:12px;color:var(--gray);">feminine — ends in -e (many -e nouns are feminine)</td></tr>
+              <tr><td style="font-size:13px;color:var(--cream);">Telefonnummer</td><td class="de-die">die Telefonnummer</td><td style="font-size:12px;color:var(--gray);">feminine — die Nummer is feminine</td></tr>
+              <tr><td style="font-size:13px;color:var(--cream);">Beruf</td><td class="de-der">der Beruf</td><td style="font-size:12px;color:var(--gray);">masculine</td></tr>
+              <tr><td style="font-size:13px;color:var(--cream);">Geburtsort</td><td class="de-der">der Geburtsort</td><td style="font-size:12px;color:var(--gray);">masculine — der Ort (place) is masculine</td></tr>
+              <tr><td style="font-size:13px;color:var(--cream);">Datum</td><td class="de-das">das Datum</td><td style="font-size:12px;color:var(--gray);">neuter — ends in -um</td></tr>
+            </table>
+          </div>
+
+          <div class="sec-label">Gender in Hören — sentences to recognise</div>
+          <div style="display:flex;flex-direction:column;gap:10px;margin:14px 0;">
+            <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;">
+              <div style="font-family:'DM Mono',monospace;font-size:14px;color:var(--cream);margin-bottom:4px;"><span style="color:var(--der);">Der</span> Kurs beginnt am Montag.</div>
+              <div style="font-size:12px;color:var(--gray);margin-bottom:8px;">The course begins on Monday. — der Kurs (masculine)</div>
+              <button class="speak-btn" onclick="speakSentence(this,'Der Kurs beginnt am Montag.')">🔊</button>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;">
+              <div style="font-family:'DM Mono',monospace;font-size:14px;color:var(--cream);margin-bottom:4px;"><span style="color:var(--die);">Die</span> Öffnungszeit ist von neun bis achtzehn Uhr.</div>
+              <div style="font-size:12px;color:var(--gray);margin-bottom:8px;">The opening time is from nine to six. — die Öffnungszeit (feminine, -zeit from die Zeit)</div>
+              <button class="speak-btn" onclick="speakSentence(this,'Die Öffnungszeit ist von neun bis achtzehn Uhr.')">🔊</button>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;">
+              <div style="font-family:'DM Mono',monospace;font-size:14px;color:var(--cream);margin-bottom:4px;"><span style="color:var(--das);">Das</span> Formular muss vollständig ausgefüllt werden.</div>
+              <div style="font-size:12px;color:var(--gray);margin-bottom:8px;">The form must be filled out completely. — das Formular (neuter, ends in -ar)</div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das Formular muss vollständig ausgefüllt werden.')">🔊</button>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;">
+              <div style="font-family:'DM Mono',monospace;font-size:14px;color:var(--cream);margin-bottom:4px;"><span style="color:var(--die);">Die</span> Wohnung hat drei Zimmer und eine Küche.</div>
+              <div style="font-size:12px;color:var(--gray);margin-bottom:8px;">The apartment has three rooms and a kitchen. — die Wohnung (-ung = always feminine)</div>
+              <button class="speak-btn" onclick="speakSentence(this,'Die Wohnung hat drei Zimmer und eine Küche.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="success-box"><strong style="color:var(--green)">The article before a noun tells you everything:</strong> In the Goethe Lesen section, you often identify meaning from context. The article is a free clue — it narrows down what the noun can be. "Der" signals a masculine noun. If you hear "die" before a time word, you know it is die Zeit or die Stunde or die Uhrzeit. Use articles actively as comprehension clues.</div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Start Final Quiz →</button></div>
+      </div>
+
+      <div class="step" id="l5-s1">
+        <div class="card">
+          <div class="concept-tag">Module 4 · Final Quiz</div>
+          <h2 class="lesson-h">Module Complete — Final Check</h2>
+          <div id="qz-5"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Previous</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="showOverview()"><span class="nav-icon">📚</span><span class="nav-label">Overview</span></button>
+  <button class="nav-item" onclick="resumeLesson()"><span class="nav-icon">▶️</span><span class="nav-label">Resume</span></button>
+</nav>
+
+<script>
+// ================================================================
+// SPEECH — Chrome Android safe
+// ================================================================
+var synth = (typeof window !== 'undefined' && window.speechSynthesis) ? window.speechSynthesis : null;
+var deVoice = null;
+var speechUnlocked = false;
+
+function loadVoices() {
+  if (!synth) return;
+  try {
+    var v = synth.getVoices();
+    deVoice = v.find(function(x){ return x.lang==='de-DE'; }) || v.find(function(x){ return x.lang&&x.lang.startsWith('de'); }) || null;
+  } catch(e) {}
+}
+if (synth) { try { loadVoices(); if (synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadVoices; } catch(e) {} }
+
+function unlockSpeech() {
+  if (speechUnlocked||!synth) return;
+  try { var s=new SpeechSynthesisUtterance(''); s.volume=0; synth.speak(s); speechUnlocked=true; } catch(e) {}
+}
+document.addEventListener('touchstart', unlockSpeech, {once:true,passive:true});
+document.addEventListener('click', unlockSpeech, {once:true});
+
+function speakDE(text) {
+  if (!synth) return null;
+  try {
+    if (!deVoice) loadVoices();
+    synth.cancel();
+    var u=new SpeechSynthesisUtterance(text);
+    u.lang='de-DE'; u.rate=0.85; u.pitch=1.0; u.volume=1.0;
+    if (deVoice) u.voice=deVoice;
+    synth.speak(u); return u;
+  } catch(e) { return null; }
+}
+function speakSentence(btn, text) {
+  unlockSpeech();
+  document.querySelectorAll('.speak-btn').forEach(function(b){ b.classList.remove('speaking'); });
+  if (btn&&btn.classList) btn.classList.add('speaking');
+  var u=speakDE(text);
+  if (u) { u.onend=function(){ if(btn&&btn.classList) btn.classList.remove('speaking'); }; u.onerror=function(){ if(btn&&btn.classList) btn.classList.remove('speaking'); }; }
+  else { setTimeout(function(){ if(btn&&btn.classList) btn.classList.remove('speaking'); },1500); }
+}
+function speakNoun(cell, text) {
+  unlockSpeech();
+  document.querySelectorAll('.noun-cell').forEach(function(c){ c.classList.remove('speaking'); });
+  cell.classList.add('speaking');
+  var u=speakDE(text);
+  if (u) { u.onend=function(){ cell.classList.remove('speaking'); }; u.onerror=function(){ cell.classList.remove('speaking'); }; }
+  else { setTimeout(function(){ cell.classList.remove('speaking'); },900); }
+}
+
+// ================================================================
+// STATE
+// ================================================================
+var currentLesson=0; var xp=0; var TOTAL=6;
+
+// ================================================================
+// QUIZ DATA
+// ================================================================
+var QD = {
+  0: [
+    { q:'What article does "Haus" (house) take?', hint:'Think about common neuter nouns', opts:['der Haus','die Haus','das Haus','ein Haus (no article)'], ans:2, exp:'"das Haus" — house is neuter in German. This must be memorised. Haus does not follow an obvious ending rule — it is one of the core neuter nouns you learn by heart. das Haus / die Häuser (plural with umlaut).', rule:'das Haus (neuter). Learn article with every noun — never Haus alone.' },
+    { q:'What is the indefinite article (a/an) for a feminine noun?', hint:'Der/die/das → ein/eine/ein', opts:['ein','eine','einem','einer'], ans:1, exp:'"eine" — feminine nouns take "eine" as the indefinite article. Masculine and neuter both take "ein." So: ein Mann (m), eine Frau (f), ein Kind (n). The feminine "eine" is the only form that looks different.', rule:'Indefinite: masculine=ein · feminine=eine · neuter=ein.' },
+    { q:'"Das Mädchen" — why is "girl" neuter in German?', hint:'Think about the ending, not the biology', opts:['Because girls are considered neuter in German culture','Because it ends in -chen (diminutive suffix)','It is a mistake — it should be die Mädchen','Because Mädchen means child, not girl'], ans:1, exp:'Nouns ending in -chen or -lein (diminutive suffixes) are always neuter — regardless of what they refer to. das Mädchen (girl), das Häuschen (little house), das Kindlein (little child). The suffix overrules the biological gender. This is one of the most famous gender traps in German.', rule:'-chen and -lein endings = always das (neuter). Biology does not matter.' },
+  ],
+  1: [
+    { q:'The noun "die Wohnung" ends in -ung. What does this tell you?', hint:'There is a rule for -ung endings', opts:['It could be any gender — ung endings vary','It is definitely feminine — all -ung nouns are die','It is probably neuter','It is probably masculine'], ans:1, exp:'All German nouns ending in -ung are feminine — die. No exceptions. Wohnung, Übung, Zeitung, Öffnungszeit, Entschuldigung, Erklärung — every single one is die. Memorise this one rule and you correctly gender dozens of common nouns automatically.', rule:'-ung ending = always die. Zero exceptions.' },
+    { q:'What gender are nouns ending in -heit and -keit?', hint:'Abstract noun endings have patterns', opts:['Always masculine (der)','Always feminine (die)','Always neuter (das)','It varies — must check each one'], ans:1, exp:'-heit and -keit endings are always feminine — die. die Freiheit (freedom), die Möglichkeit (possibility), die Freundlichkeit (friendliness), die Gesundheit (health). These abstract noun suffixes are reliable gender signals.', rule:'-heit and -keit = always die (feminine).' },
+    { q:'A noun ends in -chen. What article does it take?', hint:'Diminutive suffixes have a fixed rule', opts:['der','die','das','No article'], ans:2, exp:'"das" — all diminutives ending in -chen are neuter. das Mädchen, das Häuschen, das Hündchen. The diminutive suffix overrides all other gender signals, including biological gender. This rule has no exceptions.', rule:'-chen ending = always das (neuter).' },
+  ],
+  2: [
+    { q:'What article does "Küche" (kitchen) take?', hint:'Kitchen is a room — feminine', opts:['der Küche','die Küche','das Küche'], ans:1, exp:'"die Küche" — kitchen is feminine. Many room and building words are feminine: die Küche, die Schule, die Apotheke, die Universität. This must be memorised for Küche specifically, but the -e ending combined with knowing it is a place helps.', rule:'die Küche (feminine). Learn with article: die Küche / die Küchen (plural).' },
+    { q:'What article does "Bahnhof" (train station) take?', hint:'Think about der Hof — the second part of a compound noun often predicts the gender', opts:['der Bahnhof','die Bahnhof','das Bahnhof'], ans:0, exp:'"der Bahnhof" — train station is masculine. In German compound nouns, the LAST part determines the gender. Bahn (train/track) + Hof (yard/court) → der Hof is masculine → der Bahnhof. This compound rule works for most compound nouns.', rule:'Compound nouns: the LAST part determines the gender. der Hof → der Bahnhof.' },
+    { q:'Which article goes with "Frühstück" (breakfast)?', hint:'-stück comes from das Stück (piece) — compound rule applies', opts:['der Frühstück','die Frühstück','das Frühstück'], ans:2, exp:'"das Frühstück" — breakfast is neuter. früh (early) + Stück (piece/bit) → das Stück is neuter → das Frühstück. The compound noun rule again: the last component (Stück) is neuter, so Frühstück is neuter. Similarly: das Mittagessen, das Abendessen (das Essen is neuter).', rule:'das Frühstück / das Mittagessen / das Abendessen — all neuter (das Essen).' },
+  ],
+  3: [
+    { q:'What article does "Kind" (child) take?', hint:'This is one of the most important nouns in A1', opts:['der Kind','die Kind','das Kind'], ans:2, exp:'"das Kind" — child is neuter. This is a core vocabulary item that every A1 student must know. Plural: die Kinder. "Ich habe zwei Kinder" — always das Kind, die Kinder.', rule:'das Kind / die Kinder. Core A1 noun — must be automatic.' },
+    { q:'A female teacher is "die Lehrerin." Why does it end in -in?', hint:'-in is the feminine suffix for professions', opts:['Because all professions are feminine','Because -in is added to masculine forms to make the feminine','Because Lehrerin is a different word from Lehrer','Because teaching is a traditionally female profession'], ans:1, exp:'In German, the feminine form of most professions is made by adding -in to the masculine form. der Lehrer → die Lehrerin. der Arzt → die Ärztin (with umlaut). der Student → die Studentin. der Ingenieur → die Ingenieurin. The -in suffix is a reliable signal that a profession noun is feminine.', rule:'Masculine profession + -in = feminine. Lehrer→Lehrerin, Arzt→Ärztin.' },
+    { q:'What article does "Krankenhaus" (hospital) take?', hint:'Use the compound noun rule — what is the last part?', opts:['der Krankenhaus','die Krankenhaus','das Krankenhaus'], ans:2, exp:'"das Krankenhaus" — hospital is neuter. krank (sick) + Haus (house) → das Haus is neuter → das Krankenhaus. The compound rule works perfectly here. You already know das Haus — so you automatically know das Krankenhaus.', rule:'das Haus → das Krankenhaus. Compound rule: last part determines gender.' },
+  ],
+  4: [
+    { q:'What article do ALL German nouns take in the plural?', hint:'This is the one consistent plural rule', opts:['der (for masculine plurals)','die (for all plurals)','das (for neuter plurals)','Same as the singular article'], ans:1, exp:'All German nouns take "die" in the plural — regardless of their singular gender. der Mann → die Männer. die Frau → die Frauen. das Kind → die Kinder. The plural always uses die. This is one of the most helpful simplifications in German grammar.', rule:'ALL plurals = die. der/die/das in singular → die in plural.' },
+    { q:'What is the plural of "das Auto"?', hint:'Auto is a loanword — which plural pattern do loanwords use?', opts:['die Auten','die Autoe','die Autos','die Äutos'], ans:2, exp:'"die Autos" — foreign loanwords and abbreviations typically add -s in the plural. das Auto → die Autos. das Kino → die Kinos. das Café → die Cafés. das Handy → die Handys. When in doubt with a clearly foreign word, -s plural is usually correct.', rule:'Loanwords → -s plural. Auto→Autos, Kino→Kinos, Handy→Handys.' },
+    { q:'What is the plural of "der Lehrer" (teacher)?', hint:'-er nouns often have no change in the plural', opts:['die Lehrers','die Lehrer','die Lehrere','die Lehrern'], ans:1, exp:'"die Lehrer" — no change in the plural. Many masculine nouns ending in -er (and all nouns ending in -chen and -lein) have identical singular and plural forms. Only the article changes: der Lehrer → die Lehrer. You tell the difference from context or the article.', rule:'-er nouns often unchanged in plural. der Lehrer → die Lehrer.' },
+  ],
+  5: [
+    { q:'"Die ___ beginnt um neun Uhr." (The opening time begins at nine.) Which noun fits?', hint:'Think about the -zeit ending — what gender does Zeit carry?', opts:['der Öffnungszeit','das Öffnungszeit','die Öffnungszeit','eine Öffnungszeit'], ans:2, exp:'"die Öffnungszeit" — Öffnung (opening) + Zeit (time) → die Zeit is feminine → die Öffnungszeit. The compound rule applies: the last part (Zeit) is feminine, so the whole compound is feminine. This appears constantly in Goethe Hören contexts about shop hours.', rule:'die Zeit → die Öffnungszeit. Compound rule: last part (Zeit) = feminine.' },
+    { q:'On a German form, you see "Datum: ___". What article does Datum take?', hint:'Datum ends in -um — what gender pattern does that suggest?', opts:['der Datum','die Datum','das Datum'], ans:2, exp:'"das Datum" — nouns ending in -um are neuter. das Datum, das Zentrum, das Museum, das Argument. The -um ending is a reliable neuter signal. This appears on every Goethe form-filling task — knowing das Datum helps you understand what information is being asked for.', rule:'-um ending = neuter (das). das Datum, das Zentrum, das Museum.' },
+    { q:'You see "die Wohnung hat drei ___." (The apartment has three ___.) Which plural is correct?', hint:'Zimmer is a -er noun — what happens to its plural?', opts:['Zimmern','Zimmer','Zimmere','Zimmers'], ans:1, exp:'"drei Zimmer" — das Zimmer is a neuter -er noun whose plural is identical to the singular. "drei Zimmer" not "drei Zimmer+n." When counting nouns directly after a number, you use the plural form without the article: drei Zimmer, zwei Kinder, vier Tische.', rule:'das Zimmer → die Zimmer (no change). Neuter -er nouns often unchanged.' },
+  ],
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready) return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){
+  var el=document.getElementById('qz-'+li); if(!el) return;
+  var s=qSt[li]; var qs=QD[li]; if(s.cur>=qs.length){ showResult(li); return; }
+  var q=qs[s.cur];
+  el.innerHTML='<div class="quiz-qnum">QUESTION '+(s.cur+1)+' OF '+qs.length+'</div>'+
+    '<div class="quiz-q">'+q.q+'</div><div class="quiz-hint">'+q.hint+'</div>'+
+    '<div class="quiz-opts">'+q.opts.map(function(o,i){
+      return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">' +
+        '<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';
+    }).join('')+'</div>'+
+    '<div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div>'+
+    '<div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Next Question →':'See Results →')+'</button></div>';
+}
+function pickQ(li,idx){
+  var s=qSt[li]; var q=QD[li][s.cur]; var ok=idx===q.ans;
+  if(ok){ s.correct++; xp+=20; document.getElementById('xpDisp').textContent='⚡ '+xp+' XP'; }
+  document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){ b.disabled=true; if(i===q.ans) b.classList.add('correct'); if(i===idx&&!ok) b.classList.add('wrong'); });
+  var fb=document.getElementById('qz'+li+'-fb'); fb.classList.add('show',ok?'ok':'no');
+  var fbt=document.getElementById('qz'+li+'-fbt'); fbt.className='qft '+(ok?'ok':'no'); fbt.textContent=ok?'✓ Correct!':'✗ Not quite';
+  document.getElementById('qz'+li+'-fbb').textContent=q.exp;
+  document.getElementById('qz'+li+'-fbr').textContent=q.rule;
+  document.getElementById('qz'+li+'-nx').classList.add('show');
+}
+function advQ(li){ qSt[li].cur++; renderQ(li); }
+function showResult(li){
+  var el=document.getElementById('qz-'+li); var s=qSt[li]; var total=QD[li].length;
+  var pct=Math.round(s.correct/total*100); var isLast=li===5;
+  el.innerHTML='<div style="text-align:center;padding:16px 0;">'+
+    '<div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div>'+
+    '<div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' correct</div>'+
+    '<div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfect.':pct>=60?'Good work.':'Review and try again.')+'</div>'+
+    '<div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.12);border:1px solid var(--gold);border-radius:50px;padding:9px 22px;color:var(--gold);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+
+    (isLast
+      ? '<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Complete Module 4 →</button>'
+      : '<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Next Lesson →</button>'
+    )+'</div>';
+}
+function showCompletion(){
+  var el=document.querySelector('#lesson-5 .step.active');
+  el.innerHTML='<div class="complete-wrap">'+
+    '<div class="complete-icon">🏷️</div>'+
+    '<h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Module 4 Complete!</h2>'+
+    '<p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">Gender is now part of how you see nouns. Every noun comes with its article — that habit, built here, will protect you through the entire case system.</p>'+
+    '<div class="xp-badge">⚡ '+xp+' XP Earned</div>'+
+    '<p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Next: Module 5 — The Akkusativ Case</p>'+
+    '<button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Back to Overview</button>'+
+    '</div>';
+}
+
+// ================================================================
+// NAV
+// ================================================================
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function resumeLesson(){ goLesson(currentLesson); }
+function goLesson(idx){
+  currentLesson=idx;
+  document.getElementById('screen-overview').classList.remove('active');
+  document.getElementById('screen-lesson').classList.add('active');
+  document.querySelectorAll('.lesson-pane').forEach(function(p){ p.style.display='none'; });
+  var pane=document.getElementById('lesson-'+idx);
+  if(pane){ pane.style.display='block'; pane.querySelectorAll('.step').forEach(function(s,i){ s.classList.toggle('active',i===0); }); }
+  renderDots(); updateProg(idx,0); window.scrollTo(0,0);
+}
+function nextStep(li,si){
+  var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); var nx=si+1;
+  if(nx<steps.length){ steps[si].classList.remove('active'); steps[nx].classList.add('active'); updateProg(li,nx); window.scrollTo(0,0); if(nx===steps.length-1) initQuiz(li); }
+  else { if(li+1<TOTAL) goLesson(li+1); else showCompletion(); }
+}
+function prevStep(li,si){
+  if(si===0){ showOverview(); return; }
+  var steps=document.getElementById('lesson-'+li).querySelectorAll('.step');
+  steps[si].classList.remove('active'); steps[si-1].classList.add('active'); updateProg(li,si-1); window.scrollTo(0,0);
+}
+function renderDots(){
+  var row=document.getElementById('dotRow'); row.innerHTML='';
+  for(var i=0;i<TOTAL;i++){
+    var d=document.createElement('div');
+    d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');
+    (function(x){ d.onclick=function(){ goLesson(x); }; })(i);
+    row.appendChild(d);
+  }
+}
+function updateProg(li,si){ document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%'; }
+
+document.addEventListener('DOMContentLoaded',function(){ document.body.classList.add('ready'); if(synth){ try{ loadVoices(); }catch(e){} } });
+if(document.readyState==='complete'||document.readyState==='interactive'){ document.body.classList.add('ready'); }
+</script>
+</body>
+</html>

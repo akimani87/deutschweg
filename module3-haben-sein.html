@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Module 3: haben and sein</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --haben:#3498db; --sein:#9b59b6;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--gold); color:var(--gold); }
+
+  .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:rgba(10,10,10,0.96); backdrop-filter:blur(20px); border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:12px 0 20px; z-index:100; }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:8px 16px; border-radius:12px; transition:all 0.2s; border:none; background:none; color:var(--gray); }
+  .nav-item:hover, .nav-item.active { color:var(--gold); }
+  .nav-icon { font-size:20px; }
+  .nav-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; font-family:'DM Mono',monospace; }
+
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--gold); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--gold); width:22px; border-radius:4px; }
+
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--gold); color:var(--black); width:100%; }
+  .btn-primary:hover { background:var(--gold-light); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .card2 { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; }
+
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(201,168,76,0.2); }
+  .speak-btn.speaking { background:var(--gold); color:var(--black); }
+
+  /* CONJUGATION TABLE — the core visual of this module */
+  .conj-split { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0; }
+  .conj-box { border-radius:16px; padding:20px; }
+  .conj-haben { background:rgba(52,152,219,0.06); border:1px solid rgba(52,152,219,0.25); }
+  .conj-sein { background:rgba(155,89,182,0.06); border:1px solid rgba(155,89,182,0.25); }
+  .conj-title { font-size:11px; letter-spacing:3px; font-family:'DM Mono',monospace; margin-bottom:14px; font-weight:600; }
+  .conj-haben .conj-title { color:var(--haben); }
+  .conj-sein .conj-title { color:var(--sein); }
+  .conj-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+  .conj-row:last-child { border-bottom:none; }
+  .conj-pro { font-size:13px; color:var(--gray); min-width:50px; }
+  .conj-de { font-family:'DM Mono',monospace; font-size:16px; font-weight:700; }
+  .conj-haben .conj-de { color:var(--haben); }
+  .conj-sein .conj-de { color:var(--sein); }
+  .conj-en { font-size:12px; color:var(--gray); text-align:right; }
+
+  /* SENTENCE EXAMPLES */
+  .example-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .example-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-verb { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-haben { background:rgba(52,152,219,0.15); color:var(--haben); }
+  .ex-sein { background:rgba(155,89,182,0.15); color:var(--sein); }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-highlight-haben { color:var(--haben); font-weight:700; }
+  .ex-highlight-sein { color:var(--sein); font-weight:700; }
+  .ex-en { font-size:12px; color:var(--gray); margin-bottom:6px; }
+  .ex-note { font-size:12px; color:var(--cream); line-height:1.6; }
+
+  /* COMPARISON GRID */
+  .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:14px 0; }
+  .compare-haben { background:rgba(52,152,219,0.06); border:1px solid rgba(52,152,219,0.2); border-radius:12px; padding:16px; }
+  .compare-sein { background:rgba(155,89,182,0.06); border:1px solid rgba(155,89,182,0.2); border-radius:12px; padding:16px; }
+  .comp-head { font-size:11px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:12px; }
+  .compare-haben .comp-head { color:var(--haben); }
+  .compare-sein .comp-head { color:var(--sein); }
+  .comp-item { font-size:13px; color:var(--cream); margin-bottom:8px; line-height:1.6; }
+  .comp-item:last-child { margin-bottom:0; }
+
+  /* FILL EXERCISE */
+  .fill-exercise { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:20px; margin:12px 0; }
+  .fill-sentence { font-family:'DM Mono',monospace; font-size:15px; color:var(--cream); line-height:2.2; margin-bottom:10px; }
+  .fill-blank {
+    display:inline-block; min-width:80px; border-bottom:2px solid var(--gold);
+    color:var(--gold); font-family:'DM Mono',monospace; font-size:15px;
+    text-align:center; padding:0 6px; cursor:pointer; user-select:none;
+    transition:all 0.2s; border-radius:4px 4px 0 0;
+  }
+  .fill-blank:hover { background:rgba(201,168,76,0.1); }
+  .fill-blank.revealed { background:rgba(201,168,76,0.12); }
+  .fill-hint { font-size:12px; color:var(--gray); }
+
+  /* PERFECT TENSE SECTION */
+  .perfect-rule { background:var(--card2-bg); border-radius:14px; padding:18px; margin:12px 0; display:flex; gap:16px; align-items:flex-start; }
+  .perfect-icon { font-size:28px; flex-shrink:0; }
+  .perfect-title { font-weight:700; font-size:14px; margin-bottom:4px; }
+  .perfect-desc { font-size:13px; color:var(--gray); line-height:1.65; }
+  .perfect-ex { font-family:'DM Mono',monospace; font-size:13px; color:var(--cream); margin-top:8px; line-height:1.8; }
+
+  /* DTABLE */
+  .dtable { width:100%; border-collapse:collapse; margin:12px 0; font-size:14px; }
+  .dtable th { text-align:left; padding:9px 12px; border-bottom:1px solid var(--border); color:var(--gray); font-size:11px; font-weight:500; }
+  .dtable td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04); vertical-align:top; }
+  .dtable tr:last-child td { border-bottom:none; }
+  .de { font-family:'DM Mono',monospace; color:var(--gold); font-size:14px; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Sans',sans-serif; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--gold); background:rgba(201,168,76,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(201,168,76,0.1); border-radius:8px; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+
+  /* LESSON CARD */
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(201,168,76,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(201,168,76,0.08); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(201,168,76,0.12); border:1px solid var(--gold); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--gold); font-size:18px; margin:18px 0; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+
+  @media(max-width:600px){
+    .conj-split { grid-template-columns:1fr; }
+    .compare-grid { grid-template-columns:1fr; }
+    .lesson-h { font-size:22px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================================================================
+  OVERVIEW
+================================================================ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">MODULE 3</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">A1 · Grammar Foundation</div>
+    <h1 class="lesson-h" style="font-size:36px;"><span style="color:var(--haben)">haben</span> and <span style="color:var(--sein)">sein</span><br>The Two Verbs That Run German</h1>
+    <p class="body-text">Every sentence in German uses either haben or sein. They appear in every Goethe section — as main verbs, in the perfect tense, and in fixed expressions. Getting them wrong is the single most common grammar mistake in A1 exams.</p>
+    <div class="info-box"><strong style="color:var(--gold)">Why this module comes before everything else:</strong> You cannot form the past tense without haben or sein. You cannot describe states without sein. You cannot talk about possession without haben. These two verbs are not vocabulary — they are the engine of German grammar.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon" style="background:rgba(52,152,219,0.08);border-color:rgba(52,152,219,0.3);">🔵</div><div><div class="lc-title">Lesson 1 — haben: to have</div><div class="lc-desc">Full conjugation with every pronoun. What haben means and when to use it.</div></div><div class="lc-tag" style="color:var(--gold);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon" style="background:rgba(155,89,182,0.08);border-color:rgba(155,89,182,0.3);">🟣</div><div><div class="lc-title">Lesson 2 — sein: to be</div><div class="lc-desc">Full conjugation. The irregular forms that trip everyone up.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">⚖️</div><div><div class="lc-title">Lesson 3 — haben vs sein: the choice</div><div class="lc-desc">When to use which. The rule that makes it logical.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">⏱️</div><div><div class="lc-title">Lesson 4 — Perfect Tense with haben</div><div class="lc-desc">Ich habe gegessen. The past tense most used in A1 speaking.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">🚶</div><div><div class="lc-title">Lesson 5 — Perfect Tense with sein</div><div class="lc-desc">Ich bin gegangen. Movement and change of state.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🎯</div><div><div class="lc-title">Lesson 6 — Fixed Expressions</div><div class="lc-desc">Hunger haben, Recht haben, müde sein — the phrases Goethe tests.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Begin Lesson 1 →</button>
+  </div>
+</div>
+
+<!-- ================================================================
+  LESSON SCREEN
+================================================================ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lessons</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ===== LESSON 1: haben ===== -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">Module 3 · Lesson 1 of 6</div>
+          <h2 class="lesson-h"><span style="color:var(--haben)">haben</span> — to have</h2>
+          <p class="body-text">haben means "to have." It expresses possession, relationships, and states. In German, haben is irregular — the conjugation does not follow normal verb patterns and must be memorised. Every form is used constantly in the Goethe exam.</p>
+
+          <div class="sec-label">Full Conjugation — tap a row to hear it</div>
+          <div class="conj-box conj-haben" style="border-radius:16px;">
+            <div class="conj-title">HABEN — TO HAVE</div>
+            <div class="conj-row" onclick="speakSentence(this,'ich habe')" style="cursor:pointer;">
+              <div class="conj-pro">ich</div>
+              <div class="conj-de">habe</div>
+              <div class="conj-en">I have</div>
+            </div>
+            <div class="conj-row" onclick="speakSentence(this,'du hast')" style="cursor:pointer;">
+              <div class="conj-pro">du</div>
+              <div class="conj-de">hast</div>
+              <div class="conj-en">you have (informal)</div>
+            </div>
+            <div class="conj-row" onclick="speakSentence(this,'er hat')" style="cursor:pointer;">
+              <div class="conj-pro">er/sie/es</div>
+              <div class="conj-de">hat</div>
+              <div class="conj-en">he/she/it has</div>
+            </div>
+            <div class="conj-row" onclick="speakSentence(this,'wir haben')" style="cursor:pointer;">
+              <div class="conj-pro">wir</div>
+              <div class="conj-de">haben</div>
+              <div class="conj-en">we have</div>
+            </div>
+            <div class="conj-row" onclick="speakSentence(this,'ihr habt')" style="cursor:pointer;">
+              <div class="conj-pro">ihr</div>
+              <div class="conj-de">habt</div>
+              <div class="conj-en">you all have (informal)</div>
+            </div>
+            <div class="conj-row" onclick="speakSentence(this,'sie haben')" style="cursor:pointer;">
+              <div class="conj-pro">sie/Sie</div>
+              <div class="conj-de">haben</div>
+              <div class="conj-en">they/you have (formal)</div>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue)">The key irregulars:</strong> ich <strong>habe</strong> (not habe<s>n</s>) · du <strong>hast</strong> · er/sie/es <strong>hat</strong> · ihr <strong>habt</strong>. The ich form and wir/sie/Sie forms match the infinitive stem, but the middle forms are short and sharp. Drill these until they are automatic.</div>
+
+          <div class="sec-label">haben in real sentences — tap to hear</div>
+          <div class="example-list">
+            <div class="example-card">
+              <div class="ex-verb ex-haben">HABEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <span class="ex-highlight-haben">habe</span> einen Bruder und zwei Schwestern.</div>
+                <div class="ex-en">I have a brother and two sisters.</div>
+                <div class="ex-note">Possession of family members. "einen Bruder" — Akkusativ masculine (Module 5 will cover this fully).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich habe einen Bruder und zwei Schwestern.')">🔊</button>
+            </div>
+            <div class="example-card">
+              <div class="ex-verb ex-haben">HABEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Sie <span class="ex-highlight-haben">hat</span> einen Termin um drei Uhr.</div>
+                <div class="ex-en">She has an appointment at three o'clock.</div>
+                <div class="ex-note">er/sie/es hat — the third person singular. This form appears constantly in Goethe Hören contexts about appointments.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Sie hat einen Termin um drei Uhr.')">🔊</button>
+            </div>
+            <div class="example-card">
+              <div class="ex-verb ex-haben">HABEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Wir <span class="ex-highlight-haben">haben</span> heute keine Zeit.</div>
+                <div class="ex-en">We have no time today.</div>
+                <div class="ex-note">"keine Zeit haben" = to have no time. "keine" negates a noun — no article then keine. Very common expression.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wir haben heute keine Zeit.')">🔊</button>
+            </div>
+            <div class="example-card">
+              <div class="ex-verb ex-haben">HABEN</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="ex-highlight-haben">Hast</span> du ein Handy?</div>
+                <div class="ex-en">Do you have a mobile phone?</div>
+                <div class="ex-note">Question form — verb first. du hast → Hast du? The verb moves to position 1 in yes/no questions.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Hast du ein Handy?')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Continue →</button></div>
+      </div>
+
+      <div class="step" id="l0-s1">
+        <div class="card">
+          <div class="concept-tag">Module 3 · Lesson 1 · Quiz</div>
+          <h2 class="lesson-h">haben Quiz</h2>
+          <div id="qz-0"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ===== LESSON 2: sein ===== -->
+    <div id="lesson-1" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">Module 3 · Lesson 2 of 6</div>
+          <h2 class="lesson-h"><span style="color:var(--sein)">sein</span> — to be</h2>
+          <p class="body-text">sein means "to be." It is the most important verb in German and the most irregular. The forms look completely different from the infinitive — just like English "I am, you are, he is" look nothing like "to be." These forms must be memorised individually.</p>
+
+          <div class="sec-label">Full Conjugation — tap a row to hear it</div>
+          <div class="conj-box conj-sein" style="border-radius:16px;">
+            <div class="conj-title">SEIN — TO BE</div>
+            <div class="conj-row" onclick="speakSentence(this,'ich bin')" style="cursor:pointer;">
+              <div class="conj-pro">ich</div>
+              <div class="conj-de">bin</div>
+              <div class="conj-en">I am</div>
+            </div>
+            <div class="conj-row" onclick="speakSentence(this,'du bist')" style="cursor:pointer;">
+              <div class="conj-pro">du</div>
+              <div class="conj-de">bist</div>
+              <div class="conj-en">you are (informal)</div>
+            </div>
+            <div class="conj-row" onclick="speakSentence(this,'er ist')" style="cursor:pointer;">
+              <div class="conj-pro">er/sie/es</div>
+              <div class="conj-de">ist</div>
+              <div class="conj-en">he/she/it is</div>
+            </div>
+            <div class="conj-row" onclick="speakSentence(this,'wir sind')" style="cursor:pointer;">
+              <div class="conj-pro">wir</div>
+              <div class="conj-de">sind</div>
+              <div class="conj-en">we are</div>
+            </div>
+            <div class="conj-row" onclick="speakSentence(this,'ihr seid')" style="cursor:pointer;">
+              <div class="conj-pro">ihr</div>
+              <div class="conj-de">seid</div>
+              <div class="conj-en">you all are (informal)</div>
+            </div>
+            <div class="conj-row" onclick="speakSentence(this,'sie sind')" style="cursor:pointer;">
+              <div class="conj-pro">sie/Sie</div>
+              <div class="conj-de">sind</div>
+              <div class="conj-en">they/you are (formal)</div>
+            </div>
+          </div>
+
+          <div class="danger-box"><strong style="color:#e74c3c;">The forms that trip everyone:</strong><br><br>
+            ❌ "Ich ist" — WRONG · ✓ <strong>Ich bin</strong><br>
+            ❌ "Er bin" — WRONG · ✓ <strong>Er ist</strong><br>
+            ❌ "Wir ist" — WRONG · ✓ <strong>Wir sind</strong><br><br>
+            None of sein's forms look like each other. bin · bist · ist · sind · seid · sind — each one is its own word.
+          </div>
+
+          <div class="sec-label">sein in real sentences — tap to hear</div>
+          <div class="example-list">
+            <div class="example-card">
+              <div class="ex-verb ex-sein">SEIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <span class="ex-highlight-sein">bin</span> Lehrerin von Beruf.</div>
+                <div class="ex-en">I am a teacher by profession.</div>
+                <div class="ex-note">Profession always uses sein — Ich bin [job]. No article — "eine Lehrerin" would be wrong here.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich bin Lehrerin von Beruf.')">🔊</button>
+            </div>
+            <div class="example-card">
+              <div class="ex-verb ex-sein">SEIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Er <span class="ex-highlight-sein">ist</span> fünfunddreißig Jahre alt.</div>
+                <div class="ex-en">He is thirty-five years old.</div>
+                <div class="ex-note">Age always uses sein — [subject] ist [number] Jahre alt. One of the most tested structures in Goethe A1.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Er ist fünfunddreißig Jahre alt.')">🔊</button>
+            </div>
+            <div class="example-card">
+              <div class="ex-verb ex-sein">SEIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Wir <span class="ex-highlight-sein">sind</span> aus Kenya.</div>
+                <div class="ex-en">We are from Kenya.</div>
+                <div class="ex-note">Origin can use both "sein aus" and "kommen aus." Both are correct. "Wir sind aus Kenya" sounds more like a state; "Wir kommen aus Kenya" sounds more like movement.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wir sind aus Kenia.')">🔊</button>
+            </div>
+            <div class="example-card">
+              <div class="ex-verb ex-sein">SEIN</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="ex-highlight-sein">Sind</span> Sie verheiratet?</div>
+                <div class="ex-en">Are you married? (formal)</div>
+                <div class="ex-note">Question form — verb first. Sie sind → Sind Sie? The formal question the Goethe examiner might ask about your family situation.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Sind Sie verheiratet?')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Continue →</button></div>
+      </div>
+
+      <div class="step" id="l1-s1">
+        <div class="card">
+          <div class="concept-tag">Module 3 · Lesson 2 · Quiz</div>
+          <h2 class="lesson-h">sein Quiz</h2>
+          <div id="qz-1"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ===== LESSON 3: haben vs sein ===== -->
+    <div id="lesson-2" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">Module 3 · Lesson 3 of 6</div>
+          <h2 class="lesson-h">haben vs sein — when to use which</h2>
+          <p class="body-text">This is where most learners get confused. Both verbs are used constantly, but they cover very different things. Once you understand the logic, the choice becomes clear.</p>
+
+          <div class="compare-grid">
+            <div class="compare-haben">
+              <div class="comp-head">HABEN — USE FOR:</div>
+              <div class="comp-item">🧳 <strong>Possession</strong> — things you own or hold<br><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--gray);">Ich habe ein Auto.</span></div>
+              <div class="comp-item">👨‍👩‍👧 <strong>Relationships</strong> — family you have<br><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--gray);">Ich habe drei Kinder.</span></div>
+              <div class="comp-item">📅 <strong>Appointments</strong> — things scheduled<br><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--gray);">Ich habe einen Termin.</span></div>
+              <div class="comp-item">😰 <strong>Physical states</strong> — hunger, thirst, time<br><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--gray);">Ich habe Hunger.</span></div>
+            </div>
+            <div class="compare-sein">
+              <div class="comp-head">SEIN — USE FOR:</div>
+              <div class="comp-item">🧑‍💼 <strong>Identity</strong> — profession, nationality<br><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--gray);">Ich bin Arzt.</span></div>
+              <div class="comp-item">📍 <strong>Location</strong> — where you are<br><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--gray);">Ich bin in Berlin.</span></div>
+              <div class="comp-item">😊 <strong>Qualities</strong> — adjectives describing you<br><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--gray);">Ich bin müde.</span></div>
+              <div class="comp-item">🔢 <strong>Age</strong> — how old you are<br><span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--gray);">Ich bin dreißig Jahre alt.</span></div>
+            </div>
+          </div>
+
+          <div class="info-box"><strong style="color:var(--gold)">The key distinction:</strong> haben is about what you <em>have</em> or <em>hold</em>. sein is about what you <em>are</em> or <em>where you are</em>. In English these sometimes overlap — "I am hungry" vs German "Ich habe Hunger" (I have hunger). German externalises physical states as things you possess. This is where learners often reach for sein when haben is correct.</div>
+
+          <div class="sec-label">Side-by-side — same topic, different verb</div>
+          <div class="example-list">
+            <div class="example-card">
+              <div class="ex-verb ex-haben">HABEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <span class="ex-highlight-haben">habe</span> Hunger.</div>
+                <div class="ex-en">I am hungry. (literally: I have hunger)</div>
+                <div class="ex-note">German treats hunger as something you possess — NOT a state you are in. "Ich bin Hunger" is completely wrong.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich habe Hunger.')">🔊</button>
+            </div>
+            <div class="example-card">
+              <div class="ex-verb ex-sein">SEIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <span class="ex-highlight-sein">bin</span> müde.</div>
+                <div class="ex-en">I am tired.</div>
+                <div class="ex-note">Tiredness IS a state you are in — it is an adjective describing you. sein + adjective = correct.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich bin müde.')">🔊</button>
+            </div>
+            <div class="example-card">
+              <div class="ex-verb ex-haben">HABEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Er <span class="ex-highlight-haben">hat</span> keine Zeit.</div>
+                <div class="ex-en">He has no time.</div>
+                <div class="ex-note">Time is treated as something you have or do not have — possession. "Er ist keine Zeit" is wrong.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Er hat keine Zeit.')">🔊</button>
+            </div>
+            <div class="example-card">
+              <div class="ex-verb ex-sein">SEIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Sie <span class="ex-highlight-sein">ist</span> sehr freundlich.</div>
+                <div class="ex-en">She is very friendly.</div>
+                <div class="ex-note">Personality quality described with an adjective — always sein. "freundlich" (friendly) describes what she is, not what she has.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Sie ist sehr freundlich.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Continue →</button></div>
+      </div>
+
+      <div class="step" id="l2-s1">
+        <div class="card">
+          <div class="concept-tag">Module 3 · Lesson 3 · Quiz</div>
+          <h2 class="lesson-h">haben or sein?</h2>
+          <div id="qz-2"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ===== LESSON 4: Perfect with haben ===== -->
+    <div id="lesson-3" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">Module 3 · Lesson 4 of 6</div>
+          <h2 class="lesson-h">The Perfect Tense with <span style="color:var(--haben)">haben</span></h2>
+          <p class="body-text">In spoken German, the past is expressed using the Perfect tense — not the simple past. The Goethe A1 Sprechen section tests this. The perfect tense has two parts: a conjugated form of <strong style="color:var(--haben)">haben</strong> or <strong style="color:var(--sein)">sein</strong>, plus a past participle at the end of the sentence.</p>
+
+          <div class="info-box">
+            <strong style="color:var(--gold)">The formula:</strong><br><br>
+            [subject] + <span style="color:var(--haben);font-family:'DM Mono',monospace;font-weight:700;">haben</span> (conjugated) + [rest of sentence] + <span style="color:var(--gold);font-family:'DM Mono',monospace;font-weight:700;">Partizip II</span><br><br>
+            Ich <span style="color:var(--haben);font-family:'DM Mono',monospace;">habe</span> gestern Pizza <span style="color:var(--gold);font-family:'DM Mono',monospace;">gegessen</span>.<br>
+            <span style="font-size:12px;color:var(--gray);">I ate pizza yesterday. (literally: I have yesterday pizza eaten)</span>
+          </div>
+
+          <div class="sec-label">How to form the Partizip II</div>
+          <table class="dtable">
+            <tr><th>Type</th><th>Formula</th><th>Example</th><th>Partizip II</th></tr>
+            <tr><td style="font-size:13px;color:var(--cream);">Regular verbs</td><td class="de">ge- + stem + -t</td><td class="de">kaufen</td><td class="de" style="color:var(--gold);">gekauft</td></tr>
+            <tr><td style="font-size:13px;color:var(--cream);">Regular verbs</td><td class="de">ge- + stem + -t</td><td class="de">machen</td><td class="de" style="color:var(--gold);">gemacht</td></tr>
+            <tr><td style="font-size:13px;color:var(--cream);">Regular verbs</td><td class="de">ge- + stem + -t</td><td class="de">spielen</td><td class="de" style="color:var(--gold);">gespielt</td></tr>
+            <tr><td style="font-size:13px;color:var(--cream);">Irregular — must learn</td><td class="de">ge- + [changed] + -en</td><td class="de">essen</td><td class="de" style="color:var(--gold);">gegessen</td></tr>
+            <tr><td style="font-size:13px;color:var(--cream);">Irregular — must learn</td><td class="de">ge- + [changed] + -en</td><td class="de">trinken</td><td class="de" style="color:var(--gold);">getrunken</td></tr>
+            <tr><td style="font-size:13px;color:var(--cream);">Irregular — must learn</td><td class="de">ge- + [changed] + -en</td><td class="de">schreiben</td><td class="de" style="color:var(--gold);">geschrieben</td></tr>
+          </table>
+
+          <div class="danger-box"><strong style="color:#e74c3c;">Word order rule — Partizip II always goes last:</strong><br><br>
+            ✓ Ich habe gestern <strong>einen Brief geschrieben</strong>.<br>
+            ❌ Ich habe <strong>geschrieben</strong> gestern einen Brief.<br><br>
+            The past participle waits at the very end of the sentence. Everything else — time, place, object — goes between haben and the participle.
+          </div>
+
+          <div class="sec-label">Perfect with haben — real examples</div>
+          <div class="example-list">
+            <div class="example-card">
+              <div class="ex-verb ex-haben">HABEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <span class="ex-highlight-haben">habe</span> heute Morgen Kaffee <span style="color:var(--gold);font-weight:700;">getrunken</span>.</div>
+                <div class="ex-en">I drank coffee this morning.</div>
+                <div class="ex-note">trinken → getrunken (irregular). haben + getrunken. "heute Morgen" sits between haben and the participle.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich habe heute Morgen Kaffee getrunken.')">🔊</button>
+            </div>
+            <div class="example-card">
+              <div class="ex-verb ex-haben">HABEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Sie <span class="ex-highlight-haben">hat</span> die Prüfung <span style="color:var(--gold);font-weight:700;">gemacht</span>.</div>
+                <div class="ex-en">She did/took the exam.</div>
+                <div class="ex-note">machen → gemacht (regular: ge+mach+t). "die Prüfung" (the exam) sits between hat and gemacht.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Sie hat die Prüfung gemacht.')">🔊</button>
+            </div>
+            <div class="example-card">
+              <div class="ex-verb ex-haben">HABEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Wir <span class="ex-highlight-haben">haben</span> einen Film <span style="color:var(--gold);font-weight:700;">gesehen</span>.</div>
+                <div class="ex-en">We watched a film.</div>
+                <div class="ex-note">sehen → gesehen (irregular). "einen Film" between haben and gesehen.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wir haben einen Film gesehen.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Continue →</button></div>
+      </div>
+
+      <div class="step" id="l3-s1">
+        <div class="card">
+          <div class="concept-tag">Module 3 · Lesson 4 · Quiz</div>
+          <h2 class="lesson-h">Perfect with haben Quiz</h2>
+          <div id="qz-3"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ===== LESSON 5: Perfect with sein ===== -->
+    <div id="lesson-4" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">Module 3 · Lesson 5 of 6</div>
+          <h2 class="lesson-h">The Perfect Tense with <span style="color:var(--sein)">sein</span></h2>
+          <p class="body-text">Most verbs form the perfect with haben. But a specific group uses <strong style="color:var(--sein)">sein</strong> instead. These are verbs of <strong>movement from A to B</strong> and verbs that describe a <strong>change of state</strong>. Once you know the rule, you can apply it to new verbs you learn.</p>
+
+          <div class="info-box">
+            <strong style="color:var(--gold)">The formula with sein:</strong><br><br>
+            [subject] + <span style="color:var(--sein);font-family:'DM Mono',monospace;font-weight:700;">sein</span> (conjugated) + [rest] + <span style="color:var(--gold);font-family:'DM Mono',monospace;font-weight:700;">Partizip II</span><br><br>
+            Ich <span style="color:var(--sein);font-family:'DM Mono',monospace;">bin</span> nach Hause <span style="color:var(--gold);font-family:'DM Mono',monospace;">gegangen</span>.<br>
+            <span style="font-size:12px;color:var(--gray);">I went home. (literally: I am home gone)</span>
+          </div>
+
+          <div class="sec-label">The two rules for sein in the perfect</div>
+          <div class="perfect-rule">
+            <div class="perfect-icon">🚶</div>
+            <div>
+              <div class="perfect-title">Rule 1 — Movement from A to B</div>
+              <div class="perfect-desc">Verbs that express real physical movement from one place to another use sein. The key test: did the person actually travel or move to a different location?</div>
+              <div class="perfect-ex">
+                gehen → <span style="color:var(--gold);">gegangen</span> &nbsp;·&nbsp; fahren → <span style="color:var(--gold);">gefahren</span> &nbsp;·&nbsp; fliegen → <span style="color:var(--gold);">geflogen</span><br>
+                kommen → <span style="color:var(--gold);">gekommen</span> &nbsp;·&nbsp; reisen → <span style="color:var(--gold);">gereist</span> &nbsp;·&nbsp; laufen → <span style="color:var(--gold);">gelaufen</span>
+              </div>
+            </div>
+          </div>
+          <div class="perfect-rule">
+            <div class="perfect-icon">🔄</div>
+            <div>
+              <div class="perfect-title">Rule 2 — Change of State</div>
+              <div class="perfect-desc">Verbs that describe a change from one condition to another use sein. The person or thing changed — they went from being one way to being another.</div>
+              <div class="perfect-ex">
+                werden → <span style="color:var(--gold);">geworden</span> (become) &nbsp;·&nbsp; aufwachen → <span style="color:var(--gold);">aufgewacht</span> (wake up)<br>
+                einschlafen → <span style="color:var(--gold);">eingeschlafen</span> (fall asleep) &nbsp;·&nbsp; sterben → <span style="color:var(--gold);">gestorben</span> (die)
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">Perfect with sein — real Goethe examples</div>
+          <div class="example-list">
+            <div class="example-card">
+              <div class="ex-verb ex-sein">SEIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <span class="ex-highlight-sein">bin</span> gestern nach Berlin <span style="color:var(--gold);font-weight:700;">gefahren</span>.</div>
+                <div class="ex-en">I drove/travelled to Berlin yesterday.</div>
+                <div class="ex-note">fahren (to drive/travel) = movement A to B → sein. "gestern" between bin and gefahren at the end.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich bin gestern nach Berlin gefahren.')">🔊</button>
+            </div>
+            <div class="example-card">
+              <div class="ex-verb ex-sein">SEIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Sie <span class="ex-highlight-sein">ist</span> um sieben Uhr <span style="color:var(--gold);font-weight:700;">aufgewacht</span>.</div>
+                <div class="ex-en">She woke up at seven o'clock.</div>
+                <div class="ex-note">aufwachen (to wake up) = change of state (asleep → awake) → sein. Common in Goethe Hören daily routine contexts.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Sie ist um sieben Uhr aufgewacht.')">🔊</button>
+            </div>
+            <div class="example-card">
+              <div class="ex-verb ex-sein">SEIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Wir <span class="ex-highlight-sein">sind</span> letztes Jahr nach Deutschland <span style="color:var(--gold);font-weight:700;">gereist</span>.</div>
+                <div class="ex-en">We travelled to Germany last year.</div>
+                <div class="ex-note">reisen (to travel) = movement → sein. "letztes Jahr" (last year) between sind and gereist.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wir sind letztes Jahr nach Deutschland gereist.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue)">Memory trick for A to B verbs:</strong> Ask yourself — "Did they go somewhere?" If yes, use sein. If the verb describes an action done <em>in one place</em> (eating, sleeping, working, reading) — use haben. Movement changes your location. Everything else stays put.</div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Continue →</button></div>
+      </div>
+
+      <div class="step" id="l4-s1">
+        <div class="card">
+          <div class="concept-tag">Module 3 · Lesson 5 · Quiz</div>
+          <h2 class="lesson-h">Perfect with sein Quiz</h2>
+          <div id="qz-4"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ===== LESSON 6: Fixed Expressions ===== -->
+    <div id="lesson-5" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">Module 3 · Lesson 6 of 6</div>
+          <h2 class="lesson-h">Fixed expressions — what Goethe actually tests</h2>
+          <p class="body-text">The Goethe exam does not test grammar in isolation. It tests grammar inside real sentences. These fixed expressions using haben and sein appear repeatedly across all four Goethe sections. Knowing them cold means free marks.</p>
+
+          <div class="sec-label">haben expressions — tap to hear</div>
+          <div class="example-list">
+            <div class="example-card">
+              <div class="ex-verb ex-haben">HABEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <span class="ex-highlight-haben">habe</span> Hunger / Durst.</div>
+                <div class="ex-en">I am hungry / thirsty.</div>
+                <div class="ex-note">Physical needs in German = haben + noun. Never "Ich bin Hunger." Hunger and Durst are nouns — things you possess.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich habe Hunger. Ich habe Durst.')">🔊</button>
+            </div>
+            <div class="example-card">
+              <div class="ex-verb ex-haben">HABEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Sie <span class="ex-highlight-haben">hat</span> Recht / Unrecht.</div>
+                <div class="ex-en">She is right / wrong.</div>
+                <div class="ex-note">"Recht haben" = to be right. "Unrecht haben" = to be wrong. Fixed expressions — the verb is always haben. "Sie ist Recht" is incorrect.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Sie hat Recht.')">🔊</button>
+            </div>
+            <div class="example-card">
+              <div class="ex-verb ex-haben">HABEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <span class="ex-highlight-haben">habe</span> Angst vor dem Examen.</div>
+                <div class="ex-en">I am afraid of the exam.</div>
+                <div class="ex-note">"Angst haben" = to be afraid/scared. "vor" + Dativ follows. Another physical/emotional state treated as possession in German.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich habe Angst vor dem Examen.')">🔊</button>
+            </div>
+            <div class="example-card">
+              <div class="ex-verb ex-haben">HABEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Wir <span class="ex-highlight-haben">haben</span> morgen frei.</div>
+                <div class="ex-en">We have the day off tomorrow.</div>
+                <div class="ex-note">"frei haben" = to have a day off/be free. Very common in workplace and scheduling contexts in Goethe Lesen and Hören.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wir haben morgen frei.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">sein expressions — tap to hear</div>
+          <div class="example-list">
+            <div class="example-card">
+              <div class="ex-verb ex-sein">SEIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <span class="ex-highlight-sein">bin</span> müde / krank / gesund.</div>
+                <div class="ex-en">I am tired / sick / healthy.</div>
+                <div class="ex-note">All adjectives describing your physical or mental state use sein. These appear in every Goethe section — doctor visits, daily life, introductions.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich bin müde. Ich bin krank. Ich bin gesund.')">🔊</button>
+            </div>
+            <div class="example-card">
+              <div class="ex-verb ex-sein">SEIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Der Kurs <span class="ex-highlight-sein">ist</span> von neun bis zwölf Uhr.</div>
+                <div class="ex-en">The course is from nine to twelve o'clock.</div>
+                <div class="ex-note">Describing when something takes place — it IS from this time to that time. sein for existence and scheduling descriptions.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Der Kurs ist von neun bis zwölf Uhr.')">🔊</button>
+            </div>
+            <div class="example-card">
+              <div class="ex-verb ex-sein">SEIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das <span class="ex-highlight-sein">ist</span> kein Problem.</div>
+                <div class="ex-en">That is not a problem.</div>
+                <div class="ex-note">One of the most useful social phrases. "kein" negates a noun. "Das ist kein Problem" = No problem / That's fine. Use this in the exam when you want to sound relaxed and natural.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das ist kein Problem.')">🔊</button>
+            </div>
+            <div class="example-card">
+              <div class="ex-verb ex-sein">SEIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Es <span class="ex-highlight-sein">ist</span> mir wichtig, Deutsch zu lernen.</div>
+                <div class="ex-en">It is important to me to learn German.</div>
+                <div class="ex-note">"Es ist mir wichtig" = it is important to me. "mir" = Dativ of ich. This construction shows sophisticated grammar — use it in Sprechen for bonus marks.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Es ist mir wichtig, Deutsch zu lernen.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Start Final Quiz →</button></div>
+      </div>
+
+      <div class="step" id="l5-s1">
+        <div class="card">
+          <div class="concept-tag">Module 3 · Final Quiz</div>
+          <h2 class="lesson-h">Module Complete — Final Check</h2>
+          <div id="qz-5"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Previous</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="showOverview()"><span class="nav-icon">📚</span><span class="nav-label">Overview</span></button>
+  <button class="nav-item" onclick="resumeLesson()"><span class="nav-icon">▶️</span><span class="nav-label">Resume</span></button>
+</nav>
+
+<script>
+// ================================================================
+// SPEECH — Chrome Android safe pattern
+// ================================================================
+var synth = (typeof window !== 'undefined' && window.speechSynthesis) ? window.speechSynthesis : null;
+var deVoice = null;
+var speechUnlocked = false;
+
+function loadVoices() {
+  if (!synth) return;
+  try {
+    var voices = synth.getVoices();
+    deVoice = voices.find(function(v){ return v.lang === 'de-DE'; })
+            || voices.find(function(v){ return v.lang && v.lang.startsWith('de'); })
+            || null;
+  } catch(e) {}
+}
+if (synth) {
+  try { loadVoices(); if (synth.onvoiceschanged !== undefined) synth.onvoiceschanged = loadVoices; }
+  catch(e) {}
+}
+
+function unlockSpeech() {
+  if (speechUnlocked || !synth) return;
+  try {
+    var s = new SpeechSynthesisUtterance('');
+    s.volume = 0;
+    synth.speak(s);
+    speechUnlocked = true;
+  } catch(e) {}
+}
+document.addEventListener('touchstart', unlockSpeech, { once: true, passive: true });
+document.addEventListener('click', unlockSpeech, { once: true });
+
+function speakDE(text) {
+  if (!synth) return null;
+  try {
+    if (!deVoice) loadVoices();
+    synth.cancel();
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = 'de-DE'; u.rate = 0.85; u.pitch = 1.0; u.volume = 1.0;
+    if (deVoice) u.voice = deVoice;
+    synth.speak(u);
+    return u;
+  } catch(e) { return null; }
+}
+
+function speakSentence(btn, text) {
+  unlockSpeech();
+  // btn might be a conj-row div or a speak-btn button
+  document.querySelectorAll('.speak-btn').forEach(function(b){ b.classList.remove('speaking'); });
+  if (btn && btn.classList) btn.classList.add('speaking');
+  var u = speakDE(text);
+  if (u) {
+    u.onend = function(){ if (btn && btn.classList) btn.classList.remove('speaking'); };
+    u.onerror = function(){ if (btn && btn.classList) btn.classList.remove('speaking'); };
+  } else {
+    setTimeout(function(){ if (btn && btn.classList) btn.classList.remove('speaking'); }, 1500);
+  }
+}
+
+// ================================================================
+// STATE
+// ================================================================
+var currentLesson = 0;
+var xp = 0;
+var TOTAL = 6;
+
+// ================================================================
+// QUIZ DATA
+// ================================================================
+var QD = {
+  0: [
+    { q:'Complete: "Ich ___ einen Hund."', hint:'First person singular of haben', opts:['bin','habe','hat','hast'], ans:1, exp:'"Ich habe" — first person singular of haben. The forms: ich habe, du hast, er/sie/es hat, wir haben, ihr habt, sie/Sie haben. "Ich bin" is from sein. "Ich hat" and "Ich hast" do not exist.', rule:'ich habe · du hast · er/sie/es hat · wir haben · ihr habt · sie/Sie haben' },
+    { q:'Your friend asks about his sister: "Was macht sie?" You say she has a car. Which is correct?', hint:'Third person singular feminine — er/sie/es form', opts:['Sie habe ein Auto.','Sie hat ein Auto.','Sie haben ein Auto.','Sie hast ein Auto.'], ans:1, exp:'"Sie hat ein Auto." — er/sie/es hat. The third person singular of haben is "hat." "Sie habe" is wrong (ich form). "Sie haben" would mean "they have" or "you have" (formal). "Sie hast" does not exist.', rule:'er/sie/es → hat (third person singular of haben).' },
+    { q:'"___ ihr Zeit heute?" (Do you all have time today?)', hint:'ihr = you all (plural informal)', opts:['Haben','Habt','Hast','Hat'], ans:1, exp:'"Habt ihr Zeit?" — ihr habt is the second person plural. In questions, the verb moves to first position: "Habt ihr...?" "Haben ihr" is wrong — haben is for wir/sie/Sie. "Hast" is du. "Hat" is er/sie/es.', rule:'ihr → habt. In questions: Habt ihr...?' },
+  ],
+  1: [
+    { q:'Complete: "Er ___ Arzt."', hint:'Profession uses sein', opts:['hat','habe','ist','sind'], ans:2, exp:'"Er ist Arzt." — er/sie/es ist, from sein. Professions always use sein: Ich bin, du bist, er ist. "Er hat Arzt" is completely wrong — you cannot "have" a profession in German. "Er ist Arzt" = He is a doctor.', rule:'Professions: [subject] + sein (conjugated). er/sie/es → ist.' },
+    { q:'"Wir ___ sehr glücklich." (We are very happy.)', hint:'Adjective describing a state — which verb?', opts:['haben','habe','ist','sind'], ans:3, exp:'"Wir sind sehr glücklich." — wir sind, from sein. Adjectives describing states use sein. glücklich (happy) describes what you are, not what you have. "Wir haben glücklich" is wrong.', rule:'sein + adjective = describing a state. wir → sind.' },
+    { q:'How do you ask "Are you (formal) married?" in German?', hint:'Formal you = Sie. Verb goes first in questions.', opts:['Haben Sie verheiratet?','Bist du verheiratet?','Sind Sie verheiratet?','Ist Sie verheiratet?'], ans:2, exp:'"Sind Sie verheiratet?" — Sie sind → Sind Sie? (verb to front). verheiratet (married) is an adjective describing marital status, so sein is correct. "Haben Sie verheiratet?" is wrong. "Bist du verheiratet?" is correct but informal.', rule:'Formal question: Sind Sie [adjective]? Sie sind → Sind Sie?' },
+  ],
+  2: [
+    { q:'"Ich ___ Hunger." (I am hungry.)', hint:'Hunger is a noun in German — something you possess', opts:['bin','ist','habe','haben'], ans:2, exp:'"Ich habe Hunger." — German treats hunger as a noun you possess, not a state you are in. "Ich bin Hunger" is a very common mistake from English speakers. The same applies to Durst (thirst), Angst (fear), Zeit (time).', rule:'Physical needs: haben + noun. Hunger/Durst/Angst/Zeit = haben, NOT sein.' },
+    { q:'Which sentence uses the correct verb?', hint:'Think about whether it is possession/identity or a state', opts:['Ich bin ein Auto.','Ich habe müde.','Sie ist Ärztin.','Er haben Hunger.'], ans:2, exp:'"Sie ist Ärztin." — profession uses sein. "Ich bin ein Auto" = I am a car (wrong sense). "Ich habe müde" is wrong — müde is an adjective (state = sein): Ich bin müde. "Er haben Hunger" is wrong conjugation — er hat Hunger.', rule:'Profession = sein. Physical state adjective = sein. Possession/needs = haben.' },
+    { q:'"Das Konzert ___ um acht Uhr." (The concert is at eight o\'clock.)', hint:'Describing when something takes place — existence/state', opts:['hat','haben','ist','sind'], ans:2, exp:'"Das Konzert ist um acht Uhr." — sein describes when/where something exists or takes place. "Das Konzert hat um acht Uhr" would mean the concert has something at eight, which makes no sense.', rule:'Describing time/location of an event: sein. Das Konzert ist um...' },
+  ],
+  3: [
+    { q:'How do you say "I ate" in German using the perfect tense?', hint:'essen → gegessen. Which auxiliary?', opts:['Ich bin gegessen.','Ich habe gegessen.','Ich habe essen.','Ich bin essen.'], ans:1, exp:'"Ich habe gegessen." — essen is an action done in one place (not movement), so it takes haben. The participle "gegessen" goes to the end. "Ich bin gegessen" uses the wrong auxiliary. "Ich habe essen" is wrong — the infinitive stays at the end only in other tenses, not the perfect.', rule:'Perfect with haben: [subject] + haben (conjugated) + ... + Partizip II (at end).' },
+    { q:'Where does the Partizip II go in a perfect tense sentence?', hint:'German loves sending things to the end', opts:['Second position, after the subject','Immediately after haben/sein','At the very end of the sentence','Before the time expression'], ans:2, exp:'The Partizip II always goes to the very end of the clause. "Ich habe gestern einen Brief geschrieben" — gestern (yesterday) and einen Brief (a letter) both come before geschrieben. This end-position rule is tested in both Schreiben and Sprechen.', rule:'Partizip II = always last. Everything else goes between haben/sein and the participle.' },
+    { q:'What is the Partizip II of "machen" (to do/make)?', hint:'Regular verb: ge- + stem + -t', opts:['gemacht','gemachen','gegemacht','macht'], ans:0, exp:'"gemacht" — regular verb pattern: ge + stem (mach) + t = gemacht. Regular verbs are predictable: kaufen→gekauft, spielen→gespielt, lernen→gelernt, machen→gemacht.', rule:'Regular Partizip II: ge- + verb stem + -t. Irregular ones must be memorised.' },
+  ],
+  4: [
+    { q:'"Ich ___ nach Hause gegangen." Which auxiliary?', hint:'gehen = movement from A to B', opts:['habe','bin','hat','ist'], ans:1, exp:'"Ich bin nach Hause gegangen." — gehen (to go) is movement from A to B, so it takes sein. "Ich habe gegangen" is a very common error. Movement verbs: gehen, fahren, fliegen, kommen, laufen, reisen → all use sein in the perfect.', rule:'Movement A to B = sein in perfect. gehen → Ich bin gegangen.' },
+    { q:'Which verb uses sein in the perfect tense?', hint:'Look for movement or change of state', opts:['essen (to eat)','arbeiten (to work)','fliegen (to fly)','kaufen (to buy)'], ans:2, exp:'"fliegen" (to fly) — movement from one place to another → sein. Ich bin geflogen. essen, arbeiten, kaufen are all actions done in one place → haben. Ich habe gegessen / gearbeitet / gekauft.', rule:'Movement/change of state = sein. All other actions = haben.' },
+    { q:'"Sie ___ um sechs Uhr aufgewacht." (She woke up at six.)', hint:'aufwachen = change of state (asleep → awake)', opts:['hat','haben','ist','sind'], ans:2, exp:'"Sie ist um sechs Uhr aufgewacht." — aufwachen (to wake up) is a change of state (from sleeping to awake), so it uses sein. She changed condition. er/sie/es + sein = ist. "Sie hat aufgewacht" is a common error.', rule:'Change of state = sein. aufwachen, einschlafen, werden → sein in perfect.' },
+  ],
+  5: [
+    { q:'How do you say "I am right" in German?', hint:'This is a fixed expression — which verb does German use?', opts:['Ich bin Recht.','Ich habe Recht.','Ich bin richtig.','Ich habe richtig.'], ans:1, exp:'"Ich habe Recht." — "Recht haben" is a fixed expression in German. Recht is a noun meaning "right/correctness." You possess being right. "Ich bin Recht" is wrong. "Ich bin richtig" means "I am correct" (about a fact) but "Ich habe Recht" is the standard expression.', rule:'Recht haben = to be right. Unrecht haben = to be wrong. Always haben.' },
+    { q:'"Das ___ kein Problem." (That is not a problem.)', hint:'Describing what something IS', opts:['hat','haben','ist','sind'], ans:2, exp:'"Das ist kein Problem." — sein describes what something is. "kein" negates a noun (Problem). "Das hat kein Problem" would mean "That does not have a problem" — grammatically odd and not the right expression. "Das ist kein Problem" is the standard social response.', rule:'Das ist kein Problem. — essential social phrase. Always sein.' },
+    { q:'Which is correct for "We have the day off"?', hint:'Think about frei as something you possess', opts:['Wir sind morgen frei.','Wir haben morgen frei.','Wir sind frei haben.','Wir frei haben.'], ans:1, exp:'"Wir haben morgen frei." — "frei haben" is a fixed expression meaning to have a day off / to be free. "morgen" (tomorrow) goes between haben and frei. "Wir sind morgen frei" is also acceptable (we are free tomorrow) but "frei haben" is the standard expression for having time off work.', rule:'frei haben = to have a day off. Fixed expression — always haben.' },
+  ],
+};
+
+var qSt = {};
+function initQuiz(li) {
+  var el = document.getElementById('qz-'+li);
+  if (!el || el.dataset.ready) return;
+  el.dataset.ready = '1';
+  qSt[li] = { cur:0, correct:0 };
+  renderQ(li);
+}
+function renderQ(li) {
+  var el = document.getElementById('qz-'+li);
+  if (!el) return;
+  var s = qSt[li]; var qs = QD[li];
+  if (s.cur >= qs.length) { showResult(li); return; }
+  var q = qs[s.cur];
+  el.innerHTML = '<div class="quiz-qnum">QUESTION '+(s.cur+1)+' OF '+qs.length+'</div>'+
+    '<div class="quiz-q">'+q.q+'</div>'+
+    '<div class="quiz-hint">'+q.hint+'</div>'+
+    '<div class="quiz-opts">'+q.opts.map(function(o,i){
+      return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">' +
+        '<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';
+    }).join('')+'</div>'+
+    '<div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div>'+
+    '<div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Next Question →':'See Results →')+'</button></div>';
+}
+function pickQ(li, idx) {
+  var s = qSt[li]; var q = QD[li][s.cur]; var ok = idx===q.ans;
+  if (ok) { s.correct++; xp+=20; document.getElementById('xpDisp').textContent='⚡ '+xp+' XP'; }
+  document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){
+    b.disabled=true;
+    if(i===q.ans) b.classList.add('correct');
+    if(i===idx&&!ok) b.classList.add('wrong');
+  });
+  var fb=document.getElementById('qz'+li+'-fb');
+  fb.classList.add('show',ok?'ok':'no');
+  var fbt=document.getElementById('qz'+li+'-fbt');
+  fbt.className='qft '+(ok?'ok':'no');
+  fbt.textContent=ok?'✓ Correct!':'✗ Not quite';
+  document.getElementById('qz'+li+'-fbb').textContent=q.exp;
+  document.getElementById('qz'+li+'-fbr').textContent=q.rule;
+  document.getElementById('qz'+li+'-nx').classList.add('show');
+}
+function advQ(li) { qSt[li].cur++; renderQ(li); }
+function showResult(li) {
+  var el=document.getElementById('qz-'+li);
+  var s=qSt[li]; var total=QD[li].length;
+  var pct=Math.round(s.correct/total*100);
+  var isLast=li===5;
+  el.innerHTML='<div style="text-align:center;padding:16px 0;">'+
+    '<div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div>'+
+    '<div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' correct</div>'+
+    '<div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfect — locked in.':pct>=60?'Good work.':'Review and try again.')+'</div>'+
+    '<div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.12);border:1px solid var(--gold);border-radius:50px;padding:9px 22px;color:var(--gold);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+
+    (isLast
+      ? '<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Complete Module 3 →</button>'
+      : '<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Next Lesson →</button>'
+    )+'</div>';
+}
+function showCompletion() {
+  var el=document.querySelector('#lesson-5 .step.active');
+  el.innerHTML='<div class="complete-wrap">'+
+    '<div class="complete-icon">⚙️</div>'+
+    '<h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Module 3 Complete!</h2>'+
+    '<p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">haben and sein are now your foundation. Every tense, every sentence, every fixed expression in German runs on these two verbs. You have built the engine.</p>'+
+    '<div class="xp-badge">⚡ '+xp+' XP Earned</div>'+
+    '<p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Next: Module 4 — Nouns and Gender (der, die, das)</p>'+
+    '<button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Back to Overview</button>'+
+    '</div>';
+}
+
+// ================================================================
+// NAVIGATION
+// ================================================================
+function showOverview() {
+  document.getElementById('screen-overview').classList.add('active');
+  document.getElementById('screen-lesson').classList.remove('active');
+}
+function resumeLesson() { goLesson(currentLesson); }
+function goLesson(idx) {
+  currentLesson=idx;
+  document.getElementById('screen-overview').classList.remove('active');
+  document.getElementById('screen-lesson').classList.add('active');
+  document.querySelectorAll('.lesson-pane').forEach(function(p){ p.style.display='none'; });
+  var pane=document.getElementById('lesson-'+idx);
+  if(pane) pane.style.display='block';
+  pane.querySelectorAll('.step').forEach(function(s,i){ s.classList.toggle('active',i===0); });
+  renderDots(); updateProg(idx,0); window.scrollTo(0,0);
+}
+function nextStep(li,si) {
+  var steps=document.getElementById('lesson-'+li).querySelectorAll('.step');
+  var nx=si+1;
+  if(nx<steps.length){
+    steps[si].classList.remove('active'); steps[nx].classList.add('active');
+    updateProg(li,nx); window.scrollTo(0,0);
+    if(nx===steps.length-1) initQuiz(li);
+  } else {
+    if(li+1<TOTAL) goLesson(li+1); else showCompletion();
+  }
+}
+function prevStep(li,si) {
+  if(si===0){ showOverview(); return; }
+  var steps=document.getElementById('lesson-'+li).querySelectorAll('.step');
+  steps[si].classList.remove('active'); steps[si-1].classList.add('active');
+  updateProg(li,si-1); window.scrollTo(0,0);
+}
+function renderDots() {
+  var row=document.getElementById('dotRow'); row.innerHTML='';
+  for(var i=0;i<TOTAL;i++){
+    var d=document.createElement('div');
+    d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');
+    (function(x){ d.onclick=function(){ goLesson(x); }; })(i);
+    row.appendChild(d);
+  }
+}
+function updateProg(li,si) {
+  document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';
+}
+
+// BOOT
+document.addEventListener('DOMContentLoaded', function(){
+  document.body.classList.add('ready');
+  if(synth){ try{ loadVoices(); }catch(e){} }
+});
+if(document.readyState==='complete'||document.readyState==='interactive'){
+  document.body.classList.add('ready');
+}
+</script>
+</body>
+</html>

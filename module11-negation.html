@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Module 11: Negation (nicht and kein)</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --p1:#3498db; --p2:#e67e22; --p3:#9b59b6; --verb:#c9a84c;
+    --nicht:#3498db; --kein:#e67e22;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:rgba(10,10,10,0.96); backdrop-filter:blur(20px); border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:12px 0 20px; z-index:100; }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:8px 16px; border-radius:12px; transition:all 0.2s; border:none; background:none; color:var(--gray); }
+  .nav-item:hover, .nav-item.active { color:var(--gold); }
+  .nav-icon { font-size:20px; }
+  .nav-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; font-family:'DM Mono',monospace; }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--gold); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--gold); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--gold); color:var(--black); width:100%; }
+  .btn-primary:hover { background:var(--gold-light); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(201,168,76,0.2); }
+  .speak-btn.speaking { background:var(--gold); color:var(--black); }
+
+  /* SENTENCE BLOCKS */
+  .sent-block { margin:14px 0; }
+  .sent-de { display:flex; flex-wrap:wrap; gap:6px; align-items:flex-end; margin-bottom:10px; }
+  .stoken { display:flex; flex-direction:column; align-items:center; }
+  .sw { font-family:'DM Mono',monospace; font-size:16px; padding:8px 12px; border-radius:8px; font-weight:600; }
+  .sl { font-size:9px; letter-spacing:1.5px; text-align:center; margin-top:4px; font-family:'DM Mono',monospace; }
+  .sw-p1 { background:rgba(52,152,219,0.12); border:1px solid rgba(52,152,219,0.3); color:var(--p1); }
+  .sl-p1 { color:var(--p1); }
+  .sw-verb { background:rgba(201,168,76,0.12); border:1px solid rgba(201,168,76,0.35); color:var(--verb); }
+  .sl-verb { color:var(--verb); }
+  .sw-p2 { background:rgba(230,126,34,0.1); border:1px solid rgba(230,126,34,0.3); color:var(--p2); }
+  .sl-p2 { color:var(--p2); }
+  .sw-p3 { background:rgba(155,89,182,0.1); border:1px solid rgba(155,89,182,0.3); color:var(--p3); }
+  .sl-p3 { color:var(--p3); }
+  .sw-gold { background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.35); color:var(--gold); }
+  .sl-gold { color:var(--gold); }
+  .sw-gray { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); color:var(--cream); }
+  .sl-gray { color:var(--gray); }
+  .sw-red { background:rgba(192,57,43,0.1); border:1px solid rgba(192,57,43,0.35); color:#e74c3c; }
+  .sl-red { color:#e74c3c; }
+  .sent-en { font-size:13px; color:var(--gray); margin-top:4px; padding-left:2px; }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-en { font-size:12px; color:var(--gray); margin-bottom:6px; }
+  .ex-note { font-size:12px; color:var(--cream); line-height:1.6; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Sans',sans-serif; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--gold); background:rgba(201,168,76,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(201,168,76,0.1); border-radius:8px; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(201,168,76,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(201,168,76,0.08); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(201,168,76,0.12); border:1px solid var(--gold); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--gold); font-size:18px; margin:18px 0; }
+
+  /* NICHT / KEIN SPLIT CARDS */
+  .neg-split { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:16px 0; }
+  .neg-card { border-radius:16px; padding:22px; }
+  .neg-word { font-family:'Playfair Display',serif; font-size:42px; font-weight:900; margin-bottom:6px; }
+  .neg-tag { font-size:10px; letter-spacing:2.5px; font-family:'DM Mono',monospace; margin-bottom:14px; }
+  .neg-rule-text { font-size:13px; color:var(--cream); line-height:1.8; }
+  .neg-nicht { background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.3); }
+  .neg-nicht .neg-word { color:var(--nicht); }
+  .neg-nicht .neg-tag { color:var(--nicht); }
+  .neg-kein { background:rgba(230,126,34,0.08); border:1px solid rgba(230,126,34,0.3); }
+  .neg-kein .neg-word { color:var(--kein); }
+  .neg-kein .neg-tag { color:var(--kein); }
+
+  /* KEIN DECLENSION TABLE */
+  .kein-table { display:grid; grid-template-columns:auto 1fr 1fr 1fr 1fr; gap:4px; margin:14px 0; }
+  .kt-h { background:rgba(255,255,255,0.04); border-radius:6px; padding:8px 12px; font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; color:var(--gray); text-align:center; }
+  .kt-case { padding:9px 12px; font-size:11px; color:var(--gray); font-family:'DM Mono',monospace; display:flex; align-items:center; letter-spacing:1px; }
+  .kt-m { background:rgba(52,152,219,0.07); border:1px solid rgba(52,152,219,0.2); border-radius:8px; padding:9px 12px; font-family:'DM Mono',monospace; font-size:15px; font-weight:700; color:var(--p1); text-align:center; }
+  .kt-n { background:rgba(155,89,182,0.07); border:1px solid rgba(155,89,182,0.2); border-radius:8px; padding:9px 12px; font-family:'DM Mono',monospace; font-size:15px; font-weight:700; color:var(--p3); text-align:center; }
+  .kt-f { background:rgba(230,126,34,0.07); border:1px solid rgba(230,126,34,0.2); border-radius:8px; padding:9px 12px; font-family:'DM Mono',monospace; font-size:15px; font-weight:700; color:var(--p2); text-align:center; }
+  .kt-pl { background:rgba(201,168,76,0.07); border:1px solid rgba(201,168,76,0.25); border-radius:8px; padding:9px 12px; font-family:'DM Mono',monospace; font-size:15px; font-weight:700; color:var(--gold); text-align:center; }
+  .kt-changed { outline:2px solid var(--kein); outline-offset:2px; }
+
+  /* DECISION FLOWCHART */
+  .decision-box { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:20px; margin:14px 0; }
+  .db-q { font-family:'DM Mono',monospace; font-size:13px; color:var(--cream); padding:10px 14px; background:rgba(255,255,255,0.04); border-radius:8px; margin-bottom:10px; }
+  .db-branches { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .db-yes { background:rgba(230,126,34,0.08); border:1px solid rgba(230,126,34,0.3); border-radius:10px; padding:12px 14px; }
+  .db-no { background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.3); border-radius:10px; padding:12px 14px; }
+  .db-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:6px; }
+  .db-yes .db-label { color:var(--kein); }
+  .db-no .db-label { color:var(--nicht); }
+  .db-ans { font-family:'DM Mono',monospace; font-size:16px; font-weight:700; margin-bottom:4px; }
+  .db-yes .db-ans { color:var(--kein); }
+  .db-no .db-ans { color:var(--nicht); }
+  .db-ex { font-size:12px; color:var(--gray); line-height:1.6; }
+
+  /* POSITION DEMO ROWS */
+  .pos-rows { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .pos-row { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:14px 16px; }
+  .pos-rule-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; color:var(--blue); margin-bottom:8px; }
+  .pos-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:4px; }
+  .pos-en { font-size:12px; color:var(--gray); }
+  .pos-highlight { color:var(--nicht); font-weight:700; background:rgba(52,152,219,0.12); padding:0 4px; border-radius:4px; border:1px solid rgba(52,152,219,0.3); }
+
+  /* WRONG/RIGHT COMPARE */
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:14px; font-weight:700; line-height:2.2; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .sw{font-size:13px;padding:6px 8px;} .lesson-h{font-size:22px;} .neg-split{grid-template-columns:1fr;} .kein-table{font-size:12px;} .db-branches{grid-template-columns:1fr;} .wr-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">MODULE 11</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">A1 · Grammar Foundation</div>
+    <h1 class="lesson-h" style="font-size:36px;">Negation:<br><span style="color:var(--nicht)">nicht</span> and <span style="color:var(--kein)">kein</span></h1>
+    <p class="body-text">English has one word for "not" — and it goes right after the verb. German has two completely different negation words, each with its own rules, and neither of them works exactly like English "not." This module gives you the decision logic, the grammar, the word order rules, and the exam strategy — so that negation becomes free points in your Goethe A1 Schreiben.</p>
+    <div class="info-box"><strong style="color:var(--gold)">The core question of German negation:</strong> Is what you're negating a <em>noun</em> with an indefinite or no article? → Use <span style="font-family:'DM Mono',monospace;color:var(--kein)">kein</span>. Is it a verb, adjective, adverb, or specific named thing? → Use <span style="font-family:'DM Mono',monospace;color:var(--nicht)">nicht</span>. Two words. One question. That is the whole system.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">⚡</div><div><div class="lc-title">Lesson 1 — nicht vs kein: The Core Rule</div><div class="lc-desc">The one question that decides which word to use. Every time.</div></div><div class="lc-tag" style="color:var(--gold);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">🟠</div><div><div class="lc-title">Lesson 2 — kein: Forms and Uses</div><div class="lc-desc">kein/keine/keinen — how kein changes by gender and case.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">🔵</div><div><div class="lc-title">Lesson 3 — nicht: What It Negates</div><div class="lc-desc">Verbs, adjectives, adverbs, proper nouns. nicht with sein and haben.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">📍</div><div><div class="lc-title">Lesson 4 — Position of nicht</div><div class="lc-desc">Where nicht goes in the sentence — the rules and the exceptions.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">🚫</div><div><div class="lc-title">Lesson 5 — The English Trap and Exam Tips</div><div class="lc-desc">Why "Ich habe nicht ein Auto" is wrong. Free exam points.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lesson 6 — Kwame, Amina, Kofi, Fatima</div><div class="lc-desc">All negation rules in African-context sentences.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Begin Lesson 1 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lessons</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LESSON 1: nicht vs kein — The Core Rule ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">Module 11 · Lesson 1 of 6</div>
+          <h2 class="lesson-h">nicht vs kein — the core rule</h2>
+          <p class="body-text">English speakers learning German face an immediate problem: English has one negation word — "not" — and it goes in one predictable place (right after "be" or with "do"). German has two negation words that work differently from each other and differently from English "not." The good news: the decision between them follows one clear rule.</p>
+
+          <div class="neg-split">
+            <div class="neg-card neg-nicht">
+              <div class="neg-word">nicht</div>
+              <div class="neg-tag">NEGATES EVERYTHING ELSE</div>
+              <div class="neg-rule-text">
+                Use <strong style="color:var(--nicht)">nicht</strong> to negate:<br>
+                · verbs — <em>Ich arbeite nicht</em><br>
+                · adjectives — <em>Er ist nicht müde</em><br>
+                · adverbs — <em>nicht heute</em><br>
+                · proper nouns — <em>Das ist nicht Kwame</em>
+              </div>
+            </div>
+            <div class="neg-card neg-kein">
+              <div class="neg-word">kein</div>
+              <div class="neg-tag">NEGATES NOUNS</div>
+              <div class="neg-rule-text">
+                Use <strong style="color:var(--kein)">kein</strong> to negate:<br>
+                · nouns with <em>ein/eine</em> — <em>kein Auto</em><br>
+                · nouns with no article — <em>kein Geld</em><br>
+                · nouns after sein/haben — <em>kein Arzt</em>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">The one-question decision test</div>
+          <div class="decision-box">
+            <div class="db-q">❓ Could the positive sentence use "ein" or "eine" before the noun — OR does the noun have no article at all?</div>
+            <div class="db-branches">
+              <div class="db-yes">
+                <div class="db-label">YES → USE</div>
+                <div class="db-ans">kein</div>
+                <div class="db-ex">Ich habe <em>ein</em> Auto → Ich habe <strong>kein</strong> Auto<br>Ich habe Geld → Ich habe <strong>kein</strong> Geld</div>
+              </div>
+              <div class="db-no">
+                <div class="db-label">NO → USE</div>
+                <div class="db-ans">nicht</div>
+                <div class="db-ex">Ich arbeite → Ich arbeite <strong>nicht</strong><br>Ich bin müde → Ich bin <strong>nicht</strong> müde</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">Quick examples side by side</div>
+          <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:18px;margin:14px 0;">
+            <div style="display:grid;grid-template-columns:auto 1fr auto;gap:0;font-family:'DM Mono',monospace;font-size:13px;">
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--gray);font-size:11px;letter-spacing:1px;">POSITIVE</div>
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--cream);">Ich habe ein Auto.</div>
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--kein);font-weight:700;">kein</div>
+
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--gray);font-size:11px;letter-spacing:1px;">NEGATED</div>
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--cream);">Ich habe <strong style="color:var(--kein)">kein</strong> Auto.</div>
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--gray);font-size:11px;">I have no car.</div>
+
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--gray);font-size:11px;letter-spacing:1px;">POSITIVE</div>
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--cream);">Ich bin müde.</div>
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--nicht);font-weight:700;">nicht</div>
+
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--gray);font-size:11px;letter-spacing:1px;">NEGATED</div>
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--cream);">Ich bin <strong style="color:var(--nicht)">nicht</strong> müde.</div>
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--gray);font-size:11px;">I am not tired.</div>
+
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--gray);font-size:11px;letter-spacing:1px;">POSITIVE</div>
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--cream);">Kwame hat Geld.</div>
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--kein);font-weight:700;">kein</div>
+
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--gray);font-size:11px;letter-spacing:1px;">NEGATED</div>
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--cream);">Kwame hat <strong style="color:var(--kein)">kein</strong> Geld.</div>
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--gray);font-size:11px;">Kwame has no money.</div>
+
+              <div style="padding:9px 12px;color:var(--gray);font-size:11px;letter-spacing:1px;">POSITIVE</div>
+              <div style="padding:9px 12px;color:var(--cream);">Amina kommt.</div>
+              <div style="padding:9px 12px;color:var(--nicht);font-weight:700;">nicht</div>
+
+              <div style="padding:9px 12px;color:var(--gray);font-size:11px;letter-spacing:1px;">NEGATED</div>
+              <div style="padding:9px 12px;color:var(--cream);">Amina kommt <strong style="color:var(--nicht)">nicht</strong>.</div>
+              <div style="padding:9px 12px;color:var(--gray);font-size:11px;">Amina is not coming.</div>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Ich habe kein Auto. Ich bin nicht müde. Kwame hat kein Geld. Amina kommt nicht.')">🔊 Hear all four</button>
+
+          <div class="warn-box"><strong style="color:var(--blue)">Note on "kein Geld":</strong> When a noun has no article in the positive sentence ("Ich habe Geld"), you still use <span style="font-family:'DM Mono',monospace;color:var(--kein)">kein</span> to negate it — not nicht. Think of it as: kein <em>replaces</em> the missing article with a negative article. "Ich habe kein Geld" = "I have no money."</div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">Module 11 · Lesson 1 · Quiz</div><h2 class="lesson-h">nicht or kein?</h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 2: kein — Forms and Uses ── -->
+    <div id="lesson-1" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">Module 11 · Lesson 2 of 6</div>
+          <h2 class="lesson-h">kein — forms, genders, cases</h2>
+          <p class="body-text"><strong style="color:var(--kein)">kein</strong> is not just one word — it changes form based on the gender of the noun it negates and the grammatical case. It follows the same pattern as <span style="font-family:'DM Mono',monospace">ein/eine</span>. If you know how ein changes, you already know how kein changes.</p>
+
+          <div class="sec-label">The kein declension — nominative and accusative</div>
+          <div class="kein-table">
+            <div class="kt-h"></div>
+            <div class="kt-h" style="color:var(--p1);">MASC</div>
+            <div class="kt-h" style="color:var(--p3);">NEUT</div>
+            <div class="kt-h" style="color:var(--p2);">FEM</div>
+            <div class="kt-h" style="color:var(--gold);">PLURAL</div>
+
+            <div class="kt-case">NOM</div>
+            <div class="kt-m">kein</div>
+            <div class="kt-n">kein</div>
+            <div class="kt-f">keine</div>
+            <div class="kt-pl">keine</div>
+
+            <div class="kt-case">ACC</div>
+            <div class="kt-m kt-changed">keinen</div>
+            <div class="kt-n">kein</div>
+            <div class="kt-f">keine</div>
+            <div class="kt-pl">keine</div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin-top:4px;">The highlighted cell is the only change: masculine accusative adds –en → <span style="font-family:'DM Mono',monospace;color:var(--kein)">keinen</span>.</p>
+
+          <div class="sec-label">The key forms to know — with examples</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--p1);">MASC · ACC</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina hat <strong style="color:var(--kein)">keinen</strong> Bruder.</div>
+                <div class="ex-en">Amina has no brother.</div>
+                <div class="ex-note">Bruder = masculine. After <em>haben</em>, the noun is in the accusative case. Masculine accusative → <span style="font-family:'DM Mono',monospace;color:var(--kein)">keinen</span>. This is the most commonly tested form at A1.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina hat keinen Bruder.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--p3);">NEUT · ACC</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi hat <strong style="color:var(--kein)">kein</strong> Auto.</div>
+                <div class="ex-en">Kofi has no car.</div>
+                <div class="ex-note">Auto = neuter. Neuter nominative and accusative are both <span style="font-family:'DM Mono',monospace;color:var(--kein)">kein</span> — no change needed.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi hat kein Auto.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--p2);">FEM · ACC</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima hat <strong style="color:var(--kein)">keine</strong> Schwester.</div>
+                <div class="ex-en">Fatima has no sister.</div>
+                <div class="ex-note">Schwester = feminine. Feminine accusative → <span style="font-family:'DM Mono',monospace;color:var(--kein)">keine</span> — same as nominative.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima hat keine Schwester.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--gold);">PLURAL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame hat <strong style="color:var(--kein)">keine</strong> Kinder.</div>
+                <div class="ex-en">Kwame has no children.</div>
+                <div class="ex-note">Kinder = plural. All plural forms → <span style="font-family:'DM Mono',monospace;color:var(--kein)">keine</span>.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame hat keine Kinder.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">kein after sein — predicate nouns</div>
+          <p class="body-text">When you negate a profession or identity after <span style="font-family:'DM Mono',monospace">sein</span> (to be), use <span style="font-family:'DM Mono',monospace;color:var(--kein)">kein</span> — even though there is no article in the positive sentence. German treats profession nouns after sein as if they had an indefinite article.</p>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--kein);">SEIN + NOUN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame ist Arzt. → Kwame ist <strong style="color:var(--kein)">kein</strong> Arzt.</div>
+                <div class="ex-en">Kwame is a doctor. → Kwame is not a doctor.</div>
+                <div class="ex-note">Positive: "Kwame ist Arzt" (no article). Negation: kein Arzt (not "nicht Arzt"). After sein, use kein to negate a noun — not nicht.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame ist Arzt. Kwame ist kein Arzt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--kein);">SEIN + NOUN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima ist Lehrerin. → Fatima ist <strong style="color:var(--kein)">keine</strong> Lehrerin.</div>
+                <div class="ex-en">Fatima is a teacher. → Fatima is not a teacher.</div>
+                <div class="ex-note">Lehrerin = feminine → keine. Remember: feminine noun → keine (in both nominative and accusative).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima ist Lehrerin. Fatima ist keine Lehrerin.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="info-box"><strong style="color:var(--gold)">The memory shortcut for kein forms:</strong><br><br>
+            Only <strong>one</strong> form is different from the others: <span style="font-family:'DM Mono',monospace;color:var(--kein)">keinen</span> (masculine accusative — after haben with a masculine noun).<br>
+            All other forms are either <span style="font-family:'DM Mono',monospace;color:var(--kein)">kein</span> (masculine and neuter nominative/accusative) or <span style="font-family:'DM Mono',monospace;color:var(--kein)">keine</span> (feminine + plural).<br><br>
+            If unsure: ask yourself — is the noun masculine AND after haben? → keinen. Everything else → kein or keine.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">Module 11 · Lesson 2 · Quiz</div><h2 class="lesson-h">kein Forms Quiz</h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 3: nicht — What It Negates ── -->
+    <div id="lesson-2" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">Module 11 · Lesson 3 of 6</div>
+          <h2 class="lesson-h">nicht — what it negates</h2>
+          <p class="body-text"><strong style="color:var(--nicht)">nicht</strong> is the general negation word. It negates everything that is not a noun with an indefinite or no article: verbs, predicative adjectives, adverbs, proper nouns, and also definite articles (the, this). Learn the categories and the position rule will follow naturally.</p>
+
+          <div class="sec-label">nicht + verb — negating the action</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--nicht);">VERB</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi arbeitet <strong style="color:var(--nicht)">nicht</strong>.</div>
+                <div class="ex-en">Kofi does not work.</div>
+                <div class="ex-note">Negating the verb → nicht at the end of the sentence.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi arbeitet nicht.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--nicht);">VERB</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina schläft <strong style="color:var(--nicht)">nicht</strong>.</div>
+                <div class="ex-en">Amina is not sleeping.</div>
+                <div class="ex-note">Same pattern: verb + nicht at end.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina schläft nicht.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">nicht + sein — negating "to be" + adjective</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--nicht);">SEIN + ADJ</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich bin <strong style="color:var(--nicht)">nicht</strong> müde.</div>
+                <div class="ex-en">I am not tired.</div>
+                <div class="ex-note">Predicative adjective after sein → nicht comes directly before the adjective.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich bin nicht müde.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--nicht);">SEIN + ADJ</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das Wetter ist <strong style="color:var(--nicht)">nicht</strong> gut.</div>
+                <div class="ex-en">The weather is not good.</div>
+                <div class="ex-note">gut = adjective after sein → nicht before the adjective.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das Wetter ist nicht gut.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">nicht + adverb — negating time, place, manner</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--nicht);">ADVERB</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima kommt <strong style="color:var(--nicht)">nicht</strong> heute.</div>
+                <div class="ex-en">Fatima is not coming today.</div>
+                <div class="ex-note">nicht before heute = specifically negating the time (not today — perhaps another day). Compare: "Fatima kommt nicht." (not coming at all).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima kommt nicht heute.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--nicht);">ADVERB</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame wohnt <strong style="color:var(--nicht)">nicht</strong> hier.</div>
+                <div class="ex-en">Kwame does not live here.</div>
+                <div class="ex-note">nicht before hier = negating the place specifically.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame wohnt nicht hier.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">nicht + proper noun — "that is not X"</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--nicht);">PROPER NOUN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das ist <strong style="color:var(--nicht)">nicht</strong> Amina.</div>
+                <div class="ex-en">That is not Amina.</div>
+                <div class="ex-note">Amina = proper noun (a name). Names never take kein — always nicht.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das ist nicht Amina.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="success-box"><strong style="color:var(--green)">Summary — what nicht negates:</strong><br><br>
+            ✓ Verbs → Ich arbeite <strong>nicht</strong><br>
+            ✓ Predicative adjectives after sein → Ich bin <strong>nicht</strong> müde<br>
+            ✓ Adverbs of time / place / manner → nicht heute, nicht hier<br>
+            ✓ Proper nouns (names) → Das ist nicht Kwame<br>
+            ✓ Definite articles (the) → Ich kaufe nicht <strong>das</strong> Buch (I'm not buying that specific book)
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">Module 11 · Lesson 3 · Quiz</div><h2 class="lesson-h">nicht — What It Negates Quiz</h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 4: Position of nicht ── -->
+    <div id="lesson-3" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">Module 11 · Lesson 4 of 6</div>
+          <h2 class="lesson-h">Position of nicht in the sentence</h2>
+          <p class="body-text">The biggest nicht question after "which word?" is "where does it go?" Unlike English "not" which sits immediately after the auxiliary verb, German <span style="font-family:'DM Mono',monospace;color:var(--nicht)">nicht</span> moves around depending on what it is negating. There are three clear positions to learn.</p>
+
+          <div class="sec-label">Rule 1 — nicht at the end: whole-sentence negation</div>
+          <p class="body-text">When you want to negate the entire sentence (the whole action or event), nicht goes to the <strong>end</strong> of the clause — after all other elements.</p>
+
+          <div class="pos-rows">
+            <div class="pos-row">
+              <div class="pos-rule-tag">WHOLE SENTENCE NEGATION · nicht AT END</div>
+              <div class="pos-de">Ich arbeite <span class="pos-highlight">nicht</span>.</div>
+              <div class="pos-en">I do not work. (the whole action is negated)</div>
+            </div>
+            <div class="pos-row">
+              <div class="pos-rule-tag">WHOLE SENTENCE NEGATION · nicht AT END</div>
+              <div class="pos-de">Kofi kommt morgen <span class="pos-highlight">nicht</span>.</div>
+              <div class="pos-en">Kofi is not coming tomorrow. (nicht goes after morgen, still at end)</div>
+            </div>
+          </div>
+
+          <div class="sent-block" style="margin-top:16px;">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Kofi</span><span class="sl sl-p1">SUBJECT</span></div>
+              <div class="stoken"><span class="sw sw-verb">kommt</span><span class="sl sl-verb">VERB</span></div>
+              <div class="stoken"><span class="sw sw-gray">morgen</span><span class="sl sl-gray">TIME</span></div>
+              <div class="stoken"><span class="sw sw-p1">nicht</span><span class="sl sl-p1">NEG · END</span></div>
+            </div>
+            <div class="sent-en">Kofi is not coming tomorrow. (nicht at end = the whole event is negated)</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Ich arbeite nicht. Kofi kommt morgen nicht.')">🔊</button>
+
+          <div class="sec-label">Rule 2 — nicht before adjective: sein + predicate</div>
+          <p class="body-text">When the sentence has <span style="font-family:'DM Mono',monospace">sein</span> + a predicative adjective, <span style="font-family:'DM Mono',monospace;color:var(--nicht)">nicht</span> goes directly before that adjective. Because the adjective is already at the end, nicht ends up near the end too — but it comes before the adjective, not after.</p>
+
+          <div class="sent-block">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Ich</span><span class="sl sl-p1">SUBJECT</span></div>
+              <div class="stoken"><span class="sw sw-verb">bin</span><span class="sl sl-verb">SEIN</span></div>
+              <div class="stoken"><span class="sw sw-p1">nicht</span><span class="sl sl-p1">NEG</span></div>
+              <div class="stoken"><span class="sw sw-gold">müde</span><span class="sl sl-gold">ADJECTIVE</span></div>
+            </div>
+            <div class="sent-en">I am not tired. (nicht before the adjective)</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Ich bin nicht müde. Das Wetter ist nicht gut.')">🔊 Hear examples</button>
+
+          <div class="sec-label">Rule 3 — nicht before specific element: targeted negation</div>
+          <p class="body-text">When you want to negate a specific word or phrase — not the whole sentence — nicht goes directly <strong>before</strong> the element it negates. Whatever word comes immediately after nicht is what is being denied.</p>
+
+          <div class="pos-rows">
+            <div class="pos-row">
+              <div class="pos-rule-tag">NEGATING TIME · nicht before heute</div>
+              <div class="pos-de">Fatima kommt <span class="pos-highlight">nicht</span> heute.</div>
+              <div class="pos-en">Fatima is not coming <em>today</em>. (implies she may come another day)</div>
+            </div>
+            <div class="pos-row">
+              <div class="pos-rule-tag">NEGATING PLACE · nicht before hier</div>
+              <div class="pos-de">Kwame wohnt <span class="pos-highlight">nicht</span> hier.</div>
+              <div class="pos-en">Kwame does not live <em>here</em>. (he lives somewhere else)</div>
+            </div>
+            <div class="pos-row">
+              <div class="pos-rule-tag">NEGATING PREP PHRASE · nicht before in + place</div>
+              <div class="pos-de">Amina wohnt <span class="pos-highlight">nicht</span> in Berlin.</div>
+              <div class="pos-en">Amina does not live in Berlin. (she lives somewhere else)</div>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Fatima kommt nicht heute. Kwame wohnt nicht hier. Amina wohnt nicht in Berlin.')">🔊</button>
+
+          <div class="danger-box"><strong style="color:#e74c3c;">The one position that is always wrong:</strong><br><br>
+            <strong>NEVER</strong> put nicht between the subject and the conjugated verb.<br><br>
+            ✗ <span style="font-family:'DM Mono',monospace;">"Ich <u>nicht</u> arbeite."</span> — completely wrong<br>
+            ✗ <span style="font-family:'DM Mono',monospace;">"Kofi <u>nicht</u> kommt."</span> — completely wrong<br><br>
+            ✓ <span style="font-family:'DM Mono',monospace;">Ich arbeite <strong>nicht</strong>.</span> — correct<br>
+            ✓ <span style="font-family:'DM Mono',monospace;">Kofi kommt <strong>nicht</strong>.</span> — correct<br><br>
+            German verbs must stay in second position. nicht never separates subject and verb.
+          </div>
+
+          <div class="info-box"><strong style="color:var(--gold)">A1 position summary — the simple version:</strong><br><br>
+            1. Negating the whole sentence → <span style="font-family:'DM Mono',monospace;color:var(--nicht)">nicht</span> at the <strong>end</strong><br>
+            2. After sein + adjective → nicht before the <strong>adjective</strong> (near end)<br>
+            3. Negating a specific word → nicht directly <strong>before</strong> that word<br>
+            4. Never between <strong>subject and verb</strong>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">Module 11 · Lesson 4 · Quiz</div><h2 class="lesson-h">Position of nicht Quiz</h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 5: The English Trap and Exam Tips ── -->
+    <div id="lesson-4" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">Module 11 · Lesson 5 of 6</div>
+          <h2 class="lesson-h">The English trap and exam tips</h2>
+          <p class="body-text">English-speaking learners make two very predictable negation errors. The first is using <span style="font-family:'DM Mono',monospace;color:var(--nicht)">nicht</span> where <span style="font-family:'DM Mono',monospace;color:var(--kein)">kein</span> is needed. The second is placing nicht in the English position — immediately after the verb — instead of near the end. Both errors appear in every A1 exam script from learners who have not studied this module.</p>
+
+          <div class="sec-label">Error 1 — using nicht instead of kein</div>
+          <p class="body-text">English: "I do not have a car" → Word-for-word German: "Ich habe nicht ein Auto" — <strong style="color:var(--red)">WRONG</strong>. When the positive sentence uses <em>ein/eine</em>, you must replace it with <em>kein</em>. You cannot keep the article and add nicht before it.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">WRONG · nicht + ein</div>
+              <div class="wr-word">Ich habe nicht ein Auto.<br>Ich habe nicht eine Schwester.<br>Ich habe nicht ein Kind.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT · kein replaces ein</div>
+              <div class="wr-word">Ich habe kein Auto.<br>Ich habe keine Schwester.<br>Ich habe kein Kind.</div>
+            </div>
+          </div>
+
+          <div class="sec-label">Error 2 — using nicht instead of kein with no-article nouns</div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">WRONG · nicht + noun</div>
+              <div class="wr-word">Ich habe nicht Geld.<br>Kwame hat nicht Zeit.<br>Ich trinke nicht Wasser.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT · kein + noun</div>
+              <div class="wr-word">Ich habe kein Geld.<br>Kwame hat keine Zeit.<br>Ich trinke kein Wasser.</div>
+            </div>
+          </div>
+
+          <div class="sec-label">Error 3 — placing nicht immediately after the verb</div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">WRONG · English position</div>
+              <div class="wr-word">Ich bin nicht<br>Ich komme nicht<br>(these look right but check below)</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT — wait, these ARE right</div>
+              <div class="wr-word">Ich bin nicht müde ✓<br>Ich komme nicht ✓<br>Ich bin nicht krank ✓</div>
+            </div>
+          </div>
+          <p class="body-text" style="font-size:13px;color:var(--gray);">These are actually correct because sein + adjective puts nicht before the adjective (near the end), and "Ich komme nicht" has nicht at the very end. The only wrong pattern is <em>subject + verb + nicht</em> when the verb is NOT sein: "Ich arbeite nicht heute" ✓ (nicht before heute) vs "Ich nicht arbeite" ✗ (subject–verb split).</p>
+
+          <div class="sec-label">Exam tip — negation in Goethe A1 Schreiben</div>
+          <div class="success-box"><strong style="color:var(--green)">Why negation = free exam points:</strong><br><br>
+            Negation appears in <strong>every</strong> A1 Schreiben task. You will always need to say what you <em>do not</em> have, what you are <em>not</em>, or what you <em>do not</em> do. The grader is looking for two things:<br><br>
+            1. Correct choice of <span style="font-family:'DM Mono',monospace;color:var(--kein)">kein</span> vs <span style="font-family:'DM Mono',monospace;color:var(--nicht)">nicht</span><br>
+            2. Correct position of nicht in the sentence<br><br>
+            If you get both right, it counts as correct grammar — multiple points per sentence. If you consistently use "nicht ein" instead of "kein", it shows a systematic gap and costs marks throughout.
+          </div>
+
+          <div class="sec-label">The quick-check — five-second decision</div>
+          <div class="decision-box">
+            <div class="db-q">Look at the noun: could the positive sentence say "ein/eine ___" OR have the noun with no article?</div>
+            <div class="db-branches">
+              <div class="db-yes">
+                <div class="db-label">YES</div>
+                <div class="db-ans">kein</div>
+                <div class="db-ex">
+                  Ich habe ein Auto → kein Auto<br>
+                  Sie hat eine Schwester → keine Schwester<br>
+                  Er hat Geld → kein Geld<br>
+                  Sie ist Ärztin → keine Ärztin
+                </div>
+              </div>
+              <div class="db-no">
+                <div class="db-label">NO / VERB / ADJ / ADV</div>
+                <div class="db-ans">nicht</div>
+                <div class="db-ex">
+                  Ich arbeite → ich arbeite nicht<br>
+                  Ich bin müde → nicht müde<br>
+                  heute → nicht heute<br>
+                  Das ist Kofi → nicht Kofi
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Ich habe kein Auto. Ich habe keine Schwester. Ich habe kein Geld. Ich bin nicht müde. Ich arbeite nicht.')">🔊 Hear all five</button>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">Module 11 · Lesson 5 · Quiz</div><h2 class="lesson-h">English Trap Quiz</h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 6: African Context Review ── -->
+    <div id="lesson-5" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">Module 11 · Lesson 6 of 6</div>
+          <h2 class="lesson-h">Kwame, Amina, Kofi, Fatima — full negation review</h2>
+          <p class="body-text">Every negation rule you have learned now appears in African-context sentences. For each sentence, notice which word is used (<span style="font-family:'DM Mono',monospace;color:var(--nicht)">nicht</span> or <span style="font-family:'DM Mono',monospace;color:var(--kein)">kein</span>) and where it sits in the sentence.</p>
+
+          <div class="sec-label">kein — negating nouns</div>
+          <div class="sent-block">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Kwame</span><span class="sl sl-p1">SUBJECT</span></div>
+              <div class="stoken"><span class="sw sw-verb">hat</span><span class="sl sl-verb">VERB</span></div>
+              <div class="stoken"><span class="sw sw-p2">keinen</span><span class="sl sl-p2">KEIN · m.acc</span></div>
+              <div class="stoken"><span class="sw sw-gray">Führerschein.</span><span class="sl sl-gray">driving licence</span></div>
+            </div>
+            <div class="sent-en">Kwame has no driving licence. (der Führerschein, masculine → keinen)</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Kwame hat keinen Führerschein.')">🔊</button>
+
+          <div class="sent-block" style="margin-top:14px;">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Amina</span><span class="sl sl-p1">SUBJECT</span></div>
+              <div class="stoken"><span class="sw sw-verb">hat</span><span class="sl sl-verb">VERB</span></div>
+              <div class="stoken"><span class="sw sw-p2">keine</span><span class="sl sl-p2">KEIN · f.acc</span></div>
+              <div class="stoken"><span class="sw sw-gray">Zeit.</span><span class="sl sl-gray">time</span></div>
+            </div>
+            <div class="sent-en">Amina has no time. (die Zeit, feminine → keine)</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Amina hat keine Zeit.')">🔊</button>
+
+          <div class="sec-label">nicht — negating verbs and adjectives</div>
+          <div class="sent-block">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Kofi</span><span class="sl sl-p1">SUBJECT</span></div>
+              <div class="stoken"><span class="sw sw-verb">ist</span><span class="sl sl-verb">SEIN</span></div>
+              <div class="stoken"><span class="sw sw-p1">nicht</span><span class="sl sl-p1">NICHT</span></div>
+              <div class="stoken"><span class="sw sw-gold">krank.</span><span class="sl sl-gold">ADJECTIVE</span></div>
+            </div>
+            <div class="sent-en">Kofi is not sick. (adjective after sein → nicht before adjective)</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Kofi ist nicht krank.')">🔊</button>
+
+          <div class="sent-block" style="margin-top:14px;">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Fatima</span><span class="sl sl-p1">SUBJECT</span></div>
+              <div class="stoken"><span class="sw sw-verb">studiert</span><span class="sl sl-verb">VERB</span></div>
+              <div class="stoken"><span class="sw sw-gray">in Accra</span><span class="sl sl-gray">place</span></div>
+              <div class="stoken"><span class="sw sw-p1">nicht</span><span class="sl sl-p1">NICHT · END</span></div>
+            </div>
+            <div class="sent-en">Fatima does not study in Accra. (whole sentence negated → nicht at end)</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Fatima studiert in Accra nicht.')">🔊</button>
+
+          <div class="sec-label">kein with sein — negating identity</div>
+          <div class="sent-block">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Kwame</span><span class="sl sl-p1">SUBJECT</span></div>
+              <div class="stoken"><span class="sw sw-verb">ist</span><span class="sl sl-verb">SEIN</span></div>
+              <div class="stoken"><span class="sw sw-p2">kein</span><span class="sl sl-p2">KEIN · m.nom</span></div>
+              <div class="stoken"><span class="sw sw-gray">Arzt.</span><span class="sl sl-gray">doctor</span></div>
+            </div>
+            <div class="sent-en">Kwame is not a doctor. (profession after sein → kein, not nicht)</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Kwame ist kein Arzt.')">🔊</button>
+
+          <div class="sec-label">Full reference — the decision at a glance</div>
+          <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);border-radius:14px;overflow:hidden;margin:14px 0;">
+            <div style="display:grid;grid-template-columns:1fr auto;gap:0;">
+              <div style="padding:10px 14px;background:rgba(255,255,255,0.03);font-size:10px;letter-spacing:2px;font-family:'DM Mono',monospace;color:var(--gray);">WHAT YOU'RE NEGATING</div>
+              <div style="padding:10px 14px;background:rgba(255,255,255,0.03);font-size:10px;letter-spacing:2px;font-family:'DM Mono',monospace;color:var(--gold);">USE</div>
+              <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);color:var(--cream);font-size:13px;">Noun with ein/eine ("Ich habe ein Buch")</div>
+              <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);color:var(--kein);font-family:'DM Mono',monospace;font-weight:700;font-size:14px;">kein</div>
+              <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);color:var(--cream);font-size:13px;">Noun with no article ("Ich habe Geld")</div>
+              <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);color:var(--kein);font-family:'DM Mono',monospace;font-weight:700;font-size:14px;">kein</div>
+              <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);color:var(--cream);font-size:13px;">Profession after sein ("Er ist Arzt")</div>
+              <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);color:var(--kein);font-family:'DM Mono',monospace;font-weight:700;font-size:14px;">kein</div>
+              <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);color:var(--cream);font-size:13px;">A verb ("Ich arbeite")</div>
+              <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);color:var(--nicht);font-family:'DM Mono',monospace;font-weight:700;font-size:14px;">nicht</div>
+              <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);color:var(--cream);font-size:13px;">Adjective after sein ("Ich bin müde")</div>
+              <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);color:var(--nicht);font-family:'DM Mono',monospace;font-weight:700;font-size:14px;">nicht</div>
+              <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);color:var(--cream);font-size:13px;">Adverb of time/place ("heute", "hier")</div>
+              <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);color:var(--nicht);font-family:'DM Mono',monospace;font-weight:700;font-size:14px;">nicht</div>
+              <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);color:var(--cream);font-size:13px;">A name / proper noun</div>
+              <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.05);color:var(--nicht);font-family:'DM Mono',monospace;font-weight:700;font-size:14px;">nicht</div>
+            </div>
+          </div>
+
+          <div class="success-box">
+            <strong style="color:var(--green)">What you now know:</strong><br><br>
+            ✓ nicht vs kein — the one-question decision test<br>
+            ✓ kein forms: kein / keine / keinen — only masculine accusative changes<br>
+            ✓ kein after sein with professions and identities<br>
+            ✓ nicht with verbs, adjectives, adverbs, and proper nouns<br>
+            ✓ Position of nicht — end for whole-sentence, before the specific element<br>
+            ✓ Never nicht + ein / nie zwischen Subjekt und Verb<br><br>
+            Negation now adds points to your Schreiben score — every time you use it correctly.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Start Final Quiz →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">Module 11 · Final Quiz</div><h2 class="lesson-h">Module Complete — Final Check</h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Previous</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="showOverview()"><span class="nav-icon">📚</span><span class="nav-label">Overview</span></button>
+  <button class="nav-item" onclick="resumeLesson()"><span class="nav-icon">▶️</span><span class="nav-label">Resume</span></button>
+</nav>
+
+<script>
+var synth=(typeof window!=='undefined'&&window.speechSynthesis)?window.speechSynthesis:null;
+var deVoice=null,speechUnlocked=false;
+function loadVoices(){ if(!synth)return; try{ var v=synth.getVoices(); deVoice=v.find(function(x){return x.lang==='de-DE';})||v.find(function(x){return x.lang&&x.lang.startsWith('de');})||null; }catch(e){} }
+if(synth){ try{ loadVoices(); if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadVoices; }catch(e){} }
+function unlockSpeech(){ if(speechUnlocked||!synth)return; try{ var s=new SpeechSynthesisUtterance(''); s.volume=0; synth.speak(s); speechUnlocked=true; }catch(e){} }
+document.addEventListener('touchstart',unlockSpeech,{once:true,passive:true});
+document.addEventListener('click',unlockSpeech,{once:true});
+function speakDE(t){ if(!synth)return null; try{ if(!deVoice)loadVoices(); synth.cancel(); var u=new SpeechSynthesisUtterance(t); u.lang='de-DE'; u.rate=0.85; u.pitch=1.0; u.volume=1.0; if(deVoice)u.voice=deVoice; synth.speak(u); return u; }catch(e){return null;} }
+function speakSentence(btn,text){ unlockSpeech(); document.querySelectorAll('.speak-btn').forEach(function(b){b.classList.remove('speaking');}); if(btn&&btn.classList)btn.classList.add('speaking'); var u=speakDE(text); if(u){ u.onend=function(){if(btn&&btn.classList)btn.classList.remove('speaking');}; u.onerror=function(){if(btn&&btn.classList)btn.classList.remove('speaking');}; }else{ setTimeout(function(){if(btn&&btn.classList)btn.classList.remove('speaking');},1500); } }
+
+var currentLesson=0, xp=0, TOTAL=6;
+
+var QD={
+  0:[
+    {q:'Kofi möchte ein Auto kaufen, aber er hat ___ Auto. (Kofi would like to buy a car but he has no car.)',
+     hint:'The positive sentence uses "ein Auto". What do you use to negate a noun with ein?',
+     opts:['kein','nicht','keine','keinen'],
+     ans:0,
+     exp:'"kein" — Auto is neuter (das Auto). In the positive sentence you would say "er hat ein Auto." To negate, you replace ein with kein. Neuter nouns in the accusative case take kein (no –en, no –e). The full sentence: "Er hat kein Auto." Using "nicht ein" is a direct translation error from English — it is wrong in German.',
+     rule:'Noun with ein/eine → replace with kein. das Auto (neuter accusative) → kein Auto. Never "nicht ein".'}
+  ],
+  1:[
+    {q:'Amina hat ___ Bruder. (Amina has no brother.) Choose the correct form of kein.',
+     hint:'Bruder = masculine (der Bruder). It follows haben, so it is in the accusative case. What is kein in masculine accusative?',
+     opts:['kein','keine','keinen','nicht'],
+     ans:2,
+     exp:'"keinen" — Bruder is masculine (der Bruder). After haben, the noun is in the accusative case. Masculine accusative is the only form of kein that changes: kein → keinen. All other genders stay the same in accusative. "kein Bruder" would be nominative masculine (correct in other contexts), but after haben we need accusative → keinen. "keine" is for feminine and plural. "nicht" would be wrong here — you never use nicht to negate a noun with ein.',
+     rule:'Masculine noun after haben = accusative = keinen. Only masculine accusative changes. der Bruder → keinen Bruder. die Schwester → keine Schwester. das Kind → kein Kind.'}
+  ],
+  2:[
+    {q:'Kofi ist ___ müde. (Kofi is not tired.) Which word completes this sentence?',
+     hint:'müde is an adjective. Are you negating a noun with ein/eine — or are you negating an adjective?',
+     opts:['kein','keine','keinen','nicht'],
+     ans:3,
+     exp:'"nicht" — müde is an adjective, not a noun. kein only negates nouns (words that could have ein/eine or no article). To negate an adjective after sein, you always use nicht. Position: nicht goes directly before the adjective — "Kofi ist nicht müde." Never use kein before an adjective — "kein müde" does not exist in German.',
+     rule:'Adjective after sein → nicht. Ich bin nicht müde. Kofi ist nicht krank. Das Wetter ist nicht gut. kein only works with nouns.'}
+  ],
+  3:[
+    {q:'Which sentence places nicht in the correct position?',
+     hint:'Think about the rule: nicht never goes between subject and verb. Which option puts it in the right place?',
+     opts:['Ich nicht arbeite heute.','Ich nicht bin müde.','Ich bin nicht müde.','Ich müde nicht bin.'],
+     ans:2,
+     exp:'"Ich bin nicht müde." — Option C is correct: sein + adjective → nicht goes directly before the adjective. Option A puts nicht between subject and verb (Ich / nicht / arbeite) — this is never correct. Option B also puts nicht between subject and verb (Ich / nicht / bin) — wrong for the same reason. Option D scrambles the word order entirely. The rule: nicht never separates subject from the conjugated verb.',
+     rule:'nicht never goes between subject and conjugated verb. Sein + adjective: nicht comes before the adjective. Ich bin nicht müde. Er ist nicht krank.'}
+  ],
+  4:[
+    {q:'Fatima says: "Ich habe nicht ein Handy." What is wrong with this sentence?',
+     hint:'The positive sentence would be "Ich habe ein Handy." What rule applies when negating a noun with ein?',
+     opts:['"nicht ein" should be "kein" — kein replaces ein when negating a noun','The word order is wrong — nicht should come first','habe should be haben','There is no error — this sentence is correct'],
+     ans:0,
+     exp:'"nicht ein" should be "kein". The positive sentence is "Ich habe ein Handy." To negate, you replace ein with kein: "Ich habe kein Handy." You cannot keep ein and add nicht in front of it — "nicht ein" is a direct word-for-word translation from English and does not exist as correct German. This error costs marks in every A1 Schreiben task where negation appears. The correct form: "Ich habe kein Handy."',
+     rule:'"nicht ein" is never correct. Replace ein/eine with kein/keine/keinen. Ich habe ein Handy → Ich habe kein Handy. Always kein, never nicht + ein.'}
+  ],
+  5:[
+    {q:'Kwame ist ___ Arzt. (Kwame is not a doctor.) Choose the correct word.',
+     hint:'Arzt = a profession noun after sein. In the positive sentence: "Kwame ist Arzt" — no article. What do you use to negate a noun (even without article) after sein?',
+     opts:['kein Arzt','nicht Arzt','keinen Arzt','kein Ärzte'],
+     ans:0,
+     exp:'"kein Arzt" — profession nouns after sein use kein for negation, even though the positive sentence has no article ("Kwame ist Arzt"). German treats these nouns as if they had an invisible ein: "Kwame ist [ein] Arzt" → "Kwame ist kein Arzt." "nicht Arzt" is wrong — nicht does not negate nouns. "keinen Arzt" would be accusative masculine (after haben), but after sein we use nominative → kein. "kein Ärzte" is wrong because Ärzte is plural (die Ärzte) and should use keine.',
+     rule:'Profession/identity after sein → kein for negation. Kwame ist Arzt → Kwame ist kein Arzt. Fatima ist Lehrerin → Fatima ist keine Lehrerin. Nominative case after sein.'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">QUESTION '+(s.cur+1)+' OF '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint">'+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Next Question →':'See Results →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Correct!':'✗ Not quite'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent=q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' correct</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfect.':pct>=60?'Good work.':'Review and try again.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.12);border:1px solid var(--gold);border-radius:50px;padding:9px 22px;color:var(--gold);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Complete Module 11 →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Next Lesson →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">✅</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Module 11 Complete!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">nicht and kein mastered. The one-question decision locked in. Word order for nicht understood. The English trap avoided. Negation is now a tool that adds points to your Goethe Schreiben — every sentence where you use it correctly.</p><div class="xp-badge">⚡ '+xp+' XP Earned</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Next: Module 12 — Questions and Interrogatives</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Back to Overview</button></div>'; }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function resumeLesson(){ goLesson(currentLesson); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+</body>
+</html>

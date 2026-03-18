@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Module 8: Present Tense Conjugation</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --p1:#3498db; --p2:#e67e22; --p3:#9b59b6; --verb:#c9a84c;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:rgba(10,10,10,0.96); backdrop-filter:blur(20px); border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:12px 0 20px; z-index:100; }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:8px 16px; border-radius:12px; transition:all 0.2s; border:none; background:none; color:var(--gray); }
+  .nav-item:hover, .nav-item.active { color:var(--gold); }
+  .nav-icon { font-size:20px; }
+  .nav-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; font-family:'DM Mono',monospace; }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--gold); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--gold); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--gold); color:var(--black); width:100%; }
+  .btn-primary:hover { background:var(--gold-light); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(201,168,76,0.2); }
+  .speak-btn.speaking { background:var(--gold); color:var(--black); }
+
+  /* SENTENCE BLOCKS */
+  .sent-block { margin:14px 0; }
+  .sent-de { display:flex; flex-wrap:wrap; gap:6px; align-items:flex-end; margin-bottom:10px; }
+  .stoken { display:flex; flex-direction:column; align-items:center; }
+  .sw { font-family:'DM Mono',monospace; font-size:16px; padding:8px 12px; border-radius:8px; font-weight:600; }
+  .sl { font-size:9px; letter-spacing:1.5px; text-align:center; margin-top:4px; font-family:'DM Mono',monospace; }
+  .sw-p1 { background:rgba(52,152,219,0.12); border:1px solid rgba(52,152,219,0.3); color:var(--p1); }
+  .sl-p1 { color:var(--p1); }
+  .sw-verb { background:rgba(201,168,76,0.12); border:1px solid rgba(201,168,76,0.35); color:var(--verb); }
+  .sl-verb { color:var(--verb); }
+  .sw-p2 { background:rgba(230,126,34,0.1); border:1px solid rgba(230,126,34,0.3); color:var(--p2); }
+  .sl-p2 { color:var(--p2); }
+  .sw-p3 { background:rgba(155,89,182,0.1); border:1px solid rgba(155,89,182,0.3); color:var(--p3); }
+  .sl-p3 { color:var(--p3); }
+  .sw-gray { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); color:var(--cream); }
+  .sl-gray { color:var(--gray); }
+  .sent-en { font-size:13px; color:var(--gray); margin-top:4px; padding-left:2px; }
+
+  /* CONJUGATION TABLE */
+  .conj-wrap { margin:16px 0; }
+  .conj-grid { display:grid; grid-template-columns:auto 1fr 1fr; gap:4px; }
+  .cg-h { background:rgba(255,255,255,0.04); border-radius:6px; padding:7px 12px; font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; color:var(--gray); text-align:center; }
+  .cg-pron { background:rgba(52,152,219,0.07); border:1px solid rgba(52,152,219,0.2); border-radius:8px; padding:9px 14px; font-family:'DM Mono',monospace; font-size:13px; color:var(--p1); white-space:nowrap; }
+  .cg-end { background:rgba(201,168,76,0.07); border:1px solid rgba(201,168,76,0.2); border-radius:8px; padding:9px 14px; font-family:'DM Mono',monospace; font-size:13px; color:var(--gold); text-align:center; }
+  .cg-full { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:8px; padding:9px 14px; font-family:'DM Mono',monospace; font-size:13px; color:var(--cream); }
+  .cg-full .end { color:var(--gold); font-weight:700; }
+  .cg-irr { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:8px; padding:9px 14px; font-family:'DM Mono',monospace; font-size:13px; color:#e07060; text-align:center; }
+  .cg-tr { background:rgba(155,89,182,0.07); border:1px solid rgba(155,89,182,0.25); border-radius:8px; padding:9px 14px; font-family:'DM Mono',monospace; font-size:13px; color:var(--p3); text-align:center; }
+  .cg-note { font-size:11px; color:var(--gray); padding:6px 10px; }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-en { font-size:12px; color:var(--gray); margin-bottom:6px; }
+  .ex-note { font-size:12px; color:var(--cream); line-height:1.6; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Sans',sans-serif; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--gold); background:rgba(201,168,76,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(201,168,76,0.1); border-radius:8px; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(201,168,76,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(201,168,76,0.08); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(201,168,76,0.12); border:1px solid var(--gold); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--gold); font-size:18px; margin:18px 0; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .sw{font-size:13px;padding:6px 8px;} .lesson-h{font-size:22px;} .conj-grid{grid-template-columns:auto 1fr 1fr;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">MODULE 8</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">A1 · Grammar Core</div>
+    <h1 class="lesson-h" style="font-size:36px;">Present Tense<br><span style="color:var(--verb)">Verb Conjugation</span></h1>
+    <p class="body-text">In German, the verb changes its ending for every pronoun. This is called conjugation — and it is one of the most tested skills in the Goethe A1 exam. Many learners apply the English instinct — treating the verb as mostly unchanged — and write "er lerne" instead of "er lernt". This module fixes that — permanently.</p>
+    <div class="info-box"><strong style="color:var(--gold)">The core principle:</strong> Every German pronoun gets its own verb ending. <span style="font-family:'DM Mono',monospace;color:var(--verb)">ich lerne · du lernst · er lernt · wir lernen · ihr lernt · sie lernen</span> — six pronouns, six forms. Learn the pattern once, apply it to every regular verb in the language.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">⏱️</div><div><div class="lc-title">Lesson 1 — What is Present Tense?</div><div class="lc-desc">Präsens vs English. Why it matters for every Goethe task.</div></div><div class="lc-tag" style="color:var(--gold);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">📐</div><div><div class="lc-title">Lesson 2 — Regular Verb Pattern</div><div class="lc-desc">machen, lernen, wohnen — one pattern covers all regular verbs.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">🔵</div><div><div class="lc-title">Lesson 3 — sein (to be)</div><div class="lc-desc">Completely irregular. Must be memorised. Most-used verb at A1.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">🟠</div><div><div class="lc-title">Lesson 4 — haben & werden</div><div class="lc-desc">Two more irregulars. haben for possession. werden for future.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">⚠️</div><div><div class="lc-title">Lesson 5 — The Conjugation Trap</div><div class="lc-desc">Why learners write "er lerne" instead of "er lernt" — and the fix.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lesson 6 — African Contexts & Review</div><div class="lc-desc">Nairobi, the market, family. Full review + conjugation reference.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Begin Lesson 1 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lessons</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LESSON 1: What is Present Tense? ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">Module 8 · Lesson 1 of 6</div>
+          <h2 class="lesson-h">What is present tense — and why does it matter?</h2>
+          <p class="body-text">German present tense is called <strong style="color:var(--gold)">Präsens</strong>. It describes what is happening now, what you regularly do, or general facts. Unlike English, German has only <strong>one</strong> present tense form — it covers both English simple present and present continuous.</p>
+
+          <div class="info-box">
+            <strong style="color:var(--gold)">One German form — two English translations:</strong><br><br>
+            <span style="font-family:'DM Mono',monospace;color:var(--cream);">Ich lerne Deutsch.</span><br>
+            <span style="color:var(--gray);font-size:13px;">→ "I learn German." (habit / general)<br>→ "I am learning German." (right now)</span><br><br>
+            German does not distinguish between these. Context tells you which meaning applies.
+          </div>
+
+          <div class="sec-label">Why present tense dominates Goethe A1</div>
+          <p class="body-text">Präsens appears in every section of the exam. In <strong>Schreiben</strong>, you describe yourself, your family, your habits. In <strong>Sprechen</strong>, you answer questions about your daily life. In <strong>Hören</strong> and <strong>Lesen</strong>, you follow conversations about everyday situations. Master Präsens and you cover at least 70% of the grammar you need for the entire exam.</p>
+
+          <div class="sec-label">Three things present tense expresses</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--p1);">NOW</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amara <span style="color:var(--verb);font-weight:700;">lernt</span> gerade Vokabeln.</div>
+                <div class="ex-en">Amara is learning vocabulary right now.</div>
+                <div class="ex-note">Präsens shows what is happening at this moment.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amara lernt gerade Vokabeln.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--p2);">HABIT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi <span style="color:var(--verb);font-weight:700;">geht</span> jeden Tag zum Markt.</div>
+                <div class="ex-en">Kofi goes to the market every day.</div>
+                <div class="ex-note">Präsens shows regular, habitual actions.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi geht jeden Tag zum Markt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.1);color:var(--green);">FACT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Nairobi <span style="color:var(--verb);font-weight:700;">ist</span> die Hauptstadt von Kenia.</div>
+                <div class="ex-en">Nairobi is the capital of Kenya.</div>
+                <div class="ex-note">Präsens expresses permanent facts and general truths.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Nairobi ist die Hauptstadt von Kenia.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue)">Goethe Sprechen tip:</strong> In the speaking test, you will be asked "Was machen Sie?" and "Woher kommen Sie?" Every answer uses present tense: "Ich komme aus Kenia. Ich lerne Deutsch. Ich wohne in Nairobi." — three sentences, three present tense verbs. Getting these right from the first second gives you immediate confidence and a strong start.</div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">Module 8 · Lesson 1 · Quiz</div><h2 class="lesson-h">Present Tense Quiz</h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 2: Regular Verb Pattern ── -->
+    <div id="lesson-1" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">Module 8 · Lesson 2 of 6</div>
+          <h2 class="lesson-h">Regular verbs — one pattern, every verb</h2>
+          <p class="body-text">German has hundreds of regular verbs. They all follow the same pattern. Learn it once and you can conjugate any regular verb immediately. Step 1: find the <strong style="color:var(--gold)">stem</strong> by removing the <span style="font-family:'DM Mono',monospace;color:var(--gold)">-en</span> from the infinitive. Step 2: add the correct <strong style="color:var(--gold)">ending</strong> for each pronoun.</p>
+
+          <div class="info-box">
+            <strong style="color:var(--gold)">The six endings — the whole system in one box:</strong><br><br>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;font-family:'DM Mono',monospace;font-size:13px;">
+              <div>ich &nbsp;→ <span style="color:var(--gold)">-e</span></div>
+              <div>wir &nbsp;→ <span style="color:var(--gold)">-en</span></div>
+              <div>du &nbsp;&nbsp;→ <span style="color:var(--gold)">-st</span></div>
+              <div>ihr &nbsp;&nbsp;→ <span style="color:var(--gold)">-t</span></div>
+              <div>er/sie/es → <span style="color:var(--gold)">-t</span></div>
+              <div>sie/Sie → <span style="color:var(--gold)">-en</span></div>
+            </div>
+          </div>
+
+          <div class="sec-label">lernen — full conjugation table</div>
+          <div class="conj-wrap">
+            <div class="conj-grid">
+              <div class="cg-h">PRONOUN</div><div class="cg-h">ENDING</div><div class="cg-h">lern– + ending</div>
+              <div class="cg-pron">ich</div><div class="cg-end">–e</div><div class="cg-full">lern<span class="end">e</span></div>
+              <div class="cg-pron">du</div><div class="cg-end">–st</div><div class="cg-full">lern<span class="end">st</span></div>
+              <div class="cg-pron">er / sie / es</div><div class="cg-end">–t</div><div class="cg-full">lern<span class="end">t</span></div>
+              <div class="cg-pron">wir</div><div class="cg-end">–en</div><div class="cg-full">lern<span class="end">en</span></div>
+              <div class="cg-pron">ihr</div><div class="cg-end">–t</div><div class="cg-full">lern<span class="end">t</span></div>
+              <div class="cg-pron">sie / Sie</div><div class="cg-end">–en</div><div class="cg-full">lern<span class="end">en</span></div>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'ich lerne, du lernst, er lernt, wir lernen, ihr lernt, sie lernen')">🔊 Hear all six forms</button>
+
+          <div class="sec-label">Same pattern — machen and wohnen</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0;">
+            <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:14px;">
+              <div style="font-family:'DM Mono',monospace;font-size:14px;color:var(--gold);margin-bottom:10px;">machen <span style="color:var(--gray);font-size:11px;">(to do/make)</span></div>
+              <div style="font-family:'DM Mono',monospace;font-size:12px;line-height:2.1;color:var(--cream);">
+                ich mach<strong style="color:var(--gold);">e</strong><br>
+                du mach<strong style="color:var(--gold);">st</strong><br>
+                er/sie mach<strong style="color:var(--gold);">t</strong><br>
+                wir mach<strong style="color:var(--gold);">en</strong><br>
+                ihr mach<strong style="color:var(--gold);">t</strong><br>
+                sie mach<strong style="color:var(--gold);">en</strong>
+              </div>
+              <button class="speak-btn" style="margin-top:8px;" onclick="speakSentence(this,'ich mache, du machst, er macht, wir machen, ihr macht, sie machen')">🔊</button>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:14px;">
+              <div style="font-family:'DM Mono',monospace;font-size:14px;color:var(--gold);margin-bottom:10px;">wohnen <span style="color:var(--gray);font-size:11px;">(to live)</span></div>
+              <div style="font-family:'DM Mono',monospace;font-size:12px;line-height:2.1;color:var(--cream);">
+                ich wohn<strong style="color:var(--gold);">e</strong><br>
+                du wohn<strong style="color:var(--gold);">st</strong><br>
+                er/sie wohn<strong style="color:var(--gold);">t</strong><br>
+                wir wohn<strong style="color:var(--gold);">en</strong><br>
+                ihr wohn<strong style="color:var(--gold);">t</strong><br>
+                sie wohn<strong style="color:var(--gold);">en</strong>
+              </div>
+              <button class="speak-btn" style="margin-top:8px;" onclick="speakSentence(this,'ich wohne, du wohnst, er wohnt, wir wohnen, ihr wohnt, sie wohnen')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Regular verbs in African contexts</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--verb);">er/sie –t</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amara <span style="color:var(--verb);font-weight:700;">lernt</span> Deutsch in Nairobi.</div>
+                <div class="ex-en">Amara is learning German in Nairobi.</div>
+                <div class="ex-note">Amara = she (sie) → stem lern– + –t = lernt</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amara lernt Deutsch in Nairobi.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--verb);">er –t</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi <span style="color:var(--verb);font-weight:700;">macht</span> die Hausaufgaben.</div>
+                <div class="ex-en">Kofi does the homework.</div>
+                <div class="ex-note">Kofi = he (er) → stem mach– + –t = macht</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi macht die Hausaufgaben.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--p1);">ich –e</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <span style="color:var(--verb);font-weight:700;">wohne</span> in Westlands, Nairobi.</div>
+                <div class="ex-en">I live in Westlands, Nairobi.</div>
+                <div class="ex-note">ich → stem wohn– + –e = wohne</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich wohne in Westlands, Nairobi.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="success-box"><strong style="color:var(--green)">The stem never changes for regular verbs:</strong> Remove –en from the infinitive. Whatever remains is the stem. Then attach the right ending. lernen → lern. wohnen → wohn. machen → mach. kaufen → kauf. The same six endings work for every regular verb in German — that is hundreds of verbs unlocked by one table.</div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">Module 8 · Lesson 2 · Quiz</div><h2 class="lesson-h">Regular Verbs Quiz</h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 3: sein ── -->
+    <div id="lesson-2" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">Module 8 · Lesson 3 of 6</div>
+          <h2 class="lesson-h">sein — the most important verb in German</h2>
+          <p class="body-text"><strong style="color:var(--gold)">sein</strong> (to be) is the most frequently used verb in German and the most irregular. There is no pattern to derive from the infinitive — you must memorise all six forms. The good news: they are short, distinctive, and you will use them in every Goethe task you ever write or speak.</p>
+
+          <div class="sec-label">sein — complete conjugation</div>
+          <div class="conj-wrap">
+            <div class="conj-grid">
+              <div class="cg-h">PRONOUN</div><div class="cg-h">FORM</div><div class="cg-h">ENGLISH</div>
+              <div class="cg-pron">ich</div><div class="cg-irr">bin</div><div class="cg-full" style="color:var(--gray);font-size:12px;">I am</div>
+              <div class="cg-pron">du</div><div class="cg-irr">bist</div><div class="cg-full" style="color:var(--gray);font-size:12px;">you are</div>
+              <div class="cg-pron">er / sie / es</div><div class="cg-irr">ist</div><div class="cg-full" style="color:var(--gray);font-size:12px;">he / she / it is</div>
+              <div class="cg-pron">wir</div><div class="cg-irr">sind</div><div class="cg-full" style="color:var(--gray);font-size:12px;">we are</div>
+              <div class="cg-pron">ihr</div><div class="cg-irr">seid</div><div class="cg-full" style="color:var(--gray);font-size:12px;">you all are</div>
+              <div class="cg-pron">sie / Sie</div><div class="cg-irr">sind</div><div class="cg-full" style="color:var(--gray);font-size:12px;">they / you (formal) are</div>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'ich bin, du bist, er ist, wir sind, ihr seid, sie sind')">🔊 Hear all forms</button>
+
+          <div class="sec-label">sein in Goethe A1 — the essential sentences</div>
+          <div class="sent-block">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Ich</span><span class="sl sl-p1">PRONOUN</span></div>
+              <div class="stoken"><span class="sw sw-verb">bin</span><span class="sl sl-verb">sein · ich</span></div>
+              <div class="stoken"><span class="sw sw-gray">Lehrerin.</span><span class="sl sl-gray">profession</span></div>
+            </div>
+            <div class="sent-en">I am a teacher. — No article before professions with sein!</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Ich bin Lehrerin.')">🔊</button>
+
+          <div class="sent-block" style="margin-top:16px;">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Ich</span><span class="sl sl-p1">PRONOUN</span></div>
+              <div class="stoken"><span class="sw sw-verb">bin</span><span class="sl sl-verb">sein · ich</span></div>
+              <div class="stoken"><span class="sw sw-gray">aus</span><span class="sl sl-gray">prep</span></div>
+              <div class="stoken"><span class="sw sw-gray">Kenia.</span><span class="sl sl-gray">country</span></div>
+            </div>
+            <div class="sent-en">I am from Kenya. — The most common first sentence in Goethe Sprechen.</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Ich bin aus Kenia.')">🔊</button>
+
+          <div class="sec-label">sein with African names and family</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(192,57,43,0.1);color:#e07060;">er ist</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi <span style="color:var(--verb);font-weight:700;">ist</span> Arzt in Nairobi.</div>
+                <div class="ex-en">Kofi is a doctor in Nairobi.</div>
+                <div class="ex-note">Kofi = er → ist. Note: "Arzt" has no article — in German, professions after sein have no ein/eine.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi ist Arzt in Nairobi.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.1);color:var(--green);">wir sind</div>
+              <div style="flex:1;">
+                <div class="ex-de">Wanjiru und ich <span style="color:var(--verb);font-weight:700;">sind</span> Schwestern.</div>
+                <div class="ex-en">Wanjiru and I are sisters.</div>
+                <div class="ex-note">Wanjiru und ich = wir (we) → sind. Two people including yourself = wir.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wanjiru und ich sind Schwestern.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--p3);">sie sind</div>
+              <div style="flex:1;">
+                <div class="ex-de">Meine Eltern <span style="color:var(--verb);font-weight:700;">sind</span> aus Kisumu.</div>
+                <div class="ex-en">My parents are from Kisumu.</div>
+                <div class="ex-note">Meine Eltern = sie (they) → sind. Plural subjects always use sie/sind.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Meine Eltern sind aus Kisumu.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="info-box"><strong style="color:var(--gold)">Memory tip for sein:</strong> Group the forms into two triads.<br><br>
+            Singular: <span style="font-family:'DM Mono',monospace;color:var(--verb);">bin · bist · ist</span> (ich · du · er)<br>
+            Plural: <span style="font-family:'DM Mono',monospace;color:var(--verb);">sind · seid · sind</span> (wir · ihr · sie)<br><br>
+            Notice that wir and sie share the same form — sind. Learn sind once, use it for both.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">Module 8 · Lesson 3 · Quiz</div><h2 class="lesson-h">sein Quiz</h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 4: haben & werden ── -->
+    <div id="lesson-3" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">Module 8 · Lesson 4 of 6</div>
+          <h2 class="lesson-h">haben & werden — two more essential irregulars</h2>
+
+          <div class="sec-label">haben (to have) — possession + perfect tense auxiliary</div>
+          <div class="conj-wrap">
+            <div class="conj-grid">
+              <div class="cg-h">PRONOUN</div><div class="cg-h">FORM</div><div class="cg-h">ENGLISH</div>
+              <div class="cg-pron">ich</div><div class="cg-irr">habe</div><div class="cg-full" style="color:var(--gray);font-size:12px;">I have</div>
+              <div class="cg-pron">du</div><div class="cg-irr">hast</div><div class="cg-full" style="color:var(--gray);font-size:12px;">you have</div>
+              <div class="cg-pron">er / sie / es</div><div class="cg-irr">hat</div><div class="cg-full" style="color:var(--gray);font-size:12px;">he / she / it has</div>
+              <div class="cg-pron">wir</div><div class="cg-irr">haben</div><div class="cg-full" style="color:var(--gray);font-size:12px;">we have</div>
+              <div class="cg-pron">ihr</div><div class="cg-irr">habt</div><div class="cg-full" style="color:var(--gray);font-size:12px;">you all have</div>
+              <div class="cg-pron">sie / Sie</div><div class="cg-irr">haben</div><div class="cg-full" style="color:var(--gray);font-size:12px;">they / you (formal) have</div>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'ich habe, du hast, er hat, wir haben, ihr habt, sie haben')">🔊 Hear haben forms</button>
+
+          <div class="danger-box"><strong style="color:#e74c3c;">The "b" disappears in du and er/sie/es:</strong><br><br>
+            hab<strong>e</strong> → ha<strong>st</strong> &nbsp;(NOT "habst") ← very common error<br>
+            hab<strong>e</strong> → ha<strong>t</strong> &nbsp;&nbsp;(NOT "habt") ← habt is only for ihr<br><br>
+            Remember: <span style="font-family:'DM Mono',monospace;">du hast / er hat</span>. The b drops in both the du and er/sie/es forms.
+          </div>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--p2);">hat</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima <span style="color:var(--verb);font-weight:700;">hat</span> eine Schwester in Mombasa.</div>
+                <div class="ex-en">Fatima has a sister in Mombasa.</div>
+                <div class="ex-note">Fatima = sie → hat. NOT habt — that is only for ihr (you all).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima hat eine Schwester in Mombasa.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--p1);">habe</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <span style="color:var(--verb);font-weight:700;">habe</span> zwei Brüder und eine Schwester.</div>
+                <div class="ex-en">I have two brothers and one sister.</div>
+                <div class="ex-note">A perfect Goethe Sprechen sentence when asked about your family.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich habe zwei Brüder und eine Schwester.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label" style="margin-top:24px;">werden (to become / will) — future plans and professions</div>
+          <div class="conj-wrap">
+            <div class="conj-grid">
+              <div class="cg-h">PRONOUN</div><div class="cg-h">FORM</div><div class="cg-h">ENGLISH</div>
+              <div class="cg-pron">ich</div><div class="cg-tr">werde</div><div class="cg-full" style="color:var(--gray);font-size:12px;">I become / will</div>
+              <div class="cg-pron">du</div><div class="cg-tr">wirst</div><div class="cg-full" style="color:var(--gray);font-size:12px;">you become / will</div>
+              <div class="cg-pron">er / sie / es</div><div class="cg-tr">wird</div><div class="cg-full" style="color:var(--gray);font-size:12px;">he / she / it becomes / will</div>
+              <div class="cg-pron">wir</div><div class="cg-tr">werden</div><div class="cg-full" style="color:var(--gray);font-size:12px;">we become / will</div>
+              <div class="cg-pron">ihr</div><div class="cg-tr">werdet</div><div class="cg-full" style="color:var(--gray);font-size:12px;">you all become / will</div>
+              <div class="cg-pron">sie / Sie</div><div class="cg-tr">werden</div><div class="cg-full" style="color:var(--gray);font-size:12px;">they / you (formal) will</div>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'ich werde, du wirst, er wird, wir werden, ihr werdet, sie werden')">🔊 Hear werden forms</button>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--p3);">wird</div>
+              <div style="flex:1;">
+                <div class="ex-de">Adesola <span style="color:var(--verb);font-weight:700;">wird</span> Ärztin.</div>
+                <div class="ex-en">Adesola is going to become a doctor.</div>
+                <div class="ex-note">werden + profession = "becoming something". Adesola = sie → wird.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Adesola wird Ärztin.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--p1);">werde</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <span style="color:var(--verb);font-weight:700;">werde</span> Deutsch lernen.</div>
+                <div class="ex-en">I will learn German.</div>
+                <div class="ex-note">werden + infinitive at end = future tense. ich → werde. Useful in Goethe Schreiben for expressing future plans.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich werde Deutsch lernen.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue)">Priority for A1:</strong> Focus on <span style="font-family:'DM Mono',monospace;color:var(--verb)">wird</span> (she/he becomes) and <span style="font-family:'DM Mono',monospace;color:var(--verb)">werde</span> (I will/become) — these cover 80% of werden usage at A1. The full table is here for completeness; drill werde and wird first.</div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">Module 8 · Lesson 4 · Quiz</div><h2 class="lesson-h">haben & werden Quiz</h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 5: The Conjugation Trap ── -->
+    <div id="lesson-4" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">Module 8 · Lesson 5 of 6</div>
+          <h2 class="lesson-h">The conjugation trap — why "er lerne" is wrong</h2>
+          <p class="body-text">The most common conjugation mistake in German is using the same verb form for every pronoun — writing "er lerne" just like "ich lerne". This happens because English verbs barely change shape, so the instinct is to treat the verb as fixed. German works completely differently: every single pronoun gets its own ending.</p>
+
+          <div class="sec-label">How English handles verb forms — almost no change</div>
+          <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:18px;margin:14px 0;">
+            <div style="font-family:'DM Mono',monospace;font-size:13px;line-height:2.4;color:var(--cream);">
+              I &nbsp;&nbsp;&nbsp;<span style="color:var(--p1);">learn</span> &nbsp;— 1st person singular<br>
+              you <span style="color:var(--p1);">learn</span> &nbsp;— 2nd person singular<br>
+              he &nbsp;<span style="color:var(--p1);">learn<strong style="color:var(--p2);">s</strong></span> — 3rd person singular (only change: add –s)<br>
+              we &nbsp;<span style="color:var(--p1);">learn</span> &nbsp;— 1st person plural
+            </div>
+            <div style="font-size:12px;color:var(--gray);margin-top:12px;line-height:1.7;">In English, the verb <strong style="color:var(--cream);">learn</strong> is the same for almost every pronoun. Only he/she/it adds an <strong style="color:var(--p2);">–s</strong>. This builds a strong instinct: <em>"the verb doesn't really change."</em></div>
+          </div>
+
+          <div class="sec-label">How German handles verb forms — a different ending every time</div>
+          <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:18px;margin:14px 0;">
+            <div style="font-family:'DM Mono',monospace;font-size:13px;line-height:2.4;color:var(--cream);">
+              ich lern–<span style="color:var(--gold);">e</span> &nbsp;&nbsp;&nbsp;— I learn &nbsp;&nbsp;(ending –e)<br>
+              du lern–<span style="color:var(--gold);">st</span> &nbsp;&nbsp;— you learn (ending –st)<br>
+              er lern–<span style="color:var(--gold);">t</span> &nbsp;&nbsp;&nbsp;— he learns &nbsp;(ending –t)<br>
+              wir lern–<span style="color:var(--gold);">en</span> — we learn &nbsp;(ending –en)
+            </div>
+            <div style="font-size:12px;color:var(--gray);margin-top:12px;line-height:1.7;">In German, the stem <strong style="color:var(--cream);">lern–</strong> stays fixed. The <strong style="color:var(--gold);">ending</strong> at the right changes for every pronoun — not just for he/she. Four pronouns shown here, four different endings.</div>
+          </div>
+
+          <div class="danger-box">
+            <strong style="color:#e74c3c;">The conjugation trap — applying the English instinct to German:</strong><br><br>
+            ❌ &nbsp;"er <strong>lerne</strong>" — ich-form applied to er (English instinct: verb stays the same)<br>
+            ❌ &nbsp;"du <strong>lerne</strong>" — ich-form applied to du<br>
+            ❌ &nbsp;"wir <strong>lerne</strong>" — one form used for all pronouns<br><br>
+            ✓ &nbsp;"er <strong>lernt</strong>" — stem + –t for er/sie/es<br>
+            ✓ &nbsp;"du <strong>lernst</strong>" — stem + –st for du<br>
+            ✓ &nbsp;"wir <strong>lernen</strong>" — stem + –en for wir<br><br>
+            The English instinct says: "The verb barely changes — just add an –s for he/she." In German, that instinct produces the wrong form for du, er, wir, ihr, and sie. Each German pronoun demands its own ending. No exceptions for regular verbs.
+          </div>
+
+          <div class="sec-label">Wrong → Right — real exam-style corrections</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(192,57,43,0.1);color:#e74c3c;">WRONG</div>
+              <div style="flex:1;">
+                <div class="ex-de" style="text-decoration:line-through;color:var(--gray);">Meine Schwester lerne jeden Tag.</div>
+                <div class="ex-en">❌ lerne is the ich-form. Meine Schwester = sie → must use lernt.</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.1);color:var(--green);">CORRECT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Meine Schwester <span style="color:var(--verb);font-weight:700;">lernt</span> jeden Tag.</div>
+                <div class="ex-en">My sister learns every day.</div>
+                <div class="ex-note">Meine Schwester = sie → lern– + –t = lernt</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Meine Schwester lernt jeden Tag.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(192,57,43,0.1);color:#e74c3c;">WRONG</div>
+              <div style="flex:1;">
+                <div class="ex-de" style="text-decoration:line-through;color:var(--gray);">Du wohne in Nairobi?</div>
+                <div class="ex-en">❌ wohne is the ich-form. du → must use wohnst.</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.1);color:var(--green);">CORRECT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Du <span style="color:var(--verb);font-weight:700;">wohnst</span> in Nairobi?</div>
+                <div class="ex-en">You live in Nairobi?</div>
+                <div class="ex-note">du → wohn– + –st = wohnst. The –st ending belongs exclusively to du.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Du wohnst in Nairobi?')">🔊</button>
+            </div>
+          </div>
+
+          <div class="success-box"><strong style="color:var(--green)">The permanent fix — one question:</strong> Before writing any verb, ask: <em>Who is doing the action?</em> Then attach the matching ending. <span style="font-family:'DM Mono',monospace;color:var(--verb)">ich→–e · du→–st · er/sie/es→–t · wir→–en · ihr→–t · sie/Sie→–en</span>. This check takes one second per verb and eliminates the conjugation trap completely.</div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">Module 8 · Lesson 5 · Quiz</div><h2 class="lesson-h">Conjugation Trap Quiz</h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 6: African Contexts + Review ── -->
+    <div id="lesson-5" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">Module 8 · Lesson 6 of 6</div>
+          <h2 class="lesson-h">African contexts — conjugation in real sentences</h2>
+          <p class="body-text">Let's put everything together using sentences from Nairobi, the market, and family life — the exact contexts that appear in Goethe A1 Schreiben and Sprechen tasks. Check every verb ending as you read.</p>
+
+          <div class="sec-label">At the market — Auf dem Markt</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--verb);">kaufen</div>
+              <div style="flex:1;">
+                <div class="ex-de">Wanjiru <span style="color:var(--verb);font-weight:700;">kauft</span> Gemüse auf dem Markt in Nairobi.</div>
+                <div class="ex-en">Wanjiru buys vegetables at the market in Nairobi.</div>
+                <div class="ex-note">Wanjiru = sie → kauf– + –t = kauft</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wanjiru kauft Gemüse auf dem Markt in Nairobi.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--verb);">verkaufen</div>
+              <div style="flex:1;">
+                <div class="ex-de">Mein Vater <span style="color:var(--verb);font-weight:700;">verkauft</span> Obst in Gikomba.</div>
+                <div class="ex-en">My father sells fruit in Gikomba market, Nairobi.</div>
+                <div class="ex-note">Mein Vater = er → verkauf– + –t = verkauft. Same –t ending, longer stem.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Mein Vater verkauft Obst in Gikomba.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Family — Die Familie</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--p1);">wohnen</div>
+              <div style="flex:1;">
+                <div class="ex-de">Meine Familie <span style="color:var(--verb);font-weight:700;">wohnt</span> in Kisumu, aber ich <span style="color:var(--verb);font-weight:700;">wohne</span> in Nairobi.</div>
+                <div class="ex-en">My family lives in Kisumu, but I live in Nairobi.</div>
+                <div class="ex-note">Two subjects, two endings in one sentence: Familie = sie → wohnt &nbsp;|&nbsp; ich → wohne. Always check each subject separately.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Meine Familie wohnt in Kisumu, aber ich wohne in Nairobi.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--p2);">haben + sein</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <span style="color:var(--verb);font-weight:700;">habe</span> drei Geschwister. Sie <span style="color:var(--verb);font-weight:700;">sind</span> alle in Kenia.</div>
+                <div class="ex-en">I have three siblings. They are all in Kenya.</div>
+                <div class="ex-note">habe = ich-form of haben &nbsp;|&nbsp; sind = sie-form of sein. Two irregulars, both correct.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich habe drei Geschwister. Sie sind alle in Kenia.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Learning German — Deutsch lernen</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--p3);">lernen + weil</div>
+              <div style="flex:1;">
+                <div class="ex-de">Adesola <span style="color:var(--verb);font-weight:700;">lernt</span> Deutsch, weil sie in Deutschland <span style="color:var(--verb);font-weight:700;">studieren</span> möchte.</div>
+                <div class="ex-en">Adesola is learning German because she would like to study in Germany.</div>
+                <div class="ex-note">lernt (sie-form) + subordinate clause with verb at end (Module 7!) = advanced grammar + conjugation combined.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Adesola lernt Deutsch, weil sie in Deutschland studieren möchte.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Complete conjugation reference — all four types</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:10px;margin:16px 0;">
+            <div style="background:var(--card2-bg);border:1px solid rgba(201,168,76,0.2);border-radius:12px;padding:14px;">
+              <div style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);margin-bottom:8px;">lernen <span style="color:var(--gray);font-size:10px;">regular</span></div>
+              <div style="font-family:'DM Mono',monospace;font-size:11px;line-height:2;color:var(--cream);">ich lerne · du lernst<br>er/sie lernt · wir lernen<br>ihr lernt · sie lernen</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(192,57,43,0.25);border-radius:12px;padding:14px;">
+              <div style="font-family:'DM Mono',monospace;font-size:13px;color:#e07060;margin-bottom:8px;">sein <span style="color:var(--gray);font-size:10px;">irregular</span></div>
+              <div style="font-family:'DM Mono',monospace;font-size:11px;line-height:2;color:var(--cream);">ich bin · du bist<br>er/sie ist · wir sind<br>ihr seid · sie sind</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(230,126,34,0.25);border-radius:12px;padding:14px;">
+              <div style="font-family:'DM Mono',monospace;font-size:13px;color:var(--p2);margin-bottom:8px;">haben <span style="color:var(--gray);font-size:10px;">irregular</span></div>
+              <div style="font-family:'DM Mono',monospace;font-size:11px;line-height:2;color:var(--cream);">ich habe · du hast<br>er/sie hat · wir haben<br>ihr habt · sie haben</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(155,89,182,0.25);border-radius:12px;padding:14px;">
+              <div style="font-family:'DM Mono',monospace;font-size:13px;color:var(--p3);margin-bottom:8px;">werden <span style="color:var(--gray);font-size:10px;">irregular</span></div>
+              <div style="font-family:'DM Mono',monospace;font-size:11px;line-height:2;color:var(--cream);">ich werde · du wirst<br>er/sie wird · wir werden<br>ihr werdet · sie werden</div>
+            </div>
+          </div>
+
+          <div class="success-box">
+            <strong style="color:var(--green)">What you now know:</strong><br><br>
+            ✓ Präsens covers both "I learn" and "I am learning"<br>
+            ✓ Regular verbs: stem + –e / –st / –t / –en / –t / –en<br>
+            ✓ sein: bin · bist · ist · sind · seid · sind — memorised<br>
+            ✓ haben: habe · hast · hat · haben · habt · haben — b drops in du/er<br>
+            ✓ werden: werde · wirst · wird · werden · werdet · werden<br>
+            ✓ The conjugation rule: each German pronoun needs its own ending<br><br>
+            You can now conjugate any German present tense verb. This is the foundation for every Goethe A1 speaking and writing task.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Start Final Quiz →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">Module 8 · Final Quiz</div><h2 class="lesson-h">Module Complete — Final Check</h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Previous</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="showOverview()"><span class="nav-icon">📚</span><span class="nav-label">Overview</span></button>
+  <button class="nav-item" onclick="resumeLesson()"><span class="nav-icon">▶️</span><span class="nav-label">Resume</span></button>
+</nav>
+
+<script>
+var synth=(typeof window!=='undefined'&&window.speechSynthesis)?window.speechSynthesis:null;
+var deVoice=null,speechUnlocked=false;
+function loadVoices(){ if(!synth)return; try{ var v=synth.getVoices(); deVoice=v.find(function(x){return x.lang==='de-DE';})||v.find(function(x){return x.lang&&x.lang.startsWith('de');})||null; }catch(e){} }
+if(synth){ try{ loadVoices(); if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadVoices; }catch(e){} }
+function unlockSpeech(){ if(speechUnlocked||!synth)return; try{ var s=new SpeechSynthesisUtterance(''); s.volume=0; synth.speak(s); speechUnlocked=true; }catch(e){} }
+document.addEventListener('touchstart',unlockSpeech,{once:true,passive:true});
+document.addEventListener('click',unlockSpeech,{once:true});
+function speakDE(t){ if(!synth)return null; try{ if(!deVoice)loadVoices(); synth.cancel(); var u=new SpeechSynthesisUtterance(t); u.lang='de-DE'; u.rate=0.85; u.pitch=1.0; u.volume=1.0; if(deVoice)u.voice=deVoice; synth.speak(u); return u; }catch(e){return null;} }
+function speakSentence(btn,text){ unlockSpeech(); document.querySelectorAll('.speak-btn').forEach(function(b){b.classList.remove('speaking');}); if(btn&&btn.classList)btn.classList.add('speaking'); var u=speakDE(text); if(u){ u.onend=function(){if(btn&&btn.classList)btn.classList.remove('speaking');}; u.onerror=function(){if(btn&&btn.classList)btn.classList.remove('speaking');}; }else{ setTimeout(function(){if(btn&&btn.classList)btn.classList.remove('speaking');},1500); } }
+
+var currentLesson=0, xp=0, TOTAL=6;
+
+var QD={
+  0:[
+    {q:'German "Präsens" covers which English tenses?',
+     hint:'Think about "I learn" vs "I am learning" — how many German forms exist for both?',
+     opts:['Only simple present: "I learn"','Only present continuous: "I am learning"','Both "I learn" and "I am learning"','Neither — German uses a separate continuous tense'],
+     ans:2,
+     exp:'German Präsens covers BOTH English simple present ("I learn") and present continuous ("I am learning"). "Ich lerne Deutsch" means either "I learn German" (habit) or "I am learning German" (right now) — context tells you which. German does not have a separate continuous form. One tense does both jobs.',
+     rule:'Ich lerne = I learn AND I am learning. One German Präsens covers both English present forms.'}
+  ],
+  1:[
+    {q:'Amara ___ (lernen) jeden Tag Deutsch. Choose the correct form.',
+     hint:'Amara is "she" — which ending does er/sie/es take with a regular verb?',
+     opts:['lerne','lernst','lernt','lernen'],
+     ans:2,
+     exp:'"lernt" — Amara is she (sie), so we use the er/sie/es form. Regular verb lernen: remove –en to get stem lern–. Add the er/sie/es ending –t. lern + t = lernt. "Amara lernt jeden Tag Deutsch." The –t ending is used for er, sie, es, and for all names referring to one person: Amara, Kofi, Wanjiru, Fatima, Adesola.',
+     rule:'er/sie/es → stem + –t. Amara lernt. Kofi macht. Wanjiru wohnt. Always –t for a single named person.'}
+  ],
+  2:[
+    {q:'"Kofi und Wanjiru ___ aus Nairobi." — Which form of sein?',
+     hint:'Kofi und Wanjiru = two people. Two people not including you = which pronoun?',
+     opts:['bin','bist','ist','sind'],
+     ans:3,
+     exp:'"sind" — Kofi und Wanjiru are two people not including the speaker, which makes them sie (they). The sein form for sie (they) is sind. "Kofi und Wanjiru sind aus Nairobi." Remember: wir and sie share the same form — both use sind. When two or more people are the subject and you are not one of them, use sie/sind.',
+     rule:'Two or more people (not including me) = sie (they) = sind. "Kofi und Wanjiru sind..." always takes sind.'}
+  ],
+  3:[
+    {q:'"Fatima ___ (haben) eine Schwester in Mombasa." Correct form?',
+     hint:'Fatima = she = er/sie/es. Watch what happens to the "b" in haben!',
+     opts:['habe','hast','hat','habt'],
+     ans:2,
+     exp:'"hat" — Fatima is she (er/sie/es). The haben form for er/sie/es is hat. The "b" from haben disappears in the du and er/sie/es forms. Common error: using "habt" — but habt is only for ihr (you all). The pattern: ich habe → du hast → er/sie/es hat. "Fatima hat eine Schwester in Mombasa."',
+     rule:'haben er/sie/es = hat. NOT habt (that is ihr-form only). The b disappears: habe → hast → hat.'}
+  ],
+  4:[
+    {q:'A student writes: "Er lerne Deutsch und du lerne auch." What is wrong?',
+     hint:'Think about how English verb forms compare to German — what does English do that German does not?',
+     opts:['The word order is wrong — verb should be at the end','The same verb form "lerne" is used for all pronouns — each needs its own ending','The verb lernen cannot be used with er or du','There is no mistake — this is correct German'],
+     ans:1,
+     exp:'The verb form does not change with the pronoun. "er lerne" should be "er lernt" (er/sie/es → stem + –t). "du lerne" should be "du lernst" (du → stem + –st). In English, the verb barely changes (I learn, you learn, he learns — only one –s). Learners carry over this instinct and use one form for all pronouns. In German, the ending changes for every pronoun without exception.',
+     rule:'Each pronoun → its own ending. ich→–e · du→–st · er→–t. NEVER "er lerne" or "du lerne". Always "er lernt" and "du lernst".'}
+  ],
+  5:[
+    {q:'Which sentence has ALL verb forms correct?',
+     hint:'Check every single verb ending carefully against its subject pronoun',
+     opts:['Amara lernt in Nairobi und ihr Bruder Kofi studiert in Mombasa.',
+           'Amara lerne in Nairobi und ihr Bruder Kofi studiert in Mombasa.',
+           'Amara lernt in Nairobi und ihr Bruder Kofi studieren in Mombasa.',
+           'Amara lernen in Nairobi und ihr Bruder Kofi studiert in Mombasa.'],
+     ans:0,
+     exp:'"Amara lernt in Nairobi und ihr Bruder Kofi studiert in Mombasa." — Amara = sie → lernt (stem lern– + –t). Kofi = er → studiert (stem studier– + –t). Both subjects are single named people (er/sie), so both verbs take –t. The other options each contain at least one wrong ending: "lerne" (ich-form wrongly used for sie), "studieren" (wir/sie-form wrongly used for er), "lernen" (wir/sie-form wrongly used for sie).',
+     rule:'Names = er or sie = always –t ending. Check each subject separately. Amara lernt. Kofi studiert.'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">QUESTION '+(s.cur+1)+' OF '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint">'+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Next Question →':'See Results →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Correct!':'✗ Not quite'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent=q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' correct</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfect.':pct>=60?'Good work.':'Review and try again.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.12);border:1px solid var(--gold);border-radius:50px;padding:9px 22px;color:var(--gold);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Complete Module 8 →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Next Lesson →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">🎓</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Module 8 Complete!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto 0 auto;">Present tense mastered. Regular verbs. sein. haben. werden. The conjugation trap identified and permanently corrected. You now conjugate German verbs correctly for every pronoun — the single most important grammar skill for Goethe A1.</p><div class="xp-badge">⚡ '+xp+' XP Earned</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Next: Module 9 — Past Tense &amp; Perfekt</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Back to Overview</button></div>'; }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function resumeLesson(){ goLesson(currentLesson); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+</body>
+</html>

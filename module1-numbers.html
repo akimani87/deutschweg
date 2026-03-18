@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Module 1: Numbers, Time & Dates</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  /* Body hidden until JS ready — prevents ANY flash of raw content */
+  body {
+    background:var(--black); color:var(--white);
+    font-family:'DM Sans',sans-serif; min-height:100vh;
+    opacity:0; transition:opacity 0.25s ease;
+  }
+  body.ready { opacity:1; }
+
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+
+  /* NAV */
+  .top-nav {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 24px; border-bottom:1px solid var(--border);
+    background:rgba(10,10,10,0.95); backdrop-filter:blur(20px);
+    position:sticky; top:0; z-index:50;
+  }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--gold); color:var(--gold); }
+
+  .bottom-nav {
+    position:fixed; bottom:0; left:0; right:0;
+    background:rgba(10,10,10,0.96); backdrop-filter:blur(20px);
+    border-top:1px solid var(--border);
+    display:flex; justify-content:space-around;
+    padding:12px 0 20px; z-index:100;
+  }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:8px 16px; border-radius:12px; transition:all 0.2s; border:none; background:none; color:var(--gray); }
+  .nav-item:hover, .nav-item.active { color:var(--gold); }
+  .nav-icon { font-size:20px; }
+  .nav-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; font-family:'DM Mono',monospace; }
+
+  /* PROGRESS */
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--gold); transition:width 0.5s ease; }
+
+  /* DOTS */
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--gold); width:22px; border-radius:4px; }
+
+  /* STEPS — all in DOM, JS shows/hides */
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+
+  /* BUTTONS */
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--gold); color:var(--black); width:100%; }
+  .btn-primary:hover { background:var(--gold-light); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+
+  /* CARDS */
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .card2 { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; }
+
+  /* TYPOGRAPHY */
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+
+  /* INFO BOXES */
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+
+  /* NUMBER CELLS */
+  .num-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:10px; margin:16px 0; }
+  .num-cell {
+    background:var(--card2-bg); border:1px solid rgba(255,255,255,0.08);
+    border-radius:12px; padding:14px 10px; text-align:center;
+    cursor:pointer; transition:all 0.2s; user-select:none;
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+  }
+  .num-cell:hover { border-color:rgba(201,168,76,0.5); }
+  .num-cell.speaking { border-color:var(--gold); background:rgba(201,168,76,0.12); animation:glow 0.8s ease infinite; }
+  .num-digit { font-family:'DM Mono',monospace; font-size:22px; font-weight:700; color:var(--gold); }
+  .num-word { font-size:13px; color:var(--cream); font-weight:600; }
+  .num-ph { font-size:11px; color:var(--gray); font-style:italic; }
+  .num-tap { font-size:10px; color:var(--gold); opacity:0.6; margin-top:2px; }
+
+  /* SPEAK BUTTON */
+  .speak-btn {
+    display:inline-flex; align-items:center; gap:6px;
+    background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3);
+    border-radius:20px; padding:7px 14px; cursor:pointer;
+    font-size:12px; color:var(--gold); font-family:'DM Mono',monospace;
+    transition:all 0.2s; margin:8px 0; user-select:none;
+  }
+  .speak-btn:hover { background:rgba(201,168,76,0.2); }
+  .speak-btn.speaking { background:var(--gold); color:var(--black); }
+
+  /* TRAP PAIRS */
+  .trap-pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:10px 0; }
+  .trap-teen { background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.3); border-radius:14px; padding:16px; text-align:center; }
+  .trap-tens { background:rgba(201,168,76,0.08); border:1px solid rgba(201,168,76,0.3); border-radius:14px; padding:16px; text-align:center; }
+  .trap-num { font-family:'DM Mono',monospace; font-size:32px; font-weight:700; margin-bottom:4px; }
+  .trap-teen .trap-num { color:var(--blue); }
+  .trap-tens .trap-num { color:var(--gold); }
+  .trap-de { font-family:'Playfair Display',serif; font-size:18px; margin-bottom:3px; }
+  .trap-ph { font-size:11px; color:var(--gray); font-style:italic; margin-bottom:8px; }
+  .trap-tag { display:inline-block; padding:3px 10px; border-radius:20px; font-size:10px; font-family:'DM Mono',monospace; }
+  .tag-teen { background:rgba(52,152,219,0.15); color:var(--blue); }
+  .tag-tens { background:rgba(201,168,76,0.15); color:var(--gold); }
+
+  /* TIME GRID */
+  .time-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; margin:14px 0; }
+  .time-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px; text-align:center; cursor:pointer; transition:all 0.2s; }
+  .time-card:hover { border-color:var(--gold); }
+  .time-card.speaking { border-color:var(--gold); background:rgba(201,168,76,0.1); }
+  .time-digital { font-family:'DM Mono',monospace; font-size:20px; color:var(--gold); margin-bottom:5px; }
+  .time-formal { font-size:12px; color:var(--cream); margin-bottom:2px; }
+  .time-tap { font-size:10px; color:var(--gold); opacity:0.6; }
+
+  /* DATA TABLE */
+  .dtable { width:100%; border-collapse:collapse; margin:12px 0; font-size:14px; }
+  .dtable th { text-align:left; padding:9px 12px; border-bottom:1px solid var(--border); color:var(--gray); font-size:11px; font-weight:500; }
+  .dtable td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04); vertical-align:top; }
+  .dtable tr:last-child td { border-bottom:none; }
+  .de { font-family:'DM Mono',monospace; color:var(--gold); font-size:14px; }
+  .ph { font-size:12px; color:var(--blue); font-style:italic; }
+
+  /* LISTEN CARD */
+  .listen-card { background:rgba(52,152,219,0.05); border:1px solid rgba(52,152,219,0.15); border-radius:14px; padding:18px; margin:12px 0; }
+  .listen-head { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+  .l-icon { font-size:24px; }
+  .l-title { font-weight:700; font-size:14px; }
+  .l-sub { font-size:11px; color:var(--gray); }
+  .transcript { background:rgba(255,255,255,0.04); border-radius:10px; padding:12px 14px; font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); line-height:1.8; margin:8px 0; }
+  .answer-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; }
+  .a-box { padding:10px 12px; background:rgba(39,174,96,0.08); border-radius:8px; }
+  .a-label { font-size:10px; color:var(--green); letter-spacing:2px; margin-bottom:3px; font-family:'DM Mono',monospace; }
+  .a-val { font-family:'DM Mono',monospace; font-size:15px; color:var(--cream); }
+  .t-box { padding:10px 12px; background:rgba(52,152,219,0.06); border-radius:8px; }
+  .t-label { font-size:10px; color:var(--blue); letter-spacing:2px; margin-bottom:3px; font-family:'DM Mono',monospace; }
+  .t-text { font-size:12px; color:var(--gray); line-height:1.6; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt {
+    padding:13px 18px; border:1px solid rgba(255,255,255,0.1);
+    border-radius:12px; cursor:pointer; transition:all 0.2s;
+    font-size:14px; background:transparent; color:var(--white);
+    font-family:'DM Sans',sans-serif; text-align:left;
+    display:flex; align-items:center; gap:12px;
+  }
+  .qopt:hover:not([disabled]) { border-color:var(--gold); background:rgba(201,168,76,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(201,168,76,0.1); border-radius:8px; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+
+  /* ORDINAL GRID */
+  .ord-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; margin:14px 0; }
+  .ord-cell { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:12px; }
+  .ord-cell.irreg { border-color:rgba(192,57,43,0.3); background:rgba(192,57,43,0.05); }
+  .ord-num { font-family:'DM Mono',monospace; font-size:17px; color:var(--gold); margin-bottom:4px; }
+  .ord-cell.irreg .ord-num { color:#e74c3c; }
+  .ord-word { font-size:13px; color:var(--cream); }
+  .ord-note { font-size:11px; color:var(--gray); margin-top:3px; }
+
+  /* LESSON CARD (overview) */
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(201,168,76,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(201,168,76,0.08); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+
+  /* NAV ROW */
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+
+  /* YT PLACEHOLDER */
+  .yt { background:rgba(255,0,0,0.04); border:1px dashed rgba(255,80,80,0.25); border-radius:12px; padding:18px; text-align:center; margin:16px 0; }
+  .yt-icon { font-size:28px; margin-bottom:6px; }
+  .yt-title { font-weight:600; font-size:14px; margin-bottom:4px; }
+  .yt-desc { font-size:12px; color:var(--gray); line-height:1.6; }
+  .yt-tag { display:inline-block; margin-top:8px; padding:4px 12px; background:rgba(255,0,0,0.1); color:#ff6b6b; border-radius:20px; font-size:11px; font-family:'DM Mono',monospace; }
+
+  /* COMPLETE */
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(201,168,76,0.12); border:1px solid var(--gold); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--gold); font-size:18px; margin:18px 0; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @keyframes glow { 0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,0)} 50%{box-shadow:0 0 12px 3px rgba(201,168,76,0.25)} }
+
+  @media(max-width:600px){
+    .num-grid { grid-template-columns:repeat(3,1fr); }
+    .trap-pair { grid-template-columns:1fr; }
+    .answer-row { grid-template-columns:1fr; }
+    .lesson-h { font-size:22px; }
+    .time-grid { grid-template-columns:repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================================================================
+  OVERVIEW SCREEN
+================================================================ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">MODULE 1</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">A1 · Before Grammar</div>
+    <h1 class="lesson-h" style="font-size:36px;">Numbers, Time<br><span style="color:var(--gold)">& Dates</span></h1>
+    <p class="body-text">Numbers appear in every section of the Goethe exam. This module makes them automatic — so they never cost you marks.</p>
+    <div class="info-box"><strong style="color:var(--gold)">Why before grammar:</strong> A student who hesitates on numbers in a listening exercise loses marks that should be free. By the end of this module, you hear a number in German and write it without thinking.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">🔢</div><div><div class="lc-title">Lesson 1 — Numbers 1 to 20</div><div class="lc-desc">Tap each card to hear it spoken aloud in German.</div></div><div class="lc-tag" style="color:var(--gold);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">📐</div><div><div class="lc-title">Lesson 2 — Numbers 20 to 1000</div><div class="lc-desc">Compound numbers and the German backwards pattern.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">⚠️</div><div><div class="lc-title">Lesson 3 — The dreizehn vs dreißig Trap</div><div class="lc-desc">The most common Goethe listening mistake — fixed here.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">🕐</div><div><div class="lc-title">Lesson 4 — Telling the Time</div><div class="lc-desc">Formal and informal time — both appear in Goethe.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">📅</div><div><div class="lc-title">Lesson 5 — Days, Months & Seasons</div><div class="lc-desc">All masculine — der Montag, der Januar, der Frühling.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">1.</div><div><div class="lc-title">Lesson 6 — Ordinal Numbers for Dates</div><div class="lc-desc">erst-, zweit-, dritt- — irregular and regular patterns.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Begin Lesson 1 →</button>
+  </div>
+</div>
+
+<!-- ================================================================
+  LESSON SCREEN
+================================================================ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lessons</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ===== LESSON 1: Numbers 1–20 ===== -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">Module 1 · Lesson 1 of 6</div>
+          <h2 class="lesson-h">Numbers 1 to 20 — learn these cold</h2>
+          <p class="body-text">Every compound German number is built from these 20 base numbers. They must be automatic before anything else.</p>
+          <p class="body-text"><strong style="color:var(--gold)">🔊 Tap any card</strong> to hear it spoken aloud in German by your browser's German voice.</p>
+          <div class="num-grid">
+            <div class="num-cell" onclick="speakNum(this,'eins')"><div class="num-digit">1</div><div class="num-word">eins</div><div class="num-ph">AINSS</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'zwei')"><div class="num-digit">2</div><div class="num-word">zwei</div><div class="num-ph">TSVAI</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'drei')"><div class="num-digit">3</div><div class="num-word">drei</div><div class="num-ph">DRAI</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'vier')"><div class="num-digit">4</div><div class="num-word">vier</div><div class="num-ph">FEER</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'fünf')"><div class="num-digit">5</div><div class="num-word">fünf</div><div class="num-ph">FÜNF</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'sechs')"><div class="num-digit">6</div><div class="num-word">sechs</div><div class="num-ph">ZEKS</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'sieben')"><div class="num-digit">7</div><div class="num-word">sieben</div><div class="num-ph">ZEE-ben</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'acht')"><div class="num-digit">8</div><div class="num-word">acht</div><div class="num-ph">AHHT</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'neun')"><div class="num-digit">9</div><div class="num-word">neun</div><div class="num-ph">NOYN</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'zehn')"><div class="num-digit">10</div><div class="num-word">zehn</div><div class="num-ph">TSAYN</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'elf')"><div class="num-digit">11</div><div class="num-word">elf</div><div class="num-ph">ELF</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'zwölf')"><div class="num-digit">12</div><div class="num-word">zwölf</div><div class="num-ph">TSVÖLF</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'dreizehn')"><div class="num-digit">13</div><div class="num-word">dreizehn</div><div class="num-ph">DRAI-tsayn</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'vierzehn')"><div class="num-digit">14</div><div class="num-word">vierzehn</div><div class="num-ph">FEER-tsayn</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'fünfzehn')"><div class="num-digit">15</div><div class="num-word">fünfzehn</div><div class="num-ph">FÜNF-tsayn</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'sechzehn')"><div class="num-digit">16</div><div class="num-word">sechzehn</div><div class="num-ph">ZEHS-tsayn</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'siebzehn')"><div class="num-digit">17</div><div class="num-word">siebzehn</div><div class="num-ph">ZEEP-tsayn</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'achtzehn')"><div class="num-digit">18</div><div class="num-word">achtzehn</div><div class="num-ph">AHHT-tsayn</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'neunzehn')"><div class="num-digit">19</div><div class="num-word">neunzehn</div><div class="num-ph">NOYN-tsayn</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'zwanzig')"><div class="num-digit">20</div><div class="num-word">zwanzig</div><div class="num-ph">TSVAN-tsig</div><div class="num-tap">🔊 tap</div></div>
+          </div>
+          <div class="warn-box"><strong style="color:var(--blue)">Notice:</strong> <strong>eins</strong> becomes <strong>ein/eine</strong> before a noun — ein Mann, eine Frau. <strong>zwei</strong> is sometimes said as <strong>zwo</strong> on the phone to avoid confusion with drei. You will hear both.</div>
+          <div class="yt"><div class="yt-icon">▶️</div><div class="yt-title">Video: Numbers 1–20 with Native Speaker</div><div class="yt-desc">Embed a native speaker video — slow pronunciation then natural speed. Recommended: "Learn German with Anja" numbers series.</div><div class="yt-tag">📌 YouTube embed goes here</div></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Continue →</button></div>
+      </div>
+
+      <div class="step" id="l0-s1">
+        <div class="card">
+          <div class="concept-tag">Module 1 · Lesson 1 · Goethe Context</div>
+          <h2 class="lesson-h">Numbers in real Goethe listening situations</h2>
+          <p class="body-text">Numbers never appear alone in the exam. They appear inside sentences. Press 🔊 to hear each sentence spoken in German.</p>
+          <div class="listen-card">
+            <div class="listen-head"><div class="l-icon">📞</div><div><div class="l-title">Phone Number</div><div class="l-sub">Goethe A1 Hören</div></div></div>
+            <div class="transcript">Meine Telefonnummer ist null-sieben-null, vier-fünf-drei, neun-zwei-acht.</div>
+            <button class="speak-btn" onclick="speakSentence(this,'Meine Telefonnummer ist null sieben null, vier fünf drei, neun zwei acht.')">🔊 Hear it spoken</button>
+            <div class="answer-row"><div class="a-box"><div class="a-label">ANSWER</div><div class="a-val">070 / 453 / 928</div></div><div class="t-box"><div class="t-label">HOW TO LISTEN</div><div class="t-text">Digit by digit. Zero = null. Listen for pauses between groups.</div></div></div>
+          </div>
+          <div class="listen-card">
+            <div class="listen-head"><div class="l-icon">🛒</div><div><div class="l-title">Price at Market</div><div class="l-sub">Goethe A1 Hören</div></div></div>
+            <div class="transcript">Das kostet drei Euro und neunzehn Cent.</div>
+            <button class="speak-btn" onclick="speakSentence(this,'Das kostet drei Euro und neunzehn Cent.')">🔊 Hear it spoken</button>
+            <div class="answer-row"><div class="a-box"><div class="a-label">ANSWER</div><div class="a-val">€3.19</div></div><div class="t-box"><div class="t-label">PATTERN</div><div class="t-text">[euros] Euro und [cents] Cent. "und" connects them.</div></div></div>
+          </div>
+          <div class="listen-card">
+            <div class="listen-head"><div class="l-icon">🏠</div><div><div class="l-title">Apartment Number</div><div class="l-sub">Goethe A1 Schreiben</div></div></div>
+            <div class="transcript">Ich wohne in der Mozartstraße, Hausnummer achtzehn.</div>
+            <button class="speak-btn" onclick="speakSentence(this,'Ich wohne in der Mozartstraße, Hausnummer achtzehn.')">🔊 Hear it spoken</button>
+            <div class="answer-row"><div class="a-box"><div class="a-label">ANSWER</div><div class="a-val">No. 18</div></div><div class="t-box"><div class="t-label">KEY WORD</div><div class="t-text">Hausnummer = house number. achtzehn = 18.</div></div></div>
+          </div>
+          <div class="listen-card">
+            <div class="listen-head"><div class="l-icon">👤</div><div><div class="l-title">Age</div><div class="l-sub">Goethe A1 Sprechen</div></div></div>
+            <div class="transcript">Mein Bruder ist siebzehn Jahre alt.</div>
+            <button class="speak-btn" onclick="speakSentence(this,'Mein Bruder ist siebzehn Jahre alt.')">🔊 Hear it spoken</button>
+            <div class="answer-row"><div class="a-box"><div class="a-label">ANSWER</div><div class="a-val">17 years old</div></div><div class="t-box"><div class="t-label">PATTERN</div><div class="t-text">[number] Jahre alt. siebzehn = 17.</div></div></div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Previous</button><button class="btn btn-primary" onclick="nextStep(0,1)">Start Quiz →</button></div>
+      </div>
+
+      <div class="step" id="l0-s2">
+        <div class="card"><div class="concept-tag">Module 1 · Lesson 1 · Quiz</div><h2 class="lesson-h">Quick Check</h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,2)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ===== LESSON 2: Numbers 20–1000 ===== -->
+    <div id="lesson-1" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">Module 1 · Lesson 2 of 6</div>
+          <h2 class="lesson-h">Numbers 20 to 1000 — the backwards pattern</h2>
+          <p class="body-text">English says <strong>"twenty-three"</strong> — tens first. German says <strong>"dreiundzwanzig"</strong> — literally three-and-twenty. Units come first, then "und", then tens. All as one word.</p>
+          <div class="info-box"><strong style="color:var(--gold)">The pattern:</strong> [units] + und + [tens] — one word, no spaces<br><br>23 = drei<strong>und</strong>zwanzig &nbsp;·&nbsp; 45 = fünf<strong>und</strong>vierzig &nbsp;·&nbsp; 78 = acht<strong>und</strong>siebzig</div>
+          <div class="sec-label">The 8 Tens — tap to hear</div>
+          <div class="num-grid" style="grid-template-columns:repeat(auto-fill,minmax(120px,1fr));">
+            <div class="num-cell" onclick="speakNum(this,'zwanzig')"><div class="num-digit">20</div><div class="num-word">zwanzig</div><div class="num-ph">TSVAN-tsig</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'dreißig')"><div class="num-digit">30</div><div class="num-word">dreißig</div><div class="num-ph">DRAI-sig</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'vierzig')"><div class="num-digit">40</div><div class="num-word">vierzig</div><div class="num-ph">FEER-tsig</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'fünfzig')"><div class="num-digit">50</div><div class="num-word">fünfzig</div><div class="num-ph">FÜNF-tsig</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'sechzig')"><div class="num-digit">60</div><div class="num-word">sechzig</div><div class="num-ph">ZEHS-tsig</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'siebzig')"><div class="num-digit">70</div><div class="num-word">siebzig</div><div class="num-ph">ZEEP-tsig</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'achtzig')"><div class="num-digit">80</div><div class="num-word">achtzig</div><div class="num-ph">AHHT-tsig</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'neunzig')"><div class="num-digit">90</div><div class="num-word">neunzig</div><div class="num-ph">NOYN-tsig</div><div class="num-tap">🔊 tap</div></div>
+          </div>
+          <div class="sec-label">Hundreds and Thousands</div>
+          <table class="dtable">
+            <tr><th>Number</th><th>German</th><th>Pronunciation</th></tr>
+            <tr><td class="de">100</td><td class="de">hundert</td><td class="ph">HUN-dert</td></tr>
+            <tr><td class="de">200</td><td class="de">zweihundert</td><td class="ph">TSVAI-hun-dert</td></tr>
+            <tr><td class="de">350</td><td class="de">dreihundertfünfzig</td><td class="ph">DRAI-hun-dert-FÜNF-tsig</td></tr>
+            <tr><td class="de">1000</td><td class="de">tausend</td><td class="ph">TAU-zent</td></tr>
+            <tr><td class="de">1500</td><td class="de">eintausendfünfhundert</td><td class="ph">AIN-tau-zent-FÜNF-hun-dert</td></tr>
+          </table>
+          <div class="danger-box"><strong style="color:#e74c3c;">One-word rule:</strong> Compound numbers are always one word — dreiundzwanzig, NOT "drei und zwanzig". Separated compound numbers lose marks in Goethe Schreiben.</div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card">
+          <div class="concept-tag">Module 1 · Lesson 2 · Price Practice</div>
+          <h2 class="lesson-h">Build the numbers — prices</h2>
+          <p class="body-text">Prices are the most common compound number context in Goethe. Press 🔊 to hear correct pronunciation.</p>
+          <div class="listen-card"><div class="listen-head"><div class="l-icon">💶</div><div><div class="l-title">€23.00</div></div></div><div class="transcript">dreiundzwanzig Euro</div><button class="speak-btn" onclick="speakSentence(this,'dreiundzwanzig Euro')">🔊 Hear it</button><div class="t-box" style="margin-top:10px;"><div class="t-label">BREAKDOWN</div><div class="t-text">drei(3) + und + zwanzig(20) = 23. Units first, then tens.</div></div></div>
+          <div class="listen-card"><div class="listen-head"><div class="l-icon">💶</div><div><div class="l-title">€45.50</div></div></div><div class="transcript">fünfundvierzig Euro fünfzig Cent</div><button class="speak-btn" onclick="speakSentence(this,'fünfundvierzig Euro fünfzig Cent')">🔊 Hear it</button><div class="t-box" style="margin-top:10px;"><div class="t-label">BREAKDOWN</div><div class="t-text">fünf(5) + und + vierzig(40) = 45. fünfzig(50) Cent.</div></div></div>
+          <div class="listen-card"><div class="listen-head"><div class="l-icon">💶</div><div><div class="l-title">€178.00</div></div></div><div class="transcript">einhundertachtundsiebzig Euro</div><button class="speak-btn" onclick="speakSentence(this,'einhundertachtundsiebzig Euro')">🔊 Hear it</button><div class="t-box" style="margin-top:10px;"><div class="t-label">BREAKDOWN</div><div class="t-text">ein+hundert+acht(8)+und+siebzig(70) = 178. All one word.</div></div></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Previous</button><button class="btn btn-primary" onclick="nextStep(1,1)">Start Quiz →</button></div>
+      </div>
+      <div class="step" id="l1-s2">
+        <div class="card"><div class="concept-tag">Module 1 · Lesson 2 · Quiz</div><h2 class="lesson-h">Number Pattern Quiz</h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,2)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ===== LESSON 3: The Trap ===== -->
+    <div id="lesson-2" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">Module 1 · Lesson 3 of 6 · ⚠️ Goethe Critical</div>
+          <h2 class="lesson-h">The trap that costs the most marks in Hören</h2>
+          <p class="body-text">The examiners use the teen/tens confusion deliberately. Tap each pair and listen for the difference. The key is the ending: -zehn has a final N, -zig does not.</p>
+          <div class="info-box"><strong style="color:var(--gold)">Listen for:</strong> -<strong>zehn</strong> → ends in -TSAYN (hear the N) &nbsp;·&nbsp; -<strong>zig</strong> → ends in -TSIG (no N)</div>
+          <div class="sec-label">The 4 Most Tested Pairs</div>
+          <div class="trap-pair">
+            <div class="trap-teen"><div class="trap-num">13</div><div class="trap-de">dreizehn</div><div class="trap-ph">DRAI-tsayn</div><button class="speak-btn" onclick="speakSentence(this,'dreizehn')" style="margin:6px auto 6px;">🔊</button><span class="trap-tag tag-teen">-zehn = teen</span></div>
+            <div class="trap-tens"><div class="trap-num">30</div><div class="trap-de">dreißig</div><div class="trap-ph">DRAI-sig</div><button class="speak-btn" onclick="speakSentence(this,'dreißig')" style="margin:6px auto 6px;">🔊</button><span class="trap-tag tag-tens">-zig = tens</span></div>
+          </div>
+          <div class="trap-pair">
+            <div class="trap-teen"><div class="trap-num">14</div><div class="trap-de">vierzehn</div><div class="trap-ph">FEER-tsayn</div><button class="speak-btn" onclick="speakSentence(this,'vierzehn')" style="margin:6px auto 6px;">🔊</button><span class="trap-tag tag-teen">-zehn = teen</span></div>
+            <div class="trap-tens"><div class="trap-num">40</div><div class="trap-de">vierzig</div><div class="trap-ph">FEER-tsig</div><button class="speak-btn" onclick="speakSentence(this,'vierzig')" style="margin:6px auto 6px;">🔊</button><span class="trap-tag tag-tens">-zig = tens</span></div>
+          </div>
+          <div class="trap-pair">
+            <div class="trap-teen"><div class="trap-num">17</div><div class="trap-de">siebzehn</div><div class="trap-ph">ZEEP-tsayn</div><button class="speak-btn" onclick="speakSentence(this,'siebzehn')" style="margin:6px auto 6px;">🔊</button><span class="trap-tag tag-teen">-zehn = teen</span></div>
+            <div class="trap-tens"><div class="trap-num">70</div><div class="trap-de">siebzig</div><div class="trap-ph">ZEEP-tsig</div><button class="speak-btn" onclick="speakSentence(this,'siebzig')" style="margin:6px auto 6px;">🔊</button><span class="trap-tag tag-tens">-zig = tens</span></div>
+          </div>
+          <div class="trap-pair">
+            <div class="trap-teen"><div class="trap-num">19</div><div class="trap-de">neunzehn</div><div class="trap-ph">NOYN-tsayn</div><button class="speak-btn" onclick="speakSentence(this,'neunzehn')" style="margin:6px auto 6px;">🔊</button><span class="trap-tag tag-teen">-zehn = teen</span></div>
+            <div class="trap-tens"><div class="trap-num">90</div><div class="trap-de">neunzig</div><div class="trap-ph">NOYN-tsig</div><button class="speak-btn" onclick="speakSentence(this,'neunzig')" style="margin:6px auto 6px;">🔊</button><span class="trap-tag tag-tens">-zig = tens</span></div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card">
+          <div class="concept-tag">Module 1 · Lesson 3 · Goethe Contexts</div>
+          <h2 class="lesson-h">Spot the number — real Goethe situations</h2>
+          <div class="listen-card"><div class="listen-head"><div class="l-icon">🚂</div><div><div class="l-title">Train announcement</div></div></div><div class="transcript">Der Zug nach Hamburg fährt von Gleis dreizehn ab.</div><button class="speak-btn" onclick="speakSentence(this,'Der Zug nach Hamburg fährt von Gleis dreizehn ab.')">🔊 Hear it</button><div class="answer-row"><div class="a-box"><div class="a-label">ANSWER</div><div class="a-val">Platform 13</div></div><div class="t-box"><div class="t-label">TRAP</div><div class="t-text">Could sound like 30. Listen for N at end — dreizehn ends -TSAYN.</div></div></div></div>
+          <div class="listen-card"><div class="listen-head"><div class="l-icon">💊</div><div><div class="l-title">Doctor appointment</div></div></div><div class="transcript">Ihre Wartezeit beträgt ungefähr vierzig Minuten.</div><button class="speak-btn" onclick="speakSentence(this,'Ihre Wartezeit beträgt ungefähr vierzig Minuten.')">🔊 Hear it</button><div class="answer-row"><div class="a-box"><div class="a-label">ANSWER</div><div class="a-val">40 minutes</div></div><div class="t-box"><div class="t-label">TRAP</div><div class="t-text">Could sound like 14. vierzig ends -TSIG — no N — so it is 40.</div></div></div></div>
+          <div class="listen-card"><div class="listen-head"><div class="l-icon">📞</div><div><div class="l-title">Phone number</div></div></div><div class="transcript">Meine Nummer ist null-acht-null, neunzehn-acht-sieben.</div><button class="speak-btn" onclick="speakSentence(this,'Meine Nummer ist null acht null, neunzehn acht sieben.')">🔊 Hear it</button><div class="answer-row"><div class="a-box"><div class="a-label">ANSWER</div><div class="a-val">080 / 19-87</div></div><div class="t-box"><div class="t-label">TRAP</div><div class="t-text">neunzehn (19) not neunzig (90). Listen for the N ending.</div></div></div></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Previous</button><button class="btn btn-primary" onclick="nextStep(2,1)">Start Quiz →</button></div>
+      </div>
+      <div class="step" id="l2-s2">
+        <div class="card"><div class="concept-tag">Module 1 · Lesson 3 · Quiz</div><h2 class="lesson-h">Teen vs Tens Quiz</h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,2)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ===== LESSON 4: Telling the Time ===== -->
+    <div id="lesson-3" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">Module 1 · Lesson 4 of 6</div>
+          <h2 class="lesson-h">Telling the time — two systems, both tested</h2>
+          <p class="body-text"><strong style="color:var(--gold)">Formal</strong> (announcements, timetables) uses the 24-hour clock. <strong style="color:var(--blue)">Informal</strong> (conversation) uses halb, Viertel nach, Viertel vor. Both appear in Goethe — tap any card to hear it.</p>
+          <div class="sec-label">Formal Time — tap to hear</div>
+          <div class="time-grid">
+            <div class="time-card" onclick="speakSentence(this,'acht Uhr')"><div class="time-digital">08:00</div><div class="time-formal">acht Uhr</div><div class="time-tap">🔊 tap</div></div>
+            <div class="time-card" onclick="speakSentence(this,'dreizehn Uhr')"><div class="time-digital">13:00</div><div class="time-formal">dreizehn Uhr</div><div class="time-tap">🔊 tap</div></div>
+            <div class="time-card" onclick="speakSentence(this,'vierzehn Uhr dreißig')"><div class="time-digital">14:30</div><div class="time-formal">vierzehn Uhr dreißig</div><div class="time-tap">🔊 tap</div></div>
+            <div class="time-card" onclick="speakSentence(this,'neun Uhr fünfzehn')"><div class="time-digital">09:15</div><div class="time-formal">neun Uhr fünfzehn</div><div class="time-tap">🔊 tap</div></div>
+            <div class="time-card" onclick="speakSentence(this,'zwanzig Uhr fünfundvierzig')"><div class="time-digital">20:45</div><div class="time-formal">zwanzig Uhr fünfundvierzig</div><div class="time-tap">🔊 tap</div></div>
+            <div class="time-card" onclick="speakSentence(this,'Mitternacht')"><div class="time-digital">00:00</div><div class="time-formal">null Uhr / Mitternacht</div><div class="time-tap">🔊 tap</div></div>
+          </div>
+          <div class="sec-label">Informal Time</div>
+          <table class="dtable">
+            <tr><th>Clock</th><th>German (informal)</th><th>Literal</th><th>English</th></tr>
+            <tr><td class="de">3:00</td><td class="de">drei Uhr</td><td style="font-size:12px;color:var(--gray);">three clock</td><td style="font-size:13px;">3 o'clock</td></tr>
+            <tr><td class="de">3:15</td><td class="de">Viertel nach drei</td><td style="font-size:12px;color:var(--gray);">quarter after three</td><td style="font-size:13px;">quarter past three</td></tr>
+            <tr><td class="de" style="color:#e74c3c;">3:30</td><td class="de" style="color:#e74c3c;">halb vier ⚠️</td><td style="font-size:12px;color:var(--gray);">half four</td><td style="font-size:13px;">half past THREE</td></tr>
+            <tr><td class="de">3:45</td><td class="de">Viertel vor vier</td><td style="font-size:12px;color:var(--gray);">quarter before four</td><td style="font-size:13px;">quarter to four</td></tr>
+            <tr><td class="de">3:10</td><td class="de">zehn nach drei</td><td style="font-size:12px;color:var(--gray);">ten after three</td><td style="font-size:13px;">ten past three</td></tr>
+            <tr><td class="de">3:50</td><td class="de">zehn vor vier</td><td style="font-size:12px;color:var(--gray);">ten before four</td><td style="font-size:13px;">ten to four</td></tr>
+          </table>
+          <div class="danger-box"><strong style="color:#e74c3c;">⚠️ The halb trap:</strong> halb vier = 3:30, NOT 4:30. "Halb" means half TO the next hour — halfway to four = 3:30. This appears in almost every Goethe A1 Hören section.</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+            <button class="speak-btn" onclick="speakSentence(this,'halb vier')">🔊 halb vier (3:30)</button>
+            <button class="speak-btn" onclick="speakSentence(this,'Viertel nach drei')">🔊 Viertel nach drei (3:15)</button>
+            <button class="speak-btn" onclick="speakSentence(this,'Viertel vor vier')">🔊 Viertel vor vier (3:45)</button>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card">
+          <div class="concept-tag">Module 1 · Lesson 4 · Goethe Time Contexts</div>
+          <h2 class="lesson-h">Time in real Goethe situations</h2>
+          <div class="listen-card"><div class="listen-head"><div class="l-icon">✈️</div><div><div class="l-title">Airport announcement</div></div></div><div class="transcript">Der Flug nach Frankfurt startet um vierzehn Uhr zwanzig.</div><button class="speak-btn" onclick="speakSentence(this,'Der Flug nach Frankfurt startet um vierzehn Uhr zwanzig.')">🔊 Hear it</button><div class="answer-row"><div class="a-box"><div class="a-label">TIME</div><div class="a-val">14:20</div></div><div class="t-box"><div class="t-label">NOTE</div><div class="t-text">Formal time. vierzehn(14) Uhr zwanzig(20) = 14:20.</div></div></div></div>
+          <div class="listen-card"><div class="listen-head"><div class="l-icon">🚌</div><div><div class="l-title">Bus question</div></div></div><div class="transcript">"Wann kommt der Bus?" — "Um halb acht."</div><button class="speak-btn" onclick="speakSentence(this,'Um halb acht.')">🔊 Hear it</button><div class="answer-row"><div class="a-box"><div class="a-label">TIME</div><div class="a-val">7:30 ⚠️</div></div><div class="t-box"><div class="t-label">TRAP</div><div class="t-text">halb acht = 7:30, NOT 8:30. Half TO eight.</div></div></div></div>
+          <div class="listen-card"><div class="listen-head"><div class="l-icon">🏥</div><div><div class="l-title">Doctor appointment</div></div></div><div class="transcript">Ihr Termin ist um Viertel nach zehn.</div><button class="speak-btn" onclick="speakSentence(this,'Ihr Termin ist um Viertel nach zehn.')">🔊 Hear it</button><div class="answer-row"><div class="a-box"><div class="a-label">TIME</div><div class="a-val">10:15</div></div><div class="t-box"><div class="t-label">NOTE</div><div class="t-text">Viertel nach zehn = quarter after ten = 10:15.</div></div></div></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Previous</button><button class="btn btn-primary" onclick="nextStep(3,1)">Start Quiz →</button></div>
+      </div>
+      <div class="step" id="l3-s2">
+        <div class="card"><div class="concept-tag">Module 1 · Lesson 4 · Quiz</div><h2 class="lesson-h">Time Quiz</h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,2)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ===== LESSON 5: Days, Months, Seasons ===== -->
+    <div id="lesson-4" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">Module 1 · Lesson 5 of 6</div>
+          <h2 class="lesson-h">Days, months and seasons — all masculine</h2>
+          <p class="body-text">All days of the week, all months, and all seasons are <strong style="color:var(--gold)">masculine (der)</strong> in German. One rule covers all three categories — no exceptions.</p>
+          <div class="success-box"><strong style="color:var(--green)">One rule:</strong> der Montag · der Januar · der Frühling — always der.</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0;">
+            <div>
+              <div class="sec-label">Days of the Week</div>
+              <table class="dtable">
+                <tr><td class="de">der Montag</td><td style="font-size:13px;color:var(--gray);">Monday</td></tr>
+                <tr><td class="de">der Dienstag</td><td style="font-size:13px;color:var(--gray);">Tuesday</td></tr>
+                <tr><td class="de">der Mittwoch</td><td style="font-size:13px;color:var(--gray);">Wednesday</td></tr>
+                <tr><td class="de">der Donnerstag</td><td style="font-size:13px;color:var(--gray);">Thursday</td></tr>
+                <tr><td class="de">der Freitag</td><td style="font-size:13px;color:var(--gray);">Friday</td></tr>
+                <tr><td class="de">der Samstag</td><td style="font-size:13px;color:var(--gray);">Saturday</td></tr>
+                <tr><td class="de">der Sonntag</td><td style="font-size:13px;color:var(--gray);">Sunday</td></tr>
+              </table>
+            </div>
+            <div>
+              <div class="sec-label">Seasons</div>
+              <table class="dtable">
+                <tr><td class="de">der Frühling</td><td style="font-size:13px;color:var(--gray);">Spring 🌸</td></tr>
+                <tr><td class="de">der Sommer</td><td style="font-size:13px;color:var(--gray);">Summer ☀️</td></tr>
+                <tr><td class="de">der Herbst</td><td style="font-size:13px;color:var(--gray);">Autumn 🍂</td></tr>
+                <tr><td class="de">der Winter</td><td style="font-size:13px;color:var(--gray);">Winter ❄️</td></tr>
+              </table>
+              <div class="sec-label" style="margin-top:14px;">Prepositions</div>
+              <div style="font-size:13px;color:var(--cream);line-height:2;">
+                <span class="de">am</span> + day → <span style="color:var(--gray);">am Montag</span><br>
+                <span class="de">im</span> + month/season → <span style="color:var(--gray);">im Januar, im Sommer</span>
+              </div>
+            </div>
+          </div>
+          <div class="sec-label">Months — tap to hear</div>
+          <div class="num-grid" style="grid-template-columns:repeat(auto-fill,minmax(120px,1fr));">
+            <div class="num-cell" onclick="speakNum(this,'Januar')"><div class="num-word">der Januar</div><div class="num-ph">YAH-nu-ar</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'Februar')"><div class="num-word">der Februar</div><div class="num-ph">FEH-bru-ar</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'März')"><div class="num-word">der März</div><div class="num-ph">MEHRTS</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'April')"><div class="num-word">der April</div><div class="num-ph">ah-PRIL</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'Mai')"><div class="num-word">der Mai</div><div class="num-ph">MAI</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'Juni')"><div class="num-word">der Juni</div><div class="num-ph">YOO-nee</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'Juli')"><div class="num-word">der Juli</div><div class="num-ph">YOO-lee</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'August')"><div class="num-word">der August</div><div class="num-ph">ou-GOOST</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'September')"><div class="num-word">der September</div><div class="num-ph">zep-TEM-ber</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'Oktober')"><div class="num-word">der Oktober</div><div class="num-ph">ok-TOH-ber</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'November')"><div class="num-word">der November</div><div class="num-ph">no-VEM-ber</div><div class="num-tap">🔊 tap</div></div>
+            <div class="num-cell" onclick="speakNum(this,'Dezember')"><div class="num-word">der Dezember</div><div class="num-ph">de-TSEM-ber</div><div class="num-tap">🔊 tap</div></div>
+          </div>
+          <div class="info-box"><strong style="color:var(--gold)">Date format in Germany:</strong> day.month.year — 15.03.2026. Never month first. Wrong order loses marks in Goethe Schreiben form filling.</div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Start Quiz →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">Module 1 · Lesson 5 · Quiz</div><h2 class="lesson-h">Days and Months Quiz</h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ===== LESSON 6: Ordinal Numbers ===== -->
+    <div id="lesson-5" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">Module 1 · Lesson 6 of 6</div>
+          <h2 class="lesson-h">Ordinal numbers — first, second, third</h2>
+          <p class="body-text">Ordinal numbers are used for dates, floors, and rankings. Three are irregular — memorise only those. From 4th onwards the pattern is completely regular.</p>
+          <div class="danger-box"><strong style="color:#e74c3c;">The 3 Irregulars:</strong> 1st = <strong>erst-</strong> &nbsp;·&nbsp; 2nd = <strong>zweit-</strong> &nbsp;·&nbsp; 3rd = <strong>dritt-</strong><br>From 4th onwards: add -t to base (viert-, fünft-, zehnt-). From 20th: add -st (zwanzigst-).</div>
+          <div class="ord-grid">
+            <div class="ord-cell irreg"><div class="ord-num">1.</div><div class="ord-word">erst-</div><div class="ord-note">⚠️ irregular</div></div>
+            <div class="ord-cell irreg"><div class="ord-num">2.</div><div class="ord-word">zweit-</div><div class="ord-note">⚠️ irregular</div></div>
+            <div class="ord-cell irreg"><div class="ord-num">3.</div><div class="ord-word">dritt-</div><div class="ord-note">⚠️ irregular</div></div>
+            <div class="ord-cell"><div class="ord-num">4.</div><div class="ord-word">viert-</div><div class="ord-note">base + t</div></div>
+            <div class="ord-cell"><div class="ord-num">5.</div><div class="ord-word">fünft-</div><div class="ord-note">base + t</div></div>
+            <div class="ord-cell"><div class="ord-num">7.</div><div class="ord-word">siebt-</div><div class="ord-note">sieben→siebt</div></div>
+            <div class="ord-cell"><div class="ord-num">8.</div><div class="ord-word">acht-</div><div class="ord-note">no extra t</div></div>
+            <div class="ord-cell"><div class="ord-num">10.</div><div class="ord-word">zehnt-</div><div class="ord-note">base + t</div></div>
+            <div class="ord-cell"><div class="ord-num">15.</div><div class="ord-word">fünfzehnt-</div><div class="ord-note">base + t</div></div>
+            <div class="ord-cell"><div class="ord-num">20.</div><div class="ord-word">zwanzigst-</div><div class="ord-note">20+ use -st</div></div>
+            <div class="ord-cell"><div class="ord-num">21.</div><div class="ord-word">einundzwanzigst-</div><div class="ord-note">-st pattern</div></div>
+            <div class="ord-cell"><div class="ord-num">31.</div><div class="ord-word">einunddreißigst-</div><div class="ord-note">-st pattern</div></div>
+          </div>
+          <div class="sec-label">Dates in sentences — tap to hear</div>
+          <div class="listen-card"><div class="transcript">Heute ist der fünfzehnte März.</div><button class="speak-btn" onclick="speakSentence(this,'Heute ist der fünfzehnte März.')">🔊 Hear it</button><div style="font-size:12px;color:var(--gray);margin-top:6px;">Today is the 15th of March. — 15th = fünfzehnt- + adjective ending -e</div></div>
+          <div class="listen-card"><div class="transcript">Ihr Termin ist am dritten April.</div><button class="speak-btn" onclick="speakSentence(this,'Ihr Termin ist am dritten April.')">🔊 Hear it</button><div style="font-size:12px;color:var(--gray);margin-top:6px;">Your appointment is on the 3rd of April. — dritt- is irregular.</div></div>
+          <div class="listen-card"><div class="transcript">Der Kurs beginnt am ersten Mai.</div><button class="speak-btn" onclick="speakSentence(this,'Der Kurs beginnt am ersten Mai.')">🔊 Hear it</button><div style="font-size:12px;color:var(--gray);margin-top:6px;">The course starts on the 1st of May. — erst- is irregular.</div></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Start Final Quiz →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">Module 1 · Final Quiz</div><h2 class="lesson-h">Module Complete — Final Check</h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Previous</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="showOverview()"><span class="nav-icon">📚</span><span class="nav-label">Overview</span></button>
+  <button class="nav-item" onclick="resumeLesson()"><span class="nav-icon">▶️</span><span class="nav-label">Resume</span></button>
+</nav>
+
+<script>
+// ================================================================
+// SPEECH API
+// ================================================================
+var synth = (typeof window !== 'undefined' && window.speechSynthesis) ? window.speechSynthesis : null;
+var deVoice = null;
+var speechUnlocked = false;
+
+function loadVoices() {
+  if (!synth) return;
+  try {
+    var voices = synth.getVoices();
+    deVoice = voices.find(v => v.lang === 'de-DE')
+             || voices.find(v => v.lang && v.lang.startsWith('de'))
+             || null;
+  } catch(e) {}
+}
+if (synth) {
+  try {
+    loadVoices();
+    if (synth.onvoiceschanged !== undefined) synth.onvoiceschanged = loadVoices;
+  } catch(e) {}
+}
+
+// Chrome on Android silently blocks speech unless unlocked by a real user gesture
+function unlockSpeech() {
+  if (speechUnlocked || !synth) return;
+  try {
+    var silent = new SpeechSynthesisUtterance('');
+    silent.volume = 0;
+    synth.speak(silent);
+    speechUnlocked = true;
+  } catch(e) {}
+}
+document.addEventListener('touchstart', unlockSpeech, { once: true, passive: true });
+document.addEventListener('click', unlockSpeech, { once: true });
+
+function speakDE(text) {
+  if (!synth) return null;
+  try {
+    if (!deVoice) loadVoices();
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'de-DE'; u.rate = 0.85; u.pitch = 1.0; u.volume = 1.0;
+    if (deVoice) u.voice = deVoice;
+    synth.speak(u);
+    return u;
+  } catch(e) { return null; }
+}
+
+function speakNum(cell, word) {
+  unlockSpeech();
+  document.querySelectorAll('.num-cell').forEach(c => c.classList.remove('speaking'));
+  cell.classList.add('speaking');
+  const u = speakDE(word);
+  if (u) {
+    u.onend = () => cell.classList.remove('speaking');
+    u.onerror = () => cell.classList.remove('speaking');
+  } else {
+    setTimeout(() => cell.classList.remove('speaking'), 900);
+  }
+}
+
+function speakSentence(btn, text) {
+  unlockSpeech();
+  document.querySelectorAll('.speak-btn').forEach(b => b.classList.remove('speaking'));
+  btn.classList.add('speaking');
+  const u = speakDE(text);
+  if (u) {
+    u.onend = () => btn.classList.remove('speaking');
+    u.onerror = () => btn.classList.remove('speaking');
+  } else {
+    setTimeout(() => btn.classList.remove('speaking'), 1500);
+  }
+}
+
+// ================================================================
+// STATE
+// ================================================================
+let currentLesson = 0;
+let currentStep = 0;
+let xp = 0;
+const TOTAL_LESSONS = 6;
+
+// ================================================================
+// QUIZ DATA
+// ================================================================
+const quizData = {
+  0: [
+    { q:'What is the German word for 17?', hint:'Sieben shortens before -zehn', opts:['siebzehn','siebzig','siebenzehn','siebzehnzig'], ans:0, exp:'17 = siebzehn. Sieben loses its -en before -zehn. Same for 16: sechs → sechzehn. These two are the only shortened forms.', rule:'17 = siebzehn · 16 = sechzehn — both are shortened.' },
+    { q:'How do Germans say zero?', hint:'You hear this in every phone number', opts:['zero','nichts','null','keine'], ans:2, exp:'Zero = null. You will hear it constantly in phone numbers, postcodes, and addresses in Goethe Hören.', rule:'0 = null. Read digit by digit in phone numbers.' },
+    { q:'"Das kostet zwölf Euro." How much?', hint:'zwölf does not follow the teen pattern', opts:['€2','€12','€20','€22'], ans:1, exp:'zwölf = 12. It must be memorised — it does not follow the -zehn pattern. elf (11) and zwölf (12) are both irregular standalone words.', rule:'11 = elf · 12 = zwölf — both must be memorised.' },
+  ],
+  1: [
+    { q:'How do you say 37 in German?', hint:'Units FIRST, then und, then tens', opts:['dreißigsieben','siebenunddreißig','dreißigundsieben','siebendreißig'], ans:1, exp:'37 = siebenunddreißig. Units (sieben=7) come first, then und, then tens (dreißig=30). All one word — opposite of English.', rule:'German: [units]+und+[tens]. One word, no spaces.' },
+    { q:'"zweihundertfünfzig" in digits?', hint:'Break it: zwei + hundert + fünfzig', opts:['250','205','520','225'], ans:0, exp:'zweihundertfünfzig = 250. Zwei(2)+hundert(100)=200, then fünfzig=50. So 200+50=250.', rule:'[digit]+hundert+[rest]. All stacked into one word.' },
+  ],
+  2: [
+    { q:'"Der Zug fährt von Gleis achtzehn ab." Which platform?', hint:'Listen for the ending — N or no N?', opts:['80','18','8','28'], ans:1, exp:'achtzehn = 18. The -zehn ending (-TSAYN) has a clear N. achtzig (80) ends in -TSIG with no N. Platform 18 is realistic.', rule:'-zehn (has N) = teen · -zig (no N) = tens.' },
+    { q:'"Das kostet fünfzig Euro." How much?', hint:'fünfzig vs fünfzehn — check the ending', opts:['€15','€55','€50','€5'], ans:2, exp:'fünfzig = 50. The -zig ending = tens. fünfzehn would be 15 with -zehn ending. fünfzig ends in -TSIG — no N — so 50.', rule:'fünfzig=50 (-zig) · fünfzehn=15 (-zehn).' },
+  ],
+  3: [
+    { q:'"Der Zug fährt um halb neun ab." When?', hint:'halb = half TO the next hour', opts:['9:30','8:30','9:00','8:00'], ans:1, exp:'halb neun = 8:30. German halb means half TO the next hour. Halfway to nine = 8:30. This is the most tested informal time in Goethe A1.', rule:'halb [hour] = 30 min BEFORE that hour. halb neun = 8:30.' },
+    { q:'How do you say 14:15 in formal German?', hint:'Formal: 24-hour, hour Uhr minutes', opts:['halb drei','Viertel nach zwei','vierzehn Uhr fünfzehn','zwei Uhr fünfzehn'], ans:2, exp:'14:15 formal = vierzehn Uhr fünfzehn. Formal time: [24hr hour] Uhr [minutes]. 14=vierzehn, 15=fünfzehn.', rule:'Formal: [24hr hour] Uhr [minutes].' },
+  ],
+  4: [
+    { q:'What gender are ALL days, months, and seasons in German?', hint:'One rule covers all three categories', opts:['die (feminine)','das (neuter)','der (masculine)','No article'], ans:2, exp:'All days (der Montag), months (der Januar), and seasons (der Frühling, der Sommer, der Herbst, der Winter) are masculine — der. One rule, no exceptions.', rule:'Days + months + seasons = ALL der. No exceptions.' },
+    { q:'How do you say "on Monday" in German?', hint:'Days use a specific preposition', opts:['in Montag','an Montag','am Montag','bei Montag'], ans:2, exp:'Days use "am" — am Montag (on Monday). Am = an+dem contracted. Months and seasons use "im" — im Januar, im Sommer.', rule:'Days → am [day]. Months/seasons → im [month/season].' },
+  ],
+  5: [
+    { q:'How do you say "the 1st of May" in German?', hint:'1st is irregular — not einst-', opts:['der einste Mai','der erste Mai','der einst Mai','der erst Mai'], ans:1, exp:'1st = erst- (irregular). "The 1st of May" = der erste Mai. The three irregulars: erst- (1st), zweit- (2nd), dritt- (3rd). From 4th: base+t.', rule:'1st=erst- · 2nd=zweit- · 3rd=dritt- (irregular). 4th+=base+t.' },
+    { q:'Born 8 June 1998. What do you write on a German form?', hint:'German date format: day.month.year', opts:['06.08.1998','08.06.1998','1998.06.08','June 8, 1998'], ans:1, exp:'German format is day.month.year — so 8 June 1998 = 08.06.1998. Opposite of American format. Wrong order loses marks in Goethe Schreiben.', rule:'German dates: day.month.year — 08.06.1998.' },
+    { q:'What is 47 in German?', hint:'Units first, then und, then tens', opts:['vierzigsieben','siebenundvierzig','vierundsiebzig','siebenzig'], ans:1, exp:'47 = siebenundvierzig. sieben(7)+und+vierzig(40). Do not confuse with 74 = vierundsiebzig (vier=4+und+siebzig=70).', rule:'47 = sieben+und+vierzig. 74 = vier+und+siebzig.' },
+  ],
+};
+
+// Quiz state per lesson
+const qState = {};
+
+// ================================================================
+// QUIZ ENGINE
+// ================================================================
+function initQuiz(lessonIdx) {
+  const el = document.getElementById('qz-' + lessonIdx);
+  if (!el || el.dataset.ready) return;
+  el.dataset.ready = '1';
+  qState[lessonIdx] = { cur: 0, correct: 0 };
+  renderQ(lessonIdx);
+}
+
+function renderQ(li) {
+  const el = document.getElementById('qz-' + li);
+  if (!el) return;
+  const s = qState[li];
+  const qs = quizData[li];
+  if (s.cur >= qs.length) { showResult(li); return; }
+  const q = qs[s.cur];
+  el.innerHTML =
+    '<div class="quiz-qnum">QUESTION ' + (s.cur+1) + ' OF ' + qs.length + '</div>' +
+    '<div class="quiz-q">' + q.q + '</div>' +
+    '<div class="quiz-hint">' + q.hint + '</div>' +
+    '<div class="quiz-opts">' +
+      q.opts.map(function(o,i){ return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">' +
+        '<span class="qletter">'+['A','B','C','D'][i]+'</span>' + o + '</button>'; }).join('') +
+    '</div>' +
+    '<div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div>' +
+    '<div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">' +
+      (s.cur < qs.length-1 ? 'Next Question →' : 'See Results →') +
+    '</button></div>';
+}
+
+function pickQ(li, idx) {
+  const s = qState[li];
+  const q = quizData[li][s.cur];
+  const ok = idx === q.ans;
+  if (ok) { s.correct++; xp += 20; document.getElementById('xpDisp').textContent = '⚡ ' + xp + ' XP'; }
+  document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){
+    b.disabled = true;
+    if (i === q.ans) b.classList.add('correct');
+    if (i === idx && !ok) b.classList.add('wrong');
+  });
+  var fb = document.getElementById('qz'+li+'-fb');
+  fb.classList.add('show', ok ? 'ok' : 'no');
+  var fbt = document.getElementById('qz'+li+'-fbt');
+  fbt.className = 'qft ' + (ok ? 'ok' : 'no');
+  fbt.textContent = ok ? '✓ Correct!' : '✗ Not quite';
+  document.getElementById('qz'+li+'-fbb').textContent = q.exp;
+  document.getElementById('qz'+li+'-fbr').textContent = q.rule;
+  document.getElementById('qz'+li+'-nx').classList.add('show');
+}
+
+function advQ(li) {
+  qState[li].cur++;
+  renderQ(li);
+}
+
+function showResult(li) {
+  const el = document.getElementById('qz-' + li);
+  const s = qState[li];
+  const total = quizData[li].length;
+  const pct = Math.round(s.correct / total * 100);
+  const isLast = li === 5;
+  var earned = s.correct * 20;
+  el.innerHTML =
+    '<div style="text-align:center;padding:16px 0;">' +
+    '<div style="font-size:44px;margin-bottom:10px;">' + (pct===100?'🌟':pct>=60?'👍':'💪') + '</div>' +
+    '<div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">' + s.correct + '/' + total + ' correct</div>' +
+    '<div style="color:var(--gray);font-size:13px;margin-bottom:18px;">' + (pct===100?'Perfect — locked in.':pct>=60?'Good work.':'Review and try again.') + '</div>' +
+    '<div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.12);border:1px solid var(--gold);border-radius:50px;padding:9px 22px;color:var(--gold);font-weight:700;margin-bottom:20px;">⚡ +' + earned + ' XP</div><br>' +
+    (isLast
+      ? '<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Complete Module 1 →</button>'
+      : '<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Next Lesson →</button>'
+    ) + '</div>';
+}
+
+function showCompletion() {
+  var el = document.querySelector('#lesson-5 .step.active');
+  el.innerHTML =
+    '<div class="complete-wrap">' +
+    '<div class="complete-icon">🔢</div>' +
+    '<h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Module 1 Complete!</h2>' +
+    '<p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:380px;margin:0 auto;">Numbers, time, and dates are now automatic. You have closed one of the biggest gaps that costs students marks in Goethe Hören and Schreiben.</p>' +
+    '<div class="xp-badge">⚡ ' + xp + ' XP Earned</div>' +
+    '<p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Next: Module 2 — Greetings &amp; Social Scripts</p>' +
+    '<button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Back to Overview</button>' +
+    '</div>';
+}
+
+// ================================================================
+// NAVIGATION
+// ================================================================
+function showOverview() {
+  document.getElementById('screen-overview').classList.add('active');
+  document.getElementById('screen-lesson').classList.remove('active');
+}
+
+function resumeLesson() { goLesson(currentLesson); }
+
+function goLesson(idx) {
+  currentLesson = idx;
+  currentStep = 0;
+  document.getElementById('screen-overview').classList.remove('active');
+  document.getElementById('screen-lesson').classList.add('active');
+
+  // Hide all lesson panes, show current
+  document.querySelectorAll('.lesson-pane').forEach(function(p){ p.style.display = 'none'; });
+  var pane = document.getElementById('lesson-' + idx);
+  if (pane) pane.style.display = 'block';
+
+  // Reset steps — show first
+  var steps = pane ? pane.querySelectorAll('.step') : [];
+  steps.forEach(function(s, i){ s.classList.toggle('active', i === 0); });
+
+  renderDots();
+  updateProgress(idx, 0);
+  window.scrollTo(0, 0);
+}
+
+function nextStep(li, si) {
+  var pane = document.getElementById('lesson-' + li);
+  var steps = pane.querySelectorAll('.step');
+  var next = si + 1;
+  if (next < steps.length) {
+    steps[si].classList.remove('active');
+    steps[next].classList.add('active');
+    currentStep = next;
+    updateProgress(li, next);
+    window.scrollTo(0, 0);
+    // Init quiz on last step
+    if (next === steps.length - 1) initQuiz(li);
+  } else {
+    // next lesson
+    if (li + 1 < TOTAL_LESSONS) { goLesson(li + 1); }
+    else { showCompletion(); }
+  }
+}
+
+function prevStep(li, si) {
+  if (si === 0) { showOverview(); return; }
+  var pane = document.getElementById('lesson-' + li);
+  var steps = pane.querySelectorAll('.step');
+  steps[si].classList.remove('active');
+  steps[si - 1].classList.add('active');
+  currentStep = si - 1;
+  updateProgress(li, si - 1);
+  window.scrollTo(0, 0);
+}
+
+function renderDots() {
+  var row = document.getElementById('dotRow');
+  row.innerHTML = '';
+  for (var i = 0; i < TOTAL_LESSONS; i++) {
+    var d = document.createElement('div');
+    d.className = 'dot' + (i < currentLesson ? ' done' : i === currentLesson ? ' active' : '');
+    (function(idx){ d.onclick = function(){ goLesson(idx); }; })(i);
+    row.appendChild(d);
+  }
+}
+
+function updateProgress(li, si) {
+  var total = TOTAL_LESSONS * 3;
+  var done = li * 3 + si;
+  document.getElementById('progFill').style.width = (done / total * 100) + '%';
+}
+
+// ================================================================
+// BOOT — reveal body only after DOM ready
+// ================================================================
+document.addEventListener('DOMContentLoaded', function() {
+  document.body.classList.add('ready');
+  if (synth) { try { loadVoices(); } catch(e) {} }
+});
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  document.body.classList.add('ready');
+}
+</script>
+</body>
+</html>

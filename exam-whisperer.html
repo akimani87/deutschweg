@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — AI Exam Whisperer</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --orange:#e67e22;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:var(--black);color:var(--white);
+    font-family:'DM Sans',sans-serif;min-height:100vh;
+    opacity:0;transition:opacity 0.25s ease;
+    padding-bottom:80px;
+  }
+  body.ready{opacity:1;}
+
+  /* ── NAV ── */
+  .top-nav{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 28px;
+    border-bottom:1px solid rgba(201,168,76,0.1);
+    background:rgba(10,10,10,0.96);backdrop-filter:blur(20px);
+    position:sticky;top:0;z-index:50;
+  }
+  .logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:900;text-decoration:none;color:var(--white);}
+  .logo span{color:var(--gold);}
+  .nav-right{display:flex;align-items:center;gap:14px;}
+  .nav-link{font-size:13px;color:var(--gray);text-decoration:none;transition:color 0.2s;}
+  .nav-link:hover{color:var(--cream);}
+  .nav-cta{
+    background:var(--gold);color:var(--black);
+    padding:9px 20px;border-radius:50px;
+    font-size:13px;font-weight:700;
+    text-decoration:none;transition:all 0.2s;
+  }
+  .nav-cta:hover{background:var(--gold-light);}
+
+  /* ── MAIN ── */
+  .main{max-width:700px;margin:0 auto;padding:48px 24px 0;}
+
+  /* ── PAGE HEADER ── */
+  .page-header{margin-bottom:40px;}
+  .badge{
+    display:inline-flex;align-items:center;gap:9px;
+    background:rgba(201,168,76,0.07);border:1px solid var(--border);
+    border-radius:50px;padding:7px 18px;
+    font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);
+    margin-bottom:22px;
+  }
+  .badge-pulse{width:7px;height:7px;border-radius:50%;background:var(--green);animation:blink 2.5s ease infinite;}
+  .page-h{
+    font-family:'Playfair Display',serif;
+    font-size:clamp(28px,6vw,44px);line-height:1.12;
+    margin-bottom:14px;letter-spacing:-0.5px;
+  }
+  .page-h span{color:var(--gold);}
+  .page-sub{font-size:15px;color:var(--cream);line-height:1.85;opacity:0.8;max-width:540px;}
+
+  /* ── INPUT CARD ── */
+  .input-card{
+    background:var(--card-bg);border:1px solid var(--border);
+    border-radius:22px;padding:32px;margin-bottom:24px;
+  }
+  .field-label{
+    font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2.5px;
+    text-transform:uppercase;color:var(--gold);
+    margin-bottom:10px;display:block;
+  }
+  textarea{
+    width:100%;
+    background:var(--card2-bg);
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:14px;
+    padding:18px 20px;
+    font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.8;
+    color:var(--white);
+    resize:vertical;min-height:180px;
+    outline:none;transition:border-color 0.2s,box-shadow 0.2s;
+  }
+  textarea::placeholder{color:var(--gray);font-size:14px;}
+  textarea:focus{
+    border-color:rgba(201,168,76,0.4);
+    box-shadow:0 0 0 3px rgba(201,168,76,0.07);
+  }
+  .char-count{
+    text-align:right;font-family:'DM Mono',monospace;font-size:11px;
+    color:var(--gray);margin-top:8px;
+  }
+  .char-count.warn{color:var(--orange);}
+
+  .input-row{
+    display:flex;align-items:flex-end;gap:12px;margin-top:20px;
+    flex-wrap:wrap;
+  }
+  .level-wrap{flex-shrink:0;}
+  .level-select{
+    background:var(--card2-bg);border:1px solid rgba(255,255,255,0.1);
+    border-radius:12px;padding:14px 42px 14px 16px;
+    font-family:'DM Mono',monospace;font-size:13px;letter-spacing:1px;
+    color:var(--cream);outline:none;cursor:pointer;
+    -webkit-appearance:none;appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b6b6b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 14px center;
+    transition:border-color 0.2s;
+  }
+  .level-select:focus{border-color:rgba(201,168,76,0.4);}
+
+  .btn-score{
+    flex:1;min-width:200px;
+    padding:15px 28px;border-radius:50px;
+    background:var(--gold);color:var(--black);
+    font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;
+    border:none;cursor:pointer;
+    transition:all 0.25s;
+    box-shadow:0 6px 20px rgba(201,168,76,0.25);
+    display:flex;align-items:center;justify-content:center;gap:10px;
+  }
+  .btn-score:hover{background:var(--gold-light);transform:translateY(-2px);box-shadow:0 10px 28px rgba(201,168,76,0.35);}
+  .btn-score:active{transform:translateY(0);}
+  .btn-score:disabled{opacity:0.6;cursor:not-allowed;transform:none;box-shadow:none;}
+
+  /* spinner */
+  .spin{
+    width:17px;height:17px;border-radius:50%;
+    border:2.5px solid rgba(0,0,0,0.2);border-top-color:rgba(0,0,0,0.75);
+    animation:spin 0.7s linear infinite;display:none;
+  }
+  .spin.on{display:block;}
+
+  /* ── RESULTS CARD ── */
+  .results-card{
+    display:none;
+    background:var(--card-bg);border:1px solid var(--border);
+    border-radius:22px;overflow:hidden;
+    animation:fadeUp 0.5s ease both;
+  }
+  .results-card.show{display:block;}
+
+  /* score hero */
+  .score-hero{
+    background:linear-gradient(135deg,rgba(201,168,76,0.1) 0%,rgba(201,168,76,0.04) 100%);
+    border-bottom:1px solid var(--border);
+    padding:36px 32px;
+    display:flex;align-items:center;gap:28px;
+  }
+  .score-ring{
+    position:relative;flex-shrink:0;
+    width:100px;height:100px;
+  }
+  .score-ring svg{transform:rotate(-90deg);}
+  .score-ring-num{
+    position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+  }
+  .score-big{
+    font-family:'Playfair Display',serif;font-size:26px;font-weight:900;
+    color:var(--gold);line-height:1;
+  }
+  .score-denom{font-family:'DM Mono',monospace;font-size:11px;color:var(--gray);}
+  .score-meta{}
+  .score-eyebrow{
+    font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;
+    color:var(--gold);margin-bottom:8px;
+  }
+  .score-label{
+    font-family:'Playfair Display',serif;font-size:22px;font-weight:700;
+    margin-bottom:6px;
+  }
+  .score-verdict{
+    display:inline-flex;align-items:center;gap:7px;
+    border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;
+    font-family:'DM Mono',monospace;letter-spacing:1px;
+  }
+  .verdict-borderline{
+    background:rgba(230,126,34,0.1);border:1px solid rgba(230,126,34,0.35);
+    color:var(--orange);
+  }
+  .verdict-pass{background:rgba(39,174,96,0.1);border:1px solid rgba(39,174,96,0.3);color:var(--green);}
+  .verdict-fail{background:rgba(192,57,43,0.08);border:1px solid rgba(192,57,43,0.3);color:var(--red);}
+
+  /* breakdown */
+  .section-block{padding:28px 32px;border-bottom:1px solid rgba(255,255,255,0.05);}
+  .section-block:last-child{border-bottom:none;}
+  .block-label{
+    font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;
+    color:var(--blue);margin-bottom:18px;
+  }
+
+  .breakdown-rows{display:flex;flex-direction:column;gap:12px;}
+  .bd-row{
+    background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);
+    border-radius:14px;padding:16px 18px;
+    display:flex;align-items:center;gap:14px;
+  }
+  .bd-icon{font-size:18px;flex-shrink:0;width:26px;text-align:center;}
+  .bd-cat{
+    flex:1;
+    font-size:14px;font-weight:600;color:var(--cream);margin-bottom:3px;
+  }
+  .bd-note{font-size:12px;color:var(--gray);line-height:1.6;}
+  .bd-score{
+    font-family:'Playfair Display',serif;font-size:20px;font-weight:900;
+    flex-shrink:0;text-align:right;
+    line-height:1;
+  }
+  .bd-max{font-family:'DM Mono',monospace;font-size:10px;color:var(--gray);text-align:right;margin-top:2px;}
+  .bd-row.ok .bd-score{color:var(--green);}
+  .bd-row.warn .bd-score{color:var(--orange);}
+  .bd-row.bad .bd-score{color:#e74c3c;}
+
+  /* mini score bar inside each row */
+  .bd-bar-wrap{width:80px;flex-shrink:0;}
+  .bd-bar{height:4px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden;}
+  .bd-bar-fill{height:100%;border-radius:2px;transition:width 0.8s ease;}
+  .ok .bd-bar-fill{background:var(--green);}
+  .warn .bd-bar-fill{background:var(--orange);}
+  .bad .bd-bar-fill{background:#e74c3c;}
+
+  /* fixes */
+  .fixes-list{display:flex;flex-direction:column;gap:12px;}
+  .fix-row{
+    background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);
+    border-radius:14px;padding:16px 18px;
+    display:flex;align-items:flex-start;gap:14px;
+  }
+  .fix-pts{
+    background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);
+    border-radius:8px;padding:6px 10px;
+    font-family:'DM Mono',monospace;font-size:12px;font-weight:700;
+    color:var(--gold);flex-shrink:0;white-space:nowrap;text-align:center;
+    min-width:54px;
+  }
+  .fix-pts span{display:block;font-size:10px;font-weight:400;color:var(--gray);letter-spacing:0.5px;}
+  .fix-cat{
+    font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;
+    color:var(--gold);margin-bottom:5px;
+  }
+  .fix-text{font-size:14px;color:var(--cream);line-height:1.7;}
+  .fix-example{
+    margin-top:10px;padding:10px 14px;
+    background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);
+    border-radius:9px;
+  }
+  .fe-wrong{font-family:'DM Mono',monospace;font-size:13px;color:#e74c3c;margin-bottom:4px;}
+  .fe-right{font-family:'DM Mono',monospace;font-size:13px;color:var(--green);}
+  .fe-label{font-size:10px;letter-spacing:1.5px;font-family:'DM Mono',monospace;color:var(--gray);margin-bottom:3px;}
+
+  /* corrected version */
+  .corrected-box{
+    background:rgba(39,174,96,0.05);border:1px solid rgba(39,174,96,0.2);
+    border-radius:14px;padding:20px;
+  }
+  .corrected-text{
+    font-family:'DM Mono',monospace;font-size:13px;line-height:2;
+    color:var(--cream);white-space:pre-wrap;
+  }
+  .corrected-text .fix-hi{color:var(--green);font-weight:700;}
+
+  /* demo disclaimer */
+  .demo-notice{
+    background:rgba(52,152,219,0.06);border:1px solid rgba(52,152,219,0.2);
+    border-radius:14px;padding:20px 22px;
+    display:flex;align-items:flex-start;gap:14px;
+    margin-top:0;
+  }
+  .demo-icon{font-size:22px;flex-shrink:0;}
+  .demo-text{font-size:14px;color:var(--cream);line-height:1.75;opacity:0.85;}
+  .demo-text strong{color:var(--white);}
+  .btn-signup{
+    display:inline-flex;align-items:center;gap:8px;
+    margin-top:14px;
+    background:var(--gold);color:var(--black);
+    padding:12px 26px;border-radius:50px;
+    font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;
+    text-decoration:none;transition:all 0.2s;
+    box-shadow:0 4px 16px rgba(201,168,76,0.25);
+  }
+  .btn-signup:hover{background:var(--gold-light);transform:translateY(-2px);}
+
+  /* ── HOW IT WORKS STRIP ── */
+  .how-strip{
+    background:var(--card-bg);border:1px solid rgba(255,255,255,0.06);
+    border-radius:18px;padding:24px 28px;margin-bottom:24px;
+  }
+  .how-label{
+    font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;
+    color:var(--gray);margin-bottom:16px;
+  }
+  .how-steps{display:flex;gap:0;flex-wrap:wrap;}
+  .how-step{
+    flex:1;min-width:140px;
+    display:flex;align-items:flex-start;gap:12px;padding-right:16px;
+  }
+  .how-step:not(:last-child){
+    border-right:1px solid rgba(255,255,255,0.06);
+    margin-right:16px;
+  }
+  .how-num{
+    width:28px;height:28px;border-radius:50%;
+    background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:var(--gold);
+    flex-shrink:0;
+  }
+  .how-txt{font-size:13px;color:var(--gray);line-height:1.65;}
+  .how-txt strong{display:block;color:var(--cream);margin-bottom:2px;font-size:13px;}
+
+  /* ── ANIMATIONS ── */
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ── MOBILE ── */
+  @media(max-width:600px){
+    .main{padding:36px 16px 0;}
+    .input-card,.section-block{padding:24px 20px;}
+    .score-hero{flex-direction:column;align-items:flex-start;gap:18px;padding:26px 20px;}
+    .input-row{flex-direction:column;}
+    .btn-score{width:100%;}
+    .level-select{width:100%;}
+    .how-steps{flex-direction:column;gap:14px;}
+    .how-step:not(:last-child){border-right:none;border-bottom:1px solid rgba(255,255,255,0.06);margin-right:0;padding-right:0;padding-bottom:14px;}
+    .bd-bar-wrap{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<div class="top-nav">
+  <a href="index.html" class="logo">Deutsch<span>Weg</span></a>
+  <div class="nav-right">
+    <a href="deutschweg-prototype.html" class="nav-link">My Courses</a>
+    <a href="signup.html" class="nav-cta">Start Free Trial</a>
+  </div>
+</div>
+
+<!-- ── MAIN ── -->
+<div class="main">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="badge">
+      <span class="badge-pulse"></span>
+      AI EXAM WHISPERER
+    </div>
+    <h1 class="page-h">Get Scored Like a<br><span>Real Goethe Examiner</span></h1>
+    <p class="page-sub">Paste your Schreiben practice below. Get an instant score out of 40 with category breakdown, specific fixes, and a corrected version.</p>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="how-strip">
+    <div class="how-label">HOW IT WORKS</div>
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="how-num">1</div>
+        <div class="how-txt"><strong>Paste your writing</strong>Schreiben task practice — any topic, any length</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">2</div>
+        <div class="how-txt"><strong>Select your level</strong>A1, A2, or B1 so scoring matches your exam</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">3</div>
+        <div class="how-txt"><strong>Get examiner feedback</strong>Score, breakdown, 3 fixes, corrected version</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INPUT CARD -->
+  <div class="input-card">
+    <label class="field-label" for="schreiben">Your Schreiben Practice Text</label>
+    <textarea
+      id="schreiben"
+      placeholder="Paste your German writing here...&#10;e.g. Sehr geehrte Damen und Herren, ich schreibe Ihnen, weil..."
+    ></textarea>
+    <div class="char-count" id="charCount">0 characters</div>
+
+    <div class="input-row">
+      <div class="level-wrap">
+        <label class="field-label" for="level" style="margin-bottom:8px;">Exam Level</label>
+        <select class="level-select" id="level">
+          <option value="A1">A1 — Beginner</option>
+          <option value="A2">A2 — Elementary</option>
+          <option value="B1" selected>B1 — Intermediate</option>
+        </select>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;">
+        <button class="btn-score" id="scoreBtn">
+          <span id="btnLabel">Score My Writing →</span>
+          <span class="spin" id="btnSpin"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS CARD — populated dynamically by scoreWriting() -->
+  <div class="results-card" id="results"></div>
+
+</div><!-- /main -->
+
+<script>
+var API_BASE = 'http://localhost:3000';
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function esc(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function setLoading(on) {
+  var btn   = document.getElementById('scoreBtn');
+  var label = document.getElementById('btnLabel');
+  var spin  = document.getElementById('btnSpin');
+  btn.disabled        = on;
+  label.style.display = on ? 'none' : '';
+  on ? spin.classList.add('on') : spin.classList.remove('on');
+}
+
+// ── Render results from API JSON ──────────────────────────────────────────────
+function renderResults(data) {
+  var circumference = 263.9;
+  var pct    = Math.min(data.total, 40) / 40;
+  var offset = circumference * (1 - pct);
+
+  // Verdict
+  var verdictClass, verdictText;
+  if (pct >= 0.6) {
+    verdictClass = 'verdict-pass';
+    verdictText  = '✓ PASS — Well done!';
+  } else if (pct >= 0.5) {
+    var needed = Math.ceil(40 * 0.6) - data.total;
+    verdictClass = 'verdict-borderline';
+    verdictText  = '⚡ BORDERLINE — ' + needed + ' point' + (needed !== 1 ? 's' : '') + ' to pass';
+  } else {
+    var needed = Math.ceil(40 * 0.6) - data.total;
+    verdictClass = 'verdict-fail';
+    verdictText  = '✗ NEEDS WORK — ' + needed + ' points to pass';
+  }
+
+  // Breakdown rows
+  var cats = [
+    { key: 'task',       label: 'Task Fulfilment'    },
+    { key: 'grammar',    label: 'Grammar & Accuracy' },
+    { key: 'vocabulary', label: 'Vocabulary Range'   },
+    { key: 'structure',  label: 'Text Structure'     },
+  ];
+  var bdHtml = cats.map(function(cat) {
+    var item   = data.breakdown[cat.key] || { score: 0, feedback: '' };
+    var score  = item.score;
+    var cls    = score >= 8 ? 'ok' : score >= 6 ? 'warn' : 'bad';
+    var icon   = score >= 6 ? '✓' : '✗';
+    var barPct = (score / 10 * 100).toFixed(0) + '%';
+    return '<div class="bd-row ' + cls + '">'
+      + '<div class="bd-icon">' + icon + '</div>'
+      + '<div style="flex:1;"><div class="bd-cat">' + esc(cat.label) + '</div>'
+      + '<div class="bd-note">' + esc(item.feedback) + '</div></div>'
+      + '<div class="bd-bar-wrap"><div class="bd-bar">'
+      + '<div class="bd-bar-fill" style="width:' + barPct + '"></div></div></div>'
+      + '<div><div class="bd-score">' + score + '</div><div class="bd-max">/10</div></div>'
+      + '</div>';
+  }).join('');
+
+  // Fix rows
+  var totalGain = (data.fixes || []).reduce(function(a, f) { return a + (f.points || 0); }, 0);
+  var fixesHtml = (data.fixes || []).map(function(fix, i) {
+    var exHtml = (fix.wrong || fix.correct)
+      ? '<div class="fix-example">'
+        + (fix.wrong   ? '<div class="fe-label">WRONG</div><div class="fe-wrong">'   + esc(fix.wrong)   + '</div>' : '')
+        + (fix.correct ? '<div class="fe-label" style="margin-top:8px;">CORRECT</div><div class="fe-right">' + esc(fix.correct) + '</div>' : '')
+        + '</div>'
+      : '';
+    return '<div class="fix-row">'
+      + '<div class="fix-pts">+' + fix.points + ' pts<span>' + esc((fix.category || '').toLowerCase()) + '</span></div>'
+      + '<div><div class="fix-cat">FIX 0' + (i + 1) + ' — ' + esc((fix.category || '').toUpperCase()) + '</div>'
+      + '<div class="fix-text">' + esc(fix.fix || '') + '</div>'
+      + exHtml + '</div></div>';
+  }).join('');
+
+  // Corrected version
+  var corrected = esc(data.corrected_version || '');
+
+  // Build full HTML
+  var html =
+    // ── Score hero
+    '<div class="score-hero">'
+    + '<div class="score-ring">'
+    + '<svg width="100" height="100" viewBox="0 0 100 100" style="transform:rotate(-90deg)">'
+    + '<circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>'
+    + '<circle id="scoreArc" cx="50" cy="50" r="42" fill="none" stroke="#c9a84c" stroke-width="8"'
+    + ' stroke-dasharray="263.9" stroke-dashoffset="263.9" stroke-linecap="round"/>'
+    + '</svg>'
+    + '<div class="score-ring-num">'
+    + '<span class="score-big">' + data.total + '</span>'
+    + '<span class="score-denom">/40</span>'
+    + '</div></div>'
+    + '<div class="score-meta">'
+    + '<div class="score-eyebrow">INSTANT SCORE</div>'
+    + '<div class="score-label">' + data.total + ' out of 40</div>'
+    + '<div class="score-verdict ' + verdictClass + '">' + verdictText + '</div>'
+    + '</div></div>'
+    // ── Breakdown
+    + '<div class="section-block">'
+    + '<div class="block-label">SCORE BREAKDOWN</div>'
+    + '<div class="breakdown-rows">' + bdHtml + '</div>'
+    + '</div>'
+    // ── Fixes
+    + '<div class="section-block">'
+    + '<div class="block-label">3 FIXES TO GET +' + totalGain + ' POINTS</div>'
+    + '<div class="fixes-list">' + fixesHtml + '</div>'
+    + '</div>'
+    // ── Corrected version
+    + '<div class="section-block">'
+    + '<div class="block-label">CORRECTED VERSION</div>'
+    + '<div class="corrected-box"><div class="corrected-text">' + corrected + '</div></div>'
+    + '<div style="margin-top:10px;font-size:12px;color:var(--gray);">'
+    + '<span style="color:var(--green);">■</span> Your original ideas, corrected German'
+    + '</div></div>'
+    // ── CTA
+    + '<div class="section-block" style="padding-top:24px;padding-bottom:28px;">'
+    + '<div class="demo-notice"><div class="demo-icon">🎓</div><div>'
+    + '<div class="demo-text"><strong>Want to track your progress?</strong> Sign up free to save your scores, practice again, and access all 13 A1 modules.</div>'
+    + '<a href="signup.html" class="btn-signup">Start Free Trial →</a>'
+    + '</div></div></div>';
+
+  var res = document.getElementById('results');
+  res.innerHTML = html;
+  res.classList.add('show');
+  res.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Animate the score arc
+  setTimeout(function() {
+    var arc = document.getElementById('scoreArc');
+    if (arc) {
+      arc.style.transition = 'stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1)';
+      arc.style.strokeDashoffset = offset;
+    }
+  }, 80);
+}
+
+// ── Render server-down / error state ─────────────────────────────────────────
+function renderError(message) {
+  var isOffline = message.toLowerCase().includes('fetch') || message.toLowerCase().includes('network');
+  var res = document.getElementById('results');
+  res.innerHTML =
+    '<div class="section-block" style="padding:32px;">'
+    + '<div class="demo-notice" style="border-color:rgba(192,57,43,0.3);background:rgba(192,57,43,0.06);">'
+    + '<div class="demo-icon">⚠️</div>'
+    + '<div>'
+    + '<div class="demo-text" style="margin-bottom:10px;">'
+    + (isOffline
+        ? '<strong>Cannot reach the scoring server.</strong> Make sure the Node.js server is running:<br>'
+          + '<span style="font-family:\'DM Mono\',monospace;font-size:12px;color:var(--gold);">node server.js</span>'
+        : '<strong>Scoring failed:</strong> ' + esc(message))
+    + '</div>'
+    + (isOffline
+        ? '<div style="font-size:13px;color:var(--gray);line-height:1.8;">'
+          + '1. Open a terminal in the project folder<br>'
+          + '2. Run <span style="font-family:\'DM Mono\',monospace;color:var(--cream);">npm install</span><br>'
+          + '3. Add your API key to <span style="font-family:\'DM Mono\',monospace;color:var(--cream);">.env</span><br>'
+          + '4. Run <span style="font-family:\'DM Mono\',monospace;color:var(--cream);">node server.js</span><br>'
+          + '5. Refresh this page and try again'
+          + '</div>'
+        : '')
+    + '</div></div></div>';
+  res.classList.add('show');
+  res.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Main scoring function ─────────────────────────────────────────────────────
+async function scoreWriting() {
+  var ta    = document.getElementById('schreiben');
+  var level = document.getElementById('level').value;
+  var res   = document.getElementById('results');
+
+  // Validate input
+  if (ta.value.trim().length < 10) {
+    ta.focus();
+    ta.style.borderColor = 'rgba(201,168,76,0.5)';
+    ta.style.boxShadow   = '0 0 0 3px rgba(201,168,76,0.1)';
+    ta.placeholder = 'Please paste some German writing first — even a few sentences is fine!';
+    setTimeout(function() {
+      ta.style.borderColor = '';
+      ta.style.boxShadow   = '';
+    }, 2200);
+    return;
+  }
+
+  // Reset previous result
+  res.classList.remove('show');
+  res.innerHTML = '';
+
+  setLoading(true);
+
+  try {
+    var response = await fetch(API_BASE + '/api/score', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ text: ta.value.trim(), level: level }),
+    });
+
+    if (!response.ok) {
+      var errData = await response.json().catch(function() { return {}; });
+      throw new Error(errData.error || 'Server returned ' + response.status);
+    }
+
+    var data = await response.json();
+    renderResults(data);
+
+  } catch (err) {
+    renderError(err.message);
+  } finally {
+    setLoading(false);
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  document.body.classList.add('ready');
+
+  // Wire up button
+  document.getElementById('scoreBtn').addEventListener('click', scoreWriting);
+
+  // Character counter
+  var ta = document.getElementById('schreiben');
+  var cc = document.getElementById('charCount');
+  ta.addEventListener('input', function() {
+    var n = ta.value.length;
+    cc.textContent = n + ' character' + (n !== 1 ? 's' : '');
+    cc.classList.toggle('warn', n > 0 && n < 50);
+  });
+});
+</script>
+</body>
+</html>

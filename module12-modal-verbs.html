@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Module 12: Modal Verbs</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --p1:#3498db; --p2:#e67e22; --p3:#9b59b6; --verb:#c9a84c;
+    --mv1:#3498db; --mv2:#e74c3c; --mv3:#e67e22; --mv4:#9b59b6; --mv5:#27ae60; --mv6:#c9a84c;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:rgba(10,10,10,0.96); backdrop-filter:blur(20px); border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:12px 0 20px; z-index:100; }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:8px 16px; border-radius:12px; transition:all 0.2s; border:none; background:none; color:var(--gray); }
+  .nav-item:hover, .nav-item.active { color:var(--gold); }
+  .nav-icon { font-size:20px; }
+  .nav-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; font-family:'DM Mono',monospace; }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--gold); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--gold); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--gold); color:var(--black); width:100%; }
+  .btn-primary:hover { background:var(--gold-light); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(201,168,76,0.2); }
+  .speak-btn.speaking { background:var(--gold); color:var(--black); }
+
+  /* SENTENCE BLOCKS */
+  .sent-block { margin:14px 0; }
+  .sent-de { display:flex; flex-wrap:wrap; gap:6px; align-items:flex-end; margin-bottom:10px; }
+  .stoken { display:flex; flex-direction:column; align-items:center; }
+  .sw { font-family:'DM Mono',monospace; font-size:16px; padding:8px 12px; border-radius:8px; font-weight:600; }
+  .sl { font-size:9px; letter-spacing:1.5px; text-align:center; margin-top:4px; font-family:'DM Mono',monospace; }
+  .sw-p1 { background:rgba(52,152,219,0.12); border:1px solid rgba(52,152,219,0.3); color:var(--p1); }
+  .sl-p1 { color:var(--p1); }
+  .sw-verb { background:rgba(201,168,76,0.12); border:1px solid rgba(201,168,76,0.35); color:var(--verb); }
+  .sl-verb { color:var(--verb); }
+  .sw-p2 { background:rgba(230,126,34,0.1); border:1px solid rgba(230,126,34,0.3); color:var(--p2); }
+  .sl-p2 { color:var(--p2); }
+  .sw-p3 { background:rgba(155,89,182,0.1); border:1px solid rgba(155,89,182,0.3); color:var(--p3); }
+  .sl-p3 { color:var(--p3); }
+  .sw-gold { background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.35); color:var(--gold); }
+  .sl-gold { color:var(--gold); }
+  .sw-gray { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); color:var(--cream); }
+  .sl-gray { color:var(--gray); }
+  .sw-green { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); color:var(--green); }
+  .sl-green { color:var(--green); }
+  .sent-en { font-size:13px; color:var(--gray); margin-top:4px; padding-left:2px; }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-en { font-size:12px; color:var(--gray); margin-bottom:6px; }
+  .ex-note { font-size:12px; color:var(--cream); line-height:1.6; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Sans',sans-serif; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--gold); background:rgba(201,168,76,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(201,168,76,0.1); border-radius:8px; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(201,168,76,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(201,168,76,0.08); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(201,168,76,0.12); border:1px solid var(--gold); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--gold); font-size:18px; margin:18px 0; }
+
+  /* MODAL VERB CARDS — 6 cards in a 3×2 grid */
+  .modal-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin:16px 0; }
+  .mcard { border-radius:14px; padding:16px 14px; text-align:center; }
+  .mc-de { font-family:'Playfair Display',serif; font-size:22px; font-weight:900; margin-bottom:4px; }
+  .mc-en { font-size:11px; letter-spacing:1.5px; font-family:'DM Mono',monospace; margin-bottom:10px; }
+  .mc-hint { font-size:11px; color:var(--cream); line-height:1.6; opacity:0.85; }
+  .mc1 { background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.3); }
+  .mc1 .mc-de { color:var(--mv1); } .mc1 .mc-en { color:var(--mv1); }
+  .mc2 { background:rgba(231,76,60,0.08); border:1px solid rgba(231,76,60,0.3); }
+  .mc2 .mc-de { color:var(--mv2); } .mc2 .mc-en { color:var(--mv2); }
+  .mc3 { background:rgba(230,126,34,0.08); border:1px solid rgba(230,126,34,0.3); }
+  .mc3 .mc-de { color:var(--mv3); } .mc3 .mc-en { color:var(--mv3); }
+  .mc4 { background:rgba(155,89,182,0.08); border:1px solid rgba(155,89,182,0.3); }
+  .mc4 .mc-de { color:var(--mv4); } .mc4 .mc-en { color:var(--mv4); }
+  .mc5 { background:rgba(39,174,96,0.08); border:1px solid rgba(39,174,96,0.3); }
+  .mc5 .mc-de { color:var(--mv5); } .mc5 .mc-en { color:var(--mv5); }
+  .mc6 { background:rgba(201,168,76,0.08); border:1px solid rgba(201,168,76,0.4); }
+  .mc6 .mc-de { color:var(--mv6); } .mc6 .mc-en { color:var(--mv6); }
+
+  /* CONJUGATION TABLE */
+  .conj-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; }
+  .conj-title { font-size:10px; letter-spacing:2.5px; font-family:'DM Mono',monospace; margin-bottom:12px; }
+  .conj-grid { display:grid; grid-template-columns:auto 1fr 1fr; gap:3px; }
+  .cg-h { background:rgba(255,255,255,0.04); border-radius:6px; padding:7px 12px; font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; color:var(--gray); }
+  .cg-pron { padding:9px 12px; font-family:'DM Mono',monospace; font-size:13px; color:var(--gray); display:flex; align-items:center; }
+  .cg-form { border-radius:8px; padding:9px 14px; font-family:'DM Mono',monospace; font-size:14px; font-weight:700; }
+  .cg-irr { outline:2px solid rgba(201,168,76,0.4); outline-offset:1px; }
+
+  /* STRUCTURE DIAGRAM */
+  .struct-row { display:flex; align-items:stretch; gap:6px; margin:10px 0; }
+  .struct-cell { border-radius:10px; padding:12px 14px; text-align:center; flex:1; }
+  .sc-pos { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:6px; }
+  .sc-word { font-family:'DM Mono',monospace; font-size:15px; font-weight:700; }
+  .sc-sub { background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.2); }
+  .sc-sub .sc-pos { color:var(--p1); } .sc-sub .sc-word { color:var(--p1); }
+  .sc-mod { background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.4); }
+  .sc-mod .sc-pos { color:var(--gold); } .sc-mod .sc-word { color:var(--gold); }
+  .sc-mid { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); }
+  .sc-mid .sc-pos { color:var(--gray); } .sc-mid .sc-word { color:var(--cream); }
+  .sc-inf { background:rgba(39,174,96,0.08); border:1px solid rgba(39,174,96,0.25); }
+  .sc-inf .sc-pos { color:var(--green); } .sc-inf .sc-word { color:var(--green); }
+  .sc-wrong { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .sc-wrong .sc-pos { color:var(--red); } .sc-wrong .sc-word { color:#e74c3c; }
+
+  /* WRONG/RIGHT */
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.2; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .sw{font-size:13px;padding:6px 8px;} .lesson-h{font-size:22px;} .modal-grid{grid-template-columns:1fr 1fr;} .struct-row{flex-wrap:wrap;} .wr-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">MODULE 12</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">A1 · Grammar Foundation</div>
+    <h1 class="lesson-h" style="font-size:36px;">Modal<br><span style="color:var(--gold)">Verbs</span></h1>
+    <p class="body-text">Six small verbs that transform every sentence you can build. "I work" becomes "I can work", "I must work", "I want to work", "I would like to work." Modal verbs are the engine of the Goethe A1 Sprechen section — examiners expect you to use them to express ability, obligation, desire, and polite requests.</p>
+    <div class="info-box"><strong style="color:var(--gold)">The sentence structure rule — memorise this first:</strong> With a modal verb, the main verb moves to the <strong>end</strong> of the sentence as an infinitive. <span style="font-family:'DM Mono',monospace;color:var(--green)">Ich kann Deutsch sprechen ✓</span> not <span style="font-family:'DM Mono',monospace;color:var(--red)">Ich kann sprechen Deutsch ✗</span>. This rule is tested in every A1 exam.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">🎯</div><div><div class="lc-title">Lesson 1 — The 6 Modal Verbs</div><div class="lc-desc">können, müssen, wollen, sollen, dürfen, möchten — meanings and uses.</div></div><div class="lc-tag" style="color:var(--gold);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">📊</div><div><div class="lc-title">Lesson 2 — Conjugation of All 6</div><div class="lc-desc">The full conjugation tables. Irregular stems in ich/er/sie/es form.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">📍</div><div><div class="lc-title">Lesson 3 — Sentence Structure: Verb to End</div><div class="lc-desc">Modal in position 2. Main verb infinitive at end. The African learner trap.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">⭐</div><div><div class="lc-title">Lesson 4 — möchten: The Exam Superword</div><div class="lc-desc">Why "Ich möchte" is the most useful phrase in Goethe Sprechen.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">🚫</div><div><div class="lc-title">Lesson 5 — Common Mistakes and Fixes</div><div class="lc-desc">Forgetting the infinitive at end. Mixing up müssen and sollen.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lesson 6 — Kwame, Amina, Kofi, Fatima</div><div class="lc-desc">All 6 modals in African-context sentences.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Begin Lesson 1 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lessons</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LESSON 1: The 6 Modal Verbs ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">Module 12 · Lesson 1 of 6</div>
+          <h2 class="lesson-h">The six modal verbs</h2>
+          <p class="body-text">A <strong style="color:var(--gold)">modal verb</strong> expresses the relationship between the subject and an action — ability, obligation, permission, desire. In English you use "can", "must", "want to", "may". German has six modal verbs, each with a precise meaning. Together they cover almost everything you will need in the Goethe A1 Sprechen section.</p>
+
+          <div class="sec-label">All six — meanings and exam use</div>
+          <div class="modal-grid">
+            <div class="mcard mc1">
+              <div class="mc-de">können</div>
+              <div class="mc-en">CAN · ABLE TO</div>
+              <div class="mc-hint">Ich kann schwimmen.<br>I can swim.</div>
+            </div>
+            <div class="mcard mc2">
+              <div class="mc-de">müssen</div>
+              <div class="mc-en">MUST · HAVE TO</div>
+              <div class="mc-hint">Ich muss arbeiten.<br>I have to work.</div>
+            </div>
+            <div class="mcard mc3">
+              <div class="mc-de">wollen</div>
+              <div class="mc-en">WANT TO</div>
+              <div class="mc-hint">Ich will reisen.<br>I want to travel.</div>
+            </div>
+            <div class="mcard mc4">
+              <div class="mc-de">sollen</div>
+              <div class="mc-en">SHOULD · SUPPOSED TO</div>
+              <div class="mc-hint">Ich soll lernen.<br>I am supposed to study.</div>
+            </div>
+            <div class="mcard mc5">
+              <div class="mc-de">dürfen</div>
+              <div class="mc-en">MAY · ALLOWED TO</div>
+              <div class="mc-hint">Hier darf man nicht rauchen.<br>Smoking is not allowed here.</div>
+            </div>
+            <div class="mcard mc6">
+              <div class="mc-de">möchten</div>
+              <div class="mc-en">WOULD LIKE TO</div>
+              <div class="mc-hint">Ich möchte Deutsch lernen.<br>I would like to learn German.</div>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'können, müssen, wollen, sollen, dürfen, möchten')">🔊 Hear all six</button>
+
+          <div class="sec-label">What each modal expresses</div>
+          <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:18px;margin:14px 0;">
+            <div style="display:grid;grid-template-columns:auto 1fr;gap:0;font-size:13px;">
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);font-family:'DM Mono',monospace;font-weight:700;color:var(--mv1);">können</div>
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--cream);">ability — something you are capable of doing</div>
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);font-family:'DM Mono',monospace;font-weight:700;color:var(--mv2);">müssen</div>
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--cream);">necessity / obligation — something you have to do (from external force or inner necessity)</div>
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);font-family:'DM Mono',monospace;font-weight:700;color:var(--mv3);">wollen</div>
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--cream);">strong personal desire or intention</div>
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);font-family:'DM Mono',monospace;font-weight:700;color:var(--mv4);">sollen</div>
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--cream);">obligation from someone else — what another person tells you to do</div>
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);font-family:'DM Mono',monospace;font-weight:700;color:var(--mv5);">dürfen</div>
+              <div style="padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--cream);">permission — what you are allowed to do (or not allowed)</div>
+              <div style="padding:9px 12px;font-family:'DM Mono',monospace;font-weight:700;color:var(--mv6);">möchten</div>
+              <div style="padding:9px 12px;color:var(--cream);">polite desire — "would like to" — softer and more polite than wollen</div>
+            </div>
+          </div>
+
+          <div class="sec-label">möchten vs wollen — the politeness difference</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--mv3);">wollen · STRONG</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <strong style="color:var(--mv3)">will</strong> ein Wasser.</div>
+                <div class="ex-en">I want a water. (direct, can sound abrupt)</div>
+                <div class="ex-note">wollen expresses a strong personal will. In formal situations it can sound impolite — like a demand.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich will ein Wasser.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.12);color:var(--mv6);">möchten · POLITE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <strong style="color:var(--mv6)">möchte</strong> ein Wasser, bitte.</div>
+                <div class="ex-en">I would like a water, please. (polite, preferred)</div>
+                <div class="ex-note">möchten is the polite form. In the Goethe Sprechen exam, always use möchten when expressing requests or desires to the examiner.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich möchte ein Wasser, bitte.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue)">Why modals dominate the A1 Sprechen section:</strong> Almost every examiner prompt requires a modal. "Was können Sie gut?" (What can you do well?) → können. "Was möchten Sie machen?" (What would you like to do?) → möchten. "Was müssen Sie jeden Tag machen?" (What must you do every day?) → müssen. Know all six and you can answer any question in the oral exam.</div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">Module 12 · Lesson 1 · Quiz</div><h2 class="lesson-h">Modal Meanings Quiz</h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 2: Conjugation of All 6 ── -->
+    <div id="lesson-1" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">Module 12 · Lesson 2 of 6</div>
+          <h2 class="lesson-h">Conjugating modal verbs</h2>
+          <p class="body-text">Modal verbs have <strong style="color:var(--gold)">irregular stems</strong> in the ich / er / sie / es forms — the vowel often changes from the infinitive. But there is a pattern: the ich form and the er/sie/es form are <strong>identical</strong> — no ending is added. This is different from every other German verb. The other forms (du, wir, ihr, sie/Sie) follow more regular endings.</p>
+
+          <div class="sec-label">können — can / be able to</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--mv1);">KÖNNEN · CAN</div>
+            <div class="conj-grid">
+              <div class="cg-h"></div><div class="cg-h">FORM</div><div class="cg-h">EXAMPLE</div>
+              <div class="cg-pron">ich</div><div class="cg-form cg-irr" style="background:rgba(52,152,219,0.08);border:1px solid rgba(52,152,219,0.2);color:var(--mv1);">kann</div><div style="padding:9px 14px;font-size:13px;color:var(--gray);font-family:'DM Mono',monospace;">Ich kann schwimmen.</div>
+              <div class="cg-pron">du</div><div class="cg-form" style="background:rgba(52,152,219,0.05);border:1px solid rgba(52,152,219,0.15);color:var(--mv1);">kannst</div><div style="padding:9px 14px;font-size:13px;color:var(--gray);font-family:'DM Mono',monospace;">Du kannst kochen.</div>
+              <div class="cg-pron">er/sie/es</div><div class="cg-form cg-irr" style="background:rgba(52,152,219,0.08);border:1px solid rgba(52,152,219,0.2);color:var(--mv1);">kann</div><div style="padding:9px 14px;font-size:13px;color:var(--gray);font-family:'DM Mono',monospace;">Kofi kann Englisch.</div>
+              <div class="cg-pron">wir</div><div class="cg-form" style="background:rgba(52,152,219,0.05);border:1px solid rgba(52,152,219,0.15);color:var(--mv1);">können</div><div style="padding:9px 14px;font-size:13px;color:var(--gray);font-family:'DM Mono',monospace;">Wir können helfen.</div>
+              <div class="cg-pron">ihr</div><div class="cg-form" style="background:rgba(52,152,219,0.05);border:1px solid rgba(52,152,219,0.15);color:var(--mv1);">könnt</div><div style="padding:9px 14px;font-size:13px;color:var(--gray);font-family:'DM Mono',monospace;">Ihr könnt kommen.</div>
+              <div class="cg-pron">sie / Sie</div><div class="cg-form" style="background:rgba(52,152,219,0.05);border:1px solid rgba(52,152,219,0.15);color:var(--mv1);">können</div><div style="padding:9px 14px;font-size:13px;color:var(--gray);font-family:'DM Mono',monospace;">Sie können wählen.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);">Highlighted cells = irregular vowel change (könn– → kann–). Note: ich = er/sie/es, both are <span style="font-family:'DM Mono',monospace;color:var(--mv1)">kann</span>.</p>
+
+          <div class="sec-label">müssen and wollen</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0;">
+            <div class="conj-wrap" style="margin:0;">
+              <div class="conj-title" style="color:var(--mv2);">MÜSSEN · MUST</div>
+              <div style="display:grid;grid-template-columns:auto 1fr;gap:3px;font-family:'DM Mono',monospace;font-size:13px;">
+                <div style="padding:7px 10px;color:var(--gray);">ich</div><div style="padding:7px 10px;background:rgba(231,76,60,0.08);border:1px solid rgba(231,76,60,0.2);border-radius:6px;color:var(--mv2);font-weight:700;">muss</div>
+                <div style="padding:7px 10px;color:var(--gray);">du</div><div style="padding:7px 10px;background:rgba(231,76,60,0.04);border:1px solid rgba(231,76,60,0.12);border-radius:6px;color:var(--mv2);">musst</div>
+                <div style="padding:7px 10px;color:var(--gray);">er/sie/es</div><div style="padding:7px 10px;background:rgba(231,76,60,0.08);border:1px solid rgba(231,76,60,0.2);border-radius:6px;color:var(--mv2);font-weight:700;">muss</div>
+                <div style="padding:7px 10px;color:var(--gray);">wir</div><div style="padding:7px 10px;background:rgba(231,76,60,0.04);border:1px solid rgba(231,76,60,0.12);border-radius:6px;color:var(--mv2);">müssen</div>
+                <div style="padding:7px 10px;color:var(--gray);">ihr</div><div style="padding:7px 10px;background:rgba(231,76,60,0.04);border:1px solid rgba(231,76,60,0.12);border-radius:6px;color:var(--mv2);">müsst</div>
+                <div style="padding:7px 10px;color:var(--gray);">sie/Sie</div><div style="padding:7px 10px;background:rgba(231,76,60,0.04);border:1px solid rgba(231,76,60,0.12);border-radius:6px;color:var(--mv2);">müssen</div>
+              </div>
+            </div>
+            <div class="conj-wrap" style="margin:0;">
+              <div class="conj-title" style="color:var(--mv3);">WOLLEN · WANT TO</div>
+              <div style="display:grid;grid-template-columns:auto 1fr;gap:3px;font-family:'DM Mono',monospace;font-size:13px;">
+                <div style="padding:7px 10px;color:var(--gray);">ich</div><div style="padding:7px 10px;background:rgba(230,126,34,0.08);border:1px solid rgba(230,126,34,0.2);border-radius:6px;color:var(--mv3);font-weight:700;">will</div>
+                <div style="padding:7px 10px;color:var(--gray);">du</div><div style="padding:7px 10px;background:rgba(230,126,34,0.04);border:1px solid rgba(230,126,34,0.12);border-radius:6px;color:var(--mv3);">willst</div>
+                <div style="padding:7px 10px;color:var(--gray);">er/sie/es</div><div style="padding:7px 10px;background:rgba(230,126,34,0.08);border:1px solid rgba(230,126,34,0.2);border-radius:6px;color:var(--mv3);font-weight:700;">will</div>
+                <div style="padding:7px 10px;color:var(--gray);">wir</div><div style="padding:7px 10px;background:rgba(230,126,34,0.04);border:1px solid rgba(230,126,34,0.12);border-radius:6px;color:var(--mv3);">wollen</div>
+                <div style="padding:7px 10px;color:var(--gray);">ihr</div><div style="padding:7px 10px;background:rgba(230,126,34,0.04);border:1px solid rgba(230,126,34,0.12);border-radius:6px;color:var(--mv3);">wollt</div>
+                <div style="padding:7px 10px;color:var(--gray);">sie/Sie</div><div style="padding:7px 10px;background:rgba(230,126,34,0.04);border:1px solid rgba(230,126,34,0.12);border-radius:6px;color:var(--mv3);">wollen</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">sollen, dürfen and möchten</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:14px 0;">
+            <div class="conj-wrap" style="margin:0;">
+              <div class="conj-title" style="color:var(--mv4);">SOLLEN</div>
+              <div style="display:grid;grid-template-columns:auto 1fr;gap:3px;font-family:'DM Mono',monospace;font-size:12px;">
+                <div style="padding:6px 8px;color:var(--gray);">ich</div><div style="padding:6px 8px;background:rgba(155,89,182,0.07);border:1px solid rgba(155,89,182,0.2);border-radius:5px;color:var(--mv4);font-weight:700;">soll</div>
+                <div style="padding:6px 8px;color:var(--gray);">du</div><div style="padding:6px 8px;background:rgba(155,89,182,0.04);border:1px solid rgba(155,89,182,0.12);border-radius:5px;color:var(--mv4);">sollst</div>
+                <div style="padding:6px 8px;color:var(--gray);">er</div><div style="padding:6px 8px;background:rgba(155,89,182,0.07);border:1px solid rgba(155,89,182,0.2);border-radius:5px;color:var(--mv4);font-weight:700;">soll</div>
+                <div style="padding:6px 8px;color:var(--gray);">wir</div><div style="padding:6px 8px;background:rgba(155,89,182,0.04);border:1px solid rgba(155,89,182,0.12);border-radius:5px;color:var(--mv4);">sollen</div>
+                <div style="padding:6px 8px;color:var(--gray);">ihr</div><div style="padding:6px 8px;background:rgba(155,89,182,0.04);border:1px solid rgba(155,89,182,0.12);border-radius:5px;color:var(--mv4);">sollt</div>
+                <div style="padding:6px 8px;color:var(--gray);">sie</div><div style="padding:6px 8px;background:rgba(155,89,182,0.04);border:1px solid rgba(155,89,182,0.12);border-radius:5px;color:var(--mv4);">sollen</div>
+              </div>
+            </div>
+            <div class="conj-wrap" style="margin:0;">
+              <div class="conj-title" style="color:var(--mv5);">DÜRFEN</div>
+              <div style="display:grid;grid-template-columns:auto 1fr;gap:3px;font-family:'DM Mono',monospace;font-size:12px;">
+                <div style="padding:6px 8px;color:var(--gray);">ich</div><div style="padding:6px 8px;background:rgba(39,174,96,0.07);border:1px solid rgba(39,174,96,0.2);border-radius:5px;color:var(--mv5);font-weight:700;">darf</div>
+                <div style="padding:6px 8px;color:var(--gray);">du</div><div style="padding:6px 8px;background:rgba(39,174,96,0.04);border:1px solid rgba(39,174,96,0.12);border-radius:5px;color:var(--mv5);">darfst</div>
+                <div style="padding:6px 8px;color:var(--gray);">er</div><div style="padding:6px 8px;background:rgba(39,174,96,0.07);border:1px solid rgba(39,174,96,0.2);border-radius:5px;color:var(--mv5);font-weight:700;">darf</div>
+                <div style="padding:6px 8px;color:var(--gray);">wir</div><div style="padding:6px 8px;background:rgba(39,174,96,0.04);border:1px solid rgba(39,174,96,0.12);border-radius:5px;color:var(--mv5);">dürfen</div>
+                <div style="padding:6px 8px;color:var(--gray);">ihr</div><div style="padding:6px 8px;background:rgba(39,174,96,0.04);border:1px solid rgba(39,174,96,0.12);border-radius:5px;color:var(--mv5);">dürft</div>
+                <div style="padding:6px 8px;color:var(--gray);">sie</div><div style="padding:6px 8px;background:rgba(39,174,96,0.04);border:1px solid rgba(39,174,96,0.12);border-radius:5px;color:var(--mv5);">dürfen</div>
+              </div>
+            </div>
+            <div class="conj-wrap" style="margin:0;">
+              <div class="conj-title" style="color:var(--mv6);">MÖCHTEN</div>
+              <div style="display:grid;grid-template-columns:auto 1fr;gap:3px;font-family:'DM Mono',monospace;font-size:12px;">
+                <div style="padding:6px 8px;color:var(--gray);">ich</div><div style="padding:6px 8px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.3);border-radius:5px;color:var(--mv6);font-weight:700;">möchte</div>
+                <div style="padding:6px 8px;color:var(--gray);">du</div><div style="padding:6px 8px;background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.15);border-radius:5px;color:var(--mv6);">möchtest</div>
+                <div style="padding:6px 8px;color:var(--gray);">er</div><div style="padding:6px 8px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.3);border-radius:5px;color:var(--mv6);font-weight:700;">möchte</div>
+                <div style="padding:6px 8px;color:var(--gray);">wir</div><div style="padding:6px 8px;background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.15);border-radius:5px;color:var(--mv6);">möchten</div>
+                <div style="padding:6px 8px;color:var(--gray);">ihr</div><div style="padding:6px 8px;background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.15);border-radius:5px;color:var(--mv6);">möchtet</div>
+                <div style="padding:6px 8px;color:var(--gray);">sie</div><div style="padding:6px 8px;background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.15);border-radius:5px;color:var(--mv6);">möchten</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-box"><strong style="color:var(--gold)">The pattern all modals share:</strong><br><br>
+            1. <strong>ich = er/sie/es</strong> — both forms are identical (no –t ending unlike regular verbs)<br>
+            2. <strong>wir = sie/Sie</strong> — both use the infinitive form<br>
+            3. The stem vowel often changes: können → <em>kann</em>, müssen → <em>muss</em>, wollen → <em>will</em>, dürfen → <em>darf</em><br>
+            4. <strong>sollen</strong> is the exception — no stem vowel change at all.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">Module 12 · Lesson 2 · Quiz</div><h2 class="lesson-h">Conjugation Quiz</h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 3: Sentence Structure ── -->
+    <div id="lesson-2" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">Module 12 · Lesson 3 of 6</div>
+          <h2 class="lesson-h">Sentence structure: verb goes to the end</h2>
+          <p class="body-text">This is the single most important structural rule for modal verbs — and the rule that costs African learners the most marks when they forget it. When you use a modal verb in a sentence, the modal takes position 2 (right after the subject) and the <strong style="color:var(--green)">main verb moves to the very end</strong> of the sentence as an <strong style="color:var(--green)">infinitive</strong> (the base form ending in –en).</p>
+
+          <div class="sec-label">The structure — four positions</div>
+          <div class="struct-row">
+            <div class="struct-cell sc-sub"><div class="sc-pos">POS. 1 · SUBJECT</div><div class="sc-word">Ich</div></div>
+            <div class="struct-cell sc-mod"><div class="sc-pos">POS. 2 · MODAL</div><div class="sc-word">kann</div></div>
+            <div class="struct-cell sc-mid"><div class="sc-pos">MIDDLE · OBJECTS / ADVERBS</div><div class="sc-word">gut Deutsch</div></div>
+            <div class="struct-cell sc-inf"><div class="sc-pos">END · INFINITIVE</div><div class="sc-word">sprechen</div></div>
+          </div>
+          <p style="font-size:13px;color:var(--gray);margin:6px 0 14px;">Ich kann gut Deutsch <strong style="color:var(--green)">sprechen</strong>. — I can speak German well.</p>
+
+          <div class="sec-label">More examples — all four slots in action</div>
+          <div class="sent-block">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Kwame</span><span class="sl sl-p1">SUBJECT</span></div>
+              <div class="stoken"><span class="sw sw-verb">muss</span><span class="sl sl-verb">MODAL · P2</span></div>
+              <div class="stoken"><span class="sw sw-gray">heute</span><span class="sl sl-gray">adverb</span></div>
+              <div class="stoken"><span class="sw sw-green">arbeiten</span><span class="sl sl-green">INF · END</span></div>
+            </div>
+            <div class="sent-en">Kwame has to work today.</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Kwame muss heute arbeiten.')">🔊</button>
+
+          <div class="sent-block" style="margin-top:14px;">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Amina</span><span class="sl sl-p1">SUBJECT</span></div>
+              <div class="stoken"><span class="sw sw-verb">möchte</span><span class="sl sl-verb">MODAL · P2</span></div>
+              <div class="stoken"><span class="sw sw-gray">Deutsch</span><span class="sl sl-gray">object</span></div>
+              <div class="stoken"><span class="sw sw-green">lernen</span><span class="sl sl-green">INF · END</span></div>
+            </div>
+            <div class="sent-en">Amina would like to learn German.</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Amina möchte Deutsch lernen.')">🔊</button>
+
+          <div class="sent-block" style="margin-top:14px;">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Wir</span><span class="sl sl-p1">SUBJECT</span></div>
+              <div class="stoken"><span class="sw sw-verb">wollen</span><span class="sl sl-verb">MODAL · P2</span></div>
+              <div class="stoken"><span class="sw sw-gray">nach Accra</span><span class="sl sl-gray">destination</span></div>
+              <div class="stoken"><span class="sw sw-green">reisen</span><span class="sl sl-green">INF · END</span></div>
+            </div>
+            <div class="sent-en">We want to travel to Accra.</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Wir wollen nach Accra reisen.')">🔊</button>
+
+          <div class="sec-label">The African learner trap — wrong verb order</div>
+          <p class="body-text">The most common error is placing the infinitive immediately after the modal — following the English word order: "I can <u>speak</u> German." In English the main verb stays near the modal. In German it must jump to the end.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">WRONG · English order</div>
+              <div class="wr-word">Ich kann sprechen Deutsch.<br>Kofi muss gehen heute.<br>Wir wollen kaufen Essen.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT · infinitive at end</div>
+              <div class="wr-word">Ich kann Deutsch sprechen.<br>Kofi muss heute gehen.<br>Wir wollen Essen kaufen.</div>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Ich kann Deutsch sprechen. Kofi muss heute gehen. Wir wollen Essen kaufen.')">🔊 Correct versions</button>
+
+          <div class="sec-label">When modal is used alone — no infinitive needed</div>
+          <p class="body-text">When the meaning is obvious from context, the infinitive can be dropped. This is common with können and with movement verbs.</p>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--mv1);">NO INFINITIVE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi <strong style="color:var(--mv1)">kann</strong> Englisch. (he can [speak] English)</div>
+                <div class="ex-en">Kofi can speak English. (sprechen is implied)</div>
+                <div class="ex-note">With language names, sprechen is routinely dropped. "Ich kann Deutsch" is perfectly correct.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi kann Englisch.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="danger-box"><strong style="color:#e74c3c;">Why this costs marks in the exam:</strong><br><br>
+            The Goethe A1 Schreiben task often requires full sentences with modal verbs. If you write "Ich kann sprechen gut Deutsch" instead of "Ich kann gut Deutsch sprechen", the grader marks the word order as incorrect. This is a grammar point that costs partial marks on every sentence where it appears — and it appears often.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">Module 12 · Lesson 3 · Quiz</div><h2 class="lesson-h">Sentence Structure Quiz</h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 4: möchten — The Exam Superword ── -->
+    <div id="lesson-3" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">Module 12 · Lesson 4 of 6</div>
+          <h2 class="lesson-h">möchten — the exam superword</h2>
+          <p class="body-text"><span style="font-family:'DM Mono',monospace;color:var(--mv6)">Ich möchte</span> is arguably the single most useful phrase in the entire Goethe A1 Sprechen section. It is polite, it is flexible, and it answers a vast range of examiner questions. If you are unsure what to say, start with "Ich möchte" and finish the sentence with an infinitive. You will almost always produce a correct, appropriate, mark-earning response.</p>
+
+          <div class="sec-label">Why möchten beats wollen in the exam</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0;">
+            <div style="background:rgba(230,126,34,0.07);border:1px solid rgba(230,126,34,0.25);border-radius:12px;padding:16px;">
+              <div style="font-size:10px;letter-spacing:2px;font-family:'DM Mono',monospace;color:var(--mv3);margin-bottom:10px;">WOLLEN · STRONG DESIRE</div>
+              <div style="font-family:'DM Mono',monospace;font-size:15px;color:var(--mv3);margin-bottom:8px;">Ich will...</div>
+              <div style="font-size:13px;color:var(--cream);line-height:1.7;">Correct but can sound pushy. Acceptable between friends. In a formal exam setting, an examiner may note the register as too direct.</div>
+            </div>
+            <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.3);border-radius:12px;padding:16px;">
+              <div style="font-size:10px;letter-spacing:2px;font-family:'DM Mono',monospace;color:var(--mv6);margin-bottom:10px;">MÖCHTEN · POLITE WISH</div>
+              <div style="font-family:'DM Mono',monospace;font-size:15px;color:var(--mv6);margin-bottom:8px;">Ich möchte...</div>
+              <div style="font-size:13px;color:var(--cream);line-height:1.7;">The expected register in a formal exam. Shows cultural and linguistic competence. Examiners respond positively to it.</div>
+            </div>
+          </div>
+
+          <div class="sec-label">möchten answers every examiner question</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--gold);">QUESTION</div>
+              <div style="flex:1;">
+                <div class="ex-de">"Was möchten Sie in Deutschland machen?"</div>
+                <div class="ex-en">What would you like to do in Germany?</div>
+                <div class="ex-note" style="color:var(--mv6);font-weight:600;">→ Ich möchte Deutsch lernen und viele Städte besuchen.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich möchte Deutsch lernen und viele Städte besuchen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--gold);">QUESTION</div>
+              <div style="flex:1;">
+                <div class="ex-de">"Was möchten Sie nach dem Kurs machen?"</div>
+                <div class="ex-en">What would you like to do after the course?</div>
+                <div class="ex-note" style="color:var(--mv6);font-weight:600;">→ Ich möchte in Deutschland arbeiten und Freunde finden.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich möchte in Deutschland arbeiten und Freunde finden.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--gold);">QUESTION</div>
+              <div style="flex:1;">
+                <div class="ex-de">"Warum lernen Sie Deutsch?"</div>
+                <div class="ex-en">Why are you learning German?</div>
+                <div class="ex-note" style="color:var(--mv6);font-weight:600;">→ Ich möchte in Deutschland studieren.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich möchte in Deutschland studieren.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">möchten without an infinitive — ordering and requesting</div>
+          <p class="body-text">möchten can also be used without an infinitive when the meaning is clear from context — particularly for ordering food/drinks or making requests for objects.</p>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.12);color:var(--mv6);">ORDERING</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <strong style="color:var(--mv6)">möchte</strong> einen Kaffee, bitte.</div>
+                <div class="ex-en">I would like a coffee, please.</div>
+                <div class="ex-note">No infinitive needed — the object (Kaffee) makes the meaning clear. This is the standard café / restaurant phrase.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich möchte einen Kaffee, bitte.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="success-box"><strong style="color:var(--green)">The möchte formula — exam-ready in 5 seconds:</strong><br><br>
+            <span style="font-family:'DM Mono',monospace;color:var(--mv6);">Ich möchte + [object or context] + [INFINITIVE at end]</span><br><br>
+            Ich möchte → <em>in Ghana</em> → <strong>leben</strong>.<br>
+            Ich möchte → <em>meine Familie</em> → <strong>besuchen</strong>.<br>
+            Ich möchte → <em>Arzt</em> → <strong>werden</strong>.<br>
+            Ich möchte → <em>gut Deutsch</em> → <strong>sprechen</strong>.<br><br>
+            Subject (Ich) + modal (möchte) + middle (context/object) + infinitive (END).
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">Module 12 · Lesson 4 · Quiz</div><h2 class="lesson-h">möchten Quiz</h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 5: Common Mistakes and Fixes ── -->
+    <div id="lesson-4" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">Module 12 · Lesson 5 of 6</div>
+          <h2 class="lesson-h">Common mistakes and fixes</h2>
+
+          <div class="sec-label">Mistake 1 — infinitive not at end</div>
+          <p class="body-text">The most frequent error. Learners place the infinitive immediately after the modal, following English word order. The infinitive must be at the end.</p>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">WRONG</div>
+              <div class="wr-word">Ich kann sprechen Deutsch.<br>Sie muss kaufen Brot.<br>Kofi will besuchen Accra.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT</div>
+              <div class="wr-word">Ich kann Deutsch sprechen.<br>Sie muss Brot kaufen.<br>Kofi will Accra besuchen.</div>
+            </div>
+          </div>
+
+          <div class="sec-label">Mistake 2 — wrong conjugation in ich/er form</div>
+          <p class="body-text">Learners sometimes use the infinitive form for ich or er/sie/es, forgetting the vowel change.</p>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">WRONG · infinitive as conjugation</div>
+              <div class="wr-word">Ich können schwimmen.<br>Er wollen arbeiten.<br>Amina müssen lernen.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT · vowel changes</div>
+              <div class="wr-word">Ich kann schwimmen.<br>Er will arbeiten.<br>Amina muss lernen.</div>
+            </div>
+          </div>
+
+          <div class="sec-label">Mistake 3 — confusing müssen and sollen</div>
+          <p class="body-text"><span style="font-family:'DM Mono',monospace;color:var(--mv2)">müssen</span> = internal necessity or strong obligation (you have to / must). <span style="font-family:'DM Mono',monospace;color:var(--mv4)">sollen</span> = obligation from another person (you are supposed to / someone told you to).</p>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(231,76,60,0.1);color:var(--mv2);">MÜSSEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <strong style="color:var(--mv2)">muss</strong> jetzt gehen. Der Zug fährt in 5 Minuten.</div>
+                <div class="ex-en">I have to go now. The train leaves in 5 minutes.</div>
+                <div class="ex-note">Internal / circumstantial necessity — the train leaving forces the action.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich muss jetzt gehen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--mv4);">SOLLEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <strong style="color:var(--mv4)">soll</strong> um 8 Uhr da sein. Meine Mutter hat es gesagt.</div>
+                <div class="ex-en">I am supposed to be there at 8. My mother said so.</div>
+                <div class="ex-note">External obligation — someone else (mother) instructed the action.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich soll um 8 Uhr da sein.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Mistake 4 — using wollen instead of möchten with an examiner</div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">TOO DIRECT</div>
+              <div class="wr-word">Ich will in Deutschland studieren.<br>Ich will ein Visum.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">POLITE · EXAM REGISTER</div>
+              <div class="wr-word">Ich möchte in Deutschland studieren.<br>Ich möchte ein Visum beantragen.</div>
+            </div>
+          </div>
+
+          <div class="success-box"><strong style="color:var(--green)">Quick checklist before writing a modal sentence:</strong><br><br>
+            ✓ Modal verb conjugated correctly? (ich/er = vowel change form)<br>
+            ✓ Modal in position 2 (right after subject)?<br>
+            ✓ Main verb at the END as infinitive?<br>
+            ✓ Using möchten for polite requests in the exam?<br><br>
+            Tick all four → correct modal sentence every time.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">Module 12 · Lesson 5 · Quiz</div><h2 class="lesson-h">Mistakes and Fixes Quiz</h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 6: African Context Review ── -->
+    <div id="lesson-5" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">Module 12 · Lesson 6 of 6</div>
+          <h2 class="lesson-h">Kwame, Amina, Kofi, Fatima — all 6 modals</h2>
+          <p class="body-text">All six modal verbs appear below in African-context sentences. For each, the modal is in position 2 and the infinitive is at the end. Notice the conjugation and the structure.</p>
+
+          <div class="sec-label">können — ability</div>
+          <div class="sent-block">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Kwame</span><span class="sl sl-p1">SUBJECT</span></div>
+              <div class="stoken"><span class="sw sw-verb">kann</span><span class="sl sl-verb">KÖNNEN · P2</span></div>
+              <div class="stoken"><span class="sw sw-gray">drei Sprachen</span><span class="sl sl-gray">object</span></div>
+              <div class="stoken"><span class="sw sw-green">sprechen</span><span class="sl sl-green">INF · END</span></div>
+            </div>
+            <div class="sent-en">Kwame can speak three languages.</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Kwame kann drei Sprachen sprechen.')">🔊</button>
+
+          <div class="sec-label">müssen — necessity</div>
+          <div class="sent-block">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Amina</span><span class="sl sl-p1">SUBJECT</span></div>
+              <div class="stoken"><span class="sw sw-verb">muss</span><span class="sl sl-verb">MÜSSEN · P2</span></div>
+              <div class="stoken"><span class="sw sw-gray">jeden Tag</span><span class="sl sl-gray">time</span></div>
+              <div class="stoken"><span class="sw sw-green">lernen</span><span class="sl sl-green">INF · END</span></div>
+            </div>
+            <div class="sent-en">Amina has to study every day.</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Amina muss jeden Tag lernen.')">🔊</button>
+
+          <div class="sec-label">wollen — desire</div>
+          <div class="sent-block">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Kofi</span><span class="sl sl-p1">SUBJECT</span></div>
+              <div class="stoken"><span class="sw sw-verb">will</span><span class="sl sl-verb">WOLLEN · P2</span></div>
+              <div class="stoken"><span class="sw sw-gray">Arzt</span><span class="sl sl-gray">object</span></div>
+              <div class="stoken"><span class="sw sw-green">werden</span><span class="sl sl-green">INF · END</span></div>
+            </div>
+            <div class="sent-en">Kofi wants to become a doctor.</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Kofi will Arzt werden.')">🔊</button>
+
+          <div class="sec-label">möchten — polite wish</div>
+          <div class="sent-block">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Fatima</span><span class="sl sl-p1">SUBJECT</span></div>
+              <div class="stoken"><span class="sw sw-verb">möchte</span><span class="sl sl-verb">MÖCHTEN · P2</span></div>
+              <div class="stoken"><span class="sw sw-gray">ihre Familie</span><span class="sl sl-gray">object</span></div>
+              <div class="stoken"><span class="sw sw-green">besuchen</span><span class="sl sl-green">INF · END</span></div>
+            </div>
+            <div class="sent-en">Fatima would like to visit her family.</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Fatima möchte ihre Familie besuchen.')">🔊</button>
+
+          <div class="sec-label">sollen and dürfen</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--mv4);">SOLLEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame <strong style="color:var(--mv4)">soll</strong> um neun Uhr <strong style="color:var(--green)">kommen</strong>.</div>
+                <div class="ex-en">Kwame is supposed to come at nine o'clock. (someone told him)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame soll um neun Uhr kommen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.1);color:var(--mv5);">DÜRFEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Hier <strong style="color:var(--mv5)">darf</strong> man nicht <strong style="color:var(--green)">rauchen</strong>.</div>
+                <div class="ex-en">Smoking is not allowed here. (man = one / people in general)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Hier darf man nicht rauchen.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Quick-reference — all 6 at a glance</div>
+          <div class="modal-grid">
+            <div class="mcard mc1"><div class="mc-de">können</div><div class="mc-en">CAN</div><div class="mc-hint">ich kann<br>er kann</div></div>
+            <div class="mcard mc2"><div class="mc-de">müssen</div><div class="mc-en">MUST</div><div class="mc-hint">ich muss<br>er muss</div></div>
+            <div class="mcard mc3"><div class="mc-de">wollen</div><div class="mc-en">WANT TO</div><div class="mc-hint">ich will<br>er will</div></div>
+            <div class="mcard mc4"><div class="mc-de">sollen</div><div class="mc-en">SUPPOSED TO</div><div class="mc-hint">ich soll<br>er soll</div></div>
+            <div class="mcard mc5"><div class="mc-de">dürfen</div><div class="mc-en">MAY</div><div class="mc-hint">ich darf<br>er darf</div></div>
+            <div class="mcard mc6"><div class="mc-de">möchten</div><div class="mc-en">WOULD LIKE</div><div class="mc-hint">ich möchte<br>er möchte</div></div>
+          </div>
+
+          <div class="success-box">
+            <strong style="color:var(--green)">What you now know:</strong><br><br>
+            ✓ All 6 modal verbs — meanings and exam uses<br>
+            ✓ Conjugation — ich/er form vowel changes (kann, muss, will, darf)<br>
+            ✓ Sentence structure — modal in position 2, infinitive at END<br>
+            ✓ möchten as the polite exam register for all wishes<br>
+            ✓ müssen vs sollen — internal vs external obligation<br>
+            ✓ Never infinitive immediately after modal — always send it to the end
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Start Final Quiz →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">Module 12 · Final Quiz</div><h2 class="lesson-h">Module Complete — Final Check</h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Previous</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="showOverview()"><span class="nav-icon">📚</span><span class="nav-label">Overview</span></button>
+  <button class="nav-item" onclick="resumeLesson()"><span class="nav-icon">▶️</span><span class="nav-label">Resume</span></button>
+</nav>
+
+<script>
+var synth=(typeof window!=='undefined'&&window.speechSynthesis)?window.speechSynthesis:null;
+var deVoice=null,speechUnlocked=false;
+function loadVoices(){ if(!synth)return; try{ var v=synth.getVoices(); deVoice=v.find(function(x){return x.lang==='de-DE';})||v.find(function(x){return x.lang&&x.lang.startsWith('de');})||null; }catch(e){} }
+if(synth){ try{ loadVoices(); if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadVoices; }catch(e){} }
+function unlockSpeech(){ if(speechUnlocked||!synth)return; try{ var s=new SpeechSynthesisUtterance(''); s.volume=0; synth.speak(s); speechUnlocked=true; }catch(e){} }
+document.addEventListener('touchstart',unlockSpeech,{once:true,passive:true});
+document.addEventListener('click',unlockSpeech,{once:true});
+function speakDE(t){ if(!synth)return null; try{ if(!deVoice)loadVoices(); synth.cancel(); var u=new SpeechSynthesisUtterance(t); u.lang='de-DE'; u.rate=0.85; u.pitch=1.0; u.volume=1.0; if(deVoice)u.voice=deVoice; synth.speak(u); return u; }catch(e){return null;} }
+function speakSentence(btn,text){ unlockSpeech(); document.querySelectorAll('.speak-btn').forEach(function(b){b.classList.remove('speaking');}); if(btn&&btn.classList)btn.classList.add('speaking'); var u=speakDE(text); if(u){ u.onend=function(){if(btn&&btn.classList)btn.classList.remove('speaking');}; u.onerror=function(){if(btn&&btn.classList)btn.classList.remove('speaking');}; }else{ setTimeout(function(){if(btn&&btn.classList)btn.classList.remove('speaking');},1500); } }
+
+var currentLesson=0, xp=0, TOTAL=6;
+
+var QD={
+  0:[
+    {q:'Which modal verb expresses that you are ALLOWED to do something — permission?',
+     hint:'Think: "May I...?" or "You are not allowed to..." — which modal covers permission and prohibition?',
+     opts:['müssen — must / have to','können — can / able to','sollen — supposed to','dürfen — may / allowed to'],
+     ans:3,
+     exp:'"dürfen" expresses permission — what you are allowed or not allowed to do. "Hier darf man nicht rauchen" = smoking is not allowed here. "Darf ich fragen?" = May I ask? können expresses ability (can do), müssen expresses necessity (have to), sollen expresses obligation from another person (supposed to). dürfen is the permission modal.',
+     rule:'dürfen = permission / allowed to. Hier darf man parken. Ich darf das nicht machen. The negative "darf nicht" = is not allowed.'}
+  ],
+  1:[
+    {q:'Amina ___ heute zur Schule gehen. (Amina has to go to school today.) Which form is correct?',
+     hint:'The subject is Amina = she = er/sie/es. Which modal means "have to"? What is its er/sie/es form?',
+     opts:['müssen','muss','musst','kann'],
+     ans:1,
+     exp:'"muss" — müssen is the correct modal (have to / must). Amina = she = er/sie/es conjugation. The er/sie/es form of müssen is muss (vowel changes: ü → u, no –t ending added — remember: ich/er/sie/es forms of modals have no ending). "müssen" is the infinitive — wrong here. "musst" is the du form. "kann" means can, not must.',
+     rule:'müssen → ich muss / er muss / sie muss. Vowel change: ü → u. No –t ending for ich/er/sie/es. Amina = sie = muss.'}
+  ],
+  2:[
+    {q:'Which sentence has the CORRECT word order with a modal verb?',
+     hint:'Remember: modal verb in position 2, main verb as infinitive at the END.',
+     opts:['Ich kann sprechen gut Deutsch.','Ich kann gut sprechen Deutsch.','Ich gut kann Deutsch sprechen.','Ich kann gut Deutsch sprechen.'],
+     ans:3,
+     exp:'"Ich kann gut Deutsch sprechen." — This is the only correct option. Structure: Ich (subject, pos.1) + kann (modal, pos.2) + gut Deutsch (middle — adverb + object) + sprechen (infinitive at END). Option A puts sprechen immediately after kann — wrong. Option B also puts sprechen in the wrong position. Option C moves the modal away from position 2 — wrong. Only D follows the correct modal sentence structure.',
+     rule:'MODAL STRUCTURE: Subject + MODAL(pos.2) + [middle] + INFINITIVE(END). Ich kann gut Deutsch sprechen. The infinitive always goes to the very end.'}
+  ],
+  3:[
+    {q:'Fatima is in a Goethe A1 Sprechen exam. The examiner asks: "Was möchten Sie nach dem Deutschkurs machen?" Which answer is best?',
+     hint:'Use möchten for a polite response. Where does the infinitive go?',
+     opts:['Ich will arbeiten in Deutschland.','Ich möchte in Deutschland arbeiten.','Ich möchte arbeiten in Deutschland.','Ich arbeiten möchte in Deutschland.'],
+     ans:1,
+     exp:'"Ich möchte in Deutschland arbeiten." — This is correct on all counts: polite register (möchten not wollen), modal in position 2 (möchte), infinitive at the END (arbeiten). Option A uses wollen — too direct for exam register, and the word order is wrong (arbeiten not at end). Option C puts arbeiten before "in Deutschland" — the infinitive must come last. Option D puts the modal at the end instead of position 2 — wrong structure.',
+     rule:'Exam formula: Ich möchte + [context/object] + INFINITIVE(END). Ich möchte in Deutschland arbeiten. Infinitive always last.'}
+  ],
+  4:[
+    {q:'Kofi says: "Der Lehrer hat gesagt, ich soll morgen früh kommen." What does sollen express here?',
+     hint:'Think about who is creating the obligation — is it Kofi himself or someone else?',
+     opts:['Kofi wants to come early tomorrow','Kofi has to come because of an internal reason','The teacher told Kofi to come — obligation from another person','Kofi is able to come early'],
+     ans:2,
+     exp:'"sollen" expresses an obligation that comes from another person — in this case, the teacher told Kofi to come early. sollen = "supposed to / has been told to." This is the key difference from müssen: müssen = internal necessity or strong force of circumstance; sollen = instruction from another person. "Der Lehrer hat gesagt" (the teacher said) is the signal that this is sollen, not müssen.',
+     rule:'sollen = obligation from another person. Someone told you to do it. müssen = internal necessity or external force. Der Lehrer sagt → sollen. Der Zug fährt ab → müssen.'}
+  ],
+  5:[
+    {q:'Complete the sentence: "Kwame ___ drei Sprachen ___ ." (Kwame can speak three languages.) Choose the correctly structured option.',
+     hint:'können conjugated for Kwame (= er). Main verb sprechen goes to the end.',
+     opts:['kann / sprechen','kann / spricht','können / sprechen','will / sprechen'],
+     ans:0,
+     exp:'"kann / sprechen" — Kwame = er/sie/es → the correct form of können is kann (no ending, vowel change). The main verb sprechen stays as an infinitive and goes to the end: "Kwame kann drei Sprachen sprechen." "spricht" is the conjugated form of sprechen for er — but with a modal, the main verb must stay as an infinitive. "können" is the infinitive/wir/sie form, not the er form. "will" changes the meaning to "wants to".',
+     rule:'können → ich/er/sie/es = kann. Main verb always stays as infinitive at end. Kwame kann drei Sprachen sprechen.'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">QUESTION '+(s.cur+1)+' OF '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint">'+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Next Question →':'See Results →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Correct!':'✗ Not quite'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent=q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' correct</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfect.':pct>=60?'Good work.':'Review and try again.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.12);border:1px solid var(--gold);border-radius:50px;padding:9px 22px;color:var(--gold);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Complete Module 12 →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Next Lesson →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">🎯</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Module 12 Complete!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">All six modal verbs mastered. Conjugation locked in. The infinitive-at-end structure automatic. möchten ready to deploy in your Sprechen exam. You now have the tools to express ability, obligation, permission, desire, and polite requests in German.</p><div class="xp-badge">⚡ '+xp+' XP Earned</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Next: Module 13 — Separable Verbs</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Back to Overview</button></div>'; }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function resumeLesson(){ goLesson(currentLesson); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+</body>
+</html>

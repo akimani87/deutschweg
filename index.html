@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — German Exam Prep for African Learners</title>
+<meta name="description" content="Pass your Goethe A1 exam. AI-powered German exam prep built for students from Kenya, Nigeria, Ghana and across Africa. In simple English. At a price that makes sense.">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--black);color:var(--white);
+    font-family:'DM Sans',sans-serif;line-height:1.6;
+    opacity:0;transition:opacity 0.3s ease;
+  }
+  body.ready{opacity:1;}
+  .wrap{max-width:900px;margin:0 auto;padding:0 24px;width:100%;}
+  section{padding:88px 0;}
+
+  /* ── NAV ── */
+  .nav{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 28px;
+    background:rgba(10,10,10,0.94);backdrop-filter:blur(20px);
+    border-bottom:1px solid rgba(201,168,76,0.1);
+  }
+  .nav-logo{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;}
+  .nav-logo span{color:var(--gold);}
+  .nav-cta{
+    background:var(--gold);color:var(--black);
+    padding:10px 24px;border-radius:50px;
+    font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;
+    cursor:pointer;border:none;text-decoration:none;
+    transition:all 0.2s;
+  }
+  .nav-cta:hover{background:var(--gold-light);transform:translateY(-1px);}
+
+  /* ── HERO ── */
+  .hero{
+    min-height:100vh;display:flex;align-items:center;
+    padding-top:90px;position:relative;overflow:hidden;
+  }
+  .hero::before{
+    content:'';position:absolute;top:-100px;left:50%;transform:translateX(-50%);
+    width:900px;height:700px;
+    background:radial-gradient(ellipse at center, rgba(201,168,76,0.07) 0%, transparent 68%);
+    pointer-events:none;
+  }
+  .hero-inner{width:100%;position:relative;}
+  .hero-eyebrow{
+    display:inline-flex;align-items:center;gap:10px;
+    background:rgba(201,168,76,0.07);border:1px solid var(--border);
+    border-radius:50px;padding:7px 18px;
+    font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2.5px;color:var(--gold);
+    margin-bottom:32px;
+  }
+  .eyebrow-dot{
+    width:7px;height:7px;border-radius:50%;background:var(--green);
+    animation:blink 2.5s ease infinite;
+  }
+  .hero-h1{
+    font-family:'Playfair Display',serif;
+    font-size:clamp(38px,7.5vw,68px);
+    line-height:1.1;letter-spacing:-1px;
+    margin-bottom:26px;
+  }
+  .hero-h1 .gold{color:var(--gold);}
+  .hero-sub{
+    font-size:clamp(15px,2.5vw,18px);
+    color:var(--cream);line-height:1.85;
+    max-width:540px;margin-bottom:44px;opacity:0.82;
+  }
+  .hero-btns{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:48px;}
+  .btn-primary{
+    background:var(--gold);color:var(--black);
+    padding:17px 38px;border-radius:50px;
+    font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;
+    cursor:pointer;border:none;text-decoration:none;
+    transition:all 0.25s;display:inline-flex;align-items:center;gap:9px;
+    box-shadow:0 6px 24px rgba(201,168,76,0.28);
+  }
+  .btn-primary:hover{background:var(--gold-light);transform:translateY(-3px);box-shadow:0 10px 32px rgba(201,168,76,0.38);}
+  .btn-secondary{
+    background:transparent;color:var(--white);
+    padding:17px 30px;border-radius:50px;
+    font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;
+    cursor:pointer;border:1px solid rgba(255,255,255,0.14);text-decoration:none;
+    transition:all 0.25s;display:inline-flex;align-items:center;gap:9px;
+  }
+  .btn-secondary:hover{border-color:var(--gold);color:var(--gold);}
+  .hero-flags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:44px;}
+  .flag-chip{
+    display:inline-flex;align-items:center;gap:7px;
+    background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+    border-radius:20px;padding:6px 14px;font-size:12px;color:var(--gray);
+  }
+  .hero-social{display:flex;align-items:center;gap:16px;}
+  .hero-avs{display:flex;}
+  .hero-av{
+    width:38px;height:38px;border-radius:50%;
+    background:var(--card2-bg);border:2px solid var(--black);
+    display:flex;align-items:center;justify-content:center;
+    font-size:18px;margin-left:-11px;
+  }
+  .hero-av:first-child{margin-left:0;}
+  .hero-social-txt{font-size:13px;color:var(--gray);line-height:1.6;}
+  .hero-social-txt strong{color:var(--cream);}
+
+  /* ── SECTION LABELS ── */
+  .eyebrow{
+    font-family:'DM Mono',monospace;font-size:11px;letter-spacing:3px;
+    text-transform:uppercase;margin-bottom:14px;
+  }
+  .section-h{
+    font-family:'Playfair Display',serif;
+    font-size:clamp(28px,5vw,44px);line-height:1.15;
+    margin-bottom:18px;
+  }
+  .section-sub{
+    font-size:16px;color:var(--cream);line-height:1.85;
+    max-width:540px;opacity:0.8;margin-bottom:52px;
+  }
+
+  /* ── PAIN ── */
+  .pain-section{
+    background:rgba(192,57,43,0.035);
+    border-top:1px solid rgba(192,57,43,0.12);
+    border-bottom:1px solid rgba(192,57,43,0.12);
+  }
+  .pain-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .pain-card{
+    background:var(--card-bg);border:1px solid rgba(192,57,43,0.18);
+    border-radius:20px;padding:30px 26px;
+  }
+  .pain-num{
+    font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2.5px;
+    color:var(--red);margin-bottom:16px;
+  }
+  .pain-icon{font-size:34px;margin-bottom:16px;}
+  .pain-title{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:10px;line-height:1.3;}
+  .pain-body{font-size:14px;color:var(--gray);line-height:1.85;}
+
+  /* ── SOLUTION ── */
+  .sol-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .sol-card{
+    background:var(--card-bg);border:1px solid var(--border);
+    border-radius:20px;padding:30px 26px;
+  }
+  .sol-icon{
+    width:54px;height:54px;border-radius:14px;
+    background:rgba(201,168,76,0.08);border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;
+    font-size:26px;margin-bottom:20px;
+  }
+  .sol-title{font-family:'Playfair Display',serif;font-size:21px;margin-bottom:10px;}
+  .sol-body{font-size:14px;color:var(--gray);line-height:1.85;}
+  .sol-pill{
+    display:inline-block;margin-top:16px;
+    background:rgba(201,168,76,0.09);border:1px solid rgba(201,168,76,0.28);
+    border-radius:20px;padding:4px 14px;
+    font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);letter-spacing:2px;
+  }
+
+  /* ── MODULES ── */
+  .modules-section{
+    background:var(--card-bg);
+    border-top:1px solid var(--border);
+    border-bottom:1px solid var(--border);
+  }
+  .mod-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:44px;}
+  .mod-pill{
+    background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);
+    border-radius:12px;padding:14px 16px;
+    display:flex;align-items:flex-start;gap:12px;
+    transition:all 0.2s;
+  }
+  .mod-pill:hover{border-color:rgba(201,168,76,0.3);transform:translateX(2px);}
+  .mod-pill.coming{opacity:0.38;}
+  .mp-num{
+    font-family:'DM Mono',monospace;font-size:11px;
+    color:var(--gold);flex-shrink:0;padding-top:1px;min-width:22px;
+  }
+  .mp-title{font-size:13px;color:var(--cream);font-weight:500;margin-bottom:3px;line-height:1.3;}
+  .mp-tag{font-size:11px;color:var(--gray);}
+
+  /* ── PRICING ── */
+  .pricing-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:52px;}
+  .p-card{
+    background:var(--card-bg);border:1px solid rgba(255,255,255,0.08);
+    border-radius:22px;padding:28px 22px;
+    display:flex;flex-direction:column;position:relative;
+  }
+  .p-card.featured{
+    border-color:var(--gold);
+    background:linear-gradient(160deg,rgba(201,168,76,0.07) 0%,var(--card-bg) 60%);
+  }
+  .feat-pill{
+    position:absolute;top:-13px;left:50%;transform:translateX(-50%);
+    background:var(--gold);color:var(--black);
+    font-family:'DM Mono',monospace;font-size:10px;font-weight:700;letter-spacing:2px;
+    padding:4px 18px;border-radius:20px;white-space:nowrap;
+  }
+  .p-tier{
+    font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;
+    color:var(--gray);margin-bottom:12px;
+  }
+  .p-name{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:2px;}
+  .p-price{
+    font-family:'Playfair Display',serif;font-size:30px;font-weight:900;
+    color:var(--gold);margin:16px 0 6px;line-height:1;
+  }
+  .p-price sup{font-size:16px;vertical-align:super;font-weight:400;}
+  .p-per{font-size:13px;color:var(--gray);margin-bottom:16px;}
+  .p-desc{font-size:13px;color:var(--gray);line-height:1.7;margin-bottom:20px;}
+  .p-feats{list-style:none;display:flex;flex-direction:column;gap:9px;flex:1;margin-bottom:24px;}
+  .p-feats li{
+    font-size:13px;color:var(--cream);
+    display:flex;align-items:flex-start;gap:9px;line-height:1.5;
+  }
+  .p-feats li::before{
+    content:'✓';color:var(--green);flex-shrink:0;
+    font-weight:700;font-size:12px;margin-top:1px;
+  }
+  .p-btn{
+    background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+    color:var(--white);padding:13px 16px;border-radius:50px;
+    font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
+    cursor:pointer;text-align:center;transition:all 0.2s;
+    text-decoration:none;display:block;
+  }
+  .p-btn:hover{border-color:var(--gold);color:var(--gold);}
+  .p-card.featured .p-btn{
+    background:var(--gold);color:var(--black);border-color:var(--gold);
+  }
+  .p-card.featured .p-btn:hover{background:var(--gold-light);}
+  .price-intl{
+    text-align:center;margin-top:24px;font-size:14px;color:var(--gray);
+  }
+  .price-intl a{color:var(--gold);text-decoration:none;}
+  .price-intl a:hover{text-decoration:underline;}
+
+  /* ── EXAM STRIP ── */
+  .exam-strip{
+    background:rgba(201,168,76,0.05);border:1px solid var(--border);
+    border-radius:22px;padding:36px 32px;
+    display:flex;align-items:flex-start;gap:24px;
+  }
+  .exam-strip-icon{font-size:44px;flex-shrink:0;line-height:1;}
+  .exam-strip-h{font-family:'Playfair Display',serif;font-size:24px;margin-bottom:10px;line-height:1.25;}
+  .exam-strip-body{font-size:15px;color:var(--cream);line-height:1.85;opacity:0.82;}
+
+  /* ── STATS ── */
+  .stats-section{
+    background:var(--card-bg);
+    border-top:1px solid var(--border);
+    border-bottom:1px solid var(--border);
+  }
+  .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:52px;}
+  .stat-card{
+    text-align:center;padding:40px 28px;
+    border-right:1px solid rgba(255,255,255,0.06);
+  }
+  .stat-card:last-child{border-right:none;}
+  .stat-num{
+    font-family:'Playfair Display',serif;font-size:52px;font-weight:900;
+    color:var(--gold);line-height:1;margin-bottom:12px;
+  }
+  .stat-label{font-size:14px;color:var(--gray);line-height:1.7;max-width:200px;margin:0 auto;}
+
+  /* ── FOOTER ── */
+  .footer{border-top:1px solid var(--border);padding:56px 0 40px;}
+  .footer-inner{
+    display:grid;grid-template-columns:2fr 1fr 1fr;gap:48px;
+    padding-bottom:40px;border-bottom:1px solid rgba(255,255,255,0.06);
+  }
+  .footer-logo{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;margin-bottom:14px;}
+  .footer-logo span{color:var(--gold);}
+  .footer-tagline{font-size:14px;color:var(--gray);line-height:1.85;max-width:280px;}
+  .footer-col-h{
+    font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;
+    color:var(--gold);margin-bottom:18px;
+  }
+  .footer-links{display:flex;flex-direction:column;gap:11px;}
+  .footer-links a{font-size:14px;color:var(--gray);text-decoration:none;transition:color 0.2s;}
+  .footer-links a:hover{color:var(--cream);}
+  .footer-bottom{
+    display:flex;align-items:center;justify-content:space-between;
+    padding-top:28px;flex-wrap:wrap;gap:12px;
+  }
+  .footer-copy{font-size:12px;color:var(--gray);}
+  .footer-built{
+    display:flex;align-items:center;gap:8px;
+    font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--gray);
+  }
+  .built-dot{width:7px;height:7px;border-radius:50%;background:var(--green);}
+
+  /* ── ANIMATIONS ── */
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ── MOBILE ── */
+  @media(max-width:760px){
+    section{padding:64px 0;}
+    .hero{padding-top:80px;}
+    .hero-h1{letter-spacing:-0.5px;}
+    .hero-btns{flex-direction:column;align-items:stretch;}
+    .btn-primary,.btn-secondary{text-align:center;justify-content:center;}
+    .pain-grid{grid-template-columns:1fr;}
+    .sol-grid{grid-template-columns:1fr;}
+    .mod-grid{grid-template-columns:1fr 1fr;}
+    .pricing-grid{grid-template-columns:1fr 1fr;}
+    .stats-grid{grid-template-columns:1fr;}
+    .stat-card{border-right:none;border-bottom:1px solid rgba(255,255,255,0.06);padding:32px 20px;}
+    .stat-card:last-child{border-bottom:none;}
+    .footer-inner{grid-template-columns:1fr;gap:36px;}
+    .footer-bottom{flex-direction:column;align-items:flex-start;}
+    .exam-strip{flex-direction:column;gap:16px;}
+  }
+  @media(max-width:480px){
+    .pricing-grid{grid-template-columns:1fr;}
+    .mod-grid{grid-template-columns:1fr;}
+    .hero-flags{gap:5px;}
+    .flag-chip{font-size:11px;padding:5px 11px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ NAV ═══════════════════ -->
+<nav class="nav">
+  <div class="nav-logo">Deutsch<span>Weg</span></div>
+  <a href="exam-whisperer.html" style="font-size:13px;color:var(--gray);text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='var(--cream)'" onmouseout="this.style.color='var(--gray)'">🤖 AI Exam Whisperer</a>
+  <a href="signup.html" class="nav-cta">Start Free — 14 Days</a>
+</nav>
+
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-inner">
+
+      <div class="hero-eyebrow">
+        <span class="eyebrow-dot"></span>
+        GOETHE A1 EXAM PREP · BUILT FOR AFRICA
+      </div>
+
+      <h1 class="hero-h1">
+        Pass Your Goethe Exam.<br>
+        <span class="gold">Finally Explained</span><br>
+        for African Learners.
+      </h1>
+
+      <p class="hero-sub">
+        AI-powered German exam prep built for students from Kenya, Nigeria, Ghana and across Africa. In simple English. At a price that makes sense.
+      </p>
+
+      <div class="hero-btns">
+        <a href="signup.html" class="btn-primary">Start Free — 14 Days ✦</a>
+        <a href="#how" class="btn-secondary">See How It Works →</a>
+      </div>
+
+      <div class="hero-flags">
+        <div class="flag-chip">🇰🇪 Kenya</div>
+        <div class="flag-chip">🇳🇬 Nigeria</div>
+        <div class="flag-chip">🇬🇭 Ghana</div>
+        <div class="flag-chip">🇿🇦 South Africa</div>
+        <div class="flag-chip">🇪🇹 Ethiopia</div>
+        <div class="flag-chip">🇺🇬 Uganda</div>
+        <div class="flag-chip">🇹🇿 Tanzania</div>
+        <div class="flag-chip">🌍 + more</div>
+      </div>
+
+      <div class="hero-social">
+        <div class="hero-avs">
+          <div class="hero-av">👩🏿</div>
+          <div class="hero-av">👨🏾</div>
+          <div class="hero-av">👩🏾</div>
+          <div class="hero-av">👨🏿</div>
+        </div>
+        <div class="hero-social-txt">
+          <strong>Built for students like you</strong><br>
+          African English speakers preparing for Goethe A1
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ PAIN ═══════════════════ -->
+<section class="pain-section" id="pain">
+  <div class="wrap">
+    <div class="eyebrow" style="color:var(--red)">THE PROBLEM</div>
+    <h2 class="section-h">You've tried other German courses.<br>They weren't built for you.</h2>
+    <p class="section-sub">Most German courses are designed in Germany, for Europeans. They assume things about your background, your reference points, and your budget that simply don't apply to you.</p>
+    <div class="pain-grid">
+
+      <div class="pain-card">
+        <div class="pain-num">PAIN 01</div>
+        <div class="pain-icon">😤</div>
+        <div class="pain-title">"Hans fährt nach München"</div>
+        <div class="pain-body">Every example uses Hans, Müller, and München. Not Kwame, Amina, or Nairobi. When you can't relate to the examples, the grammar doesn't stick. DeutschWeg uses names and places you actually know.</div>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-num">PAIN 02</div>
+        <div class="pain-icon">🤯</div>
+        <div class="pain-title">Explained for Europeans, not English speakers</div>
+        <div class="pain-body">Other courses assume you already know French verb conjugation or Latin grammar terms. As an English speaker, you have a different starting point. DeutschWeg starts from English and builds from there.</div>
+      </div>
+
+      <div class="pain-card">
+        <div class="pain-num">PAIN 03</div>
+        <div class="pain-icon">💸</div>
+        <div class="pain-title">€200+ courses that feel out of reach</div>
+        <div class="pain-body">The most popular German courses cost what many Africans earn in a month. DeutschWeg is priced in KES — and priced fairly. Because exam prep should be about ability, not budget.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ SOLUTION ═══════════════════ -->
+<section id="how">
+  <div class="wrap">
+    <div class="eyebrow" style="color:var(--gold)">THE SOLUTION</div>
+    <h2 class="section-h">German exam prep that was<br>built <span style="color:var(--gold)">for</span> you.</h2>
+    <p class="section-sub">Every example, every explanation, every price was designed with the African learner in mind. This is not a translated European course. It was built from scratch.</p>
+    <div class="sol-grid">
+
+      <div class="sol-card">
+        <div class="sol-icon">📚</div>
+        <div class="sol-title">13 Modules for African Learners</div>
+        <div class="sol-body">From numbers and greetings all the way to modal verbs and negation. Every lesson uses relatable African names — Kwame, Amina, Kofi, Fatima — and real-life situations you'll encounter on exam day. Nothing feels foreign.</div>
+        <div class="sol-pill">GOETHE A1 ALIGNED</div>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-icon">🤖</div>
+        <div class="sol-title">AI Exam Whisperer</div>
+        <div class="sol-body">Submit your Schreiben (writing) practice and get it scored instantly — exactly like an official Goethe examiner would. See exactly where you lose points before the actual test. This feature alone can be the difference between pass and fail.</div>
+        <div class="sol-pill">AI-POWERED · INSTANT FEEDBACK</div>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-icon">💬</div>
+        <div class="sol-title">AI Tutor in Simple English</div>
+        <div class="sol-body">Stuck on der/die/das? Confused about kein vs. nicht? Ask the AI tutor. It explains German grammar in plain English — not textbook jargon, not European analogies. It speaks your language so the explanation actually lands.</div>
+        <div class="sol-pill">AVAILABLE 24/7</div>
+      </div>
+
+      <div class="sol-card">
+        <div class="sol-icon">💰</div>
+        <div class="sol-title">Priced for Africa</div>
+        <div class="sol-body">Full A1 access for KES 800 per month. Less than a German textbook. Less than a single private lesson anywhere in Nairobi, Lagos, or Accra. A price that respects where you are — while giving you world-class exam preparation.</div>
+        <div class="sol-pill">FROM KES 800 / MONTH</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ MODULES ═══════════════════ -->
+<section class="modules-section" id="modules">
+  <div class="wrap">
+    <div class="eyebrow" style="color:var(--gold)">WHAT'S INSIDE</div>
+    <h2 class="section-h">13 modules. Every topic on<br>the Goethe A1 exam.</h2>
+    <p class="section-sub" style="margin-bottom:0">Each module has structured lessons, interactive quizzes with detailed feedback, German audio playback, and XP rewards. Built to take you from zero to ready.</p>
+    <div class="mod-grid">
+
+      <div class="mod-pill">
+        <div class="mp-num">01</div>
+        <div><div class="mp-title">German Alphabet &amp; Sounds</div><div class="mp-tag">Pronunciation · Umlauts · ß</div></div>
+      </div>
+      <div class="mod-pill">
+        <div class="mp-num">02</div>
+        <div><div class="mp-title">Numbers &amp; Dates</div><div class="mp-tag">1–1000 · Ordinals · Times</div></div>
+      </div>
+      <div class="mod-pill">
+        <div class="mp-num">03</div>
+        <div><div class="mp-title">Greetings &amp; Introductions</div><div class="mp-tag">Formal · Informal · Hallo vs. Guten Tag</div></div>
+      </div>
+      <div class="mod-pill">
+        <div class="mp-num">04</div>
+        <div><div class="mp-title">Nouns &amp; Articles</div><div class="mp-tag">der / die / das · Gender rules</div></div>
+      </div>
+      <div class="mod-pill">
+        <div class="mp-num">05</div>
+        <div><div class="mp-title">Nominativ &amp; Akkusativ</div><div class="mp-tag">Cases · den trap · Practice</div></div>
+      </div>
+      <div class="mod-pill">
+        <div class="mp-num">06</div>
+        <div><div class="mp-title">Dativ Case</div><div class="mp-tag">mit · bei · von · zu · Prepositions</div></div>
+      </div>
+      <div class="mod-pill">
+        <div class="mp-num">07</div>
+        <div><div class="mp-title">Word Order</div><div class="mp-tag">Verb 2nd · Questions · weil clauses</div></div>
+      </div>
+      <div class="mod-pill">
+        <div class="mp-num">08</div>
+        <div><div class="mp-title">Present Tense</div><div class="mp-tag">Regular · Irregular · sein &amp; haben</div></div>
+      </div>
+      <div class="mod-pill">
+        <div class="mp-num">09</div>
+        <div><div class="mp-title">Personal Pronouns</div><div class="mp-tag">ich · du · Sie · sie · ihr</div></div>
+      </div>
+      <div class="mod-pill">
+        <div class="mp-num">10</div>
+        <div><div class="mp-title">Plural Forms</div><div class="mp-tag">5 patterns · Golden rule · A1 list</div></div>
+      </div>
+      <div class="mod-pill">
+        <div class="mp-num">11</div>
+        <div><div class="mp-title">Negation</div><div class="mp-tag">nicht vs. kein · Position · Exam tips</div></div>
+      </div>
+      <div class="mod-pill">
+        <div class="mp-num">12</div>
+        <div><div class="mp-title">Modal Verbs</div><div class="mp-tag">können · müssen · möchten · +3</div></div>
+      </div>
+      <div class="mod-pill coming">
+        <div class="mp-num">13</div>
+        <div><div class="mp-title">Separable Verbs</div><div class="mp-tag">Coming soon</div></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ PRICING ═══════════════════ -->
+<section id="pricing">
+  <div class="wrap">
+    <div class="eyebrow" style="color:var(--gold)">PRICING</div>
+    <h2 class="section-h">Priced for where you live.</h2>
+    <p class="section-sub">No tricks. No hidden fees. Cancel any time. All plans include the same high-quality content — choose based on how long you need access.</p>
+    <div class="pricing-grid">
+
+      <!-- FREE -->
+      <div class="p-card">
+        <div class="p-tier">GET STARTED</div>
+        <div class="p-name">Free Trial</div>
+        <div class="p-price">KES 0</div>
+        <div class="p-per">14 days · No card needed</div>
+        <div class="p-desc">Full access. Start learning today — no commitment, no credit card.</div>
+        <ul class="p-feats">
+          <li>All 13 modules unlocked</li>
+          <li>Interactive quizzes</li>
+          <li>German audio playback</li>
+          <li>XP progress tracking</li>
+          <li>AI Exam Whisperer (3 uses)</li>
+        </ul>
+        <a href="signup.html" class="p-btn">Start Free Trial</a>
+      </div>
+
+      <!-- A1 FEATURED -->
+      <div class="p-card featured">
+        <div class="feat-pill">MOST POPULAR</div>
+        <div class="p-tier">GOETHE A1</div>
+        <div class="p-name">A1 Course</div>
+        <div class="p-price">KES 800</div>
+        <div class="p-per">per month · Cancel anytime</div>
+        <div class="p-desc">Everything you need to pass the Goethe A1 exam, in one place.</div>
+        <ul class="p-feats">
+          <li>All 13 A1 modules</li>
+          <li>Unlimited quizzes</li>
+          <li>AI Exam Whisperer — unlimited</li>
+          <li>AI tutor in English</li>
+          <li>Schreiben scoring &amp; feedback</li>
+          <li>Sprechen preparation guides</li>
+        </ul>
+        <a href="#" class="p-btn">Get A1 Access</a>
+      </div>
+
+      <!-- A1 + A2 -->
+      <div class="p-card">
+        <div class="p-tier">DOUBLE VALUE</div>
+        <div class="p-name">A1 + A2</div>
+        <div class="p-price">KES 1,400</div>
+        <div class="p-per">per month · Cancel anytime</div>
+        <div class="p-desc">Pass A1 and build momentum towards A2 without stopping.</div>
+        <ul class="p-feats">
+          <li>Everything in A1</li>
+          <li>Full A2 module library</li>
+          <li>A2 exam preparation</li>
+          <li>Priority AI tutor access</li>
+          <li>Grammar reference sheets</li>
+        </ul>
+        <a href="#" class="p-btn">Get A1 + A2</a>
+      </div>
+
+      <!-- LIFETIME -->
+      <div class="p-card">
+        <div class="p-tier">BEST VALUE</div>
+        <div class="p-name">Lifetime</div>
+        <div class="p-price">KES 8,000</div>
+        <div class="p-per">one-time · No renewals ever</div>
+        <div class="p-desc">Pay once. Learn forever. All future modules and features included.</div>
+        <ul class="p-feats">
+          <li>All current &amp; future modules</li>
+          <li>A1 + A2 + beyond</li>
+          <li>Lifetime AI tutor access</li>
+          <li>All future features included</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="#" class="p-btn">Get Lifetime Access</a>
+      </div>
+
+    </div>
+    <p class="price-intl">International student? <a href="#">Pay in EUR or USD →</a></p>
+  </div>
+</section>
+
+<!-- ═══════════════════ EXAM STRIP ═══════════════════ -->
+<section style="padding:20px 0 80px;">
+  <div class="wrap">
+    <div class="exam-strip">
+      <div class="exam-strip-icon">🎓</div>
+      <div>
+        <div class="exam-strip-h">The Goethe A1 is very learnable — if you know what to focus on.</div>
+        <div class="exam-strip-body">The exam has four sections: <strong style="color:var(--cream)">Hören</strong> (listening), <strong style="color:var(--cream)">Lesen</strong> (reading), <strong style="color:var(--cream)">Schreiben</strong> (writing), and <strong style="color:var(--cream)">Sprechen</strong> (speaking). DeutschWeg prepares you for all four — with special focus on Schreiben and Sprechen, where most students lose the most points. Our AI Exam Whisperer scores your writing exactly as a real Goethe examiner would. Start your 14-day free trial today and see how much ground you can cover in two weeks.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ STATS ═══════════════════ -->
+<section class="stats-section">
+  <div class="wrap">
+    <div class="eyebrow" style="color:var(--gold);text-align:center;">WHY DEUTSCHWEG</div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-num">13</div>
+        <div class="stat-label">Structured A1 modules, each built around what African English speakers find most difficult</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Goethe A1 aligned — every module maps directly to what appears on the official exam</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">KES 800</div>
+        <div class="stat-label">Full monthly access — less than the cost of a single private German lesson in Nairobi</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-inner">
+
+      <div>
+        <div class="footer-logo">Deutsch<span>Weg</span></div>
+        <div class="footer-tagline">German exam prep built from the ground up for African learners. In plain English. At a price that respects where you live and what you're working towards.</div>
+      </div>
+
+      <div>
+        <div class="footer-col-h">COURSE</div>
+        <div class="footer-links">
+          <a href="#modules">All 13 Modules</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#">A1 Exam Guide</a>
+          <a href="#">Free Resources</a>
+        </div>
+      </div>
+
+      <div>
+        <div class="footer-col-h">CONTACT</div>
+        <div class="footer-links">
+          <a href="mailto:hello@deutschweg.com">hello@deutschweg.com</a>
+          <a href="#">WhatsApp Support</a>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+        </div>
+      </div>
+
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2025 DeutschWeg. Built for African learners preparing for Goethe A1.</div>
+      <div class="footer-built"><div class="built-dot"></div>BUILT FOR AFRICA</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  document.body.classList.add('ready');
+
+  // Smooth scroll for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(function(a) {
+    a.addEventListener('click', function(e) {
+      var target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        var offset = target.getBoundingClientRect().top + window.pageYOffset - 70;
+        window.scrollTo({ top: offset, behavior: 'smooth' });
+      }
+    });
+  });
+
+  // Scroll-triggered fade-up for sections
+  var sections = document.querySelectorAll('section, .exam-strip');
+  sections.forEach(function(el) {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(16px)';
+    el.style.transition = 'opacity 0.55s ease, transform 0.55s ease';
+  });
+
+  var hero = document.querySelector('.hero');
+  if (hero) { hero.style.opacity = '1'; hero.style.transform = 'none'; }
+
+  if ('IntersectionObserver' in window) {
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08 });
+    sections.forEach(function(el) { obs.observe(el); });
+  } else {
+    sections.forEach(function(el) {
+      el.style.opacity = '1';
+      el.style.transform = 'none';
+    });
+  }
+});
+</script>
+</body>
+</html>

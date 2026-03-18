@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Module 6: The Dativ Case</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --nom:#3498db; --akk:#e67e22; --dat:#9b59b6;
+    --der-c:#3498db; --die-c:#e74c3c; --das-c:#27ae60;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:rgba(10,10,10,0.96); backdrop-filter:blur(20px); border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:12px 0 20px; z-index:100; }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:8px 16px; border-radius:12px; transition:all 0.2s; border:none; background:none; color:var(--gray); }
+  .nav-item:hover, .nav-item.active { color:var(--gold); }
+  .nav-icon { font-size:20px; }
+  .nav-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; font-family:'DM Mono',monospace; }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--gold); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--gold); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--gold); color:var(--black); width:100%; }
+  .btn-primary:hover { background:var(--gold-light); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(201,168,76,0.2); }
+  .speak-btn.speaking { background:var(--gold); color:var(--black); }
+
+  /* THREE-CASE TABLE */
+  .case-table { width:100%; border-collapse:collapse; margin:16px 0; }
+  .case-table th { padding:10px 14px; text-align:center; font-size:11px; letter-spacing:2px; font-family:'DM Mono',monospace; border-bottom:2px solid var(--border); }
+  .case-table td { padding:11px 14px; text-align:center; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'DM Mono',monospace; font-size:15px; }
+  .case-table tr:last-child td { border-bottom:none; }
+  .th-nom { color:var(--nom); }
+  .th-akk { color:var(--akk); }
+  .th-dat { color:var(--dat); }
+  .th-g { color:var(--gray); font-size:10px; }
+  .td-nom-m { color:var(--der-c); }
+  .td-nom-f { color:var(--die-c); }
+  .td-nom-n { color:var(--das-c); }
+  .td-akk-m { color:var(--akk); font-weight:700; }
+  .td-dat { color:var(--dat); font-weight:700; background:rgba(155,89,182,0.08); border-radius:6px; }
+  .td-same { color:var(--gray); }
+  .row-label { text-align:left; color:var(--gray); font-size:12px; font-family:'DM Sans',sans-serif; }
+
+  /* ANATOMY */
+  .anatomy { background:rgba(201,168,76,0.04); border:1px solid var(--border); border-radius:14px; padding:20px; margin:14px 0; text-align:center; }
+  .anatomy-de { font-family:'DM Mono',monospace; font-size:17px; line-height:2.4; }
+  .a-nom { color:var(--nom); }
+  .a-verb { color:var(--gold); }
+  .a-akk { color:var(--akk); }
+  .a-dat { color:var(--dat); }
+  .anatomy-labels { display:flex; justify-content:center; gap:20px; margin-top:8px; flex-wrap:wrap; }
+  .al { text-align:center; }
+  .al-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; }
+  .al-sub { font-size:11px; color:var(--gray); margin-top:2px; }
+
+  /* EXAMPLE CARDS */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag-dat { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; background:rgba(155,89,182,0.12); color:var(--dat); }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-dat { color:var(--dat); font-weight:700; }
+  .ex-en { font-size:12px; color:var(--gray); margin-bottom:6px; }
+  .ex-note { font-size:12px; color:var(--cream); line-height:1.6; }
+
+  /* PREP GRID */
+  .prep-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; margin:14px 0; }
+  .prep-card { background:rgba(155,89,182,0.06); border:1px solid rgba(155,89,182,0.25); border-radius:12px; padding:14px; cursor:pointer; transition:all 0.2s; }
+  .prep-card:hover,.prep-card.speaking { border-color:var(--dat); background:rgba(155,89,182,0.12); }
+  .pc-de { font-family:'DM Mono',monospace; font-size:16px; color:var(--dat); margin-bottom:3px; }
+  .pc-en { font-size:12px; color:var(--gray); margin-bottom:4px; }
+  .pc-ex { font-size:11px; color:var(--cream); font-style:italic; line-height:1.5; }
+  .pc-tap { font-size:10px; color:var(--gold); opacity:0.6; margin-top:5px; }
+
+  /* TWO-WAY PREP */
+  .twobox { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:14px 0; }
+  .tb-akk { background:rgba(230,126,34,0.06); border:1px solid rgba(230,126,34,0.25); border-radius:12px; padding:16px; }
+  .tb-dat { background:rgba(155,89,182,0.06); border:1px solid rgba(155,89,182,0.25); border-radius:12px; padding:16px; }
+  .tb-head { font-size:11px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .tb-akk .tb-head { color:var(--akk); }
+  .tb-dat .tb-head { color:var(--dat); }
+  .tb-rule { font-size:13px; color:var(--cream); margin-bottom:6px; font-weight:600; }
+  .tb-ex { font-family:'DM Mono',monospace; font-size:12px; color:var(--gray); line-height:1.8; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Sans',sans-serif; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--gold); background:rgba(201,168,76,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(201,168,76,0.1); border-radius:8px; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(201,168,76,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(201,168,76,0.08); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(201,168,76,0.12); border:1px solid var(--gold); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--gold); font-size:18px; margin:18px 0; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .twobox{grid-template-columns:1fr;} .prep-grid{grid-template-columns:1fr 1fr;} .lesson-h{font-size:22px;} .anatomy-de{font-size:14px;} }
+</style>
+</head>
+<body>
+
+<!-- OVERVIEW -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">MODULE 6</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">A1–A2 · Grammar Core</div>
+    <h1 class="lesson-h" style="font-size:36px;">The <span style="color:var(--dat)">Dativ</span> Case<br>The Indirect Object</h1>
+    <p class="body-text">The Dativ is the third case. Where the Akkusativ marked the direct object (what is acted on), the Dativ marks the indirect object — the recipient, the beneficiary, the person something is done <em>for</em> or given <em>to</em>. It also appears after a fixed set of prepositions.</p>
+    <div class="info-box"><strong style="color:var(--gold)">The Dativ changes all genders:</strong> Unlike Akkusativ (only masculine changes), the Dativ changes masculine, feminine, and neuter. <span style="color:var(--dat)">dem · der · dem · den</span> — learn these four forms and you have the Dativ.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">🎁</div><div><div class="lc-title">Lesson 1 — What is the Dativ?</div><div class="lc-desc">The indirect object. Giving, showing, telling — to whom?</div></div><div class="lc-tag" style="color:var(--gold);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">📋</div><div><div class="lc-title">Lesson 2 — The Dativ Article Forms</div><div class="lc-desc">dem · der · dem. The full three-case table.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">⚡</div><div><div class="lc-title">Lesson 3 — Dativ Verbs</div><div class="lc-desc">helfen, danken, gefallen — verbs that always take Dativ.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">📍</div><div><div class="lc-title">Lesson 4 — Dativ Prepositions</div><div class="lc-desc">aus, bei, mit, nach, seit, von, zu, gegenüber — always Dativ.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">↔️</div><div><div class="lc-title">Lesson 5 — Two-Way Prepositions</div><div class="lc-desc">in, auf, an, über, unter — Akkusativ (movement) or Dativ (location)?</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🎓</div><div><div class="lc-title">Lesson 6 — Dativ in Goethe Sentences</div><div class="lc-desc">The real patterns from all four Goethe sections.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Begin Lesson 1 →</button>
+  </div>
+</div>
+
+<!-- LESSON SCREEN -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lessons</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- LESSON 1: What is Dativ -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">Module 6 · Lesson 1 of 6</div>
+          <h2 class="lesson-h">The indirect object — to whom, for whom</h2>
+          <p class="body-text">The Dativ marks the indirect object — the person or thing that receives the direct object. The simplest test: ask "to whom?" or "for whom?" after the verb. That answer takes the Dativ.</p>
+
+          <div class="anatomy">
+            <div class="anatomy-de">
+              <span class="a-nom">Ich</span> &nbsp;<span class="a-verb">gebe</span>&nbsp; <span class="a-dat">dem Mann</span> &nbsp;<span class="a-akk">einen Kaffee</span>.
+            </div>
+            <div class="anatomy-labels">
+              <div class="al"><div class="al-tag" style="color:var(--nom);">SUBJECT</div><div class="al-sub">Nominativ</div></div>
+              <div class="al"><div class="al-tag" style="color:var(--gold);">VERB</div><div class="al-sub">geben</div></div>
+              <div class="al"><div class="al-tag" style="color:var(--dat);">INDIRECT OBJ</div><div class="al-sub">Dativ — to whom?</div></div>
+              <div class="al"><div class="al-tag" style="color:var(--akk);">DIRECT OBJ</div><div class="al-sub">Akkusativ — what?</div></div>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Ich gebe dem Mann einen Kaffee.')">🔊 Ich gebe dem Mann einen Kaffee.</button>
+
+          <p class="body-text" style="margin-top:16px;">Notice: the sentence has three noun roles at once. "Ich" is the subject (Nominativ). "Einen Kaffee" is what is given (Akkusativ). "Dem Mann" is the recipient — to whom it is given (Dativ). German handles all three with different articles.</p>
+
+          <div class="info-box"><strong style="color:var(--gold)">The three questions to identify cases:</strong><br><br>
+            <strong style="color:var(--nom);">Who does it?</strong> → Nominativ (subject)<br>
+            <strong style="color:var(--akk);">What is done?</strong> → Akkusativ (direct object)<br>
+            <strong style="color:var(--dat);">To/for whom?</strong> → Dativ (indirect object)
+          </div>
+
+          <div class="sec-label">More examples — tap to hear</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag-dat">DATIV</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich schreibe <span class="ex-dat">meiner Mutter</span> eine E-Mail.</div>
+                <div class="ex-en">I am writing my mother an email.</div>
+                <div class="ex-note">To whom do I write? → meiner Mutter (Dativ, feminine). What do I write? → eine E-Mail (Akkusativ).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich schreibe meiner Mutter eine E-Mail.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag-dat">DATIV</div>
+              <div style="flex:1;">
+                <div class="ex-de">Er zeigt <span class="ex-dat">dem Arzt</span> seinen Arm.</div>
+                <div class="ex-en">He shows the doctor his arm.</div>
+                <div class="ex-note">To whom does he show? → dem Arzt (Dativ, masculine). What does he show? → seinen Arm (Akkusativ).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Er zeigt dem Arzt seinen Arm.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag-dat">DATIV</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kannst du <span class="ex-dat">mir</span> bitte helfen?</div>
+                <div class="ex-en">Can you help me, please?</div>
+                <div class="ex-note">"mir" is the Dativ of "ich" — the personal pronoun form. helfen always takes Dativ: helfen + wem? (Lesson 3 covers Dativ pronouns and helfen fully).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kannst du mir bitte helfen?')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">Module 6 · Lesson 1 · Quiz</div><h2 class="lesson-h">Dativ Concept Quiz</h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- LESSON 2: Article Forms -->
+    <div id="lesson-1" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">Module 6 · Lesson 2 of 6</div>
+          <h2 class="lesson-h">The Dativ article forms — dem · der · dem</h2>
+          <p class="body-text">Unlike the Akkusativ (only masculine changes), the Dativ changes masculine, feminine, and neuter. Learn the four Dativ forms and place them alongside what you already know.</p>
+
+          <div class="sec-label">Complete three-case table — definite articles</div>
+          <table class="case-table">
+            <tr><th class="th-g">Gender</th><th class="th-nom">NOMINATIV</th><th class="th-akk">AKKUSATIV</th><th class="th-dat">DATIV</th></tr>
+            <tr><td class="row-label">Masculine</td><td class="td-nom-m">der</td><td class="td-akk-m">den</td><td class="td-dat">dem</td></tr>
+            <tr><td class="row-label">Feminine</td><td class="td-nom-f">die</td><td class="td-same">die</td><td class="td-dat">der</td></tr>
+            <tr><td class="row-label">Neuter</td><td class="td-nom-n">das</td><td class="td-same">das</td><td class="td-dat">dem</td></tr>
+            <tr><td class="row-label">Plural</td><td class="td-nom-f">die</td><td class="td-same">die</td><td class="td-dat">den (+n)</td></tr>
+          </table>
+
+          <div class="sec-label">Complete three-case table — indefinite articles</div>
+          <table class="case-table">
+            <tr><th class="th-g">Gender</th><th class="th-nom">NOMINATIV</th><th class="th-akk">AKKUSATIV</th><th class="th-dat">DATIV</th></tr>
+            <tr><td class="row-label">Masculine</td><td class="td-nom-m">ein</td><td class="td-akk-m">einen</td><td class="td-dat">einem</td></tr>
+            <tr><td class="row-label">Feminine</td><td class="td-nom-f">eine</td><td class="td-same">eine</td><td class="td-dat">einer</td></tr>
+            <tr><td class="row-label">Neuter</td><td class="td-nom-n">ein</td><td class="td-same">ein</td><td class="td-dat">einem</td></tr>
+            <tr><td class="row-label">Plural</td><td class="td-nom-f">—</td><td class="td-same">—</td><td class="td-dat">keinen</td></tr>
+          </table>
+
+          <div class="danger-box"><strong style="color:#e74c3c;">The feminine Dativ trap:</strong> Feminine Dativ is <strong style="color:var(--dat)">der</strong> — the same spelling as masculine Nominativ. "Ich helfe der Frau" — "der" here is NOT masculine Nominativ. It is feminine Dativ. Context (the verb helfen, the fact that Frau is feminine) tells you which case it is. This is where students most commonly confuse forms.</div>
+
+          <div class="success-box"><strong style="color:var(--green)">The Dativ memory pattern:</strong><br><br>
+            Definite: <span style="font-family:'DM Mono',monospace;color:var(--dat);">dem · der · dem · den</span><br>
+            Indefinite: <span style="font-family:'DM Mono',monospace;color:var(--dat);">einem · einer · einem · —</span><br><br>
+            Masculine and neuter share the same Dativ form (dem/einem). Feminine is different (der/einer). Plural definite adds -n to the noun as well as changing to den.
+          </div>
+
+          <div class="sec-label">Dativ pronouns — essential for Goethe Sprechen</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin:14px 0;">
+            <div style="background:var(--card2-bg);border:1px solid rgba(155,89,182,0.2);border-radius:10px;padding:12px;text-align:center;">
+              <div style="font-size:11px;color:var(--gray);margin-bottom:4px;">ich →</div>
+              <div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--dat);font-weight:700;">mir</div>
+              <div style="font-size:11px;color:var(--gray);">to me</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(155,89,182,0.2);border-radius:10px;padding:12px;text-align:center;">
+              <div style="font-size:11px;color:var(--gray);margin-bottom:4px;">du →</div>
+              <div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--dat);font-weight:700;">dir</div>
+              <div style="font-size:11px;color:var(--gray);">to you</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(155,89,182,0.2);border-radius:10px;padding:12px;text-align:center;">
+              <div style="font-size:11px;color:var(--gray);margin-bottom:4px;">er →</div>
+              <div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--dat);font-weight:700;">ihm</div>
+              <div style="font-size:11px;color:var(--gray);">to him</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(155,89,182,0.2);border-radius:10px;padding:12px;text-align:center;">
+              <div style="font-size:11px;color:var(--gray);margin-bottom:4px;">sie →</div>
+              <div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--dat);font-weight:700;">ihr</div>
+              <div style="font-size:11px;color:var(--gray);">to her</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(155,89,182,0.2);border-radius:10px;padding:12px;text-align:center;">
+              <div style="font-size:11px;color:var(--gray);margin-bottom:4px;">wir →</div>
+              <div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--dat);font-weight:700;">uns</div>
+              <div style="font-size:11px;color:var(--gray);">to us</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(155,89,182,0.2);border-radius:10px;padding:12px;text-align:center;">
+              <div style="font-size:11px;color:var(--gray);margin-bottom:4px;">Sie →</div>
+              <div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--dat);font-weight:700;">Ihnen</div>
+              <div style="font-size:11px;color:var(--gray);">to you (formal)</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;">
+            <button class="speak-btn" onclick="speakSentence(this,'Das gehört mir.')">🔊 Das gehört mir.</button>
+            <button class="speak-btn" onclick="speakSentence(this,'Ich helfe Ihnen.')">🔊 Ich helfe Ihnen.</button>
+            <button class="speak-btn" onclick="speakSentence(this,'Wie geht es Ihnen?')">🔊 Wie geht es Ihnen?</button>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">Module 6 · Lesson 2 · Quiz</div><h2 class="lesson-h">Dativ Forms Quiz</h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- LESSON 3: Dativ Verbs -->
+    <div id="lesson-2" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">Module 6 · Lesson 3 of 6</div>
+          <h2 class="lesson-h">Verbs that always take the Dativ</h2>
+          <p class="body-text">Most verbs that take an object take the Akkusativ. But a specific group of verbs always takes the Dativ — even though they seem like normal action verbs. These must be memorised. They appear constantly in Goethe.</p>
+
+          <div class="warn-box"><strong style="color:var(--blue)">The most important Dativ verb:</strong> <span style="font-family:'DM Mono',monospace;color:var(--dat);">helfen</span> (to help) always takes Dativ. "Ich helfe dem Mann" — NOT "Ich helfe den Mann." In English "help someone" takes a direct object. In German it takes Dativ. This is the verb students most often get wrong.</div>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag-dat">helfen</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kannst du <span class="ex-dat">mir</span> helfen?</div>
+                <div class="ex-en">Can you help me?</div>
+                <div class="ex-note">helfen + Dativ always. "mir" = Dativ of ich. "Kannst du mich helfen?" is incorrect — mich is Akkusativ.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kannst du mir helfen?')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag-dat">gefallen</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das Essen gefällt <span class="ex-dat">mir</span> sehr gut.</div>
+                <div class="ex-en">I like the food very much. (literally: The food pleases me.)</div>
+                <div class="ex-note">gefallen = to please / to like (reversed structure). What pleases (the food) is the Nominativ subject. The person who is pleased (me) is Dativ. "Ich gefalle das Essen" is completely wrong.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das Essen gefällt mir sehr gut.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag-dat">danken</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich danke <span class="ex-dat">Ihnen</span> sehr.</div>
+                <div class="ex-en">I thank you very much. (formal)</div>
+                <div class="ex-note">danken + Dativ. "Ihnen" = formal Dativ of Sie. Used in formal written and spoken German. Appears in Goethe Schreiben letter endings.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich danke Ihnen sehr.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag-dat">gehören</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das Buch gehört <span class="ex-dat">meiner Schwester</span>.</div>
+                <div class="ex-en">The book belongs to my sister.</div>
+                <div class="ex-note">gehören + Dativ. meiner Schwester = feminine Dativ (eine → einer → meiner). "belongs to" = gehört + Dativ person.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das Buch gehört meiner Schwester.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag-dat">antworten</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich antworte <span class="ex-dat">dem Lehrer</span>.</div>
+                <div class="ex-en">I answer the teacher.</div>
+                <div class="ex-note">antworten + Dativ. dem Lehrer = masculine Dativ. "Ich antworte den Lehrer" is wrong (Akkusativ). This verb consistently catches students.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich antworte dem Lehrer.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag-dat">es geht</div>
+              <div style="flex:1;">
+                <div class="ex-de">Wie geht es <span class="ex-dat">Ihnen</span>?</div>
+                <div class="ex-en">How are you? (formal)</div>
+                <div class="ex-note">"Wie geht es Ihnen?" — you already know this phrase. Now you know why: "Ihnen" is formal Dativ. "Wie geht es mir?" = How am I doing? The fixed expression always uses Dativ.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wie geht es Ihnen?')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">Module 6 · Lesson 3 · Quiz</div><h2 class="lesson-h">Dativ Verbs Quiz</h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- LESSON 4: Dativ Prepositions -->
+    <div id="lesson-3" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">Module 6 · Lesson 4 of 6</div>
+          <h2 class="lesson-h">Dativ prepositions — always dem, never den</h2>
+          <p class="body-text">These prepositions always take the Dativ — no exceptions, no context dependency. After any of these prepositions, every noun takes the Dativ article. Tap each to hear an example sentence.</p>
+
+          <div class="prep-grid">
+            <div class="prep-card" onclick="speakPrep(this,'Ich komme aus Kenia.')">
+              <div class="pc-de">aus</div>
+              <div class="pc-en">from / out of</div>
+              <div class="pc-ex">Ich komme aus Kenia.</div>
+              <div class="pc-tap">🔊 tap</div>
+            </div>
+            <div class="prep-card" onclick="speakPrep(this,'Ich bin bei meiner Mutter.')">
+              <div class="pc-de">bei</div>
+              <div class="pc-en">at / with (someone's place)</div>
+              <div class="pc-ex">Ich bin bei meiner Mutter.</div>
+              <div class="pc-tap">🔊 tap</div>
+            </div>
+            <div class="prep-card" onclick="speakPrep(this,'Ich fahre mit dem Bus.')">
+              <div class="pc-de">mit</div>
+              <div class="pc-en">with / by (transport)</div>
+              <div class="pc-ex">Ich fahre mit dem Bus.</div>
+              <div class="pc-tap">🔊 tap</div>
+            </div>
+            <div class="prep-card" onclick="speakPrep(this,'Ich fahre nach Berlin.')">
+              <div class="pc-de">nach</div>
+              <div class="pc-en">to (cities/countries) / after</div>
+              <div class="pc-ex">Ich fahre nach Berlin.</div>
+              <div class="pc-tap">🔊 tap</div>
+            </div>
+            <div class="prep-card" onclick="speakPrep(this,'Ich lerne seit drei Jahren Deutsch.')">
+              <div class="pc-de">seit</div>
+              <div class="pc-en">since / for (ongoing)</div>
+              <div class="pc-ex">Ich lerne seit drei Jahren.</div>
+              <div class="pc-tap">🔊 tap</div>
+            </div>
+            <div class="prep-card" onclick="speakPrep(this,'Das ist von meinem Chef.')">
+              <div class="pc-de">von</div>
+              <div class="pc-en">from / of / by</div>
+              <div class="pc-ex">Das ist von meinem Chef.</div>
+              <div class="pc-tap">🔊 tap</div>
+            </div>
+            <div class="prep-card" onclick="speakPrep(this,'Ich gehe zu dem Arzt.')">
+              <div class="pc-de">zu</div>
+              <div class="pc-en">to (a person/place)</div>
+              <div class="pc-ex">Ich gehe zum Arzt.</div>
+              <div class="pc-tap">🔊 tap</div>
+            </div>
+            <div class="prep-card" onclick="speakPrep(this,'Die Apotheke ist gegenüber dem Bahnhof.')">
+              <div class="pc-de">gegenüber</div>
+              <div class="pc-en">opposite / across from</div>
+              <div class="pc-ex">gegenüber dem Bahnhof</div>
+              <div class="pc-tap">🔊 tap</div>
+            </div>
+          </div>
+
+          <div class="info-box"><strong style="color:var(--gold)">Three contractions you must know:</strong><br><br>
+            <span style="font-family:'DM Mono',monospace;">zu + dem → <strong style="color:var(--dat);">zum</strong></span> &nbsp;(Ich gehe zum Arzt.)<br>
+            <span style="font-family:'DM Mono',monospace;">zu + der → <strong style="color:var(--dat);">zur</strong></span> &nbsp;(Ich gehe zur Schule.)<br>
+            <span style="font-family:'DM Mono',monospace;">von + dem → <strong style="color:var(--dat);">vom</strong></span> &nbsp;(Das ist vom Chef.)<br><br>
+            These contractions are mandatory in natural German — "zu dem" sounds unnatural and marks you as a learner. The exam expects zum/zur/vom.
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue)">seit — a crucial Goethe preposition:</strong> seit means "since" or "for" and describes something that started in the past and is STILL happening now. It always uses the present tense in German, not the past.<br><br>
+            <span style="font-family:'DM Mono',monospace;color:var(--dat);">Ich lerne seit zwei Jahren Deutsch.</span><br>
+            I have been learning German for two years. (and I still am)<br><br>
+            NOT: "Ich habe seit zwei Jahren Deutsch gelernt." That implies it is finished.
+          </div>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+            <button class="speak-btn" onclick="speakSentence(this,'Ich gehe zum Arzt.')">🔊 Ich gehe zum Arzt.</button>
+            <button class="speak-btn" onclick="speakSentence(this,'Ich gehe zur Schule.')">🔊 Ich gehe zur Schule.</button>
+            <button class="speak-btn" onclick="speakSentence(this,'Ich lerne seit zwei Jahren Deutsch.')">🔊 seit zwei Jahren</button>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">Module 6 · Lesson 4 · Quiz</div><h2 class="lesson-h">Dativ Prepositions Quiz</h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- LESSON 5: Two-Way Prepositions -->
+    <div id="lesson-4" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">Module 6 · Lesson 5 of 6</div>
+          <h2 class="lesson-h">Two-way prepositions — movement or location?</h2>
+          <p class="body-text">Nine prepositions can take either Akkusativ or Dativ depending on meaning. The rule is logical and consistent: <strong style="color:var(--akk)">Akkusativ signals movement toward a destination</strong>. <strong style="color:var(--dat)">Dativ signals location — being somewhere</strong>.</p>
+
+          <div class="twobox">
+            <div class="tb-akk">
+              <div class="tb-head">AKKUSATIV</div>
+              <div class="tb-rule">Movement → destination</div>
+              <div style="font-size:12px;color:var(--gray);margin-bottom:8px;">Ask: "where to?" (wohin?)</div>
+              <div class="tb-ex">
+                Ich lege das Buch <strong>in die</strong> Tasche.<br>
+                <span style="color:var(--gray);font-size:11px;">I put the book into the bag.</span><br><br>
+                Er geht <strong>in die</strong> Schule.<br>
+                <span style="color:var(--gray);font-size:11px;">He goes to school.</span>
+              </div>
+            </div>
+            <div class="tb-dat">
+              <div class="tb-head">DATIV</div>
+              <div class="tb-rule">Location — being there</div>
+              <div style="font-size:12px;color:var(--gray);margin-bottom:8px;">Ask: "where?" (wo?)</div>
+              <div class="tb-ex">
+                Das Buch liegt <strong>in der</strong> Tasche.<br>
+                <span style="color:var(--gray);font-size:11px;">The book is in the bag.</span><br><br>
+                Er ist <strong>in der</strong> Schule.<br>
+                <span style="color:var(--gray);font-size:11px;">He is at school.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">The nine two-way prepositions</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+            <span style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 14px;font-family:'DM Mono',monospace;font-size:14px;color:var(--cream);">in</span>
+            <span style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 14px;font-family:'DM Mono',monospace;font-size:14px;color:var(--cream);">an</span>
+            <span style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 14px;font-family:'DM Mono',monospace;font-size:14px;color:var(--cream);">auf</span>
+            <span style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 14px;font-family:'DM Mono',monospace;font-size:14px;color:var(--cream);">über</span>
+            <span style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 14px;font-family:'DM Mono',monospace;font-size:14px;color:var(--cream);">unter</span>
+            <span style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 14px;font-family:'DM Mono',monospace;font-size:14px;color:var(--cream);">vor</span>
+            <span style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 14px;font-family:'DM Mono',monospace;font-size:14px;color:var(--cream);">hinter</span>
+            <span style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 14px;font-family:'DM Mono',monospace;font-size:14px;color:var(--cream);">neben</span>
+            <span style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:7px 14px;font-family:'DM Mono',monospace;font-size:14px;color:var(--cream);">zwischen</span>
+          </div>
+
+          <div class="sec-label">The key pairs — hear the difference</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag-dat" style="background:rgba(230,126,34,0.12);color:var(--akk);">WOHIN?</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich gehe <span style="color:var(--akk);font-weight:700;">in die</span> Küche.</div>
+                <div class="ex-en">I am going into the kitchen. (movement)</div>
+                <div class="ex-note">Wohin? → in die Küche (Akkusativ, feminine die unchanged).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich gehe in die Küche.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag-dat">WO?</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich bin <span class="ex-dat">in der</span> Küche.</div>
+                <div class="ex-en">I am in the kitchen. (location)</div>
+                <div class="ex-note">Wo? → in der Küche (Dativ, feminine die → der).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich bin in der Küche.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag-dat" style="background:rgba(230,126,34,0.12);color:var(--akk);">WOHIN?</div>
+              <div style="flex:1;">
+                <div class="ex-de">Er fährt <span style="color:var(--akk);font-weight:700;">in den</span> Bahnhof.</div>
+                <div class="ex-en">He drives into the station. (movement)</div>
+                <div class="ex-note">Wohin? → in den Bahnhof (Akkusativ, masculine der → den).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Er fährt in den Bahnhof.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag-dat">WO?</div>
+              <div style="flex:1;">
+                <div class="ex-de">Er ist <span class="ex-dat">im</span> Bahnhof.</div>
+                <div class="ex-en">He is in the station. (location)</div>
+                <div class="ex-note">Wo? → im Bahnhof (in + dem = im, masculine Dativ contraction).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Er ist im Bahnhof.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="info-box"><strong style="color:var(--gold)">Two more contractions:</strong><br><br>
+            <span style="font-family:'DM Mono',monospace;">in + dem → <strong style="color:var(--dat);">im</strong></span> &nbsp;(im Bahnhof, im Supermarkt, im Krankenhaus)<br>
+            <span style="font-family:'DM Mono',monospace;">an + dem → <strong style="color:var(--dat);">am</strong></span> &nbsp;(am Montag, am Bahnhof, am Wochenende)<br><br>
+            "im" and "am" are mandatory contractions in natural German and appear constantly in Goethe Hören.
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="speak-btn" onclick="speakSentence(this,'Der Kurs ist am Montag.')">🔊 am Montag</button>
+            <button class="speak-btn" onclick="speakSentence(this,'Ich bin im Büro.')">🔊 im Büro</button>
+            <button class="speak-btn" onclick="speakSentence(this,'Das Café ist am Bahnhof.')">🔊 am Bahnhof</button>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">Module 6 · Lesson 5 · Quiz</div><h2 class="lesson-h">Two-Way Prepositions Quiz</h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- LESSON 6: Dativ in Goethe -->
+    <div id="lesson-5" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">Module 6 · Lesson 6 of 6</div>
+          <h2 class="lesson-h">Dativ in real Goethe sentences</h2>
+          <p class="body-text">These are the sentence patterns where the Dativ actually appears in the exam. Read, hear, and understand why each Dativ form is correct.</p>
+
+          <div class="sec-label">Goethe Sprechen — conversation sentences</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag-dat">DATIV</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich fahre <span class="ex-dat">mit dem</span> Zug nach Berlin.</div>
+                <div class="ex-en">I travel to Berlin by train.</div>
+                <div class="ex-note">mit takes Dativ. Zug is masculine → mit dem Zug. nach takes Dativ. Berlin has no article (most cities) → nach Berlin.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich fahre mit dem Zug nach Berlin.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag-dat">DATIV</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich wohne <span class="ex-dat">bei meiner</span> Schwester.</div>
+                <div class="ex-en">I live with my sister.</div>
+                <div class="ex-note">bei takes Dativ. Schwester is feminine → bei meiner Schwester (feminine Dativ: meine → meiner).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich wohne bei meiner Schwester.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Goethe Hören — directions and instructions</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag-dat">DATIV</div>
+              <div style="flex:1;">
+                <div class="ex-de">Die Apotheke ist <span class="ex-dat">gegenüber dem</span> Bahnhof.</div>
+                <div class="ex-en">The pharmacy is opposite the train station.</div>
+                <div class="ex-note">gegenüber takes Dativ. Bahnhof is masculine → gegenüber dem Bahnhof. Classic Goethe Hören directions.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Die Apotheke ist gegenüber dem Bahnhof.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag-dat">DATIV</div>
+              <div style="flex:1;">
+                <div class="ex-de">Der Kurs beginnt <span class="ex-dat">am</span> Dienstag <span class="ex-dat">im</span> Stadtpark.</div>
+                <div class="ex-en">The course begins on Tuesday in the city park.</div>
+                <div class="ex-note">am = an + dem (Dativ). im = in + dem (Dativ). Both mandatory contractions in natural speech.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Der Kurs beginnt am Dienstag im Stadtpark.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Goethe Schreiben — sentences you produce</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag-dat">DATIV</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich lerne seit <span class="ex-dat">einem Jahr</span> Deutsch.</div>
+                <div class="ex-en">I have been learning German for one year.</div>
+                <div class="ex-note">seit takes Dativ. Jahr is neuter (das Jahr) → seit einem Jahr (neuter Dativ: ein → einem). The present tense with seit shows ongoing action.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich lerne seit einem Jahr Deutsch.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag-dat">DATIV</div>
+              <div style="flex:1;">
+                <div class="ex-de">Können Sie <span class="ex-dat">mir</span> bitte helfen?</div>
+                <div class="ex-en">Can you please help me? (formal)</div>
+                <div class="ex-note">helfen always takes Dativ. "mir" = Dativ of ich. Formal with Sie. This exact sentence appears in Goethe Sprechen role-play tasks.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Können Sie mir bitte helfen?')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag-dat">DATIV</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das Geschäft ist <span class="ex-dat">vom</span> Montag <span class="ex-dat">bis zum</span> Freitag geöffnet.</div>
+                <div class="ex-en">The shop is open from Monday to Friday.</div>
+                <div class="ex-note">vom = von + dem. zum = zu + dem. Both Dativ contractions. This sentence structure appears in every Goethe Lesen opening-hours text.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das Geschäft ist vom Montag bis zum Freitag geöffnet.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="success-box"><strong style="color:var(--green)">Your complete case system so far:</strong><br><br>
+            <span style="color:var(--nom);font-family:'DM Mono',monospace;">Nominativ</span> — who does it (subject)<br>
+            <span style="color:var(--akk);font-family:'DM Mono',monospace;">Akkusativ</span> — what is done (direct object / durch·für·gegen·ohne·um)<br>
+            <span style="color:var(--dat);font-family:'DM Mono',monospace;">Dativ</span> — to/for whom (indirect object / aus·bei·mit·nach·seit·von·zu)<br><br>
+            Three cases. Three article sets. One logical system. You now have the grammar core of A1 and A2 German.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Start Final Quiz →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">Module 6 · Final Quiz</div><h2 class="lesson-h">Module Complete — Final Check</h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Previous</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="showOverview()"><span class="nav-icon">📚</span><span class="nav-label">Overview</span></button>
+  <button class="nav-item" onclick="resumeLesson()"><span class="nav-icon">▶️</span><span class="nav-label">Resume</span></button>
+</nav>
+
+<script>
+// SPEECH
+var synth=(typeof window!=='undefined'&&window.speechSynthesis)?window.speechSynthesis:null;
+var deVoice=null,speechUnlocked=false;
+function loadVoices(){ if(!synth)return; try{ var v=synth.getVoices(); deVoice=v.find(function(x){return x.lang==='de-DE';})||v.find(function(x){return x.lang&&x.lang.startsWith('de');})||null; }catch(e){} }
+if(synth){ try{ loadVoices(); if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadVoices; }catch(e){} }
+function unlockSpeech(){ if(speechUnlocked||!synth)return; try{ var s=new SpeechSynthesisUtterance(''); s.volume=0; synth.speak(s); speechUnlocked=true; }catch(e){} }
+document.addEventListener('touchstart',unlockSpeech,{once:true,passive:true});
+document.addEventListener('click',unlockSpeech,{once:true});
+function speakDE(t){ if(!synth)return null; try{ if(!deVoice)loadVoices(); synth.cancel(); var u=new SpeechSynthesisUtterance(t); u.lang='de-DE'; u.rate=0.85; u.pitch=1.0; u.volume=1.0; if(deVoice)u.voice=deVoice; synth.speak(u); return u; }catch(e){return null;} }
+function speakSentence(btn,text){ unlockSpeech(); document.querySelectorAll('.speak-btn').forEach(function(b){b.classList.remove('speaking');}); if(btn&&btn.classList)btn.classList.add('speaking'); var u=speakDE(text); if(u){ u.onend=function(){if(btn&&btn.classList)btn.classList.remove('speaking');}; u.onerror=function(){if(btn&&btn.classList)btn.classList.remove('speaking');}; }else{ setTimeout(function(){if(btn&&btn.classList)btn.classList.remove('speaking');},1500); } }
+function speakPrep(card,text){ unlockSpeech(); document.querySelectorAll('.prep-card').forEach(function(c){c.classList.remove('speaking');}); card.classList.add('speaking'); var u=speakDE(text); if(u){ u.onend=function(){card.classList.remove('speaking');}; u.onerror=function(){card.classList.remove('speaking');}; }else{ setTimeout(function(){card.classList.remove('speaking');},900); } }
+
+// STATE
+var currentLesson=0,xp=0,TOTAL=6;
+
+// QUIZ DATA
+var QD={
+  0:[
+    {q:'In "Ich gebe dem Kind einen Apfel" — what is the Dativ?',hint:'Ask: to whom am I giving?',opts:['Ich (I)','gebe (give)','dem Kind (the child)','einen Apfel (an apple)'],ans:2,exp:'"dem Kind" is the Dativ — the indirect object. To whom do I give? → to the child. "dem" is the neuter Dativ article (das Kind → dem Kind). "einen Apfel" is Akkusativ — what I give.',rule:'Dativ = indirect object. Ask "to whom?" or "for whom?" after the verb.'},
+    {q:'How do you identify the indirect object in a sentence?',hint:'What question do you ask?',opts:['Ask "what?" after the verb','Ask "to whom?" or "for whom?" after the verb','Look for the longest noun phrase','Look for the noun closest to the verb'],ans:1,exp:'Ask "to whom?" or "for whom?" after the verb. "Ich schreibe meiner Mutter eine E-Mail" — to whom do I write? → meiner Mutter (Dativ). What do I write? → eine E-Mail (Akkusativ).',rule:'Indirect object test: ask "to whom?" / "for whom?" → answer takes Dativ.'},
+    {q:'"Wie geht es Ihnen?" — why is "Ihnen" in the Dativ?',hint:'Ihnen is the Dativ form of Sie (formal you)',opts:['Because Sie is always Dativ','Because "gehen" takes Dativ in this expression','Because "Ihnen" is plural','Because it follows a preposition'],ans:1,exp:'"Wie geht es Ihnen?" is a fixed expression where "es geht" takes Dativ. "Ihnen" is the formal Dativ of "Sie." The full structure: "Wie geht es + Dativ?" — this is why the response is also Dativ: "Danke, gut. Und Ihnen?"',rule:'"Wie geht es Ihnen?" — Ihnen = formal Dativ of Sie. Fixed expression.'},
+  ],
+  1:[
+    {q:'What is the Dativ form of "der Mann" (masculine)?',hint:'Definite article, masculine, Dativ',opts:['den Mann','die Mann','dem Mann','das Mann'],ans:2,exp:'"dem Mann" — masculine Dativ is dem. The three Dativ definite forms: dem (masculine), der (feminine), dem (neuter). Masculine and neuter share dem. Note: "den" is Akkusativ masculine, not Dativ.',rule:'Masculine Dativ: dem. Full Dativ: dem · der · dem · den (plural).'},
+    {q:'What is the Dativ of "die Frau" (feminine)?',hint:'Feminine Dativ looks like masculine Nominativ — do not confuse them',opts:['die Frau','den Frau','dem Frau','der Frau'],ans:3,exp:'"der Frau" — feminine Dativ is der. This is the famous trap: der is both masculine Nominativ AND feminine Dativ. Context tells you which: "Der Mann kommt" = masculine subject. "Ich helfe der Frau" = feminine Dativ object of helfen.',rule:'Feminine Dativ: der. Same spelling as masculine Nominativ — context distinguishes them.'},
+    {q:'What is the Dativ pronoun for "ich"?',hint:'Dativ pronouns are different from Nominativ and Akkusativ forms',opts:['mich','ich','mir','meiner'],ans:2,exp:'"mir" — the Dativ of ich is mir. Nominativ: ich. Akkusativ: mich. Dativ: mir. "Kannst du mir helfen?" = Can you help me? "Wie geht es mir?" = How am I doing? "Das gehört mir." = That belongs to me.',rule:'ich → mir (Dativ). du → dir. er → ihm. sie → ihr. Sie → Ihnen. wir → uns.'},
+  ],
+  2:[
+    {q:'"Ich helfe ___ Arzt." Which form is correct?',hint:'helfen always takes Dativ. Arzt is masculine.',opts:['den Arzt','der Arzt','dem Arzt','des Arzt'],ans:2,exp:'"dem Arzt" — helfen always takes Dativ. Arzt is masculine (der Arzt) → dem Arzt in Dativ. "Ich helfe den Arzt" uses Akkusativ, which is wrong for helfen. This is the single most tested Dativ verb.',rule:'helfen + Dativ always. Masculine: helfen dem. "Ich helfe dem Arzt."'},
+    {q:'"Das Lied gefällt ___ sehr." (The song pleases me / I like the song very much.)',hint:'gefallen takes Dativ for the person who is pleased',opts:['mich','mir','ich','meiner'],ans:1,exp:'"mir" — gefallen takes Dativ for the person experiencing the feeling. The structure is reversed from English: "Das Lied gefällt mir" = literally "The song pleases me." The song (das Lied) is Nominativ subject. I (mir) am Dativ. "Ich gefalle das Lied" is completely wrong.',rule:'gefallen + Dativ. Das gefällt mir. = I like that. Reversed from English structure.'},
+    {q:'Which of these verbs takes the Dativ — not the Akkusativ?',hint:'Most action verbs take Akkusativ. One of these is different.',opts:['kaufen (to buy)','sehen (to see)','helfen (to help)','lesen (to read)'],ans:2,exp:'"helfen" takes Dativ. kaufen, sehen, and lesen all take Akkusativ (they have direct objects: buy what, see what, read what). helfen is different — you help a person, and that person takes Dativ in German.',rule:'Dativ verbs: helfen, danken, gefallen, gehören, antworten. Must be memorised.'},
+  ],
+  3:[
+    {q:'"Ich fahre ___ Bus." (I travel by bus.) Which preposition and article?',hint:'Transport uses mit + Dativ',opts:['mit dem Bus','mit den Bus','mit der Bus','für dem Bus'],ans:0,exp:'"mit dem Bus" — mit takes Dativ. Bus is masculine (der Bus) → dem Bus. "mit dem Bus fahren" = to travel by bus. Similarly: mit dem Zug (by train), mit dem Auto (by car), mit der U-Bahn (by metro — feminine).',rule:'Transport: mit + Dativ. mit dem Bus/Zug/Auto. mit der U-Bahn/Straßenbahn.'},
+    {q:'"Ich gehe ___ Arzt." (I am going to the doctor.) Which contraction?',hint:'zu + dem contracts to a single word',opts:['zu dem Arzt','zum Arzt','zur Arzt','nach dem Arzt'],ans:1,exp:'"zum Arzt" — zu + dem = zum (mandatory contraction). Arzt is masculine → dem Arzt → zum Arzt. "zu dem Arzt" sounds unnatural and marks you as a learner. Always contract: zum (masc/neut) and zur (fem): zum Arzt, zur Schule, zum Krankenhaus.',rule:'zu + dem → zum. zu + der → zur. Mandatory in natural German.'},
+    {q:'What does "seit" mean, and what tense does it use?',hint:'seit describes something ongoing — what tense signals ongoing action?',opts:['since/for (finished) — uses past tense','since/for (ongoing) — uses present tense','until — uses future tense','before — uses past perfect'],ans:1,exp:'"seit" means "since" or "for" and describes something that started in the past and is still ongoing NOW. It always uses the present tense in German. "Ich lerne seit zwei Jahren Deutsch" = I have been learning German for two years (and I still am). Using past tense with seit is a grammatical error.',rule:'seit + present tense = ongoing action. "Ich lerne seit zwei Jahren Deutsch."'},
+  ],
+  4:[
+    {q:'"Ich gehe ___ Küche." (I am going into the kitchen.) Which article?',hint:'Movement toward destination = Akkusativ. Küche is feminine.',opts:['in der Küche','in die Küche','in dem Küche','in das Küche'],ans:1,exp:'"in die Küche" — going into = movement toward destination → Akkusativ. Küche is feminine (die Küche) → die Küche (feminine Akkusativ unchanged). "in der Küche" would mean being in the kitchen (location = Dativ).',rule:'Movement (wohin?) = Akkusativ. in die Küche (going in). in der Küche (being there).'},
+    {q:'"Das Buch liegt ___ Tisch." (The book is lying on the table.) Which form?',hint:'Lying = location, not movement. Tisch is masculine.',opts:['auf dem Tisch','auf den Tisch','auf der Tisch','auf das Tisch'],ans:0,exp:'"auf dem Tisch" — lying = location (wo?) → Dativ. Tisch is masculine (der Tisch) → dem Tisch. "auf den Tisch" would mean putting something onto the table (movement → Akkusativ). "Das Buch liegt auf dem Tisch" vs "Ich lege das Buch auf den Tisch."',rule:'Location (wo?) = Dativ. auf dem Tisch. Movement (wohin?) = Akkusativ. auf den Tisch.'},
+    {q:'"Der Kurs ist ___ Montag." Which contraction?',hint:'an + dem contracts. Montag is masculine.',opts:['an dem Montag','am Montag','beim Montag','zum Montag'],ans:1,exp:'"am Montag" — an + dem = am (mandatory contraction). Days of the week (all masculine: der Montag) always use "am" in time expressions. "am Montag" = on Monday. "am Wochenende" = at the weekend. "an dem Montag" sounds unnatural.',rule:'an + dem → am. Time with days: am Montag, am Dienstag... am Wochenende.'},
+  ],
+  5:[
+    {q:'"Ich fahre ___ Zug nach München." Which is correct?',hint:'mit takes Dativ. Zug is masculine.',opts:['mit der Zug','mit den Zug','mit dem Zug','mit das Zug'],ans:2,exp:'"mit dem Zug" — mit takes Dativ. Zug is masculine (der Zug) → dem Zug. "Ich fahre mit dem Zug nach München" = I travel to Munich by train. nach + city (no article) also takes Dativ but cities without articles show no visible change.',rule:'mit + Dativ for transport. Masculine: mit dem. mit dem Zug/Bus/Auto.'},
+    {q:'"Das Geschäft ist ___ Montag bis ___ Freitag geöffnet."',hint:'von/bis zu + Dativ. Both need the same contraction.',opts:['von dem ... zu dem','vom ... zum','von ... zu','vom ... zu'],ans:1,exp:'"vom Montag bis zum Freitag" — von + dem = vom. zu + dem = zum. Both are mandatory contractions. This opening-hours structure appears in every Goethe Lesen task about shops and services. "von dem ... zu dem" sounds unnatural and marks you as a learner.',rule:'von + dem → vom. zu + dem → zum. Vom Montag bis zum Freitag.'},
+    {q:'Which sentence uses ALL three cases correctly?',hint:'Check: subject (Nom), direct object (Akk), indirect object/prep (Dat)',opts:['Ich gebe dem Kind einen Apfel.','Ich gebe den Kind ein Apfel.','Ich gebe der Kind einen Apfel.','Ich gebe dem Kind ein Apfels.'],ans:0,exp:'"Ich gebe dem Kind einen Apfel." — Ich = Nominativ (subject). dem Kind = Dativ (neuter: das Kind → dem Kind, indirect object). einen Apfel = Akkusativ (masculine: der Apfel → einen Apfel, direct object). All three cases correct in one sentence.',rule:'Three cases in one: Ich (Nom) gebe dem Kind (Dat) einen Apfel (Akk).'},
+  ],
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">QUESTION '+(s.cur+1)+' OF '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint">'+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Next Question →':'See Results →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Correct!':'✗ Not quite'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent=q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' correct</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfect.':pct>=60?'Good work.':'Review and try again.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.12);border:1px solid var(--gold);border-radius:50px;padding:9px 22px;color:var(--gold);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Complete Module 6 →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Next Lesson →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">🏛️</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Module 6 Complete!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">Three cases. The core grammar of German is yours. Nominativ, Akkusativ, Dativ — the skeleton that every German sentence hangs on. Every module from here builds on what you have built here.</p><div class="xp-badge">⚡ '+xp+' XP Earned</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Next: Module 7 — Sentence Structure and Word Order</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Back to Overview</button></div>'; }
+
+function showOverview(){document.getElementById('screen-overview').classList.add('active');document.getElementById('screen-lesson').classList.remove('active');}
+function resumeLesson(){goLesson(currentLesson);}
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+</body>
+</html>

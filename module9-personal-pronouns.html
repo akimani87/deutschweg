@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Module 9: Personal Pronouns</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --p1:#3498db; --p2:#e67e22; --p3:#9b59b6; --verb:#c9a84c;
+    --she:#3498db; --they:#e67e22; --sie-f:#c9a84c;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:rgba(10,10,10,0.96); backdrop-filter:blur(20px); border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:12px 0 20px; z-index:100; }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:8px 16px; border-radius:12px; transition:all 0.2s; border:none; background:none; color:var(--gray); }
+  .nav-item:hover, .nav-item.active { color:var(--gold); }
+  .nav-icon { font-size:20px; }
+  .nav-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; font-family:'DM Mono',monospace; }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--gold); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--gold); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--gold); color:var(--black); width:100%; }
+  .btn-primary:hover { background:var(--gold-light); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(201,168,76,0.2); }
+  .speak-btn.speaking { background:var(--gold); color:var(--black); }
+
+  /* SENTENCE BLOCKS */
+  .sent-block { margin:14px 0; }
+  .sent-de { display:flex; flex-wrap:wrap; gap:6px; align-items:flex-end; margin-bottom:10px; }
+  .stoken { display:flex; flex-direction:column; align-items:center; }
+  .sw { font-family:'DM Mono',monospace; font-size:16px; padding:8px 12px; border-radius:8px; font-weight:600; }
+  .sl { font-size:9px; letter-spacing:1.5px; text-align:center; margin-top:4px; font-family:'DM Mono',monospace; }
+  .sw-p1 { background:rgba(52,152,219,0.12); border:1px solid rgba(52,152,219,0.3); color:var(--p1); }
+  .sl-p1 { color:var(--p1); }
+  .sw-verb { background:rgba(201,168,76,0.12); border:1px solid rgba(201,168,76,0.35); color:var(--verb); }
+  .sl-verb { color:var(--verb); }
+  .sw-p2 { background:rgba(230,126,34,0.1); border:1px solid rgba(230,126,34,0.3); color:var(--p2); }
+  .sl-p2 { color:var(--p2); }
+  .sw-p3 { background:rgba(155,89,182,0.1); border:1px solid rgba(155,89,182,0.3); color:var(--p3); }
+  .sl-p3 { color:var(--p3); }
+  .sw-gold { background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.35); color:var(--gold); }
+  .sl-gold { color:var(--gold); }
+  .sw-gray { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); color:var(--cream); }
+  .sl-gray { color:var(--gray); }
+  .sent-en { font-size:13px; color:var(--gray); margin-top:4px; padding-left:2px; }
+
+  /* PRONOUN TABLE */
+  .pron-table { display:grid; grid-template-columns:auto 1fr 1fr; gap:4px; margin:16px 0; }
+  .pt-h { background:rgba(255,255,255,0.04); border-radius:6px; padding:8px 14px; font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; color:var(--gray); text-align:center; }
+  .pt-label { padding:8px 10px; font-size:11px; color:var(--gray); font-family:'DM Mono',monospace; letter-spacing:1.5px; display:flex; align-items:center; }
+  .pt-cell { border-radius:10px; padding:12px 14px; text-align:center; }
+  .pt-pron { font-family:'DM Mono',monospace; font-size:16px; font-weight:700; margin-bottom:4px; }
+  .pt-en { font-size:11px; opacity:0.7; }
+  .pt-1 { background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.25); }
+  .pt-1 .pt-pron { color:var(--p1); }
+  .pt-2 { background:rgba(230,126,34,0.08); border:1px solid rgba(230,126,34,0.25); }
+  .pt-2 .pt-pron { color:var(--p2); }
+  .pt-3 { background:rgba(155,89,182,0.08); border:1px solid rgba(155,89,182,0.25); }
+  .pt-3 .pt-pron { color:var(--p3); }
+  .pt-f { background:rgba(201,168,76,0.08); border:1px solid rgba(201,168,76,0.35); }
+  .pt-f .pt-pron { color:var(--gold); }
+
+  /* SIE / sie / Sie CARDS */
+  .sie-cards { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin:16px 0; }
+  .sie-card { border-radius:14px; padding:18px; text-align:center; }
+  .sie-word { font-family:'Playfair Display',serif; font-size:36px; font-weight:900; margin-bottom:6px; }
+  .sie-tag { font-size:10px; letter-spacing:2.5px; font-family:'DM Mono',monospace; margin-bottom:12px; }
+  .sie-example { font-size:12px; color:var(--cream); line-height:1.7; }
+  .sie-card-she { background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.3); }
+  .sie-card-she .sie-word { color:var(--she); }
+  .sie-card-she .sie-tag { color:var(--she); }
+  .sie-card-they { background:rgba(230,126,34,0.08); border:1px solid rgba(230,126,34,0.3); }
+  .sie-card-they .sie-word { color:var(--they); }
+  .sie-card-they .sie-tag { color:var(--they); }
+  .sie-card-formal { background:rgba(201,168,76,0.08); border:1px solid rgba(201,168,76,0.4); }
+  .sie-card-formal .sie-word { color:var(--sie-f); }
+  .sie-card-formal .sie-tag { color:var(--sie-f); }
+
+  /* DETECT TABLE */
+  .detect-grid { display:grid; grid-template-columns:1fr auto auto auto; gap:4px; margin:14px 0; }
+  .dg-h { background:rgba(255,255,255,0.04); border-radius:6px; padding:8px 12px; font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; color:var(--gray); text-align:center; }
+  .dg-signal { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:8px; padding:9px 14px; font-size:13px; color:var(--cream); }
+  .dg-she { background:rgba(52,152,219,0.07); border:1px solid rgba(52,152,219,0.2); border-radius:8px; padding:9px 12px; font-family:'DM Mono',monospace; font-size:12px; color:var(--she); text-align:center; }
+  .dg-they { background:rgba(230,126,34,0.07); border:1px solid rgba(230,126,34,0.2); border-radius:8px; padding:9px 12px; font-family:'DM Mono',monospace; font-size:12px; color:var(--they); text-align:center; }
+  .dg-formal { background:rgba(201,168,76,0.07); border:1px solid rgba(201,168,76,0.25); border-radius:8px; padding:9px 12px; font-family:'DM Mono',monospace; font-size:12px; color:var(--gold); text-align:center; }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-en { font-size:12px; color:var(--gray); margin-bottom:6px; }
+  .ex-note { font-size:12px; color:var(--cream); line-height:1.6; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Sans',sans-serif; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--gold); background:rgba(201,168,76,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(201,168,76,0.1); border-radius:8px; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(201,168,76,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(201,168,76,0.08); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(201,168,76,0.12); border:1px solid var(--gold); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--gold); font-size:18px; margin:18px 0; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .sw{font-size:13px;padding:6px 8px;} .lesson-h{font-size:22px;} .sie-cards{grid-template-columns:1fr;} .pron-table{font-size:12px;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">MODULE 9</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">A1 · Grammar Foundation</div>
+    <h1 class="lesson-h" style="font-size:36px;">Personal<br><span style="color:var(--verb)">Pronouns</span></h1>
+    <p class="body-text">Pronouns are the words that replace nouns — ich, du, er, sie, wir. Every German verb depends on knowing the right pronoun because the pronoun determines the verb ending. But German has one trap that catches almost every learner: the word <strong style="color:var(--gold)">sie</strong> has three completely different meanings. And using the wrong one with your Goethe examiner costs marks.</p>
+    <div class="info-box"><strong style="color:var(--gold)">The single most important fact in this module:</strong> German has nine personal pronouns but only six verb conjugation slots. That is because <span style="font-family:'DM Mono',monospace;color:var(--gold)">sie</span> (she), <span style="font-family:'DM Mono',monospace;color:var(--gold)">sie</span> (they), and <span style="font-family:'DM Mono',monospace;color:var(--gold)">Sie</span> (formal you) are spelled the same. Only context, the verb form, and the capital letter separate them.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">📋</div><div><div class="lc-title">Lesson 1 — The Complete Pronoun Table</div><div class="lc-desc">All nine German pronouns. Organised by person, number, and formality.</div></div><div class="lc-tag" style="color:var(--gold);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">⚡</div><div><div class="lc-title">Lesson 2 — The sie / sie / Sie Trap</div><div class="lc-desc">Three identical words. Three different meanings. How to tell them apart.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">🔗</div><div><div class="lc-title">Lesson 3 — Pronouns + Verb Conjugation</div><div class="lc-desc">How pronouns connect to the Module 8 endings. The full picture.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">🎩</div><div><div class="lc-title">Lesson 4 — Formal Sie: Culture & Exam</div><div class="lc-desc">Why Germans use Sie and what it signals. Critical for Goethe Sprechen.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">🚫</div><div><div class="lc-title">Lesson 5 — The "du" Mistake</div><div class="lc-desc">Why addressing the examiner as "du" loses marks — and what to say instead.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lesson 6 — Kwame, Amina, Kofi, Fatima</div><div class="lc-desc">Real African-context sentences. Full pronoun review.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Begin Lesson 1 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lessons</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LESSON 1: The Complete Pronoun Table ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">Module 9 · Lesson 1 of 6</div>
+          <h2 class="lesson-h">The complete German pronoun table</h2>
+          <p class="body-text">A <strong style="color:var(--gold)">personal pronoun</strong> replaces a noun so you do not have to repeat it. "Kwame lernt Deutsch — <strong>er</strong> lernt jeden Tag." German has nine personal pronouns, organised by person (1st / 2nd / 3rd) and number (singular / plural), with one extra level: <strong>formality</strong>.</p>
+
+          <div class="sec-label">All nine German personal pronouns</div>
+          <div class="pron-table">
+            <div class="pt-h"></div>
+            <div class="pt-h">SINGULAR</div>
+            <div class="pt-h">PLURAL</div>
+
+            <div class="pt-label">1ST PERSON</div>
+            <div class="pt-cell pt-1">
+              <div class="pt-pron">ich</div>
+              <div class="pt-en">I</div>
+            </div>
+            <div class="pt-cell pt-1">
+              <div class="pt-pron">wir</div>
+              <div class="pt-en">we</div>
+            </div>
+
+            <div class="pt-label">2ND (informal)</div>
+            <div class="pt-cell pt-2">
+              <div class="pt-pron">du</div>
+              <div class="pt-en">you</div>
+            </div>
+            <div class="pt-cell pt-2">
+              <div class="pt-pron">ihr</div>
+              <div class="pt-en">you all</div>
+            </div>
+
+            <div class="pt-label">3RD PERSON</div>
+            <div class="pt-cell pt-3">
+              <div class="pt-pron">er / sie / es</div>
+              <div class="pt-en">he / she / it</div>
+            </div>
+            <div class="pt-cell pt-3">
+              <div class="pt-pron">sie</div>
+              <div class="pt-en">they</div>
+            </div>
+
+            <div class="pt-label">2ND (formal)</div>
+            <div class="pt-cell pt-f">
+              <div class="pt-pron">Sie</div>
+              <div class="pt-en">you (formal)</div>
+            </div>
+            <div class="pt-cell pt-f">
+              <div class="pt-pron">Sie</div>
+              <div class="pt-en">you all (formal)</div>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'ich, du, er, sie, es, wir, ihr, sie, Sie')">🔊 Hear all nine</button>
+
+          <div class="sec-label">What each pronoun replaces</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--p1);">ich / wir</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich lerne Deutsch. Wir lernen zusammen.</div>
+                <div class="ex-en">I am learning German. We are learning together.</div>
+                <div class="ex-note">ich = the speaker alone. wir = the speaker + one or more others.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich lerne Deutsch. Wir lernen zusammen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--p2);">du / ihr</div>
+              <div style="flex:1;">
+                <div class="ex-de">Du lernst gut. Ihr lernt auch gut.</div>
+                <div class="ex-en">You learn well. You all learn well too.</div>
+                <div class="ex-note">du = one person you know well (friend, family). ihr = multiple people you know well.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Du lernst gut. Ihr lernt auch gut.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--p3);">er / sie / es / sie</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame lernt → er lernt. Amina lernt → sie lernt. Das Kind lernt → es lernt. Kwame und Amina lernen → sie lernen.</div>
+                <div class="ex-en">Kwame → he. Amina → she. The child → it. Kwame and Amina → they.</div>
+                <div class="ex-note">er = one male. sie (lowercase) = one female OR multiple people. es = one neuter noun.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Er lernt. Sie lernt. Es lernt. Sie lernen.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue)">The nine-pronoun question:</strong> English has eight personal pronouns (I, you, he, she, it, we, you, they). German also has nine — but one of them, <span style="font-family:'DM Mono',monospace;color:var(--gold)">Sie</span>, sits outside the usual person system entirely. It is the formal "you" that works for both singular and plural — and it is the most important pronoun for your Goethe exam.</div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">Module 9 · Lesson 1 · Quiz</div><h2 class="lesson-h">Pronoun Table Quiz</h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 2: The sie / sie / Sie Trap ── -->
+    <div id="lesson-1" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">Module 9 · Lesson 2 of 6</div>
+          <h2 class="lesson-h">The sie / sie / Sie trap</h2>
+          <p class="body-text">This is the single most confusing point in German grammar for almost every learner — and it costs exam points every day. Three pronouns, one spelling, three completely different meanings. Here is how to crack it.</p>
+
+          <div class="sie-cards">
+            <div class="sie-card sie-card-she">
+              <div class="sie-word">sie</div>
+              <div class="sie-tag">3RD SG · SHE</div>
+              <div class="sie-example">Amina lernt Deutsch.<br>→ <strong>sie</strong> lernt Deutsch.</div>
+            </div>
+            <div class="sie-card sie-card-they">
+              <div class="sie-word">sie</div>
+              <div class="sie-tag">3RD PL · THEY</div>
+              <div class="sie-example">Kofi und Fatima lernen.<br>→ <strong>sie</strong> lernen Deutsch.</div>
+            </div>
+            <div class="sie-card sie-card-formal">
+              <div class="sie-word">Sie</div>
+              <div class="sie-tag">FORMAL · YOU</div>
+              <div class="sie-example">Herr Müller, lernen Sie...<br>→ <strong>Sie</strong> lernen Deutsch.</div>
+            </div>
+          </div>
+
+          <div class="sec-label">How to tell them apart — three signals</div>
+          <div class="detect-grid">
+            <div class="dg-h">SIGNAL</div>
+            <div class="dg-h" style="color:var(--she);">sie (she)</div>
+            <div class="dg-h" style="color:var(--they);">sie (they)</div>
+            <div class="dg-h" style="color:var(--gold);">Sie (formal)</div>
+
+            <div class="dg-signal">1. Verb ending</div>
+            <div class="dg-she">–t<br><span style="font-size:10px;opacity:0.7;">lernt</span></div>
+            <div class="dg-they">–en<br><span style="font-size:10px;opacity:0.7;">lernen</span></div>
+            <div class="dg-formal">–en<br><span style="font-size:10px;opacity:0.7;">lernen</span></div>
+
+            <div class="dg-signal">2. Capital letter mid-sentence</div>
+            <div class="dg-she">no<br><span style="font-size:10px;opacity:0.7;">sie lernt</span></div>
+            <div class="dg-they">no<br><span style="font-size:10px;opacity:0.7;">sie lernen</span></div>
+            <div class="dg-formal">YES always<br><span style="font-size:10px;opacity:0.7;">Sie lernen</span></div>
+
+            <div class="dg-signal">3. Context — spoken TO or spoken ABOUT?</div>
+            <div class="dg-she">spoken about<br><span style="font-size:10px;opacity:0.7;">3rd person</span></div>
+            <div class="dg-they">spoken about<br><span style="font-size:10px;opacity:0.7;">3rd person</span></div>
+            <div class="dg-formal">spoken TO<br><span style="font-size:10px;opacity:0.7;">2nd person</span></div>
+          </div>
+
+          <div class="info-box"><strong style="color:var(--gold)">The capital-letter rule is your fastest signal:</strong> In written German, <span style="font-family:'DM Mono',monospace;color:var(--gold)">Sie</span> (formal you) is <em>always</em> written with a capital S — even in the middle of a sentence. If you see "Sie" capitalised mid-sentence, it is formal "you". "sie" in the middle of a sentence is always she or they. At the start of a sentence, you must use the verb to distinguish she from they from formal you.</div>
+
+          <div class="sec-label">The verb is your second clue</div>
+          <p class="body-text">When "Sie/sie" starts a sentence — where everything is capitalised — you cannot use the capital-letter rule. Use the verb ending instead: <span style="font-family:'DM Mono',monospace;color:var(--she)">–t</span> means she, <span style="font-family:'DM Mono',monospace;color:var(--they)">–en</span> means they or formal Sie. Then use context to choose between those two.</p>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--she);">SHE · –t</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina <span style="color:var(--verb);font-weight:700;">wohnt</span> in Accra. <span style="color:var(--she);font-weight:700;">Sie</span> <span style="color:var(--verb);font-weight:700;">wohnt</span> gern dort.</div>
+                <div class="ex-en">Amina lives in Accra. She lives there happily.</div>
+                <div class="ex-note">wohnt (–t ending) → she. Amina was just mentioned, so the context is clear.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina wohnt in Accra. Sie wohnt gern dort.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--they);">THEY · –en</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame und Kofi <span style="color:var(--verb);font-weight:700;">studieren</span> in Berlin. <span style="color:var(--they);font-weight:700;">Sie</span> <span style="color:var(--verb);font-weight:700;">studieren</span> Medizin.</div>
+                <div class="ex-en">Kwame and Kofi study in Berlin. They study medicine.</div>
+                <div class="ex-note">studieren (–en ending) → could be they or formal Sie. Context: Kwame und Kofi were just mentioned → they.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame und Kofi studieren in Berlin. Sie studieren Medizin.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.12);color:var(--gold);">FORMAL · –en</div>
+              <div style="flex:1;">
+                <div class="ex-de">Guten Morgen! <span style="color:var(--gold);font-weight:700;">Sind Sie</span> der Prüfer?</div>
+                <div class="ex-en">Good morning! Are you the examiner?</div>
+                <div class="ex-note">Capital S mid-question + formal context of a Goethe exam → formal Sie beyond any doubt.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Guten Morgen! Sind Sie der Prüfer?')">🔊</button>
+            </div>
+          </div>
+
+          <div class="danger-box"><strong style="color:#e74c3c;">The most common sie / Sie error in Goethe Schreiben:</strong><br><br>
+            Writing <span style="font-family:'DM Mono',monospace;">"<strong>sie</strong> kommen aus Ghana"</span> when you mean the formal you — the grader reads this as "they come from Ghana." Always capitalise: <span style="font-family:'DM Mono',monospace;color:var(--gold);">"<strong>Sie</strong> kommen aus Ghana."</span><br><br>
+            Conversely, writing <span style="font-family:'DM Mono',monospace;">"Fatima <strong>Sie</strong> lernt"</span> is wrong — Fatima is a 3rd person subject, so lowercase sie: <span style="font-family:'DM Mono',monospace;color:var(--p3);">"Fatima <strong>sie</strong> lernt"</span>. (Even better: just write "Fatima lernt" — the pronoun is optional when the noun is there.)
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">Module 9 · Lesson 2 · Quiz</div><h2 class="lesson-h">sie / sie / Sie Quiz</h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 3: Pronouns + Verb Conjugation ── -->
+    <div id="lesson-2" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">Module 9 · Lesson 3 of 6</div>
+          <h2 class="lesson-h">Pronouns and verb conjugation — the full picture</h2>
+          <p class="body-text">In Module 8 you learned the six verb endings. Now you can see exactly why there are six endings for nine pronouns: some pronouns <em>share</em> an ending. The pronoun determines the ending. Get the pronoun right and the ending follows automatically.</p>
+
+          <div class="sec-label">Pronoun → ending — the complete map</div>
+          <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:20px;margin:14px 0;">
+            <div style="display:grid;grid-template-columns:1fr auto;gap:0;font-family:'DM Mono',monospace;font-size:13px;">
+              <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--p1);">ich</div>
+              <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);text-align:right;"><span style="color:var(--gold);font-weight:700;">–e</span> &nbsp;<span style="color:var(--gray);font-size:11px;">lerne</span></div>
+
+              <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--p2);">du</div>
+              <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);text-align:right;"><span style="color:var(--gold);font-weight:700;">–st</span> &nbsp;<span style="color:var(--gray);font-size:11px;">lernst</span></div>
+
+              <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--p3);">er / sie (she) / es</div>
+              <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);text-align:right;"><span style="color:var(--gold);font-weight:700;">–t</span> &nbsp;<span style="color:var(--gray);font-size:11px;">lernt</span></div>
+
+              <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--p1);">wir</div>
+              <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);text-align:right;"><span style="color:var(--gold);font-weight:700;">–en</span> &nbsp;<span style="color:var(--gray);font-size:11px;">lernen</span></div>
+
+              <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--p2);">ihr</div>
+              <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);text-align:right;"><span style="color:var(--gold);font-weight:700;">–t</span> &nbsp;<span style="color:var(--gray);font-size:11px;">lernt</span></div>
+
+              <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--p3);">sie (they)</div>
+              <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);text-align:right;"><span style="color:var(--gold);font-weight:700;">–en</span> &nbsp;<span style="color:var(--gray);font-size:11px;">lernen</span></div>
+
+              <div style="padding:10px 14px;color:var(--gold);">Sie (formal)</div>
+              <div style="padding:10px 14px;text-align:right;"><span style="color:var(--gold);font-weight:700;">–en</span> &nbsp;<span style="color:var(--gray);font-size:11px;">lernen</span></div>
+            </div>
+          </div>
+
+          <div class="info-box"><strong style="color:var(--gold)">Why wir / sie / Sie all share –en:</strong> These three pronouns are grammatically in the same "slot" — they all trigger the same ending. This is why Sie (formal you) and sie (they) are so easy to mix up in speech: they sound identical. Only context tells you which one is meant.</div>
+
+          <div class="sec-label">Pronoun substitution — step by step</div>
+          <div class="sent-block">
+            <div style="font-size:11px;color:var(--gray);letter-spacing:2px;font-family:'DM Mono',monospace;margin-bottom:8px;">ORIGINAL SENTENCE</div>
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p3">Fatima</span><span class="sl sl-p3">SUBJECT</span></div>
+              <div class="stoken"><span class="sw sw-verb">kommt</span><span class="sl sl-verb">VERB · –t</span></div>
+              <div class="stoken"><span class="sw sw-gray">aus Lagos.</span><span class="sl sl-gray">place</span></div>
+            </div>
+          </div>
+          <div class="sent-block" style="margin-top:14px;">
+            <div style="font-size:11px;color:var(--p3);letter-spacing:2px;font-family:'DM Mono',monospace;margin-bottom:8px;">WITH PRONOUN</div>
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p3">Sie</span><span class="sl sl-p3">PRONOUN · she</span></div>
+              <div class="stoken"><span class="sw sw-verb">kommt</span><span class="sl sl-verb">VERB · –t (same)</span></div>
+              <div class="stoken"><span class="sw sw-gray">aus Lagos.</span><span class="sl sl-gray">place</span></div>
+            </div>
+            <div class="sent-en">She comes from Lagos. (verb stays the same — pronoun just replaces the name)</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Fatima kommt aus Lagos. Sie kommt aus Lagos.')">🔊</button>
+
+          <div class="sent-block" style="margin-top:18px;">
+            <div style="font-size:11px;color:var(--gray);letter-spacing:2px;font-family:'DM Mono',monospace;margin-bottom:8px;">TWO PEOPLE → they</div>
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p3">Kwame und Amina</span><span class="sl sl-p3">TWO PEOPLE</span></div>
+              <div class="stoken"><span class="sw sw-verb">lernen</span><span class="sl sl-verb">VERB · –en</span></div>
+              <div class="stoken"><span class="sw sw-gray">Deutsch.</span><span class="sl sl-gray"></span></div>
+            </div>
+          </div>
+          <div class="sent-block" style="margin-top:8px;">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p3">Sie</span><span class="sl sl-p3">PRONOUN · they</span></div>
+              <div class="stoken"><span class="sw sw-verb">lernen</span><span class="sl sl-verb">VERB · –en (same)</span></div>
+              <div class="stoken"><span class="sw sw-gray">Deutsch.</span><span class="sl sl-gray"></span></div>
+            </div>
+            <div class="sent-en">They are learning German. (plural sie → –en ending, same as wir and Sie)</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Kwame und Amina lernen Deutsch. Sie lernen Deutsch.')">🔊</button>
+
+          <div class="success-box"><strong style="color:var(--green)">The workflow — two steps:</strong><br><br>
+            1. Identify who is doing the action. Is it ich / du / er / sie / es / wir / ihr / sie / Sie?<br>
+            2. Attach the matching ending: –e / –st / –t / –en / –t / –en / –en.<br><br>
+            Pronouns and verb endings are two halves of the same system. Know the pronoun → know the ending automatically.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">Module 9 · Lesson 3 · Quiz</div><h2 class="lesson-h">Pronouns + Conjugation Quiz</h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 4: Formal Sie — Culture & Exam ── -->
+    <div id="lesson-3" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">Module 9 · Lesson 4 of 6</div>
+          <h2 class="lesson-h">Formal Sie — culture, respect, and the exam</h2>
+          <p class="body-text">German has two ways to say "you." <span style="font-family:'DM Mono',monospace;color:var(--p2)">du</span> is for people you know well — family, friends, classmates. <span style="font-family:'DM Mono',monospace;color:var(--gold)">Sie</span> is for everyone else: strangers, professionals, officials, people older than you in formal settings. The choice of du or Sie is not just grammar — it is a cultural statement about respect and social distance.</p>
+
+          <div class="sec-label">When German speakers use Sie</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0;">
+            <div style="background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.25);border-radius:12px;padding:16px;">
+              <div style="font-size:11px;letter-spacing:2px;color:var(--gold);font-family:'DM Mono',monospace;margin-bottom:10px;">ALWAYS SIE</div>
+              <div style="font-size:13px;color:var(--cream);line-height:2;">
+                Your teacher / professor<br>
+                A doctor or official<br>
+                A stranger you just met<br>
+                A customer or shop clerk<br>
+                Any job interview<br>
+                <strong>Your Goethe examiner</strong>
+              </div>
+            </div>
+            <div style="background:rgba(230,126,34,0.07);border:1px solid rgba(230,126,34,0.2);border-radius:12px;padding:16px;">
+              <div style="font-size:11px;letter-spacing:2px;color:var(--p2);font-family:'DM Mono',monospace;margin-bottom:10px;">USUALLY DU</div>
+              <div style="font-size:13px;color:var(--cream);line-height:2;">
+                A friend or classmate<br>
+                A sibling or cousin<br>
+                Children (under ~14)<br>
+                Close colleagues who offered du<br>
+                Athletes in a sports team
+              </div>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue)">Cultural note — the Siezen tradition:</strong> In Germany, Austria, and Switzerland, using Sie signals that you see the other person as a full adult deserving of formal respect. Switching from Sie to du is a significant social moment — the older or higher-ranking person must offer it first. Switching without permission is considered rude. For the Goethe exam, this cultural awareness itself shows language maturity.</div>
+
+          <div class="sec-label">Sie conjugation — verb forms with formal you</div>
+          <p class="body-text">The formal Sie always takes the same verb ending as wir and sie (they): <strong style="color:var(--gold)">–en</strong> for regular verbs. This applies to all tenses. The verb form is identical to the 3rd person plural.</p>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--gold);">SIE · –en</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span style="color:var(--gold);font-weight:700;">Kommen</span> Sie aus Afrika?</div>
+                <div class="ex-en">Do you come from Africa? (formal — verb first for yes/no question)</div>
+                <div class="ex-note">kommen = –en. Sie is in position 2 after the verb in this question structure.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kommen Sie aus Afrika?')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--gold);">SIE · –en</div>
+              <div style="flex:1;">
+                <div class="ex-de">Wie lange <span style="color:var(--verb);font-weight:700;">lernen</span> Sie schon Deutsch?</div>
+                <div class="ex-en">How long have you been learning German?</div>
+                <div class="ex-note">W-question: wie lange (P1) → lernen (P2 verb) → Sie (P3 subject). Standard Goethe Sprechen question.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wie lange lernen Sie schon Deutsch?')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--gold);">SIE · –en</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <span style="color:var(--verb);font-weight:700;">heiße</span> Kwame. Und Sie? Wie <span style="color:var(--verb);font-weight:700;">heißen</span> Sie?</div>
+                <div class="ex-en">My name is Kwame. And you? What is your name?</div>
+                <div class="ex-note">"Wie heißen Sie?" is the formal version of "Wie heißt du?" — essential for the Goethe exam opening.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich heiße Kwame. Und Sie? Wie heißen Sie?')">🔊</button>
+            </div>
+          </div>
+
+          <div class="success-box"><strong style="color:var(--green)">The Goethe Sprechen opening — memorise this:</strong><br><br>
+            <span style="font-family:'DM Mono',monospace;color:var(--cream);">Guten Morgen. / Guten Tag.</span> (appropriate greeting)<br>
+            <span style="font-family:'DM Mono',monospace;color:var(--cream);">Ich heiße ___. Ich komme aus ___.</span><br>
+            <span style="font-family:'DM Mono',monospace;color:var(--cream);">Sind Sie der Prüfer / die Prüferin?</span><br><br>
+            Using Sie from the very first second signals that you understand German culture. The examiner notices this. It is worth points before you even answer the first question.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">Module 9 · Lesson 4 · Quiz</div><h2 class="lesson-h">Formal Sie Quiz</h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 5: The "du" Mistake ── -->
+    <div id="lesson-4" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">Module 9 · Lesson 5 of 6</div>
+          <h2 class="lesson-h">The "du" mistake — why it costs you points</h2>
+          <p class="body-text">In many African cultures, greetings are warm and quickly informal — you might address an elder directly by name, or use the same register with everyone. German culture treats formality very differently. Using <span style="font-family:'DM Mono',monospace;color:var(--p2)">du</span> with a stranger in a formal setting does not just sound informal — it sounds disrespectful. In a Goethe exam, it signals to the examiner that you have not mastered this key aspect of German language and culture.</p>
+
+          <div class="danger-box">
+            <strong style="color:#e74c3c;">What happens when you say "du" to the Goethe examiner:</strong><br><br>
+            The examiner marks you on <em>Kommunikation</em> (communication) and <em>Ausdruck</em> (expression). Using du instead of Sie affects both — it shows a lack of register awareness, which is a defined assessment criterion at A1. It is not a small error. It is the equivalent of writing "Hey mate" in a formal English job application.<br><br>
+            ❌ <span style="font-family:'DM Mono',monospace;">"Hallo! <strong>Du</strong> bist der Prüfer?"</span><br>
+            ❌ <span style="font-family:'DM Mono',monospace;">"Wie heißt <strong>du</strong>?"</span> (to the examiner)<br>
+            ❌ <span style="font-family:'DM Mono',monospace;">"<strong>Kannst du</strong> das bitte wiederholen?"</span><br><br>
+            ✓ <span style="font-family:'DM Mono',monospace;color:var(--green);">"Guten Morgen. <strong>Sind Sie</strong> die Prüferin?"</span><br>
+            ✓ <span style="font-family:'DM Mono',monospace;color:var(--green);">"Wie <strong>heißen Sie</strong>?"</span><br>
+            ✓ <span style="font-family:'DM Mono',monospace;color:var(--green);">"Könnten <strong>Sie</strong> das bitte wiederholen?"</span>
+          </div>
+
+          <div class="sec-label">du vs Sie — side-by-side comparisons</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(192,57,43,0.1);color:#e74c3c;">du ❌</div>
+              <div style="flex:1;">
+                <div class="ex-de" style="text-decoration:line-through;color:var(--gray);">Du sprichst sehr gut Deutsch.</div>
+                <div class="ex-en">❌ Said to the examiner — du signals you treat them as a close friend.</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.1);color:var(--green);">Sie ✓</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span style="color:var(--gold);font-weight:700;">Sie</span> <span style="color:var(--verb);font-weight:700;">sprechen</span> sehr gut Deutsch.</div>
+                <div class="ex-en">You speak very good German. (formal — appropriate with the examiner)</div>
+                <div class="ex-note">Note: sprechen not sprichst. Sie → –en ending. du → –st ending. Different ending AND different pronoun.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Sie sprechen sehr gut Deutsch.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(192,57,43,0.1);color:#e74c3c;">du ❌</div>
+              <div style="flex:1;">
+                <div class="ex-de" style="text-decoration:line-through;color:var(--gray);">Kannst du das bitte wiederholen?</div>
+                <div class="ex-en">❌ Asking the examiner to repeat — du makes this sound like a demand to a peer.</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.1);color:var(--green);">Sie ✓</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span style="color:var(--gold);font-weight:700;">Könnten Sie</span> das bitte wiederholen?</div>
+                <div class="ex-en">Could you please repeat that? (formal — exactly the right register in an exam)</div>
+                <div class="ex-note">This sentence is also a model answer if you don't understand something in Goethe Sprechen — use it.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Könnten Sie das bitte wiederholen?')">🔊</button>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue)">What to do if you accidentally say "du":</strong> Correct yourself immediately and move on. Say <span style="font-family:'DM Mono',monospace;color:var(--cream);">"Entschuldigung — ich meine natürlich Sie."</span> (Excuse me — I mean Sie of course.) Self-correction shows awareness and is viewed positively. Do not let the error derail you; keep speaking.</div>
+
+          <div class="success-box"><strong style="color:var(--green)">The rule in one sentence:</strong> In a Goethe exam, in a German classroom, in a German office, in any formal situation — it is always <span style="font-family:'DM Mono',monospace;color:var(--gold)">Sie</span>. du is reserved for people who have explicitly offered it to you. When in doubt, Sie is never wrong.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">Module 9 · Lesson 5 · Quiz</div><h2 class="lesson-h">du vs Sie Quiz</h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 6: African Contexts + Review ── -->
+    <div id="lesson-5" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">Module 9 · Lesson 6 of 6</div>
+          <h2 class="lesson-h">Kwame, Amina, Kofi, Fatima — pronouns in real sentences</h2>
+          <p class="body-text">Let us put all nine pronouns into realistic African-context sentences — the exact kind of content you describe in Goethe A1 Schreiben and Sprechen. Watch how names become pronouns and how pronouns drive verb endings.</p>
+
+          <div class="sec-label">Introducing yourself — Sich vorstellen</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--p1);">ich</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span style="color:var(--p1);font-weight:700;">Ich</span> <span style="color:var(--verb);font-weight:700;">heiße</span> Kwame. <span style="color:var(--p1);font-weight:700;">Ich</span> <span style="color:var(--verb);font-weight:700;">komme</span> aus Ghana und <span style="color:var(--verb);font-weight:700;">wohne</span> jetzt in Berlin.</div>
+                <div class="ex-en">My name is Kwame. I come from Ghana and now live in Berlin.</div>
+                <div class="ex-note">Three ich-verbs: heiße (–e), komme (–e), wohne (–e). All take –e because the pronoun is ich.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich heiße Kwame. Ich komme aus Ghana und wohne jetzt in Berlin.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Talking about others — Über andere sprechen</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--p3);">er → sie</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi <span style="color:var(--verb);font-weight:700;">studiert</span> Medizin in Leipzig. <span style="color:var(--p3);font-weight:700;">Er</span> <span style="color:var(--verb);font-weight:700;">wohnt</span> in einem Studentenwohnheim.</div>
+                <div class="ex-en">Kofi studies medicine in Leipzig. He lives in a student dormitory.</div>
+                <div class="ex-note">Kofi → er. studiert (–t) and wohnt (–t) both use the er/sie/es ending.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi studiert Medizin in Leipzig. Er wohnt in einem Studentenwohnheim.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--p3);">sie (she)</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima <span style="color:var(--verb);font-weight:700;">arbeitet</span> als Lehrerin in Accra. <span style="color:var(--p3);font-weight:700;">Sie</span> <span style="color:var(--verb);font-weight:700;">unterrichtet</span> Englisch und Französisch.</div>
+                <div class="ex-en">Fatima works as a teacher in Accra. She teaches English and French.</div>
+                <div class="ex-note">Fatima → sie (she). arbeitet (–t) and unterrichtet (–t). Both take –t because the pronoun is sie (she).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima arbeitet als Lehrerin in Accra. Sie unterrichtet Englisch und Französisch.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--p3);">sie (they)</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame und Amina <span style="color:var(--verb);font-weight:700;">lernen</span> zusammen Deutsch. <span style="color:var(--p3);font-weight:700;">Sie</span> <span style="color:var(--verb);font-weight:700;">treffen</span> sich jeden Dienstag im Sprachkurs.</div>
+                <div class="ex-en">Kwame and Amina are learning German together. They meet every Tuesday at the language course.</div>
+                <div class="ex-note">Kwame und Amina = two people = sie (they). lernen (–en) and treffen (–en). Plural sie → –en.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame und Amina lernen zusammen Deutsch. Sie treffen sich jeden Dienstag im Sprachkurs.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Asking and answering — Fragen und antworten</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--gold);">Sie (formal)</div>
+              <div style="flex:1;">
+                <div class="ex-de">Prüfer: "Woher <span style="color:var(--verb);font-weight:700;">kommen</span> <span style="color:var(--gold);font-weight:700;">Sie</span>?" — Amina: "<span style="color:var(--p1);font-weight:700;">Ich</span> <span style="color:var(--verb);font-weight:700;">komme</span> aus Senegal."</div>
+                <div class="ex-en">Examiner: "Where do you come from?" — Amina: "I come from Senegal."</div>
+                <div class="ex-note">Examiner uses Sie (formal you, –en). Amina replies with ich (–e). This is the standard Goethe Sprechen exchange.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Woher kommen Sie? Ich komme aus Senegal.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Full pronoun reference</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin:14px 0;">
+            <div style="background:var(--card2-bg);border:1px solid rgba(52,152,219,0.2);border-radius:10px;padding:12px;text-align:center;">
+              <div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--p1);margin-bottom:4px;">ich</div>
+              <div style="font-size:11px;color:var(--gray);">I · –e</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(230,126,34,0.2);border-radius:10px;padding:12px;text-align:center;">
+              <div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--p2);margin-bottom:4px;">du</div>
+              <div style="font-size:11px;color:var(--gray);">you (informal) · –st</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(155,89,182,0.2);border-radius:10px;padding:12px;text-align:center;">
+              <div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--p3);margin-bottom:4px;">er</div>
+              <div style="font-size:11px;color:var(--gray);">he · –t</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(52,152,219,0.2);border-radius:10px;padding:12px;text-align:center;">
+              <div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--she);margin-bottom:4px;">sie</div>
+              <div style="font-size:11px;color:var(--gray);">she · –t</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(155,89,182,0.2);border-radius:10px;padding:12px;text-align:center;">
+              <div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--p3);margin-bottom:4px;">es</div>
+              <div style="font-size:11px;color:var(--gray);">it · –t</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(52,152,219,0.2);border-radius:10px;padding:12px;text-align:center;">
+              <div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--p1);margin-bottom:4px;">wir</div>
+              <div style="font-size:11px;color:var(--gray);">we · –en</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(230,126,34,0.2);border-radius:10px;padding:12px;text-align:center;">
+              <div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--p2);margin-bottom:4px;">ihr</div>
+              <div style="font-size:11px;color:var(--gray);">you all · –t</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(230,126,34,0.2);border-radius:10px;padding:12px;text-align:center;">
+              <div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--they);margin-bottom:4px;">sie</div>
+              <div style="font-size:11px;color:var(--gray);">they · –en</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(201,168,76,0.3);border-radius:10px;padding:12px;text-align:center;">
+              <div style="font-family:'DM Mono',monospace;font-size:18px;color:var(--gold);margin-bottom:4px;">Sie</div>
+              <div style="font-size:11px;color:var(--gray);">formal you · –en</div>
+            </div>
+          </div>
+
+          <div class="success-box">
+            <strong style="color:var(--green)">What you now know:</strong><br><br>
+            ✓ All 9 German pronouns — table memorised<br>
+            ✓ sie (she) / sie (they) / Sie (formal) — three signals to tell them apart<br>
+            ✓ Pronouns connect directly to verb endings from Module 8<br>
+            ✓ Formal Sie — culture, meaning, and exam strategy<br>
+            ✓ The "du" mistake — why it costs marks and what to say instead<br><br>
+            You now have the complete pronoun system. Every German sentence you write or speak in the Goethe exam starts with choosing the right pronoun.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Start Final Quiz →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">Module 9 · Final Quiz</div><h2 class="lesson-h">Module Complete — Final Check</h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Previous</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="showOverview()"><span class="nav-icon">📚</span><span class="nav-label">Overview</span></button>
+  <button class="nav-item" onclick="resumeLesson()"><span class="nav-icon">▶️</span><span class="nav-label">Resume</span></button>
+</nav>
+
+<script>
+var synth=(typeof window!=='undefined'&&window.speechSynthesis)?window.speechSynthesis:null;
+var deVoice=null,speechUnlocked=false;
+function loadVoices(){ if(!synth)return; try{ var v=synth.getVoices(); deVoice=v.find(function(x){return x.lang==='de-DE';})||v.find(function(x){return x.lang&&x.lang.startsWith('de');})||null; }catch(e){} }
+if(synth){ try{ loadVoices(); if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadVoices; }catch(e){} }
+function unlockSpeech(){ if(speechUnlocked||!synth)return; try{ var s=new SpeechSynthesisUtterance(''); s.volume=0; synth.speak(s); speechUnlocked=true; }catch(e){} }
+document.addEventListener('touchstart',unlockSpeech,{once:true,passive:true});
+document.addEventListener('click',unlockSpeech,{once:true});
+function speakDE(t){ if(!synth)return null; try{ if(!deVoice)loadVoices(); synth.cancel(); var u=new SpeechSynthesisUtterance(t); u.lang='de-DE'; u.rate=0.85; u.pitch=1.0; u.volume=1.0; if(deVoice)u.voice=deVoice; synth.speak(u); return u; }catch(e){return null;} }
+function speakSentence(btn,text){ unlockSpeech(); document.querySelectorAll('.speak-btn').forEach(function(b){b.classList.remove('speaking');}); if(btn&&btn.classList)btn.classList.add('speaking'); var u=speakDE(text); if(u){ u.onend=function(){if(btn&&btn.classList)btn.classList.remove('speaking');}; u.onerror=function(){if(btn&&btn.classList)btn.classList.remove('speaking');}; }else{ setTimeout(function(){if(btn&&btn.classList)btn.classList.remove('speaking');},1500); } }
+
+var currentLesson=0, xp=0, TOTAL=6;
+
+var QD={
+  0:[
+    {q:'Kwame und Amina lernen zusammen Deutsch. Which pronoun replaces "Kwame und Amina"?',
+     hint:'Two people not including the speaker — which 3rd person plural pronoun?',
+     opts:['er','sie (she)','sie (they)','ihr'],
+     ans:2,
+     exp:'"sie" (they) — Kwame und Amina are two people not including the speaker, so we use the 3rd person plural pronoun sie. "Sie lernen zusammen Deutsch." Note: this sie (they) is spelled identically to sie (she). The verb form lernen (–en, plural) confirms this is "they" rather than "she" (which would need lernt with –t).',
+     rule:'Two or more named people = sie (they) → verb takes –en. Kwame und Amina = sie = lernen.'}
+  ],
+  1:[
+    {q:'Which sentence uses "Sie" to mean the formal "you" — not "she" or "they"?',
+     hint:'Look for a sentence where Sie is clearly addressed TO the listener with respect',
+     opts:['Amina lernt Deutsch. Sie lernt jeden Tag.','Kofi und Fatima kommen aus Ghana. Sie kommen morgen an.','Sind Sie die Prüferin?','Sie hat einen Bruder in Lagos.'],
+     ans:2,
+     exp:'"Sind Sie die Prüferin?" — The verb-first structure (Sind) signals a yes/no question directed at the listener. The capital S mid-sentence and the professional context confirm formal Sie. Option A: "Sie lernt" — lernt has –t, so this is sie (she). Option B: "Sie kommen" — context (Kofi und Fatima were just mentioned) → they. Option D: "Sie hat" — hat has –t, so this is sie (she).',
+     rule:'"Sind Sie...?" is the clearest signal of formal Sie — a direct respectful question. Capital S + –en verb + addressed to listener = formal Sie.'}
+  ],
+  2:[
+    {q:'Fatima ___ (kommen) aus Lagos. Choose the correct verb form.',
+     hint:'Fatima = she. Which pronoun slot does she fall into? What ending does it take?',
+     opts:['komme','kommst','kommt','kommen'],
+     ans:2,
+     exp:'"kommt" — Fatima is she (sie, 3rd person singular). Regular verb kommen: remove –en to get stem komm–. Add the er/sie/es ending –t. komm + t = kommt. This is the same rule from Module 8: identify the pronoun → attach the right ending. Fatima = sie (she) = –t ending.',
+     rule:'Fatima = sie (she) = er/sie/es slot = stem + –t. Fatima kommt. Amina lernt. Kofi wohnt.'}
+  ],
+  3:[
+    {q:'You enter the Goethe exam room. The examiner greets you. Which sentence do YOU use to greet back correctly?',
+     hint:'The examiner is a professional stranger. Which level of formality does German require?',
+     opts:['Hallo! Du bist der Prüfer?','Hi! Wie heißt du?','Guten Morgen. Sind Sie die Prüferin?','Hey! Ihr seid der Prüfer?'],
+     ans:2,
+     exp:'"Guten Morgen. Sind Sie die Prüferin?" — The examiner is a professional stranger. German requires Sie in all formal and professional contexts. Using Sie from the very first second shows cultural competence, which the Goethe exam assesses. "Hallo/Hi/Hey" with du or ihr sounds rude and signals a lack of register awareness. Sie + a formal greeting (Guten Morgen / Guten Tag) is the correct and expected opening.',
+     rule:'Examiner = professional stranger = always Sie. Guten Morgen + Sind Sie...? is the correct formal exam opening.'}
+  ],
+  4:[
+    {q:'A student says to the Goethe examiner: "Du sprichst sehr gut Deutsch." What is wrong?',
+     hint:'Think about the relationship between the student and the examiner — and what German culture expects',
+     opts:['The word order is wrong — verb should be at the end','du is used instead of Sie — the examiner must always be addressed formally','sprichst is the wrong verb form for any pronoun','There is no problem — this sentence is correct'],
+     ans:1,
+     exp:'"du" should be "Sie". The examiner is a professional in a formal assessment — in German culture, this is Sie territory without exception. "Du sprichst" should be "Sie sprechen" (Sie → –en ending, not –st). Using du signals either that you do not understand German social norms or have not learned the formal register. Both cost marks in Sprechen. The correct sentence: "Sie sprechen sehr gut Deutsch."',
+     rule:'Examiner = Sie always. "Sie sprechen" not "du sprichst". Changing pronoun also changes the verb ending: du –st → Sie –en.'}
+  ],
+  5:[
+    {q:'"Kofi und Fatima ___ meine Freunde." Which form of sein completes the sentence?',
+     hint:'Kofi und Fatima = two people = which pronoun? Then check sein for that pronoun.',
+     opts:['ist','bin','sind','seid'],
+     ans:2,
+     exp:'"sind" — Kofi und Fatima are two people not including the speaker → sie (they) → 3rd person plural. The sein conjugation for sie (they) is sind. "Kofi und Fatima sind meine Freunde." Remember from Module 8: sein is irregular. wir = sind, sie (they) = sind, Sie (formal) = sind — all three share the same form. seid is only for ihr.',
+     rule:'Two or more people (3rd person plural) = sie (they) = sind. Kofi und Fatima sind... Always sind for a group of people you are talking about.'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">QUESTION '+(s.cur+1)+' OF '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint">'+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Next Question →':'See Results →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Correct!':'✗ Not quite'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent=q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' correct</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfect.':pct>=60?'Good work.':'Review and try again.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.12);border:1px solid var(--gold);border-radius:50px;padding:9px 22px;color:var(--gold);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Complete Module 9 →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Next Lesson →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">🎯</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Module 9 Complete!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">All nine pronouns mastered. The sie / sie / Sie trap cracked. Formal Sie understood — culturally and grammatically. You now control the pronoun system that drives every German sentence.</p><div class="xp-badge">⚡ '+xp+' XP Earned</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Next: Module 10 — Past Tense &amp; Perfekt</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Back to Overview</button></div>'; }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function resumeLesson(){ goLesson(currentLesson); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+</body>
+</html>

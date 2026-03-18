@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Module 2: Greetings & Social Scripts</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --purple:#9b59b6; --gray:#6b6b6b;
+    --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+
+  /* NAV */
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--gold); color:var(--gold); }
+
+  .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:rgba(10,10,10,0.96); backdrop-filter:blur(20px); border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:12px 0 20px; z-index:100; }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:8px 16px; border-radius:12px; transition:all 0.2s; border:none; background:none; color:var(--gray); }
+  .nav-item:hover, .nav-item.active { color:var(--gold); }
+  .nav-icon { font-size:20px; }
+  .nav-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; font-family:'DM Mono',monospace; }
+
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--gold); transition:width 0.5s ease; }
+
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--gold); width:22px; border-radius:4px; }
+
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+
+  /* BUTTONS */
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--gold); color:var(--black); width:100%; }
+  .btn-primary:hover { background:var(--gold-light); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+
+  /* CARDS */
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .card2 { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; }
+
+  /* TYPOGRAPHY */
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+
+  /* INFO BOXES */
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+
+  /* SPEAK BUTTON */
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(201,168,76,0.2); }
+  .speak-btn.speaking { background:var(--gold); color:var(--black); }
+
+  /* SIE vs DU COMPARISON */
+  .register-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:16px 0; }
+  .register-formal { background:rgba(201,168,76,0.06); border:1px solid rgba(201,168,76,0.3); border-radius:14px; padding:20px; }
+  .register-informal { background:rgba(52,152,219,0.06); border:1px solid rgba(52,152,219,0.25); border-radius:14px; padding:20px; }
+  .reg-title { font-weight:700; font-size:15px; margin-bottom:4px; }
+  .register-formal .reg-title { color:var(--gold); }
+  .register-informal .reg-title { color:var(--blue); }
+  .reg-subtitle { font-size:12px; color:var(--gray); margin-bottom:14px; }
+  .reg-phrase { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:4px; }
+  .reg-context { font-size:12px; color:var(--gray); margin-bottom:10px; }
+
+  /* PHRASE CARDS */
+  .phrase-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .phrase-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:16px 18px; display:flex; align-items:flex-start; gap:16px; transition:all 0.2s; }
+  .phrase-card:hover { border-color:rgba(201,168,76,0.3); }
+  .phrase-icon { font-size:24px; flex-shrink:0; margin-top:2px; }
+  .phrase-de { font-family:'DM Mono',monospace; font-size:15px; color:var(--gold); margin-bottom:3px; }
+  .phrase-ph { font-size:12px; color:var(--blue); font-style:italic; margin-bottom:3px; }
+  .phrase-en { font-size:13px; color:var(--gray); margin-bottom:6px; }
+  .phrase-note { font-size:12px; color:var(--cream); line-height:1.6; }
+
+  /* SCRIPT LINES */
+  .script-box { background:rgba(201,168,76,0.04); border:1px solid var(--border); border-radius:16px; padding:24px; margin:16px 0; }
+  .script-title { font-size:11px; letter-spacing:3px; color:var(--gold); font-family:'DM Mono',monospace; margin-bottom:18px; }
+  .script-line { margin-bottom:18px; padding-bottom:18px; border-bottom:1px solid rgba(255,255,255,0.05); }
+  .script-line:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0; }
+  .script-de { font-family:'DM Mono',monospace; font-size:15px; color:var(--cream); line-height:1.7; margin-bottom:3px; }
+  .script-ph { font-size:12px; color:var(--blue); font-style:italic; margin-bottom:3px; }
+  .script-en { font-size:12px; color:var(--gray); margin-bottom:6px; }
+  .script-note { font-size:11px; color:var(--gold); font-family:'DM Mono',monospace; }
+
+  /* DIALOGUE */
+  .dialogue { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:20px; margin:14px 0; }
+  .dialogue-title { font-size:11px; letter-spacing:3px; color:var(--blue); font-family:'DM Mono',monospace; margin-bottom:16px; }
+  .dia-line { display:flex; gap:12px; margin-bottom:14px; align-items:flex-start; }
+  .dia-speaker { font-size:11px; font-family:'DM Mono',monospace; color:var(--gray); width:60px; flex-shrink:0; margin-top:3px; }
+  .dia-text { flex:1; }
+  .dia-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:2px; }
+  .dia-en { font-size:12px; color:var(--gray); }
+
+  /* GOODBYE TABLE */
+  .dtable { width:100%; border-collapse:collapse; margin:12px 0; font-size:14px; }
+  .dtable th { text-align:left; padding:9px 12px; border-bottom:1px solid var(--border); color:var(--gray); font-size:11px; font-weight:500; }
+  .dtable td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04); vertical-align:top; }
+  .dtable tr:last-child td { border-bottom:none; }
+  .de { font-family:'DM Mono',monospace; color:var(--gold); font-size:14px; }
+
+  /* POLITE PHRASES */
+  .polite-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; margin:14px 0; }
+  .polite-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:16px; cursor:pointer; transition:all 0.2s; }
+  .polite-card:hover { border-color:rgba(201,168,76,0.3); }
+  .polite-card.speaking { border-color:var(--gold); background:rgba(201,168,76,0.08); }
+  .pc-de { font-family:'DM Mono',monospace; font-size:16px; color:var(--gold); margin-bottom:5px; }
+  .pc-en { font-size:13px; color:var(--cream); margin-bottom:5px; }
+  .pc-note { font-size:12px; color:var(--gray); line-height:1.5; }
+  .pc-tap { font-size:10px; color:var(--gold); opacity:0.6; margin-top:6px; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Sans',sans-serif; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--gold); background:rgba(201,168,76,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(201,168,76,0.1); border-radius:8px; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+
+  /* LESSON CARDS (overview) */
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(201,168,76,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(201,168,76,0.08); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+
+  /* YT */
+  .yt { background:rgba(255,0,0,0.04); border:1px dashed rgba(255,80,80,0.25); border-radius:12px; padding:18px; text-align:center; margin:16px 0; }
+  .yt-icon { font-size:28px; margin-bottom:6px; }
+  .yt-title { font-weight:600; font-size:14px; margin-bottom:4px; }
+  .yt-desc { font-size:12px; color:var(--gray); line-height:1.6; }
+  .yt-tag { display:inline-block; margin-top:8px; padding:4px 12px; background:rgba(255,0,0,0.1); color:#ff6b6b; border-radius:20px; font-size:11px; font-family:'DM Mono',monospace; }
+
+  /* COMPLETE */
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(201,168,76,0.12); border:1px solid var(--gold); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--gold); font-size:18px; margin:18px 0; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @keyframes glow { 0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,0)} 50%{box-shadow:0 0 12px 3px rgba(201,168,76,0.2)} }
+
+  @media(max-width:600px){
+    .register-grid { grid-template-columns:1fr; }
+    .polite-grid { grid-template-columns:1fr 1fr; }
+    .lesson-h { font-size:22px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================================================================
+  OVERVIEW
+================================================================ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">MODULE 2</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">A1 · Social Competence</div>
+    <h1 class="lesson-h" style="font-size:36px;">Greetings, Introductions<br><span style="color:var(--gold)">& Social Scripts</span></h1>
+    <p class="body-text">This module is not just vocabulary. These are the exact scripts the Goethe examiner expects in the Sprechen section. Language and social intelligence together.</p>
+    <div class="danger-box"><strong style="color:#e74c3c;">The most expensive social mistake:</strong> Using informal German (du) with the Goethe examiner instead of formal German (Sie). It signals to the examiner that you do not understand German culture. This module teaches you when to use which — and why it matters.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">🎭</div><div><div class="lc-title">Lesson 1 — Sie vs du: Formal and Informal</div><div class="lc-desc">When to use each — and what happens when you get it wrong.</div></div><div class="lc-tag" style="color:var(--gold);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">👋</div><div><div class="lc-title">Lesson 2 — Greetings for Every Situation</div><div class="lc-desc">Hallo, Guten Morgen, Guten Tag — with time, place, and register.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">🧑‍💼</div><div><div class="lc-title">Lesson 3 — Introducing Yourself</div><div class="lc-desc">The complete Goethe Sprechen self-introduction script.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">❓</div><div><div class="lc-title">Lesson 4 — Asking About Others</div><div class="lc-desc">Wie heißen Sie? Woher kommen Sie? — with correct responses.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">👋</div><div><div class="lc-title">Lesson 5 — Saying Goodbye</div><div class="lc-desc">Auf Wiedersehen, Tschüss, Auf Wiederhören — when to use each.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🙏</div><div><div class="lc-title">Lesson 6 — Polite Phrases</div><div class="lc-desc">Bitte, Danke, Entschuldigung, Es tut mir leid — in the right context.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Begin Lesson 1 →</button>
+  </div>
+</div>
+
+<!-- ================================================================
+  LESSON SCREEN
+================================================================ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lessons</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ===== LESSON 1: Sie vs du ===== -->
+    <div id="lesson-0" class="lesson-pane">
+
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">Module 2 · Lesson 1 of 6</div>
+          <h2 class="lesson-h">Sie vs du — the most important social rule in German</h2>
+          <p class="body-text">German has two words for "you". <strong style="color:var(--gold)">Sie</strong> is formal — used with strangers, professionals, older people, and the Goethe examiner. <strong style="color:var(--blue)">du</strong> is informal — used with friends, family, children, and peers you know well.</p>
+          <p class="body-text">In English, "you" covers everyone. In German, choosing the wrong one is a social mistake — and in the Goethe exam, the wrong register costs marks.</p>
+
+          <div class="register-grid">
+            <div class="register-formal">
+              <div class="reg-title">Sie — Formal</div>
+              <div class="reg-subtitle">Always capitalised, even mid-sentence</div>
+              <div class="reg-phrase">Wie heißen Sie?</div>
+              <div class="reg-context">What is your name? (formal)</div>
+              <div class="reg-phrase">Woher kommen Sie?</div>
+              <div class="reg-context">Where are you from? (formal)</div>
+              <div class="reg-phrase">Sprechen Sie Deutsch?</div>
+              <div class="reg-context">Do you speak German? (formal)</div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wie heißen Sie?')">🔊 Hear Sie</button>
+            </div>
+            <div class="register-informal">
+              <div class="reg-title">du — Informal</div>
+              <div class="reg-subtitle">Lowercase, used with friends and family</div>
+              <div class="reg-phrase">Wie heißt du?</div>
+              <div class="reg-context">What is your name? (informal)</div>
+              <div class="reg-phrase">Woher kommst du?</div>
+              <div class="reg-context">Where are you from? (informal)</div>
+              <div class="reg-phrase">Sprichst du Deutsch?</div>
+              <div class="reg-context">Do you speak German? (informal)</div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wie heißt du?')">🔊 Hear du</button>
+            </div>
+          </div>
+
+          <div class="sec-label">When to use Sie (formal)</div>
+          <div class="phrase-list">
+            <div class="phrase-card"><div class="phrase-icon">👔</div><div><div class="phrase-de">Mit dem Goethe-Prüfer</div><div class="phrase-en">With the Goethe examiner — always, without exception</div><div class="phrase-note">The examiner is a professional in a formal testing context. Using du would be like calling your doctor by their first name on your first visit.</div></div></div>
+            <div class="phrase-card"><div class="phrase-icon">🏥</div><div><div class="phrase-de">Mit Ärzten, Lehrern, Chefs</div><div class="phrase-en">With doctors, teachers, managers</div><div class="phrase-note">Any professional relationship starts with Sie until the other person explicitly invites du — "Wir können uns duzen."</div></div></div>
+            <div class="phrase-card"><div class="phrase-icon">🛒</div><div><div class="phrase-de">Mit unbekannten Erwachsenen</div><div class="phrase-en">With strangers over 16</div><div class="phrase-note">In shops, on public transport, in offices — Sie is the default with any adult you do not know personally.</div></div></div>
+          </div>
+
+          <div class="success-box"><strong style="color:var(--green)">The Goethe rule:</strong> In the entire Sprechen section, always use Sie. The examiner will not invite du. If you accidentally use du, correct yourself immediately: "Entschuldigung — meinen Sie..." Your ability to catch and correct your own errors also earns marks.</div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Continue →</button></div>
+      </div>
+
+      <div class="step" id="l0-s1">
+        <div class="card">
+          <div class="concept-tag">Module 2 · Lesson 1 · Goethe Context</div>
+          <h2 class="lesson-h">Sie and du in real situations</h2>
+          <p class="body-text">Read each situation and decide: would you use Sie or du? Then press 🔊 to hear the correct German phrase.</p>
+
+          <div class="dialogue">
+            <div class="dialogue-title">SITUATION 1 — You meet the Goethe examiner</div>
+            <div class="dia-line"><div class="dia-speaker">Examiner:</div><div class="dia-text"><div class="dia-de">Guten Tag. Mein Name ist Müller. Wie heißen Sie?</div><div class="dia-en">Good day. My name is Müller. What is your name?</div></div></div>
+            <div class="dia-line"><div class="dia-speaker">You:</div><div class="dia-text"><div class="dia-de">Guten Tag, Herr Müller. Ich heiße Wanjiru Kamau.</div><div class="dia-en">Good day, Mr Müller. My name is Wanjiru Kamau.</div></div></div>
+            <button class="speak-btn" onclick="speakSentence(this,'Guten Tag, Herr Müller. Ich heiße Wanjiru Kamau.')">🔊 Hear your line</button>
+            <div class="info-box" style="margin-top:10px;"><strong style="color:var(--gold);">✓ Correct register:</strong> Sie throughout. You use Herr + surname to address the examiner — professional and respectful.</div>
+          </div>
+
+          <div class="dialogue">
+            <div class="dialogue-title">SITUATION 2 — You meet a fellow student in a German class</div>
+            <div class="dia-line"><div class="dia-speaker">Student:</div><div class="dia-text"><div class="dia-de">Hallo! Ich bin Kevin. Wie heißt du?</div><div class="dia-en">Hello! I'm Kevin. What's your name?</div></div></div>
+            <div class="dia-line"><div class="dia-speaker">You:</div><div class="dia-text"><div class="dia-de">Hallo Kevin! Ich heiße Wanjiru. Ich komme aus Nairobi.</div><div class="dia-en">Hello Kevin! My name is Wanjiru. I come from Nairobi.</div></div></div>
+            <button class="speak-btn" onclick="speakSentence(this,'Hallo Kevin! Ich heiße Wanjiru. Ich komme aus Nairobi.')">🔊 Hear your line</button>
+            <div class="info-box" style="margin-top:10px;"><strong style="color:var(--gold);">✓ Correct register:</strong> du, because Kevin offered it first with "Wie heißt du?" — a peer inviting informal address.</div>
+          </div>
+
+          <div class="dialogue">
+            <div class="dialogue-title">SITUATION 3 — You call a doctor's surgery</div>
+            <div class="dia-line"><div class="dia-speaker">Receptionist:</div><div class="dia-text"><div class="dia-de">Praxis Dr. Hoffmann, guten Tag. Was kann ich für Sie tun?</div><div class="dia-en">Dr Hoffmann's practice, good day. What can I do for you?</div></div></div>
+            <div class="dia-line"><div class="dia-speaker">You:</div><div class="dia-text"><div class="dia-de">Guten Tag. Ich möchte einen Termin machen, bitte.</div><div class="dia-en">Good day. I would like to make an appointment, please.</div></div></div>
+            <button class="speak-btn" onclick="speakSentence(this,'Guten Tag. Ich möchte einen Termin machen, bitte.')">🔊 Hear your line</button>
+            <div class="info-box" style="margin-top:10px;"><strong style="color:var(--gold);">✓ Correct register:</strong> Sie in a professional phone call. Note "möchte" (would like) — the polite form for requests.</div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Previous</button><button class="btn btn-primary" onclick="nextStep(0,1)">Start Quiz →</button></div>
+      </div>
+
+      <div class="step" id="l0-s2">
+        <div class="card"><div class="concept-tag">Module 2 · Lesson 1 · Quiz</div><h2 class="lesson-h">Sie or du?</h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,2)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ===== LESSON 2: Greetings ===== -->
+    <div id="lesson-1" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">Module 2 · Lesson 2 of 6</div>
+          <h2 class="lesson-h">Greetings — the right one for the right moment</h2>
+          <p class="body-text">German greetings are time-sensitive and region-sensitive. Using the wrong greeting at the wrong time of day does not cause confusion — but it signals that you are not yet comfortable with the language. The Goethe examiner notices comfort.</p>
+
+          <div class="sec-label">Formal Greetings — use with Sie</div>
+          <div class="phrase-list">
+            <div class="phrase-card">
+              <div class="phrase-icon">🌅</div>
+              <div style="flex:1;">
+                <div class="phrase-de">Guten Morgen</div>
+                <div class="phrase-ph">GOO-ten MOR-gen</div>
+                <div class="phrase-en">Good morning</div>
+                <div class="phrase-note">Used until approximately midday. In the Goethe Sprechen section if your exam is in the morning, open with this.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Guten Morgen.')">🔊</button>
+            </div>
+            <div class="phrase-card">
+              <div class="phrase-icon">☀️</div>
+              <div style="flex:1;">
+                <div class="phrase-de">Guten Tag</div>
+                <div class="phrase-ph">GOO-ten TAHK</div>
+                <div class="phrase-en">Good day / Good afternoon</div>
+                <div class="phrase-note">The all-purpose formal greeting — safe to use from midday onwards and in any professional context. Most common in the Goethe exam.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Guten Tag.')">🔊</button>
+            </div>
+            <div class="phrase-card">
+              <div class="phrase-icon">🌆</div>
+              <div style="flex:1;">
+                <div class="phrase-de">Guten Abend</div>
+                <div class="phrase-ph">GOO-ten AH-bent</div>
+                <div class="phrase-en">Good evening</div>
+                <div class="phrase-note">From approximately 6pm. Appears in Goethe Hören contexts — evening announcements, hotel arrivals, restaurant visits.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Guten Abend.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Informal Greetings — use with du</div>
+          <div class="phrase-list">
+            <div class="phrase-card">
+              <div class="phrase-icon">✌️</div>
+              <div style="flex:1;">
+                <div class="phrase-de">Hallo</div>
+                <div class="phrase-ph">HAL-oh</div>
+                <div class="phrase-en">Hello</div>
+                <div class="phrase-note">Universal informal greeting. Safe with peers, friends, fellow students. NOT appropriate with the Goethe examiner as an opening.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Hallo!')">🔊</button>
+            </div>
+            <div class="phrase-card">
+              <div class="phrase-icon">🤙</div>
+              <div style="flex:1;">
+                <div class="phrase-de">Hi / Hey</div>
+                <div class="phrase-ph">like English</div>
+                <div class="phrase-en">Hi / Hey</div>
+                <div class="phrase-note">Very casual — used among young people. Completely inappropriate in any formal or professional context. Never in the Goethe exam.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Hi!')">🔊</button>
+            </div>
+            <div class="phrase-card">
+              <div class="phrase-icon">🏔️</div>
+              <div style="flex:1;">
+                <div class="phrase-de">Grüß Gott / Servus</div>
+                <div class="phrase-ph">GRÜSS GOT / ZER-voos</div>
+                <div class="phrase-en">Regional greetings (South Germany / Austria)</div>
+                <div class="phrase-note">You will hear these in Goethe Hören audio. Grüß Gott is formal-ish (Bavaria/Austria). Servus is informal (Austria). You do not need to use them — but you must recognise them.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Grüß Gott.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue);">Responding to "Wie geht es Ihnen?"</strong> (How are you? — formal)<br><br>
+            <span style="font-family:'DM Mono',monospace;color:var(--gold);">Danke, gut. Und Ihnen?</span> — Thank you, well. And you? (formal, correct)<br>
+            <span style="font-family:'DM Mono',monospace;color:var(--gold);">Es geht mir gut, danke.</span> — I am well, thank you.<br>
+            <span style="font-family:'DM Mono',monospace;color:var(--gray);font-size:13px;">Always return the question — "Und Ihnen?" (formal) or "Und dir?" (informal). Not returning it is considered impolite in German culture.</span>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="speak-btn" onclick="speakSentence(this,'Wie geht es Ihnen?')">🔊 Wie geht es Ihnen?</button>
+            <button class="speak-btn" onclick="speakSentence(this,'Danke, gut. Und Ihnen?')">🔊 Danke, gut. Und Ihnen?</button>
+            <button class="speak-btn" onclick="speakSentence(this,'Es geht mir gut, danke.')">🔊 Es geht mir gut, danke.</button>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Continue →</button></div>
+      </div>
+
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">Module 2 · Lesson 2 · Quiz</div><h2 class="lesson-h">Greetings Quiz</h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ===== LESSON 3: Introducing Yourself ===== -->
+    <div id="lesson-2" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">Module 2 · Lesson 3 of 6</div>
+          <h2 class="lesson-h">Introducing yourself — the Goethe Sprechen script</h2>
+          <p class="body-text">The first task in the Goethe A1 Sprechen section is a self-introduction. The examiner gives you a prompt card and expects you to speak for about 60–90 seconds covering specific topics. This lesson teaches you the exact structure and language.</p>
+
+          <div class="info-box"><strong style="color:var(--gold);">The 6 topics the examiner expects:</strong><br>Name · Herkunft (origin) · Wohnort (where you live) · Beruf (profession) · Familie · Warum Deutsch (why German)</div>
+
+          <div class="sec-label">The building blocks — learn each phrase</div>
+          <div class="phrase-list">
+            <div class="phrase-card"><div class="phrase-icon">📛</div><div style="flex:1;"><div class="phrase-de">Ich heiße Wanjiru Kamau.</div><div class="phrase-ph">IH HAI-se...</div><div class="phrase-en">My name is Wanjiru Kamau.</div><div class="phrase-note">Use "Ich heiße" — not "Mein Name ist" (also correct but less natural in speech). The examiner uses "Wie heißen Sie?" so answer with "Ich heiße."</div></div><button class="speak-btn" onclick="speakSentence(this,'Ich heiße Wanjiru Kamau.')">🔊</button></div>
+            <div class="phrase-card"><div class="phrase-icon">🌍</div><div style="flex:1;"><div class="phrase-de">Ich komme aus Kenia, aus Nairobi.</div><div class="phrase-ph">IH KOM-me aus KE-ni-a</div><div class="phrase-en">I come from Kenya, from Nairobi.</div><div class="phrase-note">"Ich komme aus" + country/city. Add city after comma for more detail. "aus" always follows "komme" for origin.</div></div><button class="speak-btn" onclick="speakSentence(this,'Ich komme aus Kenia, aus Nairobi.')">🔊</button></div>
+            <div class="phrase-card"><div class="phrase-icon">🏠</div><div style="flex:1;"><div class="phrase-de">Ich wohne jetzt in Nairobi.</div><div class="phrase-ph">IH VOH-ne yetzt in NAI-ro-bi</div><div class="phrase-en">I currently live in Nairobi.</div><div class="phrase-note">"Ich wohne in" + city. "jetzt" (now/currently) adds useful context and shows vocabulary range.</div></div><button class="speak-btn" onclick="speakSentence(this,'Ich wohne jetzt in Nairobi.')">🔊</button></div>
+            <div class="phrase-card"><div class="phrase-icon">💼</div><div style="flex:1;"><div class="phrase-de">Ich bin Krankenschwester von Beruf.</div><div class="phrase-ph">IH bin KRAN-ken-shves-ter fon be-ROOF</div><div class="phrase-en">I am a nurse by profession.</div><div class="phrase-note">Profession: "Ich bin [job] von Beruf" OR "Ich arbeite als [job]." No article before the profession — NOT "Ich bin eine Krankenschwester."</div></div><button class="speak-btn" onclick="speakSentence(this,'Ich bin Krankenschwester von Beruf.')">🔊</button></div>
+            <div class="phrase-card"><div class="phrase-icon">👨‍👩‍👧</div><div style="flex:1;"><div class="phrase-de">Ich bin verheiratet und habe zwei Kinder.</div><div class="phrase-ph">IH bin fer-HAI-ra-tet</div><div class="phrase-en">I am married and have two children.</div><div class="phrase-note">Family status options: ledig (single), verheiratet (married), geschieden (divorced). "Ich habe [number] Kinder" or "Ich habe keine Kinder."</div></div><button class="speak-btn" onclick="speakSentence(this,'Ich bin verheiratet und habe zwei Kinder.')">🔊</button></div>
+            <div class="phrase-card"><div class="phrase-icon">🎯</div><div style="flex:1;"><div class="phrase-de">Ich lerne Deutsch, weil ich in Deutschland arbeiten möchte.</div><div class="phrase-ph">IH LER-ne DOYTSH, vail...</div><div class="phrase-en">I am learning German because I want to work in Germany.</div><div class="phrase-note">"weil" (because) sends the verb to the END — "arbeiten möchte" not "möchte arbeiten." This word order rule is tested in Schreiben too.</div></div><button class="speak-btn" onclick="speakSentence(this,'Ich lerne Deutsch, weil ich in Deutschland arbeiten möchte.')">🔊</button></div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Continue →</button></div>
+      </div>
+
+      <div class="step" id="l2-s1">
+        <div class="card">
+          <div class="concept-tag">Module 2 · Lesson 3 · Complete Script</div>
+          <h2 class="lesson-h">The full Goethe A1 introduction — read it, then speak it</h2>
+          <p class="body-text">This is a complete model self-introduction. Read it through, press 🔊 to hear each line, then close your eyes and try to say it from memory. This is exactly what the examiner wants to hear.</p>
+
+          <div class="script-box">
+            <div class="script-title">🎯 GOETHE A1 — MODEL SELF-INTRODUCTION</div>
+
+            <div class="script-line">
+              <div class="script-de">Guten Tag. Ich heiße Wanjiru Kamau.</div>
+              <div class="script-ph">GOO-ten TAHK. IH HAI-se...</div>
+              <div class="script-en">Good day. My name is Wanjiru Kamau.</div>
+              <div class="script-note">↳ Open with the correct greeting + your name immediately.</div>
+              <button class="speak-btn" onclick="speakSentence(this,'Guten Tag. Ich heiße Wanjiru Kamau.')">🔊 Hear line</button>
+            </div>
+
+            <div class="script-line">
+              <div class="script-de">Ich komme aus Kenia, genauer gesagt aus Nairobi.</div>
+              <div class="script-ph">IH KOM-me aus KE-ni-a, ge-NAU-er ge-ZAHKT aus NAI-ro-bi.</div>
+              <div class="script-en">I come from Kenya — more precisely from Nairobi.</div>
+              <div class="script-note">↳ "genauer gesagt" (more precisely) = bonus phrase showing higher language level.</div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich komme aus Kenia, genauer gesagt aus Nairobi.')">🔊 Hear line</button>
+            </div>
+
+            <div class="script-line">
+              <div class="script-de">Ich wohne jetzt noch in Nairobi, aber ich möchte bald nach Deutschland ziehen.</div>
+              <div class="script-ph">IH VOH-ne yetzt noh in NAI-ro-bi, AH-ber IH MÖHH-te balt nah DOYTSH-lant TSEE-hen.</div>
+              <div class="script-en">I currently still live in Nairobi, but I would like to move to Germany soon.</div>
+              <div class="script-note">↳ "noch" (still), "bald" (soon), "ziehen" (to move) — these show range. "möchte" + infinitive at end.</div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich wohne jetzt noch in Nairobi, aber ich möchte bald nach Deutschland ziehen.')">🔊 Hear line</button>
+            </div>
+
+            <div class="script-line">
+              <div class="script-de">Ich bin Krankenschwester von Beruf und arbeite in einem Krankenhaus.</div>
+              <div class="script-ph">IH bin KRAN-ken-shves-ter fon be-ROOF unt AR-bai-te in AI-nem KRAN-ken-haus.</div>
+              <div class="script-en">I am a nurse by profession and I work in a hospital.</div>
+              <div class="script-note">↳ Two facts in one sentence with "und." "in einem Krankenhaus" = Dativ — shows grammar awareness.</div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich bin Krankenschwester von Beruf und arbeite in einem Krankenhaus.')">🔊 Hear line</button>
+            </div>
+
+            <div class="script-line">
+              <div class="script-de">Ich bin ledig und wohne mit meiner Schwester zusammen.</div>
+              <div class="script-ph">IH bin LEH-dig unt VOH-ne mit MAI-ner SHVES-ter tsu-ZAM-men.</div>
+              <div class="script-en">I am single and live together with my sister.</div>
+              <div class="script-note">↳ Family information naturally included. "mit meiner Schwester" shows possessive + Dativ.</div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich bin ledig und wohne mit meiner Schwester zusammen.')">🔊 Hear line</button>
+            </div>
+
+            <div class="script-line">
+              <div class="script-de">Ich lerne Deutsch, weil ich in Deutschland als Krankenschwester arbeiten möchte.</div>
+              <div class="script-ph">IH LER-ne DOYTSH, vail IH in DOYTSH-lant als KRAN-ken-shves-ter AR-bai-ten MÖHH-te.</div>
+              <div class="script-en">I am learning German because I want to work in Germany as a nurse.</div>
+              <div class="script-note">↳ "weil" clause: verb goes to END. "arbeiten möchte" — this word order is essential to get right.</div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich lerne Deutsch, weil ich in Deutschland als Krankenschwester arbeiten möchte.')">🔊 Hear line</button>
+            </div>
+          </div>
+
+          <div class="yt"><div class="yt-icon">▶️</div><div class="yt-title">Video: Goethe A1 Sprechen — Model Introduction</div><div class="yt-desc">Embed a video of a qualified teacher or examiner demonstrating a complete model self-introduction with natural rhythm and stress. Students watch, then repeat line by line.</div><div class="yt-tag">📌 YouTube embed goes here</div></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Previous</button><button class="btn btn-primary" onclick="nextStep(2,1)">Start Quiz →</button></div>
+      </div>
+
+      <div class="step" id="l2-s2">
+        <div class="card"><div class="concept-tag">Module 2 · Lesson 3 · Quiz</div><h2 class="lesson-h">Introduction Quiz</h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,2)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ===== LESSON 4: Asking About Others ===== -->
+    <div id="lesson-3" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">Module 2 · Lesson 4 of 6</div>
+          <h2 class="lesson-h">Asking about others — and answering back</h2>
+          <p class="body-text">The Goethe Sprechen section is a conversation, not a monologue. The examiner asks you questions — and the second part involves you asking the examiner questions too. This lesson teaches both directions.</p>
+
+          <div class="sec-label">Questions the examiner will ask you</div>
+          <div class="phrase-list">
+            <div class="phrase-card"><div class="phrase-icon">📛</div><div style="flex:1;"><div class="phrase-de">Wie heißen Sie?</div><div class="phrase-ph">VEE HAI-sen ZEE?</div><div class="phrase-en">What is your name?</div><div class="phrase-note">Answer: "Ich heiße [Vorname Nachname]." Always give both names in a formal context.</div></div><button class="speak-btn" onclick="speakSentence(this,'Wie heißen Sie?')">🔊</button></div>
+            <div class="phrase-card"><div class="phrase-icon">🌍</div><div style="flex:1;"><div class="phrase-de">Woher kommen Sie?</div><div class="phrase-ph">VO-her KOM-men ZEE?</div><div class="phrase-en">Where are you from?</div><div class="phrase-note">Answer: "Ich komme aus [Land/Stadt]." Do not say "Ich bin von..." — the correct structure is "aus" not "von."</div></div><button class="speak-btn" onclick="speakSentence(this,'Woher kommen Sie?')">🔊</button></div>
+            <div class="phrase-card"><div class="phrase-icon">💼</div><div style="flex:1;"><div class="phrase-de">Was machen Sie beruflich?</div><div class="phrase-ph">VAS MA-hen ZEE be-ROOF-liH?</div><div class="phrase-en">What do you do for work?</div><div class="phrase-note">Answer: "Ich bin [Beruf] von Beruf." Or "Ich arbeite als [Beruf]." Never use an article — NOT "Ich bin eine Lehrerin."</div></div><button class="speak-btn" onclick="speakSentence(this,'Was machen Sie beruflich?')">🔊</button></div>
+            <div class="phrase-card"><div class="phrase-icon">🏠</div><div style="flex:1;"><div class="phrase-de">Wo wohnen Sie?</div><div class="phrase-ph">VO VOH-nen ZEE?</div><div class="phrase-en">Where do you live?</div><div class="phrase-note">Answer: "Ich wohne in [Stadt]." For country: "Ich wohne in [Land]." Countries with articles: "in der Türkei, in den USA" — but most countries have no article: "in Kenia, in Deutschland."</div></div><button class="speak-btn" onclick="speakSentence(this,'Wo wohnen Sie?')">🔊</button></div>
+            <div class="phrase-card"><div class="phrase-icon">📚</div><div style="flex:1;"><div class="phrase-de">Warum lernen Sie Deutsch?</div><div class="phrase-ph">VA-rum LER-nen ZEE DOYTSH?</div><div class="phrase-en">Why are you learning German?</div><div class="phrase-note">Answer: "Ich lerne Deutsch, weil ich [reason]." Remember: "weil" sends the verb to the end. "...weil ich in Deutschland arbeiten möchte." Practice this structure until it is automatic.</div></div><button class="speak-btn" onclick="speakSentence(this,'Warum lernen Sie Deutsch?')">🔊</button></div>
+          </div>
+
+          <div class="sec-label">Questions YOU ask in the Sprechen section</div>
+          <p class="body-text" style="margin-bottom:12px;">In Part 2 of Sprechen, you must ask the examiner questions about pictures or about themselves. These are the W-question patterns you need:</p>
+          <div class="phrase-list">
+            <div class="phrase-card"><div class="phrase-icon">❓</div><div style="flex:1;"><div class="phrase-de">Wie heißen Sie? / Wie ist Ihr Name?</div><div class="phrase-en">What is your name?</div><div class="phrase-note">Asking the examiner's name — shows you can reverse the conversation.</div></div><button class="speak-btn" onclick="speakSentence(this,'Wie heißen Sie? Wie ist Ihr Name?')">🔊</button></div>
+            <div class="phrase-card"><div class="phrase-icon">❓</div><div style="flex:1;"><div class="phrase-de">Haben Sie Kinder?</div><div class="phrase-en">Do you have children?</div><div class="phrase-note">Yes/no question — verb first. Answer: "Ja, ich habe [number] Kinder." / "Nein, ich habe keine Kinder."</div></div><button class="speak-btn" onclick="speakSentence(this,'Haben Sie Kinder?')">🔊</button></div>
+            <div class="phrase-card"><div class="phrase-icon">❓</div><div style="flex:1;"><div class="phrase-de">Was ist Ihr Hobby?</div><div class="phrase-en">What is your hobby?</div><div class="phrase-note">Asking about interests — opens natural conversation. Shows you can initiate topics, not just respond.</div></div><button class="speak-btn" onclick="speakSentence(this,'Was ist Ihr Hobby?')">🔊</button></div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Continue →</button></div>
+      </div>
+
+      <div class="step" id="l3-s1">
+        <div class="card">
+          <div class="concept-tag">Module 2 · Lesson 4 · Full Dialogue Practice</div>
+          <h2 class="lesson-h">A complete Goethe Sprechen conversation</h2>
+          <p class="body-text">Read through this model conversation. Then cover the "You" lines and try to say them from memory before pressing 🔊.</p>
+
+          <div class="dialogue">
+            <div class="dialogue-title">GOETHE A1 SPRECHEN — MODEL CONVERSATION</div>
+            <div class="dia-line"><div class="dia-speaker" style="color:var(--blue);">Examiner</div><div class="dia-text"><div class="dia-de">Guten Tag. Ich heiße Weber. Bitte stellen Sie sich vor.</div><div class="dia-en">Good day. My name is Weber. Please introduce yourself.</div></div></div>
+            <div class="dia-line"><div class="dia-speaker" style="color:var(--gold);">You</div><div class="dia-text"><div class="dia-de">Guten Tag, Frau Weber. Mein Name ist Wanjiru Kamau. Ich komme aus Kenia und wohne in Nairobi. Ich bin Krankenschwester von Beruf.</div><div class="dia-en">Good day, Ms Weber. My name is Wanjiru Kamau. I come from Kenya and live in Nairobi. I am a nurse by profession.</div></div></div>
+            <button class="speak-btn" onclick="speakSentence(this,'Guten Tag, Frau Weber. Mein Name ist Wanjiru Kamau. Ich komme aus Kenia und wohne in Nairobi. Ich bin Krankenschwester von Beruf.')">🔊 Your lines</button>
+            <div class="dia-line" style="margin-top:14px;"><div class="dia-speaker" style="color:var(--blue);">Examiner</div><div class="dia-text"><div class="dia-de">Warum lernen Sie Deutsch?</div><div class="dia-en">Why are you learning German?</div></div></div>
+            <div class="dia-line"><div class="dia-speaker" style="color:var(--gold);">You</div><div class="dia-text"><div class="dia-de">Ich lerne Deutsch, weil ich in Deutschland als Krankenschwester arbeiten möchte. Das ist mein Traum.</div><div class="dia-en">I am learning German because I want to work in Germany as a nurse. That is my dream.</div></div></div>
+            <button class="speak-btn" onclick="speakSentence(this,'Ich lerne Deutsch, weil ich in Deutschland als Krankenschwester arbeiten möchte. Das ist mein Traum.')">🔊 Your lines</button>
+            <div class="dia-line" style="margin-top:14px;"><div class="dia-speaker" style="color:var(--blue);">Examiner</div><div class="dia-text"><div class="dia-de">Haben Sie Familie?</div><div class="dia-en">Do you have family?</div></div></div>
+            <div class="dia-line"><div class="dia-speaker" style="color:var(--gold);">You</div><div class="dia-text"><div class="dia-de">Ja, ich habe eine große Familie. Ich habe drei Geschwister — zwei Schwestern und einen Bruder. Meine Eltern wohnen auch in Nairobi.</div><div class="dia-en">Yes, I have a large family. I have three siblings — two sisters and a brother. My parents also live in Nairobi.</div></div></div>
+            <button class="speak-btn" onclick="speakSentence(this,'Ja, ich habe eine große Familie. Ich habe drei Geschwister — zwei Schwestern und einen Bruder. Meine Eltern wohnen auch in Nairobi.')">🔊 Your lines</button>
+          </div>
+
+          <div class="success-box"><strong style="color:var(--green);">What the examiner is scoring:</strong> Pronunciation · Fluency (no long pauses) · Vocabulary range · Grammar accuracy · Register (formal Sie throughout) — in that order of importance. A confident answer with a small grammar mistake scores better than a hesitant answer with perfect grammar.</div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Previous</button><button class="btn btn-primary" onclick="nextStep(3,1)">Start Quiz →</button></div>
+      </div>
+
+      <div class="step" id="l3-s2">
+        <div class="card"><div class="concept-tag">Module 2 · Lesson 4 · Quiz</div><h2 class="lesson-h">Questions and Answers Quiz</h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,2)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ===== LESSON 5: Saying Goodbye ===== -->
+    <div id="lesson-4" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">Module 2 · Lesson 5 of 6</div>
+          <h2 class="lesson-h">Saying goodbye — the right ending for every situation</h2>
+          <p class="body-text">How you end a conversation matters. In the Goethe Sprechen section, the final impression you leave — including your goodbye — is part of the examiner's overall assessment of your communicative competence.</p>
+
+          <div class="sec-label">All Goodbye Phrases — tap to hear</div>
+          <div class="phrase-list">
+            <div class="phrase-card"><div class="phrase-icon">👔</div><div style="flex:1;"><div class="phrase-de">Auf Wiedersehen</div><div class="phrase-ph">OUF VEE-der-zayn</div><div class="phrase-en">Goodbye (formal — in person)</div><div class="phrase-note">The standard formal goodbye in person. Literally "until we see again." Use with the Goethe examiner, in shops, with professionals.</div></div><button class="speak-btn" onclick="speakSentence(this,'Auf Wiedersehen.')">🔊</button></div>
+            <div class="phrase-card"><div class="phrase-icon">📞</div><div style="flex:1;"><div class="phrase-de">Auf Wiederhören</div><div class="phrase-ph">OUF VEE-der-hör-en</div><div class="phrase-en">Goodbye (formal — on the phone)</div><div class="phrase-note">Used ONLY on the phone. Literally "until we hear again." The Goethe Hören section includes phone conversations — you will hear this. Never say this in person.</div></div><button class="speak-btn" onclick="speakSentence(this,'Auf Wiederhören.')">🔊</button></div>
+            <div class="phrase-card"><div class="phrase-icon">✌️</div><div style="flex:1;"><div class="phrase-de">Tschüss / Tschüssi</div><div class="phrase-ph">CHÜSS / CHÜS-si</div><div class="phrase-en">Bye / Bye-bye (informal)</div><div class="phrase-note">Casual goodbye — fine with friends and peers. Tschüssi is the warmer, softer version. Not appropriate with the Goethe examiner as your final word.</div></div><button class="speak-btn" onclick="speakSentence(this,'Tschüss!')">🔊</button></div>
+            <div class="phrase-card"><div class="phrase-icon">🌙</div><div style="flex:1;"><div class="phrase-de">Gute Nacht</div><div class="phrase-ph">GOO-te NAHKT</div><div class="phrase-en">Good night</div><div class="phrase-note">Said when someone is going to sleep — not just in the evening. You would not say this leaving a restaurant at 9pm. You say it when parting for the night knowing someone is going to bed.</div></div><button class="speak-btn" onclick="speakSentence(this,'Gute Nacht.')">🔊</button></div>
+            <div class="phrase-card"><div class="phrase-icon">🤝</div><div style="flex:1;"><div class="phrase-de">Schönen Tag noch!</div><div class="phrase-ph">SHÖH-nen TAHK noh!</div><div class="phrase-en">Have a nice day! (still)</div><div class="phrase-note">"noch" = still/yet. Said when leaving a shop or ending a conversation during the day. The "noch" implies the day is not over yet. Common in everyday Goethe Hören contexts.</div></div><button class="speak-btn" onclick="speakSentence(this,'Schönen Tag noch!')">🔊</button></div>
+            <div class="phrase-card"><div class="phrase-icon">👋</div><div style="flex:1;"><div class="phrase-de">Bis bald! / Bis dann! / Bis morgen!</div><div class="phrase-ph">BIS BALT / BIS DAN / BIS MOR-gen</div><div class="phrase-en">See you soon / See you then / See you tomorrow</div><div class="phrase-note">"Bis" = until. These are informal goodbyes used when you expect to see the person again. Bis bald (soon), Bis dann (then/later), Bis morgen (tomorrow).</div></div><button class="speak-btn" onclick="speakSentence(this,'Bis bald! Bis dann! Bis morgen!')">🔊</button></div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue);">How to end the Goethe Sprechen exam:</strong><br><br>
+            When the examiner signals the end, say: <span style="font-family:'DM Mono',monospace;color:var(--gold);">Vielen Dank. Auf Wiedersehen!</span><br>
+            (Thank you very much. Goodbye!)<br><br>
+            <span style="font-size:13px;color:var(--gray);">This is polite, formal, complete, and leaves a good final impression. Never just say "Tschüss" to a Goethe examiner and walk out.</span>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Vielen Dank. Auf Wiedersehen!')">🔊 Hear the perfect ending</button>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Start Quiz →</button></div>
+      </div>
+
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">Module 2 · Lesson 5 · Quiz</div><h2 class="lesson-h">Goodbye Quiz</h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ===== LESSON 6: Polite Phrases ===== -->
+    <div id="lesson-5" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">Module 2 · Lesson 6 of 6</div>
+          <h2 class="lesson-h">Polite phrases — the social glue of German</h2>
+          <p class="body-text">These phrases are short but they carry enormous social weight in German culture. Germans use them constantly and notice immediately when a foreigner does not. Using them correctly signals cultural awareness — and that impresses examiners.</p>
+
+          <div class="sec-label">The core polite phrases — tap to hear</div>
+          <div class="polite-grid">
+            <div class="polite-card" onclick="speakPhrase(this,'Bitte.')"><div class="pc-de">Bitte</div><div class="pc-en">Please / You're welcome / Here you go</div><div class="pc-note">Three meanings depending on context. "Bitte" when asking. "Bitte" when handing something. "Bitte" as a response to "Danke." Most versatile word in German social interaction.</div><div class="pc-tap">🔊 tap</div></div>
+            <div class="polite-card" onclick="speakPhrase(this,'Danke schön.')"><div class="pc-de">Danke / Danke schön</div><div class="pc-en">Thanks / Thank you very much</div><div class="pc-note">"Danke" is simple thanks. "Danke schön" is warmer. "Vielen Dank" is most formal. "Herzlichen Dank" for formal letters.</div><div class="pc-tap">🔊 tap</div></div>
+            <div class="polite-card" onclick="speakPhrase(this,'Entschuldigung.')"><div class="pc-de">Entschuldigung</div><div class="pc-en">Excuse me / Sorry (to get attention)</div><div class="pc-note">Used to get someone's attention or to pass by them. NOT for a serious apology. If you bump into someone on the street or interrupt someone — Entschuldigung.</div><div class="pc-tap">🔊 tap</div></div>
+            <div class="polite-card" onclick="speakPhrase(this,'Es tut mir leid.')"><div class="pc-de">Es tut mir leid</div><div class="pc-en">I am sorry (genuine apology)</div><div class="pc-note">For a real apology — if you made a mistake, arrived late, caused inconvenience. More serious than Entschuldigung. Cannot be shortened casually.</div><div class="pc-tap">🔊 tap</div></div>
+            <div class="polite-card" onclick="speakPhrase(this,'Kein Problem.')"><div class="pc-de">Kein Problem</div><div class="pc-en">No problem</div><div class="pc-note">Accepting an apology or dismissing a worry. Common response to "Entschuldigung" or "Es tut mir leid." Sounds natural and contemporary.</div><div class="pc-tap">🔊 tap</div></div>
+            <div class="polite-card" onclick="speakPhrase(this,'Gern geschehen.')"><div class="pc-de">Gern geschehen</div><div class="pc-en">You're welcome (formal)</div><div class="pc-note">Formal response to "Danke." Literally "done gladly." Also: "Gerne!" More formal than "Bitte" as a response to thanks.</div><div class="pc-tap">🔊 tap</div></div>
+            <div class="polite-card" onclick="speakPhrase(this,'Darf ich fragen?')"><div class="pc-de">Darf ich fragen...?</div><div class="pc-en">May I ask...?</div><div class="pc-note">Polite way to introduce a question. Shows you are aware of social boundaries. Very well-received in the Sprechen section.</div><div class="pc-tap">🔊 tap</div></div>
+            <div class="polite-card" onclick="speakPhrase(this,'Wie bitte?')"><div class="pc-de">Wie bitte?</div><div class="pc-en">Pardon? / Could you repeat that?</div><div class="pc-note">When you did not hear or understand. Essential for the Hören section if audio is unclear. More polite than "Was?" Do not be afraid to use it — examiners expect it.</div><div class="pc-tap">🔊 tap</div></div>
+          </div>
+
+          <div class="info-box"><strong style="color:var(--gold);">Goethe Sprechen tip:</strong> If you do not understand the examiner's question, say <span style="font-family:'DM Mono',monospace;">Könnten Sie das bitte wiederholen?</span> (Could you please repeat that?) or simply <span style="font-family:'DM Mono',monospace;">Wie bitte?</span> This is completely acceptable and shows you can communicate naturally — not a sign of weakness.</div>
+          <button class="speak-btn" onclick="speakSentence(this,'Könnten Sie das bitte wiederholen?')">🔊 Könnten Sie das bitte wiederholen?</button>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Start Final Quiz →</button></div>
+      </div>
+
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">Module 2 · Final Quiz</div><h2 class="lesson-h">Module Complete — Final Check</h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Previous</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="showOverview()"><span class="nav-icon">📚</span><span class="nav-label">Overview</span></button>
+  <button class="nav-item" onclick="resumeLesson()"><span class="nav-icon">▶️</span><span class="nav-label">Resume</span></button>
+</nav>
+
+<script>
+// ================================================================
+// SPEECH
+// ================================================================
+var synth = (typeof window !== 'undefined' && window.speechSynthesis) ? window.speechSynthesis : null;
+var deVoice = null;
+var speechUnlocked = false;
+
+// Load German voice
+function loadVoices() {
+  if (!synth) return;
+  try {
+    var voices = synth.getVoices();
+    deVoice = voices.find(function(v){ return v.lang === 'de-DE'; })
+            || voices.find(function(v){ return v.lang && v.lang.startsWith('de'); })
+            || null;
+  } catch(e) {}
+}
+if (synth) {
+  try {
+    loadVoices();
+    if (synth.onvoiceschanged !== undefined) synth.onvoiceschanged = loadVoices;
+  } catch(e) {}
+}
+
+// Chrome on Android requires speech to be triggered by a direct user gesture.
+// We unlock it on the very first tap anywhere on the page.
+function unlockSpeech() {
+  if (speechUnlocked || !synth) return;
+  try {
+    var silent = new SpeechSynthesisUtterance('');
+    silent.volume = 0;
+    synth.speak(silent);
+    speechUnlocked = true;
+  } catch(e) {}
+}
+document.addEventListener('touchstart', unlockSpeech, { once: true, passive: true });
+document.addEventListener('click', unlockSpeech, { once: true });
+
+// Core speak function — always called directly inside a user-gesture handler
+function speakDE(text) {
+  if (!synth) return null;
+  try {
+    // Reload voices if not found yet (Android loads them lazily)
+    if (!deVoice) loadVoices();
+    synth.cancel();
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = 'de-DE';
+    u.rate = 0.85;
+    u.pitch = 1.0;
+    u.volume = 1.0;
+    if (deVoice) u.voice = deVoice;
+    synth.speak(u);
+    return u;
+  } catch(e) { return null; }
+}
+
+function speakSentence(btn, text) {
+  unlockSpeech(); // ensure unlocked on this gesture
+  document.querySelectorAll('.speak-btn').forEach(function(b){ b.classList.remove('speaking'); });
+  btn.classList.add('speaking');
+  var u = speakDE(text);
+  if (u) {
+    u.onend = function(){ btn.classList.remove('speaking'); };
+    u.onerror = function(){ btn.classList.remove('speaking'); };
+  } else {
+    setTimeout(function(){ btn.classList.remove('speaking'); }, 1500);
+  }
+}
+
+function speakPhrase(card, text) {
+  unlockSpeech();
+  document.querySelectorAll('.polite-card').forEach(function(c){ c.classList.remove('speaking'); });
+  card.classList.add('speaking');
+  var u = speakDE(text);
+  if (u) {
+    u.onend = function(){ card.classList.remove('speaking'); };
+    u.onerror = function(){ card.classList.remove('speaking'); };
+  } else {
+    setTimeout(function(){ card.classList.remove('speaking'); }, 1000);
+  }
+}
+
+// ================================================================
+// STATE
+// ================================================================
+var currentLesson = 0;
+var xp = 0;
+var TOTAL_LESSONS = 6;
+
+// ================================================================
+// QUIZ DATA
+// ================================================================
+var quizData = {
+  0: [
+    { q:'You meet the Goethe examiner. Which form do you use?', hint:'Think about the professional formal context', opts:['du — to sound friendly','Sie — always with the examiner','Both are fine','Neither — just smile'], ans:1, exp:'Always Sie with the Goethe examiner, without exception. The examiner is a professional in a formal testing context. Using du signals you do not understand German social norms, which costs marks in the Sprechen assessment.', rule:'Goethe examiner = always Sie. Never du in the exam.' },
+    { q:'"Wie heißen Sie?" — what does this ask?', hint:'Sie = formal. heißen = to be called', opts:['Where are you from?','What is your name?','How are you?','How old are you?'], ans:1, exp:'"Wie heißen Sie?" = "What is your name?" (formal). heißen means "to be called." The formal version uses Sie. The informal version is "Wie heißt du?" You will hear this as the very first question in the Goethe Sprechen section.', rule:'Wie heißen Sie? = What is your name? (formal). Answer: Ich heiße [name].' },
+    { q:'A fellow student says "Wie heißt du?" and tells you their first name. What register do they use?', hint:'They said "du" — what does that tell you?', opts:['Formal — Sie register','Informal — du register','Regional — neither','No register — just a question'], ans:1, exp:'"Wie heißt du?" uses du — the informal form. When someone addresses you with du and offers only their first name, they are inviting an informal relationship. You respond in kind with du and your first name.', rule:'du-form = informal. Respond to du with du. Respond to Sie with Sie.' },
+  ],
+  1: [
+    { q:'It is 8am. Which greeting is most appropriate with the Goethe examiner?', hint:'Time of day matters. What is the morning greeting?', opts:['Hallo!','Guten Abend','Guten Morgen','Tschüss'], ans:2, exp:'"Guten Morgen" is the correct formal greeting in the morning (until approximately midday). "Hallo" is too informal for the examiner. "Guten Abend" is evening. "Tschüss" is a goodbye — never an opening.', rule:'Morning (until ~midday) = Guten Morgen. Day = Guten Tag. Evening = Guten Abend.' },
+    { q:'The examiner asks "Wie geht es Ihnen?" What is the correct response?', hint:'Answer and return the question — this is the German way', opts:['Gut.','Danke, gut. Und Ihnen?','Fine, thank you.','Ich weiß nicht.'], ans:1, exp:'"Danke, gut. Und Ihnen?" — you say you are well, thank the person, and return the question. In German social culture, NOT returning the question is considered slightly rude. The examiner specifically listens for this social competence.', rule:'Always return "Wie geht es Ihnen?" with "Und Ihnen?" (formal) or "Und dir?" (informal).' },
+  ],
+  2: [
+    { q:'How do you say "I am a nurse" in German? Choose the correct form.', hint:'Professions in German never take an article after "Ich bin"', opts:['Ich bin eine Krankenschwester.','Ich bin Krankenschwester.','Ich habe Krankenschwester.','Mein Beruf ist eine Krankenschwester.'], ans:1, exp:'"Ich bin Krankenschwester." — no article. In German, professions after "sein" (to be) never take an article. "Ich bin eine Krankenschwester" is incorrect. This is one of the most common mistakes in the Goethe Sprechen section.', rule:'Professions: Ich bin [job]. NEVER "Ich bin eine/ein [job]."' },
+    { q:'"Ich lerne Deutsch, weil ich in Deutschland _____ möchte." Fill in the blank.', hint:'weil sends the verb to the END of the clause', opts:['möchte arbeiten','arbeiten möchte','arbeiten','ich arbeiten'], ans:1, exp:'"arbeiten möchte" — correct. "weil" (because) is a subordinating conjunction that sends the verb to the end of its clause. So the modal verb "möchte" goes to the very end, after the infinitive "arbeiten." This word order rule is tested in both Schreiben and Sprechen.', rule:'weil + [subject] + [rest] + [verb at END]. Ich lerne Deutsch, weil ich arbeiten möchte.' },
+    { q:'What are the 6 topics the Goethe examiner expects in your self-introduction?', hint:'Think about what someone needs to know about you', opts:['Name, age, height, weight, colour, city','Name, origin, home, profession, family, why German','Name, number, address, email, phone, school','Greeting, name, job, salary, address, goodbye'], ans:1, exp:'The 6 expected topics: Name (Ich heiße...), Herkunft/origin (Ich komme aus...), Wohnort/home (Ich wohne in...), Beruf/profession (Ich bin...von Beruf), Familie, and Warum Deutsch (Ich lerne Deutsch, weil...). Cover all 6 to score maximum marks.', rule:'6 introduction topics: Name · Origin · Home · Profession · Family · Why German.' },
+  ],
+  3: [
+    { q:'"Woher kommen Sie?" — what is the correct answer structure?', hint:'Woher = from where. The correct preposition matters.', opts:['Ich bin von Kenia.','Ich bin aus Kenia.','Ich komme aus Kenia.','Ich komme von Kenia.'], ans:2, exp:'"Ich komme aus Kenia." — correct. "Woher kommen Sie?" asks for origin, and the answer always uses "Ich komme aus" + country/city. "von" is wrong here. "Ich bin von" is a very common error — but "aus" is always correct for national/city origin.', rule:'Origin: Ich komme AUS [country/city]. Never "von" for country of origin.' },
+    { q:'In the Goethe Sprechen exam, you do not understand the examiner\'s question. What should you say?', hint:'You need the examiner to repeat. There is a polite German way.', opts:['Ich verstehe nicht.','Was?','Wie bitte? / Könnten Sie das bitte wiederholen?','Sprechen Sie Englisch?'], ans:2, exp:'"Wie bitte?" or "Könnten Sie das bitte wiederholen?" are both correct and perfectly acceptable. The examiner expects you to request clarification when needed — this is part of communicative competence. "Was?" alone is too abrupt. Never switch to English.', rule:'Did not understand: "Wie bitte?" or "Könnten Sie das bitte wiederholen?" — always acceptable.' },
+  ],
+  4: [
+    { q:'You are ending a phone call with a German company. Which goodbye is correct?', hint:'There is a specific goodbye only used on the phone', opts:['Auf Wiedersehen!','Tschüss!','Auf Wiederhören!','Gute Nacht!'], ans:2, exp:'"Auf Wiederhören!" — the phone-specific goodbye. "Wieder-hören" = until we hear again (as opposed to "Wieder-sehen" = until we see again). Using "Auf Wiedersehen" on the phone is technically odd because you cannot "see" each other. "Auf Wiederhören" is the correct professional choice.', rule:'In person = Auf Wiedersehen. On the phone = Auf Wiederhören.' },
+    { q:'A shopkeeper hands you your change and says "Schönen Tag noch!" What does this mean?', hint:'"noch" = still/yet — the day is continuing', opts:['Good night!','Have a nice day (still)!','See you tomorrow!','Thank you very much!'], ans:1, exp:'"Schönen Tag noch!" = "Have a nice day still!" The "noch" implies the day is not over — it is a warm parting phrase said during the day when leaving a shop, office, or casual encounter. It is very common in Goethe Hören dialogues set in shops and service situations.', rule:'Schönen Tag noch! = Have a nice (rest of the) day! Common in shop and service contexts.' },
+  ],
+  5: [
+    { q:'What is the difference between "Entschuldigung" and "Es tut mir leid"?', hint:'One is for attention, one is for a real apology', opts:['No difference — both mean sorry','Entschuldigung = excuse me / to get attention. Es tut mir leid = genuine apology.','Es tut mir leid = excuse me. Entschuldigung = genuine apology.','Both are only used in formal situations.'], ans:1, exp:'"Entschuldigung" is for getting attention or passing by someone — like English "excuse me." "Es tut mir leid" is a genuine apology for something you did wrong — like English "I am truly sorry." Using "Es tut mir leid" when bumping past someone is slightly dramatic. Using "Entschuldigung" after a serious mistake is too casual.', rule:'Entschuldigung = excuse me (attention/passing). Es tut mir leid = I am sorry (genuine apology).' },
+    { q:'Someone says "Danke schön!" to you. What is the most appropriate formal response?', hint:'There are two common options — choose the formal one', opts:['Bitte schön! / Gern geschehen!','Kein Problem, Mann!','Ja.','Und dir?'], ans:0, exp:'"Bitte schön!" or "Gern geschehen!" are both correct formal responses to "Danke schön." "Bitte schön" = here you are / you are welcome. "Gern geschehen" = gladly done / my pleasure. "Kein Problem" is acceptable but more casual.', rule:'Response to Danke: Bitte (schön)! or Gern geschehen! — both correct and natural.' },
+    { q:'How do you end the Goethe Sprechen exam when the examiner signals you are done?', hint:'Formal, polite, complete — leaves a good impression', opts:['Tschüss!','Ok, bye.','Vielen Dank. Auf Wiedersehen!','Gute Nacht!'], ans:2, exp:'"Vielen Dank. Auf Wiedersehen!" — the perfect formal ending. "Vielen Dank" = thank you very much (for the time and the examination). "Auf Wiedersehen" = formal in-person goodbye. This is polite, professional, and complete. Never just "Tschüss" to an examiner.', rule:'End Goethe Sprechen with: Vielen Dank. Auf Wiedersehen!' },
+  ],
+};
+
+var qState = {};
+function initQuiz(li) {
+  var el = document.getElementById('qz-' + li);
+  if (!el || el.dataset.ready) return;
+  el.dataset.ready = '1';
+  qState[li] = { cur:0, correct:0 };
+  renderQ(li);
+}
+function renderQ(li) {
+  var el = document.getElementById('qz-' + li);
+  if (!el) return;
+  var s = qState[li];
+  var qs = quizData[li];
+  if (s.cur >= qs.length) { showResult(li); return; }
+  var q = qs[s.cur];
+  el.innerHTML =
+    '<div class="quiz-qnum">QUESTION '+(s.cur+1)+' OF '+qs.length+'</div>' +
+    '<div class="quiz-q">'+q.q+'</div>' +
+    '<div class="quiz-hint">'+q.hint+'</div>' +
+    '<div class="quiz-opts">'+
+      q.opts.map(function(o,i){ return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">' +
+        '<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>'; }).join('') +
+    '</div>'+
+    '<div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div>'+
+    '<div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Next Question →':'See Results →')+'</button></div>';
+}
+function pickQ(li, idx) {
+  var s = qState[li]; var q = quizData[li][s.cur]; var ok = idx === q.ans;
+  if (ok) { s.correct++; xp += 20; document.getElementById('xpDisp').textContent = '⚡ '+xp+' XP'; }
+  document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){
+    b.disabled = true;
+    if (i === q.ans) b.classList.add('correct');
+    if (i === idx && !ok) b.classList.add('wrong');
+  });
+  var fb = document.getElementById('qz'+li+'-fb');
+  fb.classList.add('show', ok?'ok':'no');
+  var fbt = document.getElementById('qz'+li+'-fbt');
+  fbt.className = 'qft '+(ok?'ok':'no');
+  fbt.textContent = ok ? '✓ Correct!' : '✗ Not quite';
+  document.getElementById('qz'+li+'-fbb').textContent = q.exp;
+  document.getElementById('qz'+li+'-fbr').textContent = q.rule;
+  document.getElementById('qz'+li+'-nx').classList.add('show');
+}
+function advQ(li) { qState[li].cur++; renderQ(li); }
+function showResult(li) {
+  var el = document.getElementById('qz-'+li);
+  var s = qState[li]; var total = quizData[li].length;
+  var pct = Math.round(s.correct/total*100);
+  var earned = s.correct*20;
+  var isLast = li===5;
+  el.innerHTML = '<div style="text-align:center;padding:16px 0;">'+
+    '<div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div>'+
+    '<div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' correct</div>'+
+    '<div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfect — locked in.':pct>=60?'Good work.':'Review and try again.')+'</div>'+
+    '<div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.12);border:1px solid var(--gold);border-radius:50px;padding:9px 22px;color:var(--gold);font-weight:700;margin-bottom:20px;">⚡ +'+earned+' XP</div><br>'+
+    (isLast
+      ? '<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Complete Module 2 →</button>'
+      : '<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Next Lesson →</button>'
+    )+'</div>';
+}
+function showCompletion() {
+  var el = document.querySelector('#lesson-5 .step.active');
+  el.innerHTML = '<div class="complete-wrap">'+
+    '<div class="complete-icon">🗣️</div>'+
+    '<h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Module 2 Complete!</h2>'+
+    '<p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">You now know the social scripts that determine first impressions in German. Register, greetings, introductions, polite phrases — these are the signs of a competent communicator.</p>'+
+    '<div class="xp-badge">⚡ '+xp+' XP Earned</div>'+
+    '<p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Next: Module 3 — haben and sein (The Verb Foundation)</p>'+
+    '<button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Back to Overview</button>'+
+    '</div>';
+}
+
+// ================================================================
+// NAVIGATION
+// ================================================================
+function showOverview() {
+  document.getElementById('screen-overview').classList.add('active');
+  document.getElementById('screen-lesson').classList.remove('active');
+}
+function resumeLesson() { goLesson(currentLesson); }
+function goLesson(idx) {
+  currentLesson = idx;
+  document.getElementById('screen-overview').classList.remove('active');
+  document.getElementById('screen-lesson').classList.add('active');
+  document.querySelectorAll('.lesson-pane').forEach(function(p){ p.style.display='none'; });
+  var pane = document.getElementById('lesson-'+idx);
+  if (pane) pane.style.display = 'block';
+  var steps = pane ? pane.querySelectorAll('.step') : [];
+  steps.forEach(function(s,i){ s.classList.toggle('active', i===0); });
+  renderDots(); updateProgress(idx,0); window.scrollTo(0,0);
+}
+function nextStep(li, si) {
+  var pane = document.getElementById('lesson-'+li);
+  var steps = pane.querySelectorAll('.step');
+  var next = si+1;
+  if (next < steps.length) {
+    steps[si].classList.remove('active');
+    steps[next].classList.add('active');
+    updateProgress(li, next);
+    window.scrollTo(0,0);
+    if (next === steps.length-1) initQuiz(li);
+  } else {
+    if (li+1 < TOTAL_LESSONS) goLesson(li+1);
+    else showCompletion();
+  }
+}
+function prevStep(li, si) {
+  if (si===0) { showOverview(); return; }
+  var pane = document.getElementById('lesson-'+li);
+  var steps = pane.querySelectorAll('.step');
+  steps[si].classList.remove('active');
+  steps[si-1].classList.add('active');
+  updateProgress(li, si-1);
+  window.scrollTo(0,0);
+}
+function renderDots() {
+  var row = document.getElementById('dotRow');
+  row.innerHTML = '';
+  for (var i=0; i<TOTAL_LESSONS; i++) {
+    var d = document.createElement('div');
+    d.className = 'dot'+(i<currentLesson?' done':i===currentLesson?' active':'');
+    (function(idx){ d.onclick = function(){ goLesson(idx); }; })(i);
+    row.appendChild(d);
+  }
+}
+function updateProgress(li, si) {
+  var total = TOTAL_LESSONS*3;
+  var done = li*3+si;
+  document.getElementById('progFill').style.width = (done/total*100)+'%';
+}
+document.addEventListener('DOMContentLoaded', function(){
+  // Show the page regardless of whether speech works
+  document.body.classList.add('ready');
+  // Try to load voices after page is visible
+  if (synth) { try { loadVoices(); } catch(e) {} }
+});
+// Fallback: if DOMContentLoaded already fired, show immediately
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  document.body.classList.add('ready');
+}
+</script>
+</body>
+</html>

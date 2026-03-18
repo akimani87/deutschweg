@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Module 7: Sentence Structure</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --p1:#3498db; --p2:#e67e22; --p3:#9b59b6; --verb:#c9a84c;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:rgba(10,10,10,0.96); backdrop-filter:blur(20px); border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:12px 0 20px; z-index:100; }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:8px 16px; border-radius:12px; transition:all 0.2s; border:none; background:none; color:var(--gray); }
+  .nav-item:hover, .nav-item.active { color:var(--gold); }
+  .nav-icon { font-size:20px; }
+  .nav-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; font-family:'DM Mono',monospace; }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--gold); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--gold); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--gold); color:var(--black); width:100%; }
+  .btn-primary:hover { background:var(--gold-light); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(201,168,76,0.2); }
+  .speak-btn.speaking { background:var(--gold); color:var(--black); }
+
+  /* SENTENCE BLOCKS — the core visual */
+  .sent-block { margin:14px 0; }
+  .sent-de { display:flex; flex-wrap:wrap; gap:6px; align-items:flex-end; margin-bottom:10px; }
+  .stoken { display:flex; flex-direction:column; align-items:center; }
+  .sw { font-family:'DM Mono',monospace; font-size:16px; padding:8px 12px; border-radius:8px; font-weight:600; }
+  .sl { font-size:9px; letter-spacing:1.5px; text-align:center; margin-top:4px; font-family:'DM Mono',monospace; }
+  .sw-p1 { background:rgba(52,152,219,0.12); border:1px solid rgba(52,152,219,0.3); color:var(--p1); }
+  .sl-p1 { color:var(--p1); }
+  .sw-verb { background:rgba(201,168,76,0.12); border:1px solid rgba(201,168,76,0.35); color:var(--verb); }
+  .sl-verb { color:var(--verb); }
+  .sw-p2 { background:rgba(230,126,34,0.1); border:1px solid rgba(230,126,34,0.3); color:var(--p2); }
+  .sl-p2 { color:var(--p2); }
+  .sw-p3 { background:rgba(155,89,182,0.1); border:1px solid rgba(155,89,182,0.3); color:var(--p3); }
+  .sl-p3 { color:var(--p3); }
+  .sw-gray { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); color:var(--cream); }
+  .sl-gray { color:var(--gray); }
+  .sw-end { background:rgba(39,174,96,0.08); border:1px solid rgba(39,174,96,0.25); color:var(--green); }
+  .sl-end { color:var(--green); }
+  .sent-en { font-size:13px; color:var(--gray); margin-top:4px; padding-left:2px; }
+
+  /* POSITION GRID */
+  .pos-grid { display:grid; grid-template-columns:auto 1fr 1fr 1fr; gap:2px; margin:14px 0; }
+  .pg-header { background:rgba(255,255,255,0.05); border-radius:6px; padding:8px 12px; font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; text-align:center; }
+  .pg-p { background:rgba(52,152,219,0.06); border:1px solid rgba(52,152,219,0.2); border-radius:6px; padding:8px 10px; font-family:'DM Mono',monospace; font-size:13px; color:var(--p1); text-align:center; }
+  .pg-v { background:rgba(201,168,76,0.06); border:1px solid rgba(201,168,76,0.25); border-radius:6px; padding:8px 10px; font-family:'DM Mono',monospace; font-size:13px; color:var(--verb); text-align:center; }
+  .pg-m { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:6px; padding:8px 10px; font-family:'DM Mono',monospace; font-size:12px; color:var(--cream); text-align:center; }
+  .pg-row-label { padding:8px 10px; font-size:12px; color:var(--gray); display:flex; align-items:center; }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-en { font-size:12px; color:var(--gray); margin-bottom:6px; }
+  .ex-note { font-size:12px; color:var(--cream); line-height:1.6; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Sans',sans-serif; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--gold); background:rgba(201,168,76,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(201,168,76,0.1); border-radius:8px; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(201,168,76,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(201,168,76,0.08); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(201,168,76,0.12); border:1px solid var(--gold); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--gold); font-size:18px; margin:18px 0; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .sw{font-size:13px;padding:6px 8px;} .lesson-h{font-size:22px;} }
+</style>
+</head>
+<body>
+
+<!-- OVERVIEW -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">MODULE 7</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">A1–A2 · Grammar Core</div>
+    <h1 class="lesson-h" style="font-size:36px;">Sentence Structure<br>& <span style="color:var(--verb)">Word Order</span></h1>
+    <p class="body-text">German word order is rule-based and logical — but the rules are different from English. The verb has a fixed position. Time, manner, and place follow a sequence. Subordinate clauses send the verb to the end. Master these rules and your sentences will sound natural in every Goethe section.</p>
+    <div class="info-box"><strong style="color:var(--gold)">The single most important rule:</strong> In a German main clause, the <span style="color:var(--verb)">conjugated verb always occupies position 2</span>. Not second word — second element. Whatever element you put first (subject, time, place), the verb comes immediately after it.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">2️⃣</div><div><div class="lc-title">Lesson 1 — Verb in Position 2</div><div class="lc-desc">The fundamental rule. What "position 2" actually means.</div></div><div class="lc-tag" style="color:var(--gold);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">🔄</div><div><div class="lc-title">Lesson 2 — Inversion: Time First</div><div class="lc-desc">Putting time at the start — and what happens to the subject.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">❓</div><div><div class="lc-title">Lesson 3 — Question Word Order</div><div class="lc-desc">Yes/no questions. W-questions. The verb-first rule.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">📤</div><div><div class="lc-title">Lesson 4 — Verb-End: Modal Verbs</div><div class="lc-desc">Ich möchte / kann / muss + infinitive at the end.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">🔗</div><div><div class="lc-title">Lesson 5 — Subordinate Clauses (weil, dass, wenn)</div><div class="lc-desc">The verb goes to the very end. Goethe Schreiben essential.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🎓</div><div><div class="lc-title">Lesson 6 — Word Order in Goethe Writing</div><div class="lc-desc">TeKaMoLo — time, cause, manner, place in the right order.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Begin Lesson 1 →</button>
+  </div>
+</div>
+
+<!-- LESSON SCREEN -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lessons</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- LESSON 1: Verb in Position 2 -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">Module 7 · Lesson 1 of 6</div>
+          <h2 class="lesson-h">The verb always occupies position 2</h2>
+          <p class="body-text">In German main clauses, the conjugated verb is always the second element. Not the second word — the second unit of meaning. The first element can be the subject, a time expression, a place, or any other phrase. Whatever it is, the verb comes immediately after it.</p>
+
+          <div class="sent-block">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Ich</span><span class="sl sl-p1">POSITION 1</span></div>
+              <div class="stoken"><span class="sw sw-verb">kaufe</span><span class="sl sl-verb">POSITION 2 · VERB</span></div>
+              <div class="stoken"><span class="sw sw-gray">heute</span><span class="sl sl-gray">time</span></div>
+              <div class="stoken"><span class="sw sw-gray">Brot</span><span class="sl sl-gray">object</span></div>
+              <div class="stoken"><span class="sw sw-gray">.</span><span class="sl sl-gray"></span></div>
+            </div>
+            <div class="sent-en">I am buying bread today.</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Ich kaufe heute Brot.')">🔊</button>
+
+          <div class="sent-block" style="margin-top:18px;">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Heute</span><span class="sl sl-p1">POSITION 1 · time</span></div>
+              <div class="stoken"><span class="sw sw-verb">kaufe</span><span class="sl sl-verb">POSITION 2 · VERB</span></div>
+              <div class="stoken"><span class="sw sw-gray">ich</span><span class="sl sl-gray">subject</span></div>
+              <div class="stoken"><span class="sw sw-gray">Brot</span><span class="sl sl-gray">object</span></div>
+              <div class="stoken"><span class="sw sw-gray">.</span><span class="sl sl-gray"></span></div>
+            </div>
+            <div class="sent-en">Today I am buying bread. (same meaning, time emphasised)</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Heute kaufe ich Brot.')">🔊</button>
+
+          <div class="info-box" style="margin-top:14px;"><strong style="color:var(--gold);">What "position 2" means in practice:</strong> In the first sentence, "Ich" is the first element, "kaufe" is second. In the second sentence, "Heute" is the first element, "kaufe" is still second — and now "ich" must move to position 3. The verb never moves. Everything around it shifts.</div>
+
+          <div class="sec-label">More verb-in-position-2 examples</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--verb);">V2</div>
+              <div style="flex:1;">
+                <div class="ex-de">In Berlin <span style="color:var(--verb);font-weight:700;">wohne</span> ich seit zwei Jahren.</div>
+                <div class="ex-en">I have been living in Berlin for two years.</div>
+                <div class="ex-note">"In Berlin" = first element (place). "wohne" = position 2. "ich" pushed to position 3.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'In Berlin wohne ich seit zwei Jahren.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--verb);">V2</div>
+              <div style="flex:1;">
+                <div class="ex-de">Am Montag <span style="color:var(--verb);font-weight:700;">beginnt</span> der Kurs.</div>
+                <div class="ex-en">The course begins on Monday.</div>
+                <div class="ex-note">"Am Montag" = first element (time). "beginnt" = position 2. "der Kurs" = position 3.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Am Montag beginnt der Kurs.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(192,57,43,0.1);color:#e74c3c;">WRONG</div>
+              <div style="flex:1;">
+                <div class="ex-de" style="text-decoration:line-through;color:var(--gray);">Am Montag der Kurs beginnt.</div>
+                <div class="ex-en">❌ Wrong — verb cannot be at position 3 in a main clause.</div>
+                <div class="ex-note">This is the most common word order mistake from learners whose home languages use verb-final structures. German main clauses always have V2.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">Module 7 · Lesson 1 · Quiz</div><h2 class="lesson-h">Verb Position 2 Quiz</h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- LESSON 2: Inversion -->
+    <div id="lesson-1" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">Module 7 · Lesson 2 of 6</div>
+          <h2 class="lesson-h">Inversion — when the subject moves</h2>
+          <p class="body-text">When any element other than the subject starts the sentence, the subject and verb swap positions — this is called inversion. The verb stays in position 2. The subject jumps to position 3. The meaning does not change, only the emphasis.</p>
+
+          <div class="sec-label">Normal order vs inverted order</div>
+          <div class="sent-block">
+            <div style="font-size:11px;color:var(--gray);letter-spacing:2px;font-family:'DM Mono',monospace;margin-bottom:8px;">NORMAL ORDER</div>
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Ich</span><span class="sl sl-p1">SUBJECT · P1</span></div>
+              <div class="stoken"><span class="sw sw-verb">gehe</span><span class="sl sl-verb">VERB · P2</span></div>
+              <div class="stoken"><span class="sw sw-gray">morgen</span><span class="sl sl-gray">time</span></div>
+              <div class="stoken"><span class="sw sw-gray">zum Arzt</span><span class="sl sl-gray">place</span></div>
+              <div class="stoken"><span class="sw sw-gray">.</span><span class="sl sl-gray"></span></div>
+            </div>
+            <div class="sent-en">I am going to the doctor tomorrow.</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Ich gehe morgen zum Arzt.')">🔊</button>
+
+          <div class="sent-block" style="margin-top:18px;">
+            <div style="font-size:11px;color:var(--p2);letter-spacing:2px;font-family:'DM Mono',monospace;margin-bottom:8px;">INVERTED ORDER — time first</div>
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p2">Morgen</span><span class="sl sl-p2">TIME · P1</span></div>
+              <div class="stoken"><span class="sw sw-verb">gehe</span><span class="sl sl-verb">VERB · P2</span></div>
+              <div class="stoken"><span class="sw sw-gray">ich</span><span class="sl sl-gray">subject · P3</span></div>
+              <div class="stoken"><span class="sw sw-gray">zum Arzt</span><span class="sl sl-gray">place</span></div>
+              <div class="stoken"><span class="sw sw-gray">.</span><span class="sl sl-gray"></span></div>
+            </div>
+            <div class="sent-en">Tomorrow I am going to the doctor. (tomorrow emphasised)</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Morgen gehe ich zum Arzt.')">🔊</button>
+
+          <div class="warn-box"><strong style="color:var(--blue)">Why use inversion?</strong> German uses inverted order to emphasise different parts of a sentence. Starting with "Morgen" tells the listener immediately that timing is what matters. Starting with "Ich" is neutral. In Goethe Schreiben, using inverted order occasionally shows the examiner you understand word order — it is a mark of higher competence.</div>
+
+          <div class="sec-label">Common inversion patterns in Goethe</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--p2);">TIME FIRST</div>
+              <div style="flex:1;">
+                <div class="ex-de">Gestern <span style="color:var(--verb);font-weight:700;">habe</span> ich einen Brief geschrieben.</div>
+                <div class="ex-en">Yesterday I wrote a letter.</div>
+                <div class="ex-note">Gestern = first element. habe = position 2. ich = pushed to position 3. Note: in the perfect tense, "habe" is in P2 and "geschrieben" goes to the end.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Gestern habe ich einen Brief geschrieben.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--p3);">PLACE FIRST</div>
+              <div style="flex:1;">
+                <div class="ex-de">In Nairobi <span style="color:var(--verb);font-weight:700;">gibt</span> es viele Schulen.</div>
+                <div class="ex-en">In Nairobi there are many schools.</div>
+                <div class="ex-note">Place phrase = first element. gibt = position 2. "es" = position 3 (part of "es gibt" = there is/are).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'In Nairobi gibt es viele Schulen.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">Module 7 · Lesson 2 · Quiz</div><h2 class="lesson-h">Inversion Quiz</h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- LESSON 3: Questions -->
+    <div id="lesson-2" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">Module 7 · Lesson 3 of 6</div>
+          <h2 class="lesson-h">Question word order — verb comes first or second</h2>
+
+          <div class="sec-label">Yes/No questions — verb in position 1</div>
+          <p class="body-text">For yes/no questions (questions without a question word), the verb moves to position 1. The subject drops to position 2. There is nothing before the verb.</p>
+
+          <div class="sent-block">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-verb">Haben</span><span class="sl sl-verb">VERB · P1</span></div>
+              <div class="stoken"><span class="sw sw-gray">Sie</span><span class="sl sl-gray">subject</span></div>
+              <div class="stoken"><span class="sw sw-gray">einen Termin</span><span class="sl sl-gray">object</span></div>
+              <div class="stoken"><span class="sw sw-gray">?</span><span class="sl sl-gray"></span></div>
+            </div>
+            <div class="sent-en">Do you have an appointment?</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Haben Sie einen Termin?')">🔊</button>
+
+          <div class="sec-label">W-questions — question word first, verb second</div>
+          <p class="body-text">W-questions (Wer, Was, Wann, Wo, Wie, Warum, Woher, Wohin) follow the same rule as inverted statements: the question word is position 1, the verb is position 2, the subject is position 3.</p>
+
+          <div class="sent-block">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Wo</span><span class="sl sl-p1">W-WORD · P1</span></div>
+              <div class="stoken"><span class="sw sw-verb">wohnen</span><span class="sl sl-verb">VERB · P2</span></div>
+              <div class="stoken"><span class="sw sw-gray">Sie</span><span class="sl sl-gray">subject · P3</span></div>
+              <div class="stoken"><span class="sw sw-gray">?</span><span class="sl sl-gray"></span></div>
+            </div>
+            <div class="sent-en">Where do you live?</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Wo wohnen Sie?')">🔊</button>
+
+          <div class="sec-label">Essential question words — tap to hear</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin:14px 0;">
+            <div style="background:var(--card2-bg);border:1px solid rgba(52,152,219,0.2);border-radius:10px;padding:12px;cursor:pointer;" onclick="speakSentence(this,'Wer?')">
+              <div style="font-family:'DM Mono',monospace;font-size:16px;color:var(--p1);margin-bottom:3px;">wer?</div>
+              <div style="font-size:11px;color:var(--gray);">who?</div>
+              <div style="font-size:10px;color:var(--gold);opacity:0.6;margin-top:4px;">🔊</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(52,152,219,0.2);border-radius:10px;padding:12px;cursor:pointer;" onclick="speakSentence(this,'Was?')">
+              <div style="font-family:'DM Mono',monospace;font-size:16px;color:var(--p1);margin-bottom:3px;">was?</div>
+              <div style="font-size:11px;color:var(--gray);">what?</div>
+              <div style="font-size:10px;color:var(--gold);opacity:0.6;margin-top:4px;">🔊</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(52,152,219,0.2);border-radius:10px;padding:12px;cursor:pointer;" onclick="speakSentence(this,'Wann?')">
+              <div style="font-family:'DM Mono',monospace;font-size:16px;color:var(--p1);margin-bottom:3px;">wann?</div>
+              <div style="font-size:11px;color:var(--gray);">when?</div>
+              <div style="font-size:10px;color:var(--gold);opacity:0.6;margin-top:4px;">🔊</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(52,152,219,0.2);border-radius:10px;padding:12px;cursor:pointer;" onclick="speakSentence(this,'Wo?')">
+              <div style="font-family:'DM Mono',monospace;font-size:16px;color:var(--p1);margin-bottom:3px;">wo?</div>
+              <div style="font-size:11px;color:var(--gray);">where?</div>
+              <div style="font-size:10px;color:var(--gold);opacity:0.6;margin-top:4px;">🔊</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(52,152,219,0.2);border-radius:10px;padding:12px;cursor:pointer;" onclick="speakSentence(this,'Wie?')">
+              <div style="font-family:'DM Mono',monospace;font-size:16px;color:var(--p1);margin-bottom:3px;">wie?</div>
+              <div style="font-size:11px;color:var(--gray);">how?</div>
+              <div style="font-size:10px;color:var(--gold);opacity:0.6;margin-top:4px;">🔊</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(52,152,219,0.2);border-radius:10px;padding:12px;cursor:pointer;" onclick="speakSentence(this,'Warum?')">
+              <div style="font-family:'DM Mono',monospace;font-size:16px;color:var(--p1);margin-bottom:3px;">warum?</div>
+              <div style="font-size:11px;color:var(--gray);">why?</div>
+              <div style="font-size:10px;color:var(--gold);opacity:0.6;margin-top:4px;">🔊</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(52,152,219,0.2);border-radius:10px;padding:12px;cursor:pointer;" onclick="speakSentence(this,'Woher kommen Sie?')">
+              <div style="font-family:'DM Mono',monospace;font-size:16px;color:var(--p1);margin-bottom:3px;">woher?</div>
+              <div style="font-size:11px;color:var(--gray);">from where?</div>
+              <div style="font-size:10px;color:var(--gold);opacity:0.6;margin-top:4px;">🔊</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(52,152,219,0.2);border-radius:10px;padding:12px;cursor:pointer;" onclick="speakSentence(this,'Wie viel kostet das?')">
+              <div style="font-family:'DM Mono',monospace;font-size:16px;color:var(--p1);margin-bottom:3px;">wie viel?</div>
+              <div style="font-size:11px;color:var(--gray);">how much?</div>
+              <div style="font-size:10px;color:var(--gold);opacity:0.6;margin-top:4px;">🔊</div>
+            </div>
+          </div>
+
+          <div class="sec-label">Goethe Sprechen question pairs — hear both sides</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--p1);">Q&A</div>
+              <div style="flex:1;">
+                <div class="ex-de">Woher <span style="color:var(--verb);font-weight:700;">kommen</span> Sie? — Ich komme aus Kenia.</div>
+                <div class="ex-en">Where are you from? — I am from Kenya.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Woher kommen Sie? Ich komme aus Kenia.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--p1);">Q&A</div>
+              <div style="flex:1;">
+                <div class="ex-de">Was <span style="color:var(--verb);font-weight:700;">sind</span> Sie von Beruf? — Ich bin Lehrer.</div>
+                <div class="ex-en">What is your profession? — I am a teacher.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Was sind Sie von Beruf? Ich bin Lehrer.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--p1);">Q&A</div>
+              <div style="flex:1;">
+                <div class="ex-de">Wann <span style="color:var(--verb);font-weight:700;">beginnt</span> der Kurs? — Am Montag um neun Uhr.</div>
+                <div class="ex-en">When does the course begin? — On Monday at nine.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wann beginnt der Kurs? Am Montag um neun Uhr.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">Module 7 · Lesson 3 · Quiz</div><h2 class="lesson-h">Questions Quiz</h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- LESSON 4: Modal Verbs -->
+    <div id="lesson-3" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">Module 7 · Lesson 4 of 6</div>
+          <h2 class="lesson-h">Modal verbs — conjugated verb in P2, infinitive at the end</h2>
+          <p class="body-text">German has six modal verbs: können (can), müssen (must), wollen (want), sollen (should), dürfen (may), möchten (would like). When you use a modal verb, the modal takes position 2 and the main verb goes to the very end as an infinitive.</p>
+
+          <div class="sent-block">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Ich</span><span class="sl sl-p1">SUBJECT</span></div>
+              <div class="stoken"><span class="sw sw-verb">möchte</span><span class="sl sl-verb">MODAL · P2</span></div>
+              <div class="stoken"><span class="sw sw-gray">einen Termin</span><span class="sl sl-gray">object</span></div>
+              <div class="stoken"><span class="sw sw-end">machen</span><span class="sl sl-end">INFINITIVE · END</span></div>
+              <div class="stoken"><span class="sw sw-gray">.</span><span class="sl sl-gray"></span></div>
+            </div>
+            <div class="sent-en">I would like to make an appointment.</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Ich möchte einen Termin machen.')">🔊</button>
+
+          <div class="sec-label">The six modals — conjugation for ich/er and key usage</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin:14px 0;">
+            <div style="background:var(--card2-bg);border:1px solid rgba(201,168,76,0.2);border-radius:12px;padding:14px;cursor:pointer;" onclick="speakSentence(this,'Ich kann Deutsch sprechen.')">
+              <div style="font-family:'DM Mono',monospace;font-size:15px;color:var(--gold);margin-bottom:4px;">können</div>
+              <div style="font-size:12px;color:var(--gray);margin-bottom:6px;">can / to be able to</div>
+              <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--cream);">ich kann · er kann</div>
+              <div style="font-size:11px;color:var(--gold);opacity:0.6;margin-top:6px;">🔊 Ich kann Deutsch sprechen.</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(201,168,76,0.2);border-radius:12px;padding:14px;cursor:pointer;" onclick="speakSentence(this,'Ich muss morgen arbeiten.')">
+              <div style="font-family:'DM Mono',monospace;font-size:15px;color:var(--gold);margin-bottom:4px;">müssen</div>
+              <div style="font-size:12px;color:var(--gray);margin-bottom:6px;">must / have to</div>
+              <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--cream);">ich muss · er muss</div>
+              <div style="font-size:11px;color:var(--gold);opacity:0.6;margin-top:6px;">🔊 Ich muss morgen arbeiten.</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(201,168,76,0.2);border-radius:12px;padding:14px;cursor:pointer;" onclick="speakSentence(this,'Ich möchte einen Kaffee bestellen.')">
+              <div style="font-family:'DM Mono',monospace;font-size:15px;color:var(--gold);margin-bottom:4px;">möchten</div>
+              <div style="font-size:12px;color:var(--gray);margin-bottom:6px;">would like to</div>
+              <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--cream);">ich möchte · er möchte</div>
+              <div style="font-size:11px;color:var(--gold);opacity:0.6;margin-top:6px;">🔊 Ich möchte einen Kaffee.</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(201,168,76,0.2);border-radius:12px;padding:14px;cursor:pointer;" onclick="speakSentence(this,'Darf ich hier parken?')">
+              <div style="font-family:'DM Mono',monospace;font-size:15px;color:var(--gold);margin-bottom:4px;">dürfen</div>
+              <div style="font-size:12px;color:var(--gray);margin-bottom:6px;">may / allowed to</div>
+              <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--cream);">ich darf · er darf</div>
+              <div style="font-size:11px;color:var(--gold);opacity:0.6;margin-top:6px;">🔊 Darf ich hier parken?</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(201,168,76,0.2);border-radius:12px;padding:14px;cursor:pointer;" onclick="speakSentence(this,'Ich will nach Deutschland reisen.')">
+              <div style="font-family:'DM Mono',monospace;font-size:15px;color:var(--gold);margin-bottom:4px;">wollen</div>
+              <div style="font-size:12px;color:var(--gray);margin-bottom:6px;">want to (strong)</div>
+              <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--cream);">ich will · er will</div>
+              <div style="font-size:11px;color:var(--gold);opacity:0.6;margin-top:6px;">🔊 Ich will reisen.</div>
+            </div>
+            <div style="background:var(--card2-bg);border:1px solid rgba(201,168,76,0.2);border-radius:12px;padding:14px;cursor:pointer;" onclick="speakSentence(this,'Ich soll um acht Uhr da sein.')">
+              <div style="font-family:'DM Mono',monospace;font-size:15px;color:var(--gold);margin-bottom:4px;">sollen</div>
+              <div style="font-size:12px;color:var(--gray);margin-bottom:6px;">should / supposed to</div>
+              <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--cream);">ich soll · er soll</div>
+              <div style="font-size:11px;color:var(--gold);opacity:0.6;margin-top:6px;">🔊 Ich soll da sein.</div>
+            </div>
+          </div>
+
+          <div class="success-box"><strong style="color:var(--green)">möchten is the politeness key:</strong> In the Goethe exam, möchten signals polite requests. "Ich möchte einen Termin machen" sounds professional and polite. "Ich will einen Termin" sounds blunt and demanding. In every Schreiben task involving requests — use möchten, not wollen.</div>
+
+          <div class="danger-box"><strong style="color:#e74c3c;">The infinitive goes to the end — always:</strong><br><br>
+            ✓ Ich kann heute <strong>nicht kommen</strong>.<br>
+            ❌ Ich kann <strong>nicht kommen</strong> heute. ← wrong<br><br>
+            ✓ Ich möchte morgen einen Termin <strong>machen</strong>.<br>
+            ❌ Ich möchte <strong>machen</strong> morgen einen Termin. ← wrong<br><br>
+            Everything in the middle — time, manner, objects, negation — goes between the modal and the infinitive.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">Module 7 · Lesson 4 · Quiz</div><h2 class="lesson-h">Modal Verbs Quiz</h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- LESSON 5: Subordinate Clauses -->
+    <div id="lesson-4" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">Module 7 · Lesson 5 of 6</div>
+          <h2 class="lesson-h">Subordinate clauses — verb goes to the end</h2>
+          <p class="body-text">When you connect two clauses with a subordinating conjunction (weil, dass, wenn, obwohl, weil...), the verb in the second clause moves to the very end. This is called Verb-Letzt (verb-last). It is the most reliable way to show complex grammar in Goethe Schreiben.</p>
+
+          <div class="info-box"><strong style="color:var(--gold)">The three most important subordinating conjunctions for Goethe A1/A2:</strong><br><br>
+            <span style="font-family:'DM Mono',monospace;color:var(--verb);">weil</span> — because (reason)<br>
+            <span style="font-family:'DM Mono',monospace;color:var(--verb);">dass</span> — that (reporting)<br>
+            <span style="font-family:'DM Mono',monospace;color:var(--verb);">wenn</span> — when / if (condition)<br><br>
+            All three send the verb to the end. Learn one rule, apply it to all three.
+          </div>
+
+          <div class="sec-label">weil — because</div>
+          <div class="sent-block">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Ich</span><span class="sl sl-p1">P1</span></div>
+              <div class="stoken"><span class="sw sw-verb">lerne</span><span class="sl sl-verb">V · P2</span></div>
+              <div class="stoken"><span class="sw sw-gray">Deutsch,</span><span class="sl sl-gray">main clause</span></div>
+              <div class="stoken" style="margin-left:8px;"><span class="sw sw-p2">weil</span><span class="sl sl-p2">CONJ</span></div>
+              <div class="stoken"><span class="sw sw-gray">ich</span><span class="sl sl-gray">subject</span></div>
+              <div class="stoken"><span class="sw sw-gray">in Deutschland</span><span class="sl sl-gray">place</span></div>
+              <div class="stoken"><span class="sw sw-end">arbeiten will</span><span class="sl sl-end">VERB · END</span></div>
+              <div class="stoken"><span class="sw sw-gray">.</span><span class="sl sl-gray"></span></div>
+            </div>
+            <div class="sent-en">I am learning German because I want to work in Germany.</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Ich lerne Deutsch, weil ich in Deutschland arbeiten will.')">🔊</button>
+
+          <div class="sec-label">dass — that</div>
+          <div class="sent-block">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p1">Ich</span><span class="sl sl-p1">P1</span></div>
+              <div class="stoken"><span class="sw sw-verb">denke,</span><span class="sl sl-verb">V · P2</span></div>
+              <div class="stoken" style="margin-left:8px;"><span class="sw sw-p2">dass</span><span class="sl sl-p2">CONJ</span></div>
+              <div class="stoken"><span class="sw sw-gray">Deutsch</span><span class="sl sl-gray">subject</span></div>
+              <div class="stoken"><span class="sw sw-gray">sehr wichtig</span><span class="sl sl-gray">complement</span></div>
+              <div class="stoken"><span class="sw sw-end">ist</span><span class="sl sl-end">VERB · END</span></div>
+              <div class="stoken"><span class="sw sw-gray">.</span><span class="sl sl-gray"></span></div>
+            </div>
+            <div class="sent-en">I think that German is very important.</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Ich denke, dass Deutsch sehr wichtig ist.')">🔊</button>
+
+          <div class="sec-label">wenn — when / if</div>
+          <div class="sent-block">
+            <div class="sent-de">
+              <div class="stoken"><span class="sw sw-p2">Wenn</span><span class="sl sl-p2">CONJ</span></div>
+              <div class="stoken"><span class="sw sw-gray">ich</span><span class="sl sl-gray">subject</span></div>
+              <div class="stoken"><span class="sw sw-gray">Zeit</span><span class="sl sl-gray">object</span></div>
+              <div class="stoken"><span class="sw sw-end">habe,</span><span class="sl sl-end">VERB · END</span></div>
+              <div class="stoken" style="margin-left:8px;"><span class="sw sw-verb">gehe</span><span class="sl sl-verb">VERB · P2</span></div>
+              <div class="stoken"><span class="sw sw-gray">ich</span><span class="sl sl-gray">subject</span></div>
+              <div class="stoken"><span class="sw sw-gray">spazieren.</span><span class="sl sl-gray">infinitive</span></div>
+            </div>
+            <div class="sent-en">When I have time, I go for a walk.</div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Wenn ich Zeit habe, gehe ich spazieren.')">🔊</button>
+
+          <div class="warn-box"><strong style="color:var(--blue)">When the wenn-clause starts the sentence:</strong> The entire wenn-clause counts as position 1. So the main clause verb immediately follows — verb in position 2 of the whole sentence. "Wenn ich Zeit habe, <strong>gehe</strong> ich spazieren." The comma separates the clauses and signals the structure.</div>
+
+          <div class="success-box"><strong style="color:var(--green)">Why use weil in Goethe Schreiben?</strong> The Schreiben graders specifically reward complex sentence structure. A simple sentence: "Ich lerne Deutsch. Ich möchte arbeiten." — basic. A weil-sentence: "Ich lerne Deutsch, weil ich in Deutschland arbeiten möchte." — shows grammar control. Same information, higher score. Always use weil when giving reasons.</div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">Module 7 · Lesson 5 · Quiz</div><h2 class="lesson-h">Subordinate Clauses Quiz</h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- LESSON 6: TeKaMoLo -->
+    <div id="lesson-5" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">Module 7 · Lesson 6 of 6</div>
+          <h2 class="lesson-h">TeKaMoLo — the order inside the sentence</h2>
+          <p class="body-text">German sentences often contain multiple adverbial elements. German has a rule — not always absolute but almost always correct — for their sequence: <strong style="color:var(--verb)">Te</strong>mporal → <strong style="color:var(--verb)">Ka</strong>usal → <strong style="color:var(--verb)">Mo</strong>dal → <strong style="color:var(--verb)">Lo</strong>kal. Time → Cause/Reason → Manner → Place.</p>
+
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0;">
+            <div style="background:rgba(52,152,219,0.08);border:1px solid rgba(52,152,219,0.3);border-radius:12px;padding:14px;text-align:center;">
+              <div style="font-size:24px;font-family:'Playfair Display',serif;font-weight:900;color:var(--p1);margin-bottom:4px;">Te</div>
+              <div style="font-size:10px;letter-spacing:2px;color:var(--p1);font-family:'DM Mono',monospace;margin-bottom:8px;">TEMPORAL</div>
+              <div style="font-size:12px;color:var(--gray);line-height:1.6;">When?<br>heute, um 9 Uhr, am Montag</div>
+            </div>
+            <div style="background:rgba(230,126,34,0.08);border:1px solid rgba(230,126,34,0.3);border-radius:12px;padding:14px;text-align:center;">
+              <div style="font-size:24px;font-family:'Playfair Display',serif;font-weight:900;color:var(--p2);margin-bottom:4px;">Ka</div>
+              <div style="font-size:10px;letter-spacing:2px;color:var(--p2);font-family:'DM Mono',monospace;margin-bottom:8px;">KAUSAL</div>
+              <div style="font-size:12px;color:var(--gray);line-height:1.6;">Why?<br>deshalb, wegen Krankheit</div>
+            </div>
+            <div style="background:rgba(155,89,182,0.08);border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:14px;text-align:center;">
+              <div style="font-size:24px;font-family:'Playfair Display',serif;font-weight:900;color:var(--p3);margin-bottom:4px;">Mo</div>
+              <div style="font-size:10px;letter-spacing:2px;color:var(--p3);font-family:'DM Mono',monospace;margin-bottom:8px;">MODAL</div>
+              <div style="font-size:12px;color:var(--gray);line-height:1.6;">How?<br>mit dem Zug, allein, schnell</div>
+            </div>
+            <div style="background:rgba(39,174,96,0.08);border:1px solid rgba(39,174,96,0.3);border-radius:12px;padding:14px;text-align:center;">
+              <div style="font-size:24px;font-family:'Playfair Display',serif;font-weight:900;color:var(--green);margin-bottom:4px;">Lo</div>
+              <div style="font-size:10px;letter-spacing:2px;color:var(--green);font-family:'DM Mono',monospace;margin-bottom:8px;">LOKAL</div>
+              <div style="font-size:12px;color:var(--gray);line-height:1.6;">Where?<br>in Berlin, zu Hause, im Büro</div>
+            </div>
+          </div>
+
+          <div class="sec-label">TeKaMoLo in real sentences</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--verb);">TeMoLo</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich fahre <span style="color:var(--p1);">morgen</span> <span style="color:var(--p3);">mit dem Zug</span> <span style="color:var(--green);">nach Berlin</span>.</div>
+                <div class="ex-en">I am travelling to Berlin by train tomorrow.</div>
+                <div class="ex-note"><span style="color:var(--p1);">morgen</span> = time · <span style="color:var(--p3);">mit dem Zug</span> = manner · <span style="color:var(--green);">nach Berlin</span> = place. Time before manner before place.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich fahre morgen mit dem Zug nach Berlin.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(192,57,43,0.1);color:#e74c3c;">WRONG</div>
+              <div style="flex:1;">
+                <div class="ex-de" style="text-decoration:line-through;color:var(--gray);">Ich fahre nach Berlin mit dem Zug morgen.</div>
+                <div class="ex-en">❌ Place before manner before time — reversed TeKaMoLo.</div>
+                <div class="ex-note">This sounds unnatural to a native German speaker. The information is all there but the order signals a non-native. Getting TeKaMoLo right makes sentences sound fluent.</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--verb);">FULL TKL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich gehe <span style="color:var(--p1);">jeden Tag</span> <span style="color:var(--p3);">zu Fuß</span> <span style="color:var(--green);">zur Schule</span>.</div>
+                <div class="ex-en">I walk to school every day.</div>
+                <div class="ex-note"><span style="color:var(--p1);">jeden Tag</span> = time · <span style="color:var(--p3);">zu Fuß</span> = manner (on foot) · <span style="color:var(--green);">zur Schule</span> = place.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich gehe jeden Tag zu Fuß zur Schule.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="success-box"><strong style="color:var(--green)">What you now know:</strong><br><br>
+            ✓ Main clause: verb in position 2 always<br>
+            ✓ Inversion: any element can go first, verb stays P2, subject moves<br>
+            ✓ Yes/no questions: verb in position 1<br>
+            ✓ W-questions: W-word P1, verb P2<br>
+            ✓ Modal verbs: modal in P2, infinitive at the end<br>
+            ✓ Subordinate clauses: verb moves to the very end after weil/dass/wenn<br>
+            ✓ TeKaMoLo: time → cause → manner → place<br><br>
+            This is the complete German word order system for A1 and A2.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Start Final Quiz →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">Module 7 · Final Quiz</div><h2 class="lesson-h">Module Complete — Final Check</h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Previous</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="showOverview()"><span class="nav-icon">📚</span><span class="nav-label">Overview</span></button>
+  <button class="nav-item" onclick="resumeLesson()"><span class="nav-icon">▶️</span><span class="nav-label">Resume</span></button>
+</nav>
+
+<script>
+var synth=(typeof window!=='undefined'&&window.speechSynthesis)?window.speechSynthesis:null;
+var deVoice=null,speechUnlocked=false;
+function loadVoices(){ if(!synth)return; try{ var v=synth.getVoices(); deVoice=v.find(function(x){return x.lang==='de-DE';})||v.find(function(x){return x.lang&&x.lang.startsWith('de');})||null; }catch(e){} }
+if(synth){ try{ loadVoices(); if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadVoices; }catch(e){} }
+function unlockSpeech(){ if(speechUnlocked||!synth)return; try{ var s=new SpeechSynthesisUtterance(''); s.volume=0; synth.speak(s); speechUnlocked=true; }catch(e){} }
+document.addEventListener('touchstart',unlockSpeech,{once:true,passive:true});
+document.addEventListener('click',unlockSpeech,{once:true});
+function speakDE(t){ if(!synth)return null; try{ if(!deVoice)loadVoices(); synth.cancel(); var u=new SpeechSynthesisUtterance(t); u.lang='de-DE'; u.rate=0.85; u.pitch=1.0; u.volume=1.0; if(deVoice)u.voice=deVoice; synth.speak(u); return u; }catch(e){return null;} }
+function speakSentence(btn,text){ unlockSpeech(); document.querySelectorAll('.speak-btn').forEach(function(b){b.classList.remove('speaking');}); if(btn&&btn.classList)btn.classList.add('speaking'); var u=speakDE(text); if(u){ u.onend=function(){if(btn&&btn.classList)btn.classList.remove('speaking');}; u.onerror=function(){if(btn&&btn.classList)btn.classList.remove('speaking');}; }else{ setTimeout(function(){if(btn&&btn.classList)btn.classList.remove('speaking');},1500); } }
+
+var currentLesson=0,xp=0,TOTAL=6;
+
+var QD={
+  0:[
+    {q:'In German main clauses, where does the conjugated verb go?',hint:'This is the single most important word order rule',opts:['Position 1 — always first','Position 2 — always second element','Position 3 — after subject and object','At the end — always last'],ans:1,exp:'The conjugated verb always goes in position 2 of a German main clause. Not second word — second element. Whatever comes first (subject, time, place), the verb is immediately after it. This rule is called "Verb-Zweit" (V2).',rule:'German main clause: V2. Whatever is first, verb is always second element.'},
+    {q:'Which sentence has the correct German word order?',hint:'Find the one where the verb is the second element',opts:['Ich heute gehe zum Arzt.','Ich gehe heute zum Arzt.','Heute ich gehe zum Arzt.','Ich zum Arzt heute gehe.'],ans:1,exp:'"Ich gehe heute zum Arzt." — Ich (P1) + gehe (P2, verb) + heute (time) + zum Arzt (place). The verb is the second element. "Heute ich gehe" is wrong — after "Heute" (P1), the verb must be P2, so "gehe" must come before "ich".',rule:'Verb in P2: Ich gehe... or Heute gehe ich... — verb always second element.'},
+    {q:'"Am Montag ___ der Kurs." Which word order is correct?',hint:'Am Montag is position 1. What must come next?',opts:['Am Montag der Kurs beginnt.','Am Montag beginnt der Kurs.','Am Montag beginnt Kurs der.','Am Montag der beginnt Kurs.'],ans:1,exp:'"Am Montag beginnt der Kurs." — Am Montag (P1, time) → beginnt (P2, verb) → der Kurs (P3, subject). After any first element, verb must be P2. "Am Montag der Kurs beginnt" puts the verb at P3 — incorrect in a main clause.',rule:'Time first → inversion. Am Montag beginnt der Kurs. Verb stays at P2.'},
+  ],
+  1:[
+    {q:'What happens to the subject when a time expression starts a German sentence?',hint:'Think about inversion',opts:['The subject disappears','The subject moves to position 3, after the verb','The subject stays in position 1 before the time expression','The subject is not needed anymore'],ans:1,exp:'When a time expression (or any element other than the subject) starts the sentence, the subject moves to position 3 — after the verb. This is called inversion. "Gestern habe ich..." — Gestern (P1) + habe (P2) + ich (P3). The verb stays fixed at P2; the subject adapts.',rule:'Inversion: non-subject first → verb P2 → subject P3. Verb never moves.'},
+    {q:'Which is the correct inverted version of "Ich gehe morgen zum Arzt"?',hint:'Put morgen first — what must come immediately after it?',opts:['Morgen ich gehe zum Arzt.','Morgen zum Arzt gehe ich.','Morgen gehe ich zum Arzt.','Morgen gehe zum Arzt ich.'],ans:2,exp:'"Morgen gehe ich zum Arzt." — Morgen (P1, time) + gehe (P2, verb — immediately after the first element) + ich (P3, subject pushed back) + zum Arzt (place). "Morgen ich gehe" is wrong — verb must be P2.',rule:'Inverted: Morgen gehe ich... Time (P1) → Verb (P2) → Subject (P3).'},
+    {q:'Why would you use inverted word order in Goethe Schreiben?',hint:'Think about emphasis and what it signals to the examiner',opts:['It is required — German always needs inversion','To emphasise a particular element and demonstrate word order mastery','Because it is shorter','Because German does not use subject-verb-object order'],ans:1,exp:'Using inverted order is optional but signals to the Goethe examiner that you control German word order. "Morgen gehe ich zum Arzt" emphasises "tomorrow" and shows you know how German emphasis works. Using inversion occasionally in Schreiben raises your grammar mark.',rule:'Inversion = optional emphasis + grammar score. Use it at least once in Schreiben tasks.'},
+  ],
+  2:[
+    {q:'How do you form a yes/no question in German?',hint:'Think about what comes first when there is no question word',opts:['Put the subject first','Put the verb first','Put the question word first','Put the object first'],ans:1,exp:'In yes/no questions, the verb moves to position 1. "Haben Sie einen Termin?" — Haben (P1, verb) + Sie (P2, subject). There is no question word; the verb itself signals the question. Compare statements: "Sie haben einen Termin" vs question: "Haben Sie einen Termin?"',rule:'Yes/no question: Verb first. "Haben Sie...?" "Ist das...?" "Kommen Sie...?"'},
+    {q:'What is the correct question form of "Sie wohnen in Berlin"?',hint:'W-word first, then verb, then subject',opts:['Wo Sie wohnen?','Wo wohnen Sie?','Wohnen Sie wo?','Sie wo wohnen?'],ans:1,exp:'"Wo wohnen Sie?" — Wo (W-word, P1) + wohnen (verb, P2) + Sie (subject, P3). W-questions follow the same pattern as inverted statements: question word (P1) → verb (P2) → subject (P3).',rule:'W-question: W-word (P1) → Verb (P2) → Subject (P3). Wo wohnen Sie?'},
+    {q:'Which question asks "What is your profession?"',hint:'Beruf = profession. Think about the W-word and verb order.',opts:['Was Beruf Sie sind?','Was sind Sie von Beruf?','Sie was sind von Beruf?','Von Beruf was sind Sie?'],ans:1,exp:'"Was sind Sie von Beruf?" — Was (W-word, P1) + sind (verb, P2) + Sie (subject, P3) + von Beruf (clarifying phrase). This is the standard Goethe Sprechen question about profession. The examiner asks this in every A1 speaking test.',rule:'"Was sind Sie von Beruf?" — standard Goethe profession question. Learn verbatim.'},
+  ],
+  3:[
+    {q:'Where does the infinitive go in a sentence with a modal verb?',hint:'Modal in P2 — where does the action verb go?',opts:['Position 2, next to the modal','Position 1, before the modal','At the very end of the clause','Directly after the subject'],ans:3,exp:'The infinitive goes to the very end of the clause. "Ich möchte einen Termin machen" — möchte (P2, modal) ... machen (end, infinitive). Everything between the modal and the infinitive: objects, time, place, negation. The infinitive always waits at the end.',rule:'Modal verbs: [modal P2] + [everything] + [infinitive END].'},
+    {q:'"Ich ___ morgen nicht ___ ." (I cannot come tomorrow.) Fill the gaps.',hint:'kann in P2, kommen at the end — where does nicht go?',opts:['kann nicht kommen morgen','kann morgen nicht kommen','kommen nicht kann morgen','morgen nicht kommen kann'],ans:1,exp:'"kann morgen nicht kommen" — kann (modal, P2), morgen (time), nicht (negation), kommen (infinitive, end). TeKaMoLo applies in the middle: time before manner before place. nicht comes just before the infinitive it negates. Full sentence: "Ich kann morgen nicht kommen."',rule:'Cannot: kann [time] nicht [infinitive]. Ich kann morgen nicht kommen.'},
+    {q:'Which modal verb is most appropriate for polite requests in Goethe Schreiben?',hint:'Think about register and politeness',opts:['wollen (to want)','müssen (must)','möchten (would like)','dürfen (may/allowed)'],ans:2,exp:'"möchten" — would like to. möchten is the polite form for making requests in written and formal spoken German. "Ich möchte einen Termin machen" (I would like to make an appointment) sounds professional. "Ich will einen Termin" sounds demanding. Always use möchten in Schreiben requests.',rule:'Polite requests: möchten, not wollen. Ich möchte... is the Goethe standard.'},
+  ],
+  4:[
+    {q:'In a subordinate clause with "weil", where does the verb go?',hint:'weil is a subordinating conjunction',opts:['Position 2, same as a main clause','Position 1, before the subject','At the very end of the subordinate clause','It stays where it normally is'],ans:3,exp:'After subordinating conjunctions (weil, dass, wenn, obwohl...), the verb moves to the very end of the clause. "Ich lerne Deutsch, weil ich in Deutschland arbeiten will." — "will" goes to the end. In the main clause "Ich lerne" is normal V2. The weil-clause has verb-last.',rule:'After weil/dass/wenn: verb goes to the END. "...weil ich arbeiten will."'},
+    {q:'Which sentence is grammatically correct?',hint:'Check verb position in both clauses',opts:['Ich lerne Deutsch, weil ich will arbeiten in Deutschland.','Ich lerne Deutsch, weil in Deutschland ich arbeiten will.','Ich lerne Deutsch, weil ich in Deutschland arbeiten will.','Weil ich in Deutschland arbeiten will ich lerne Deutsch.'],ans:2,exp:'"Ich lerne Deutsch, weil ich in Deutschland arbeiten will." — Main clause: V2 (lerne in P2). weil-clause: subject (ich) → middle (in Deutschland) → verb-end (arbeiten will). The modal "will" is at the very end after the infinitive "arbeiten".',rule:'Weil-clause: subject + middle + [infinitive + modal]. "...weil ich arbeiten will."'},
+    {q:'Why should you use "weil" sentences in Goethe Schreiben?',hint:'Think about grammar scoring',opts:['Because examiners require weil in every sentence','Because it is shorter than two separate sentences','Because it demonstrates subordinate clause grammar and raises your score','Because weil is always more accurate than simple sentences'],ans:2,exp:'Using weil-sentences demonstrates subordinate clause control — one of the grammar structures the Goethe examiner looks for in Schreiben. A sentence like "Ich lerne Deutsch, weil ich in Deutschland arbeiten möchte" shows more grammatical range than two simple sentences. It directly improves your Schreiben score.',rule:'Weil-sentences = grammar demonstration. Use them for reasons in Schreiben.'},
+  ],
+  5:[
+    {q:'What is the correct TeKaMoLo order?',hint:'Te-Ka-Mo-Lo — what do the letters stand for?',opts:['Place → Time → Manner → Cause','Time → Cause → Manner → Place','Manner → Time → Place → Cause','Cause → Place → Time → Manner'],ans:1,exp:'TeKaMoLo: Temporal (time) → Kausal (cause/reason) → Modal (manner/how) → Lokal (place/location). Time comes first, place comes last. "Ich fahre morgen mit dem Zug nach Berlin" — morgen (Te) + mit dem Zug (Mo) + nach Berlin (Lo).',rule:'TeKaMoLo: Time → Cause → Manner → Place. Time first, place last.'},
+    {q:'"Ich fahre ___ ___ nach Berlin." Which order is correct?',hint:'Which comes first — manner or time?',opts:['mit dem Zug morgen','morgen mit dem Zug','nach Berlin morgen','nach Berlin mit dem Zug'],ans:1,exp:'"morgen mit dem Zug" — morgen = time (Te), mit dem Zug = manner (Mo), nach Berlin = place (Lo). Full sentence: "Ich fahre morgen mit dem Zug nach Berlin." Time before manner before place = TeKaMoLo.',rule:'Time before manner: morgen (Te) + mit dem Zug (Mo) + nach Berlin (Lo).'},
+    {q:'Which sentence demonstrates the most grammatical complexity for Goethe Schreiben?',hint:'Look for the sentence that uses the most grammar rules correctly',opts:['Ich lerne Deutsch.','Morgen lerne ich Deutsch.','Ich lerne jeden Tag Deutsch im Kurs.','Ich lerne Deutsch, weil ich in Deutschland arbeiten möchte.'],ans:3,exp:'"Ich lerne Deutsch, weil ich in Deutschland arbeiten möchte." — This uses: (1) main clause V2, (2) subordinating conjunction weil, (3) verb-last in the weil-clause, (4) modal verb möchten with infinitive at end. Four grammar features in one sentence. This is what earns the highest Schreiben marks.',rule:'Complex sentences with weil + modal demonstrate maximum grammar range for Goethe Schreiben.'},
+  ],
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">QUESTION '+(s.cur+1)+' OF '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint">'+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Next Question →':'See Results →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Correct!':'✗ Not quite'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent=q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' correct</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfect.':pct>=60?'Good work.':'Review and try again.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.12);border:1px solid var(--gold);border-radius:50px;padding:9px 22px;color:var(--gold);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Complete Module 7 →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Next Lesson →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">🏗️</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Module 7 Complete!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">Word order mastered. V2. Inversion. Questions. Modal verbs. Subordinate clauses. TeKaMoLo. You now have the architecture of German sentences — the rules that make your German sound like German.</p><div class="xp-badge">⚡ '+xp+' XP Earned</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Next: Module 8 — Present Tense Verb Conjugation</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Back to Overview</button></div>'; }
+
+function showOverview(){document.getElementById('screen-overview').classList.add('active');document.getElementById('screen-lesson').classList.remove('active');}
+function resumeLesson(){goLesson(currentLesson);}
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+</body>
+</html>
