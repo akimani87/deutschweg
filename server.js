@@ -205,65 +205,72 @@ ${text.trim()}
   }
 });
 
+// ── Module context lookup (used by /api/chat) ────────────────────────────────
+function moduleContext(n) {
+  const ctx = {
+    0:  'German alphabet, pronunciation, umlauts (ä ö ü), and the ß sound',
+    1:  'numbers 1–1000, ordinal numbers, telling the time, and dates',
+    2:  'greetings, introductions, formal vs informal address (du/Sie)',
+    3:  'the verbs haben (to have) and sein (to be) and their conjugations',
+    4:  'noun gender: der, die, das — and how to identify them',
+    5:  'the Akkusativ case, direct objects, and the den/einen/keinen trap',
+    6:  'the Dativ case and prepositions mit, bei, von, zu, nach, aus',
+    7:  'German word order — verb in 2nd position, questions, weil clauses',
+    8:  'present tense conjugation of regular and irregular verbs',
+    9:  'personal pronouns ich, du, er, sie, es, wir, ihr, Sie/sie',
+    10: 'plural forms of nouns — the 5 patterns and the golden rule (die for all plurals)',
+    11: 'negation with nicht and kein — when to use each and position in sentence',
+    12: 'modal verbs können, müssen, dürfen, sollen, wollen, möchten',
+  };
+  return ctx[n] || 'German A1 grammar and vocabulary';
+}
+
 // ── POST /api/chat ───────────────────────────────────────────────────────────
 app.post('/api/chat', async (req, res) => {
   const { messages, moduleNumber } = req.body;
-  console.log(`[/api/chat] Request received — module: ${moduleNumber}, messages: ${Array.isArray(messages) ? messages.length : 'invalid'}, origin: ${req.headers.origin || 'none'}`);
+
+  console.log(`[/api/chat] Request — module: ${moduleNumber}, msgs: ${Array.isArray(messages) ? messages.length : 'invalid'}, origin: ${req.headers.origin || 'none'}`);
+  console.log('[/api/chat] API key present:', process.env.CLAUDE_API_KEY ? 'YES (' + process.env.CLAUDE_API_KEY.substring(0, 10) + '...)' : 'NO — KEY MISSING');
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'No messages provided.' });
   }
+
+  // --- Check API key (same pattern as /api/score) ---
   if (!process.env.CLAUDE_API_KEY) {
-    return res.status(500).json({ error: 'API key not configured.' });
+    console.error('CLAUDE_API_KEY is not set');
+    return res.status(500).json({ error: 'API key not configured. Add CLAUDE_API_KEY to your environment variables.' });
   }
 
   // --- Language mix based on module ---
-  const mod = parseInt(moduleNumber, 10) || 0;
+  const mod = parseInt(moduleNumber, 10);
+  const safemod = isNaN(mod) ? 0 : mod;
   let langRule;
-  if (mod <= 3)       langRule = '90% English, 10% German. Explain almost entirely in English. Sprinkle in German words/phrases only.';
-  else if (mod <= 7)  langRule = '70% English, 30% German. Mix explanations in English but use more German sentences and labels.';
-  else                langRule = '50% English, 50% German. Explain key points in English but write examples and short explanations in German too.';
+  if (safemod <= 3)      langRule = '90% English, 10% German. Explain almost entirely in English. Sprinkle in German words/phrases only.';
+  else if (safemod <= 7) langRule = '70% English, 30% German. Mix explanations in English but use more German sentences and labels.';
+  else                   langRule = '50% English, 50% German. Explain key points in English but write examples and short explanations in German too.';
 
   const systemPrompt = `You are DeutschWeg AI Tutor — a friendly, encouraging German language coach built specifically for African learners preparing for the Goethe A1 exam.
 
-The student is currently on Module ${mod}. Language mix rule: ${langRule}
+The student is currently on Module ${safemod}. Language mix rule: ${langRule}
 
 YOUR RULES:
 1. Always use African names in examples — Kwame, Amina, Kofi, Fatima, Zara, Chidi, Nia, Abebe. NEVER use Hans, Müller, München, or European-centric examples.
 2. Keep answers SHORT — maximum 4 sentences. Never write an essay.
 3. Always end with exactly one example sentence in German relevant to the student's question.
 4. Be warm and encouraging — phrases like "Great question!", "You're getting it!", "This trips everyone up at first!" — never make the student feel stupid.
-5. If the student asks something unrelated to German learning, gently redirect: "That's outside my expertise, but let's focus on your German — you've got an exam to pass! 💪"
+5. If the student asks something unrelated to German learning, gently redirect: "That's outside my expertise, but let's focus on your German — you've got an exam to pass!"
 6. Your students are from Kenya, Nigeria, Ghana, Uganda, Tanzania. Use contexts they relate to: mobile money, markets, family visits, public transport, food.
 7. When correcting an error, always show the wrong version and the right version clearly.
 8. Format: plain text only — no markdown, no asterisks, no bullet symbols. Use line breaks to separate thoughts.
-9. Module context: Module ${mod} covers ${moduleContext(mod)}.
+9. Module context: Module ${safemod} covers ${moduleContext(safemod)}.
 
 Remember: short, warm, African-context, one German example at the end.`;
-
-  function moduleContext(n) {
-    const ctx = {
-      0:  'German alphabet, pronunciation, umlauts (ä ö ü), and the ß sound',
-      1:  'numbers 1–1000, ordinal numbers, telling the time, and dates',
-      2:  'greetings, introductions, formal vs informal address (du/Sie)',
-      3:  'the verbs haben (to have) and sein (to be) and their conjugations',
-      4:  'noun gender: der, die, das — and how to identify them',
-      5:  'the Akkusativ case, direct objects, and the den/einen/keinen trap',
-      6:  'the Dativ case and prepositions mit, bei, von, zu, nach, aus',
-      7:  'German word order — verb in 2nd position, questions, weil clauses',
-      8:  'present tense conjugation of regular and irregular verbs',
-      9:  'personal pronouns ich, du, er, sie, es, wir, ihr, Sie/sie',
-      10: 'plural forms of nouns — the 5 patterns and the golden rule (die for all plurals)',
-      11: 'negation with nicht and kein — when to use each and position in sentence',
-      12: 'modal verbs können, müssen, dürfen, sollen, wollen, möchten'
-    };
-    return ctx[n] || 'German A1 grammar and vocabulary';
-  }
 
   // Keep last 6 messages for context
   const recentMessages = messages.slice(-6).map(m => ({
     role:    m.role === 'assistant' ? 'assistant' : 'user',
-    content: String(m.content).slice(0, 800) // cap each message length
+    content: String(m.content).slice(0, 800),
   }));
 
   try {
@@ -285,7 +292,7 @@ Remember: short, warm, African-context, one German example at the end.`;
     if (!response.ok) {
       const errBody = await response.json().catch(() => ({}));
       const message = errBody?.error?.message || `Claude API returned ${response.status}`;
-      console.error('Claude API error (chat):', message);
+      console.error('[/api/chat] Claude API error:', message);
       return res.status(502).json({ error: message });
     }
 
@@ -294,10 +301,11 @@ Remember: short, warm, African-context, one German example at the end.`;
 
     if (!reply) return res.status(502).json({ error: 'Empty response from AI. Try again.' });
 
+    console.log('[/api/chat] Success — reply length:', reply.length);
     return res.json({ reply });
 
   } catch (err) {
-    console.error('Chat endpoint error:', err);
+    console.error('[/api/chat] Server error:', err.message);
     return res.status(500).json({ error: 'Server error: ' + err.message });
   }
 });
