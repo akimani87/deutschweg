@@ -13,7 +13,26 @@ const app  = express();
 const PORT = process.env.PORT || 3000;
 
 // ── Middleware ──────────────────────────────────────────────────────────────
-app.use(cors());
+const allowedOrigins = [
+  'https://deutschweg.netlify.app',
+  'https://www.deutschweg.netlify.app',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'null', // file:// opened locally shows origin "null"
+];
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (curl, Postman, same-origin)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    // Also allow any localhost port for local dev
+    if (/^http:\/\/localhost:\d+$/.test(origin)) return callback(null, true);
+    console.warn('CORS blocked origin:', origin);
+    return callback(new Error('Not allowed by CORS'));
+  },
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type'],
+}));
 app.use(express.json());
 
 // ── Health check ────────────────────────────────────────────────────────────
@@ -189,6 +208,7 @@ ${text.trim()}
 // ── POST /api/chat ───────────────────────────────────────────────────────────
 app.post('/api/chat', async (req, res) => {
   const { messages, moduleNumber } = req.body;
+  console.log(`[/api/chat] Request received — module: ${moduleNumber}, messages: ${Array.isArray(messages) ? messages.length : 'invalid'}, origin: ${req.headers.origin || 'none'}`);
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'No messages provided.' });

@@ -321,6 +321,17 @@
   var sendBtn    = win.querySelector('#dw-tutor-send');
   var closeBtn   = win.querySelector('#dw-tutor-close');
 
+  // ── Wake up Render server (free tier sleeps after inactivity) ────────────────
+  var serverAwake = false;
+  function pingServer() {
+    if (serverAwake) return;
+    fetch(API_BASE + '/', { method: 'GET' })
+      .then(function () { serverAwake = true; })
+      .catch(function () { /* silent — will retry on first message */ });
+  }
+  // Ping immediately on page load so server is warm by the time student opens chat
+  setTimeout(pingServer, 1500);
+
   // ── Open / close ─────────────────────────────────────────────────────────────
   var isOpen = false;
   function openChat() {
@@ -330,6 +341,7 @@
     bubble.innerHTML = '✕';
     inputEl.focus();
     if (messagesEl.children.length === 0) showWelcome();
+    pingServer(); // also ping when bubble is clicked in case page just loaded
   }
   function closeChat() {
     isOpen = false;
