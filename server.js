@@ -205,6 +205,166 @@ ${text.trim()}
   }
 });
 
+// ── POST /api/sprechen ───────────────────────────────────────────────────────
+app.post('/api/sprechen', async (req, res) => {
+  const { part, answer } = req.body;
+  console.log(`[/api/sprechen] Part ${part}, origin: ${req.headers.origin || 'none'}`);
+
+  if (!answer || answer.trim().length < 1) {
+    return res.status(400).json({ error: 'No answer provided.' });
+  }
+  if (!process.env.CLAUDE_API_KEY) {
+    console.error('CLAUDE_API_KEY is not set');
+    return res.status(500).json({ error: 'API key not configured. Add CLAUDE_API_KEY to your environment variables.' });
+  }
+
+  let prompt = '';
+
+  if (part === 1) {
+    const { question, questionEn } = req.body;
+    prompt = `You are a Goethe A1 Sprechen examiner evaluating an African student's self-introduction answer.
+
+The examiner asked (German): "${question}"
+The examiner asked (English): "${questionEn}"
+The student answered: "${answer.trim()}"
+
+Evaluate the answer on these criteria:
+1. Did they answer the question fully? (not just one word)
+2. Is the grammar correct? (verb conjugation, word order)
+3. Did they use the formal "Sie" form correctly, not "du"?
+4. Is it a natural, complete sentence?
+
+Score out of 10:
+- 9-10: Perfect or near-perfect full sentence, correct grammar, correct Sie form
+- 7-8: Good answer with minor errors
+- 5-6: Understandable but grammar errors or incomplete
+- 3-4: Partially answered, significant errors
+- 1-2: Barely relevant or very broken
+
+IMPORTANT: Always use African names in the model answer — Kwame, Amina, Kofi, Fatima, Zara. Never use Hans or European names. Place names: Nairobi, Lagos, Accra, Kampala.
+
+Respond with a single raw JSON object, no markdown:
+{
+  "score": 7,
+  "summary": "One sentence summary of how well they answered",
+  "feedback": "2-3 sentences explaining what was good and what needs improvement, with specific grammar notes",
+  "grammar": "Specific grammar point to remember — if no errors, confirm what they did well",
+  "modelAnswer": "A complete model answer in German using an African name/context, then a line break and the English translation in brackets"
+}`;
+
+  } else if (part === 2) {
+    const { keyword, hint } = req.body;
+    prompt = `You are a Goethe A1 Sprechen examiner evaluating an African student's question formed from a keyword card.
+
+Keyword shown to student: "${keyword}"
+Context hint: "${hint}"
+Student's question: "${answer.trim()}"
+
+Evaluate on these criteria:
+1. Is it a real grammatical question? (verb in first or second position with a W-word)
+2. Is the grammar correct? (verb conjugation, word order, articles)
+3. Does it relate meaningfully to the keyword?
+4. Would this be a natural question to ask another person?
+
+Score out of 10:
+- 9-10: Grammatically correct, natural question clearly using the keyword
+- 7-8: Correct question with minor errors
+- 5-6: Understandable question but grammar issues or weak keyword link
+- 3-4: Hard to understand or not a proper question
+- 1-2: Not a question or unrelated to keyword
+
+IMPORTANT: Model answer must use African names/contexts — Kwame, Amina, Kofi, Fatima. Never Hans or München.
+
+Respond with a single raw JSON object, no markdown:
+{
+  "score": 8,
+  "summary": "One sentence summary of their question quality",
+  "feedback": "2-3 sentences: what worked, what needs fixing, why grammar matters here",
+  "grammar": "Key grammar rule for forming questions at A1 level relevant to their attempt",
+  "modelAnswer": "A strong model question in German using the keyword, then line break and English translation in brackets"
+}`;
+
+  } else if (part === 3) {
+    const { situation, context } = req.body;
+    prompt = `You are a Goethe A1 Sprechen examiner evaluating an African student's response to a situation card.
+
+Situation given to student: "${situation}"
+Context type: "${context}"
+Student's response: "${answer.trim()}"
+
+Evaluate on these criteria:
+1. Is the response appropriate for the situation?
+2. Is the politeness level correct? (bitte, entschuldigung, danke where needed)
+3. Is the grammar correct?
+4. Is it natural and complete — not too short, not an essay?
+
+Score out of 10:
+- 9-10: Perfectly appropriate, polite, grammatically correct
+- 7-8: Good response with minor errors
+- 5-6: Gets the message across but politeness or grammar issues
+- 3-4: Partially appropriate or significant errors
+- 1-2: Inappropriate or broken response
+
+IMPORTANT: Model answer must use African names/contexts — Kwame, Amina, Kofi, Fatima. Never Hans or München.
+
+Respond with a single raw JSON object, no markdown:
+{
+  "score": 8,
+  "summary": "One sentence summary of how well they handled the situation",
+  "feedback": "2-3 sentences: what was good, what to improve, specific language note",
+  "grammar": "Key phrase or structure to remember for this type of situation",
+  "modelAnswer": "A natural model response in German, then line break and English translation in brackets"
+}`;
+
+  } else {
+    return res.status(400).json({ error: 'Invalid part number. Use 1, 2, or 3.' });
+  }
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method:  'POST',
+      headers: {
+        'Content-Type':      'application/json',
+        'x-api-key':         process.env.CLAUDE_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model:      'claude-sonnet-4-6',
+        max_tokens: 600,
+        messages:   [{ role: 'user', content: prompt }],
+      }),
+    });
+
+    if (!response.ok) {
+      const errBody = await response.json().catch(() => ({}));
+      const message = errBody?.error?.message || `Claude API returned ${response.status}`;
+      console.error('[/api/sprechen] Claude API error:', message);
+      return res.status(502).json({ error: message });
+    }
+
+    const data = await response.json();
+    const raw  = (data?.content?.[0]?.text ?? '').replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();
+
+    let result;
+    try { result = JSON.parse(raw); }
+    catch (e) {
+      console.error('[/api/sprechen] JSON parse error:', raw);
+      return res.status(502).json({ error: 'Could not parse AI response. Try again.' });
+    }
+
+    if (typeof result.score !== 'number' || !result.modelAnswer) {
+      return res.status(502).json({ error: 'Unexpected response format. Try again.' });
+    }
+
+    console.log('[/api/sprechen] Success — score:', result.score);
+    return res.json(result);
+
+  } catch (err) {
+    console.error('[/api/sprechen] Server error:', err.message);
+    return res.status(500).json({ error: 'Server error: ' + err.message });
+  }
+});
+
 // ── Module context lookup (used by /api/chat) ────────────────────────────────
 function moduleContext(n) {
   const ctx = {

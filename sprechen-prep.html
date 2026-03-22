@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Sprechen Prep</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-serif;min-height:100vh;opacity:0;transition:opacity 0.25s;}
+  body.ready{opacity:1;}
+
+  /* ── NAV ── */
+  .top-nav{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);background:rgba(10,10,10,0.95);backdrop-filter:blur(20px);position:sticky;top:0;z-index:50;}
+  .logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:900;}
+  .logo span{color:var(--gold);}
+  .nav-links{display:flex;align-items:center;gap:20px;}
+  .nav-links a{font-size:13px;color:var(--gray);text-decoration:none;transition:color 0.2s;}
+  .nav-links a:hover{color:var(--cream);}
+  .nav-cta{background:var(--gold);color:var(--black);padding:9px 20px;border-radius:50px;font-size:13px;font-weight:700;text-decoration:none;transition:all 0.2s;}
+  .nav-cta:hover{background:var(--gold-light);}
+
+  /* ── MAIN ── */
+  .main{max-width:720px;margin:0 auto;padding:36px 24px 80px;}
+
+  /* ── PAGE HEADER ── */
+  .page-eyebrow{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--gold);margin-bottom:10px;}
+  .page-title{font-family:'Playfair Display',serif;font-size:32px;font-weight:900;margin-bottom:10px;}
+  .page-title span{color:var(--gold);}
+  .page-sub{font-size:15px;color:var(--cream);line-height:1.8;opacity:0.82;margin-bottom:28px;max-width:560px;}
+
+  /* ── EXAM OVERVIEW ── */
+  .exam-overview{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:20px 22px;margin-bottom:32px;display:grid;grid-template-columns:repeat(3,1fr);gap:0;}
+  .eo-item{text-align:center;padding:8px 12px;border-right:1px solid rgba(255,255,255,0.06);}
+  .eo-item:last-child{border-right:none;}
+  .eo-num{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:var(--gold);}
+  .eo-label{font-size:12px;color:var(--gray);margin-top:3px;}
+
+  /* ── TABS ── */
+  .tabs{display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap;}
+  .tab{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1.5px;padding:10px 18px;border-radius:50px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--gray);cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+  .tab:hover{border-color:rgba(201,168,76,0.3);color:var(--cream);}
+  .tab.active{background:rgba(201,168,76,0.12);border-color:var(--gold);color:var(--gold);}
+
+  /* ── PANEL ── */
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  /* ── PART HEADER ── */
+  .part-header{margin-bottom:24px;}
+  .part-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--blue);margin-bottom:8px;}
+  .part-title{font-family:'Playfair Display',serif;font-size:24px;font-weight:900;margin-bottom:8px;}
+  .part-desc{font-size:14px;color:var(--gray);line-height:1.75;}
+
+  /* ── EXAM INFO BOX ── */
+  .exam-info{background:rgba(52,152,219,0.06);border:1px solid rgba(52,152,219,0.2);border-radius:12px;padding:14px 18px;margin-bottom:24px;font-size:13px;color:var(--cream);line-height:1.75;}
+  .exam-info strong{color:var(--blue);}
+
+  /* ── QUESTION CARD ── */
+  .q-card{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;}
+  .q-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  .q-counter{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--gray);}
+  .q-nav-btns{display:flex;gap:8px;}
+  .q-nav-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--gray);padding:6px 14px;border-radius:8px;font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;transition:all 0.2s;}
+  .q-nav-btn:hover:not(:disabled){border-color:var(--gold);color:var(--gold);}
+  .q-nav-btn:disabled{opacity:0.3;cursor:not-allowed;}
+
+  .q-german{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--white);margin-bottom:6px;}
+  .q-english{font-size:14px;color:var(--gray);font-style:italic;margin-bottom:20px;}
+  .q-context{font-size:13px;color:var(--gold);margin-bottom:20px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;}
+
+  .keyword-display{display:flex;align-items:center;justify-content:center;padding:32px;background:rgba(201,168,76,0.05);border:2px dashed rgba(201,168,76,0.3);border-radius:12px;margin-bottom:20px;}
+  .keyword-word{font-family:'Playfair Display',serif;font-size:36px;font-weight:900;color:var(--gold);}
+
+  .situation-card{background:rgba(52,152,219,0.06);border:1px solid rgba(52,152,219,0.2);border-radius:12px;padding:20px;margin-bottom:20px;}
+  .situation-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--blue);margin-bottom:8px;}
+  .situation-text{font-size:16px;color:var(--white);font-weight:600;line-height:1.5;}
+
+  /* ── INPUT AREA ── */
+  .input-label{font-size:13px;color:var(--gray);margin-bottom:8px;}
+  .answer-input{width:100%;background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px 16px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.6;resize:vertical;min-height:80px;outline:none;transition:border-color 0.2s;}
+  .answer-input:focus{border-color:rgba(201,168,76,0.4);}
+  .answer-input::placeholder{color:#3a3a3a;}
+
+  .check-btn{display:flex;align-items:center;gap:8px;margin-top:12px;background:var(--gold);color:var(--black);border:none;padding:13px 28px;border-radius:50px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;}
+  .check-btn:hover{background:var(--gold-light);transform:translateY(-1px);}
+  .check-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+  .check-btn .spinner{width:16px;height:16px;border:2px solid rgba(0,0,0,0.3);border-top-color:#000;border-radius:50%;animation:spin 0.7s linear infinite;display:none;}
+  .check-btn.loading .btn-label{display:none;}
+  .check-btn.loading .spinner{display:block;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ── FEEDBACK CARD ── */
+  .feedback-card{background:var(--card2-bg);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:22px;margin-top:20px;animation:fadeUp 0.3s ease;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  .score-row{display:flex;align-items:center;gap:16px;margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,0.06);}
+  .score-circle{width:64px;height:64px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;}
+  .score-circle.pass{background:rgba(39,174,96,0.1);border:2px solid rgba(39,174,96,0.4);}
+  .score-circle.warn{background:rgba(201,168,76,0.1);border:2px solid rgba(201,168,76,0.4);}
+  .score-circle.fail{background:rgba(192,57,43,0.1);border:2px solid rgba(192,57,43,0.4);}
+  .score-num{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;line-height:1;}
+  .score-circle.pass .score-num{color:var(--green);}
+  .score-circle.warn .score-num{color:var(--gold);}
+  .score-circle.fail .score-num{color:var(--red);}
+  .score-denom{font-family:'DM Mono',monospace;font-size:10px;color:var(--gray);}
+  .score-meta{flex:1;}
+  .score-verdict{font-size:15px;font-weight:600;margin-bottom:3px;}
+  .score-circle.pass ~ .score-meta .score-verdict{color:var(--green);}
+  .score-circle.warn ~ .score-meta .score-verdict{color:var(--gold);}
+  .score-circle.fail ~ .score-meta .score-verdict{color:var(--red);}
+  .score-detail{font-size:13px;color:var(--gray);line-height:1.6;}
+
+  .fb-section{margin-bottom:16px;}
+  .fb-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--gold);margin-bottom:6px;}
+  .fb-text{font-size:14px;color:var(--cream);line-height:1.75;}
+
+  .model-answer{background:rgba(39,174,96,0.05);border:1px solid rgba(39,174,96,0.2);border-radius:10px;padding:14px 16px;margin-top:14px;}
+  .model-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--green);margin-bottom:6px;}
+  .model-text{font-size:14px;color:var(--white);line-height:1.75;font-style:italic;}
+
+  /* ── PRACTICE TIP ── */
+  .practice-tip{background:rgba(201,168,76,0.05);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-top:20px;display:flex;gap:12px;align-items:flex-start;}
+  .tip-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+  .tip-text{font-size:13px;color:var(--gray);line-height:1.7;}
+  .tip-text strong{color:var(--cream);}
+
+  /* ── PROGRESS DOTS ── */
+  .progress-dots{display:flex;gap:6px;margin-bottom:20px;}
+  .progress-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.1);transition:background 0.2s;}
+  .progress-dot.done{background:var(--green);}
+  .progress-dot.active{background:var(--gold);}
+
+  @media(max-width:480px){
+    .main{padding:24px 16px 60px;}
+    .exam-overview{grid-template-columns:1fr;}
+    .eo-item{border-right:none;border-bottom:1px solid rgba(255,255,255,0.06);}
+    .eo-item:last-child{border-bottom:none;}
+    .tabs{gap:6px;}
+    .tab{font-size:10px;padding:8px 14px;}
+    .q-german{font-size:18px;}
+    .keyword-word{font-size:28px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="top-nav">
+  <div class="logo">Deutsch<span>Weg</span></div>
+  <div class="nav-links">
+    <a href="deutschweg-prototype.html">My Courses</a>
+    <a href="exam-whisperer.html">🤖 AI Examiner</a>
+  </div>
+  <a href="signup.html" class="nav-cta">Start Free</a>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- PAGE HEADER -->
+  <div class="part-header" style="margin-bottom:20px;">
+    <div class="page-eyebrow">GOETHE A1 · SPRECHEN EXAM</div>
+    <h1 class="page-title">Speak with <span>Confidence</span></h1>
+    <p class="page-sub">Practice all three parts of the Goethe A1 Sprechen exam. Type your answers, get instant AI feedback, then say them out loud. Knowing what to say is 80% of speaking success.</p>
+  </div>
+
+  <!-- EXAM OVERVIEW -->
+  <div class="exam-overview">
+    <div class="eo-item">
+      <div class="eo-num">3</div>
+      <div class="eo-label">Exam parts</div>
+    </div>
+    <div class="eo-item">
+      <div class="eo-num">~15</div>
+      <div class="eo-label">Minutes total</div>
+    </div>
+    <div class="eo-item">
+      <div class="eo-num">25%</div>
+      <div class="eo-label">Of total A1 score</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(0)">Teil 1 — Sich vorstellen</button>
+    <button class="tab" onclick="switchTab(1)">Teil 2 — Karte beschreiben</button>
+    <button class="tab" onclick="switchTab(2)">Teil 3 — Bitten &amp; Reagieren</button>
+  </div>
+
+  <!-- ═══ PANEL 1: SELF INTRODUCTION ═══ -->
+  <div class="panel active" id="panel0">
+
+    <div class="part-header">
+      <div class="part-label">TEIL 1</div>
+      <h2 class="part-title">Sich vorstellen</h2>
+      <p class="part-desc">The examiner asks you personal questions. Answer fully and politely using <strong style="color:var(--white)">Sie</strong> (formal form), not <em>du</em>.</p>
+    </div>
+
+    <div class="exam-info">
+      <strong>What examiners look for:</strong> Full sentences (not one-word answers) · Correct Sie-form verbs · Natural word order · Confidence
+    </div>
+
+    <!-- Progress dots -->
+    <div class="progress-dots" id="p1-dots"></div>
+
+    <div class="q-card">
+      <div class="q-nav">
+        <span class="q-counter" id="p1-counter">Question 1 of 5</span>
+        <div class="q-nav-btns">
+          <button class="q-nav-btn" id="p1-prev" onclick="changeQ1(-1)" disabled>← Prev</button>
+          <button class="q-nav-btn" id="p1-next" onclick="changeQ1(1)">Next →</button>
+        </div>
+      </div>
+      <div class="q-german" id="p1-q-de"></div>
+      <div class="q-english" id="p1-q-en"></div>
+      <div class="input-label">Type your answer in German:</div>
+      <textarea class="answer-input" id="p1-input" placeholder="Ich heiße..." rows="3"></textarea>
+      <button class="check-btn" id="p1-btn" onclick="checkPart1()">
+        <span class="btn-label">Check my answer ✦</span>
+        <span class="spinner"></span>
+      </button>
+    </div>
+
+    <div id="p1-feedback" style="display:none;"></div>
+
+    <div class="practice-tip">
+      <span class="tip-icon">💡</span>
+      <span class="tip-text"><strong>Practice out loud after every check.</strong> The exam is speaking — preparation starts with knowing what to say. Read your corrected answer aloud 3 times.</span>
+    </div>
+
+  </div>
+
+  <!-- ═══ PANEL 2: QUESTION CARDS ═══ -->
+  <div class="panel" id="panel1">
+
+    <div class="part-header">
+      <div class="part-label">TEIL 2</div>
+      <h2 class="part-title">Eine Karte beschreiben</h2>
+      <p class="part-desc">You receive a keyword card. Form a question using that word — just as you'd ask another exam candidate.</p>
+    </div>
+
+    <div class="exam-info">
+      <strong>What examiners look for:</strong> A real question (verb first or W-word first) · Correct grammar · Relevance to the keyword · Natural phrasing
+    </div>
+
+    <!-- Progress dots -->
+    <div class="progress-dots" id="p2-dots"></div>
+
+    <div class="q-card">
+      <div class="q-nav">
+        <span class="q-counter" id="p2-counter">Card 1 of 8</span>
+        <div class="q-nav-btns">
+          <button class="q-nav-btn" id="p2-prev" onclick="changeQ2(-1)" disabled>← Prev</button>
+          <button class="q-nav-btn" id="p2-next" onclick="changeQ2(1)">Next →</button>
+        </div>
+      </div>
+
+      <div class="keyword-display">
+        <div class="keyword-word" id="p2-keyword"></div>
+      </div>
+
+      <div class="input-label">Form a question using this keyword:</div>
+      <textarea class="answer-input" id="p2-input" placeholder="Was essen Sie..." rows="2"></textarea>
+      <button class="check-btn" id="p2-btn" onclick="checkPart2()">
+        <span class="btn-label">Check my question ✦</span>
+        <span class="spinner"></span>
+      </button>
+    </div>
+
+    <div id="p2-feedback" style="display:none;"></div>
+
+    <div class="practice-tip">
+      <span class="tip-icon">💡</span>
+      <span class="tip-text"><strong>Practice saying your question out loud after reviewing the feedback.</strong> In the exam you'll say this to another candidate — it should sound natural, not read.</span>
+    </div>
+
+  </div>
+
+  <!-- ═══ PANEL 3: REQUESTS & RESPONSES ═══ -->
+  <div class="panel" id="panel2">
+
+    <div class="part-header">
+      <div class="part-label">TEIL 3</div>
+      <h2 class="part-title">Bitten und reagieren</h2>
+      <p class="part-desc">You are given a situation card. Make a request or give a polite response — as you would in real life.</p>
+    </div>
+
+    <div class="exam-info">
+      <strong>What examiners look for:</strong> Appropriate politeness · Correct modal verb usage · Natural short responses · Bitte and Danke where appropriate
+    </div>
+
+    <!-- Progress dots -->
+    <div class="progress-dots" id="p3-dots"></div>
+
+    <div class="q-card">
+      <div class="q-nav">
+        <span class="q-counter" id="p3-counter">Situation 1 of 5</span>
+        <div class="q-nav-btns">
+          <button class="q-nav-btn" id="p3-prev" onclick="changeQ3(-1)" disabled>← Prev</button>
+          <button class="q-nav-btn" id="p3-next" onclick="changeQ3(1)">Next →</button>
+        </div>
+      </div>
+
+      <div class="situation-card">
+        <div class="situation-label">YOUR SITUATION</div>
+        <div class="situation-text" id="p3-situation"></div>
+      </div>
+
+      <div class="input-label">Type what you would say in German:</div>
+      <textarea class="answer-input" id="p3-input" placeholder="Entschuldigung, könnten Sie..." rows="3"></textarea>
+      <button class="check-btn" id="p3-btn" onclick="checkPart3()">
+        <span class="btn-label">Check my response ✦</span>
+        <span class="spinner"></span>
+      </button>
+    </div>
+
+    <div id="p3-feedback" style="display:none;"></div>
+
+    <div class="practice-tip">
+      <span class="tip-icon">💡</span>
+      <span class="tip-text"><strong>Practice saying your answer out loud after reviewing the feedback.</strong> The exam is speaking — preparation starts with knowing what to say.</span>
+    </div>
+
+  </div>
+
+</div><!-- /main -->
+
+<script>
+var API_BASE = 'https://deutschweg.onrender.com';
+
+// ── Data ─────────────────────────────────────────────────────────────────────
+
+var part1Qs = [
+  { de: 'Wie heißen Sie?',           en: 'What is your name?',              tip: 'Use: Ich heiße... / Mein Name ist...' },
+  { de: 'Wo wohnen Sie?',            en: 'Where do you live?',              tip: 'Use: Ich wohne in... + city name' },
+  { de: 'Was machen Sie beruflich?', en: 'What do you do for work?',        tip: 'Use: Ich bin... (job) / Ich arbeite als...' },
+  { de: 'Woher kommen Sie?',         en: 'Where are you from?',             tip: 'Use: Ich komme aus... + country' },
+  { de: 'Wie alt sind Sie?',         en: 'How old are you?',                tip: 'Use: Ich bin ... Jahre alt.' },
+];
+
+var part2Keywords = [
+  { word: 'essen',    hint: 'Ask about food preferences or eating habits' },
+  { word: 'wohnen',  hint: 'Ask about where someone lives or their home' },
+  { word: 'arbeiten',hint: 'Ask about someone\'s job or workplace' },
+  { word: 'Familie', hint: 'Ask about family members or family life' },
+  { word: 'Sport',   hint: 'Ask about sports or physical activities' },
+  { word: 'Hobby',   hint: 'Ask about free time activities or interests' },
+  { word: 'Reisen',  hint: 'Ask about travel or holiday plans' },
+  { word: 'Wetter',  hint: 'Ask about weather preferences or climate' },
+];
+
+var part3Situations = [
+  { text: 'Ask a colleague to lend you a pen.',                 context: 'polite request' },
+  { text: 'Respond that you don\'t have a pen — apologise.',   context: 'polite refusal' },
+  { text: 'Ask where the nearest toilet is.',                   context: 'asking for directions' },
+  { text: 'Thank someone warmly for their help.',               context: 'expressing gratitude' },
+  { text: 'Ask the examiner to speak more slowly please.',      context: 'exam-relevant request' },
+];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+var p1Index = 0, p2Index = 0, p3Index = 0;
+var p1Done = [], p2Done = [], p3Done = [];
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+  document.body.classList.add('ready');
+  renderDots('p1-dots', part1Qs.length, p1Done, 0);
+  renderDots('p2-dots', part2Keywords.length, p2Done, 0);
+  renderDots('p3-dots', part3Situations.length, p3Done, 0);
+  loadP1(0); loadP2(0); loadP3(0);
+});
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+function switchTab(idx) {
+  document.querySelectorAll('.tab').forEach(function(t,i){ t.classList.toggle('active', i===idx); });
+  document.querySelectorAll('.panel').forEach(function(p,i){ p.classList.toggle('active', i===idx); });
+}
+
+// ── Dots ──────────────────────────────────────────────────────────────────────
+function renderDots(id, total, done, active) {
+  var el = document.getElementById(id);
+  el.innerHTML = '';
+  for (var i = 0; i < total; i++) {
+    var d = document.createElement('div');
+    d.className = 'progress-dot' + (done.indexOf(i) > -1 ? ' done' : '') + (i === active ? ' active' : '');
+    el.appendChild(d);
+  }
+}
+
+// ── PART 1 ────────────────────────────────────────────────────────────────────
+function loadP1(idx) {
+  var q = part1Qs[idx];
+  document.getElementById('p1-q-de').textContent = q.de;
+  document.getElementById('p1-q-en').textContent = q.en;
+  document.getElementById('p1-counter').textContent = 'Question ' + (idx+1) + ' of ' + part1Qs.length;
+  document.getElementById('p1-input').value = '';
+  document.getElementById('p1-feedback').style.display = 'none';
+  document.getElementById('p1-prev').disabled = idx === 0;
+  document.getElementById('p1-next').disabled = idx === part1Qs.length - 1;
+  renderDots('p1-dots', part1Qs.length, p1Done, idx);
+}
+function changeQ1(dir) {
+  p1Index = Math.max(0, Math.min(part1Qs.length - 1, p1Index + dir));
+  loadP1(p1Index);
+}
+function checkPart1() {
+  var answer = document.getElementById('p1-input').value.trim();
+  if (!answer) { alert('Please type your answer first.'); return; }
+  var q = part1Qs[p1Index];
+  var btn = document.getElementById('p1-btn');
+  btn.disabled = true; btn.classList.add('loading');
+  fetch(API_BASE + '/api/sprechen', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ part: 1, question: q.de, questionEn: q.en, answer: answer })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){ renderFeedback('p1-feedback', data); if(p1Done.indexOf(p1Index)===-1) p1Done.push(p1Index); renderDots('p1-dots',part1Qs.length,p1Done,p1Index); })
+  .catch(function(){ renderError('p1-feedback'); })
+  .finally(function(){ btn.disabled=false; btn.classList.remove('loading'); });
+}
+
+// ── PART 2 ────────────────────────────────────────────────────────────────────
+function loadP2(idx) {
+  var k = part2Keywords[idx];
+  document.getElementById('p2-keyword').textContent = k.word;
+  document.getElementById('p2-counter').textContent = 'Card ' + (idx+1) + ' of ' + part2Keywords.length;
+  document.getElementById('p2-input').value = '';
+  document.getElementById('p2-feedback').style.display = 'none';
+  document.getElementById('p2-prev').disabled = idx === 0;
+  document.getElementById('p2-next').disabled = idx === part2Keywords.length - 1;
+  renderDots('p2-dots', part2Keywords.length, p2Done, idx);
+}
+function changeQ2(dir) {
+  p2Index = Math.max(0, Math.min(part2Keywords.length - 1, p2Index + dir));
+  loadP2(p2Index);
+}
+function checkPart2() {
+  var answer = document.getElementById('p2-input').value.trim();
+  if (!answer) { alert('Please type your question first.'); return; }
+  var k = part2Keywords[p2Index];
+  var btn = document.getElementById('p2-btn');
+  btn.disabled = true; btn.classList.add('loading');
+  fetch(API_BASE + '/api/sprechen', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ part: 2, keyword: k.word, hint: k.hint, answer: answer })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){ renderFeedback('p2-feedback', data); if(p2Done.indexOf(p2Index)===-1) p2Done.push(p2Index); renderDots('p2-dots',part2Keywords.length,p2Done,p2Index); })
+  .catch(function(){ renderError('p2-feedback'); })
+  .finally(function(){ btn.disabled=false; btn.classList.remove('loading'); });
+}
+
+// ── PART 3 ────────────────────────────────────────────────────────────────────
+function loadP3(idx) {
+  var s = part3Situations[idx];
+  document.getElementById('p3-situation').textContent = s.text;
+  document.getElementById('p3-counter').textContent = 'Situation ' + (idx+1) + ' of ' + part3Situations.length;
+  document.getElementById('p3-input').value = '';
+  document.getElementById('p3-feedback').style.display = 'none';
+  document.getElementById('p3-prev').disabled = idx === 0;
+  document.getElementById('p3-next').disabled = idx === part3Situations.length - 1;
+  renderDots('p3-dots', part3Situations.length, p3Done, idx);
+}
+function changeQ3(dir) {
+  p3Index = Math.max(0, Math.min(part3Situations.length - 1, p3Index + dir));
+  loadP3(p3Index);
+}
+function checkPart3() {
+  var answer = document.getElementById('p3-input').value.trim();
+  if (!answer) { alert('Please type your response first.'); return; }
+  var s = part3Situations[p3Index];
+  var btn = document.getElementById('p3-btn');
+  btn.disabled = true; btn.classList.add('loading');
+  fetch(API_BASE + '/api/sprechen', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ part: 3, situation: s.text, context: s.context, answer: answer })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){ renderFeedback('p3-feedback', data); if(p3Done.indexOf(p3Index)===-1) p3Done.push(p3Index); renderDots('p3-dots',part3Situations.length,p3Done,p3Index); })
+  .catch(function(){ renderError('p3-feedback'); })
+  .finally(function(){ btn.disabled=false; btn.classList.remove('loading'); });
+}
+
+// ── Render feedback ───────────────────────────────────────────────────────────
+function renderFeedback(id, data) {
+  var el = document.getElementById(id);
+  var score = data.score || 0;
+  var cls = score >= 8 ? 'pass' : score >= 5 ? 'warn' : 'fail';
+  var verdict = score >= 8 ? 'Excellent!' : score >= 5 ? 'Good effort' : 'Needs work';
+  el.innerHTML =
+    '<div class="feedback-card">' +
+      '<div class="score-row">' +
+        '<div class="score-circle ' + cls + '">' +
+          '<div class="score-num">' + score + '</div>' +
+          '<div class="score-denom">/10</div>' +
+        '</div>' +
+        '<div class="score-meta">' +
+          '<div class="score-verdict">' + verdict + '</div>' +
+          '<div class="score-detail">' + (data.summary || '') + '</div>' +
+        '</div>' +
+      '</div>' +
+      (data.feedback ? '<div class="fb-section"><div class="fb-label">FEEDBACK</div><div class="fb-text">' + esc(data.feedback) + '</div></div>' : '') +
+      (data.grammar ? '<div class="fb-section"><div class="fb-label">GRAMMAR NOTES</div><div class="fb-text">' + esc(data.grammar) + '</div></div>' : '') +
+      (data.modelAnswer ? '<div class="model-answer"><div class="model-label">MODEL ANSWER</div><div class="model-text">' + esc(data.modelAnswer) + '</div></div>' : '') +
+    '</div>';
+  el.style.display = 'block';
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function renderError(id) {
+  var el = document.getElementById(id);
+  el.innerHTML = '<div class="feedback-card" style="border-color:rgba(192,57,43,0.3);"><div class="fb-text" style="color:var(--red);">Could not connect to the server. Check your internet connection and try again.</div></div>';
+  el.style.display = 'block';
+}
+
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+</script>
+</body>
+</html>
