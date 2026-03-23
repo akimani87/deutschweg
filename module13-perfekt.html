@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Module 13: Perfekt Tense</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --p1:#3498db; --p2:#e67e22; --p3:#9b59b6; --verb:#c9a84c;
+    --haben:#3498db; --sein:#e67e22; --part:#27ae60;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:rgba(10,10,10,0.96); backdrop-filter:blur(20px); border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:12px 0 20px; z-index:100; }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:8px 16px; border-radius:12px; transition:all 0.2s; border:none; background:none; color:var(--gray); }
+  .nav-item:hover, .nav-item.active { color:var(--gold); }
+  .nav-icon { font-size:20px; }
+  .nav-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; font-family:'DM Mono',monospace; }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--gold); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--gold); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--gold); color:var(--black); width:100%; }
+  .btn-primary:hover { background:var(--gold-light); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(201,168,76,0.2); }
+  .speak-btn.speaking { background:var(--gold); color:var(--black); }
+
+  /* SENTENCE BLOCKS */
+  .sent-block { margin:14px 0; }
+  .sent-de { display:flex; flex-wrap:wrap; gap:6px; align-items:flex-end; margin-bottom:10px; }
+  .stoken { display:flex; flex-direction:column; align-items:center; }
+  .sw { font-family:'DM Mono',monospace; font-size:16px; padding:8px 12px; border-radius:8px; font-weight:600; }
+  .sl { font-size:9px; letter-spacing:1.5px; text-align:center; margin-top:4px; font-family:'DM Mono',monospace; }
+  .sw-p1 { background:rgba(52,152,219,0.12); border:1px solid rgba(52,152,219,0.3); color:var(--p1); }
+  .sl-p1 { color:var(--p1); }
+  .sw-verb { background:rgba(201,168,76,0.12); border:1px solid rgba(201,168,76,0.35); color:var(--verb); }
+  .sl-verb { color:var(--verb); }
+  .sw-haben { background:rgba(52,152,219,0.12); border:1px solid rgba(52,152,219,0.35); color:var(--haben); }
+  .sl-haben { color:var(--haben); }
+  .sw-sein { background:rgba(230,126,34,0.12); border:1px solid rgba(230,126,34,0.35); color:var(--sein); }
+  .sl-sein { color:var(--sein); }
+  .sw-part { background:rgba(39,174,96,0.12); border:1px solid rgba(39,174,96,0.35); color:var(--part); }
+  .sl-part { color:var(--part); }
+  .sw-p2 { background:rgba(230,126,34,0.1); border:1px solid rgba(230,126,34,0.3); color:var(--p2); }
+  .sl-p2 { color:var(--p2); }
+  .sw-p3 { background:rgba(155,89,182,0.1); border:1px solid rgba(155,89,182,0.3); color:var(--p3); }
+  .sl-p3 { color:var(--p3); }
+  .sw-gray { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); color:var(--cream); }
+  .sl-gray { color:var(--gray); }
+  .sw-green { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); color:var(--green); }
+  .sl-green { color:var(--green); }
+  .sent-en { font-size:13px; color:var(--gray); margin-top:4px; padding-left:2px; }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-en { font-size:12px; color:var(--gray); margin-bottom:6px; }
+  .ex-note { font-size:12px; color:var(--cream); line-height:1.6; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Sans',sans-serif; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--gold); background:rgba(201,168,76,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(201,168,76,0.1); border-radius:8px; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(201,168,76,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(201,168,76,0.08); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(201,168,76,0.12); border:1px solid var(--gold); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--gold); font-size:18px; margin:18px 0; }
+
+  /* PARTICIPLE FORMULA CARD */
+  .formula-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:16px 0; }
+  .formula-card { border-radius:14px; padding:18px; }
+  .fc-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; margin-bottom:10px; }
+  .fc-formula { font-family:'DM Mono',monospace; font-size:18px; font-weight:900; margin-bottom:8px; }
+  .fc-example { font-size:12px; line-height:1.8; color:var(--cream); }
+  .fc-regular { background:rgba(52,152,219,0.07); border:1px solid rgba(52,152,219,0.25); }
+  .fc-regular .fc-label { color:var(--haben); }
+  .fc-regular .fc-formula { color:var(--haben); }
+  .fc-irregular { background:rgba(230,126,34,0.07); border:1px solid rgba(230,126,34,0.25); }
+  .fc-irregular .fc-label { color:var(--sein); }
+  .fc-irregular .fc-formula { color:var(--sein); }
+  .fc-separable { background:rgba(155,89,182,0.07); border:1px solid rgba(155,89,182,0.25); }
+  .fc-separable .fc-label { color:var(--p3); }
+  .fc-separable .fc-formula { color:var(--p3); }
+  .fc-golden { background:rgba(201,168,76,0.07); border:1px solid rgba(201,168,76,0.3); }
+  .fc-golden .fc-label { color:var(--gold); }
+  .fc-golden .fc-formula { color:var(--gold); }
+
+  /* HABEN vs SEIN TABLE */
+  .hs-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:16px 0; }
+  .hs-col { border-radius:14px; padding:18px; }
+  .hs-haben { background:rgba(52,152,219,0.07); border:1px solid rgba(52,152,219,0.25); }
+  .hs-sein { background:rgba(230,126,34,0.07); border:1px solid rgba(230,126,34,0.25); }
+  .hs-title { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; margin-bottom:4px; }
+  .hs-haben .hs-title { color:var(--haben); }
+  .hs-sein .hs-title { color:var(--sein); }
+  .hs-sub { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; margin-bottom:12px; }
+  .hs-haben .hs-sub { color:var(--haben); }
+  .hs-sein .hs-sub { color:var(--sein); }
+  .hs-rule { font-size:13px; color:var(--cream); line-height:1.8; }
+  .hs-verbs { margin-top:10px; font-family:'DM Mono',monospace; font-size:12px; line-height:2.2; color:var(--cream); }
+
+  /* WRONG/RIGHT */
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.2; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+
+  /* CONJ TABLE */
+  .conj-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; }
+  .conj-title { font-size:10px; letter-spacing:2.5px; font-family:'DM Mono',monospace; margin-bottom:12px; }
+  .conj-grid { display:grid; grid-template-columns:auto 1fr 1fr; gap:3px; }
+  .cg-h { background:rgba(255,255,255,0.04); border-radius:6px; padding:7px 12px; font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; color:var(--gray); }
+  .cg-pron { padding:9px 12px; font-family:'DM Mono',monospace; font-size:13px; color:var(--gray); display:flex; align-items:center; }
+  .cg-form { border-radius:8px; padding:9px 14px; font-family:'DM Mono',monospace; font-size:14px; font-weight:700; }
+  .cg-haben-cell { background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.2); color:var(--haben); }
+  .cg-sein-cell  { background:rgba(230,126,34,0.08); border:1px solid rgba(230,126,34,0.2); color:var(--sein); }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .sw{font-size:13px;padding:6px 8px;} .lesson-h{font-size:22px;} .formula-grid{grid-template-columns:1fr;} .hs-grid{grid-template-columns:1fr;} .wr-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">MODULE 13 · A2</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">A2 · First Module — Most Important Grammar</div>
+    <h1 class="lesson-h" style="font-size:36px;">Perfekt<br><span style="color:var(--gold)">Tense</span></h1>
+    <p class="body-text">Welcome to A2. The Perfekt tense is the most important grammar topic in the entire Goethe A2 exam — it appears in every single Schreiben task. Germans use Perfekt for almost all spoken and written past events, the way English speakers use "I went", "I ate", "I worked". Master this and you unlock the ability to talk about your life, your experiences, and your journey to Germany.</p>
+    <div class="info-box"><strong style="color:var(--gold)">The A2 exam rule:</strong> Every Goethe A2 Schreiben task asks you to write about something that happened — "Beschreiben Sie einen Ausflug", "Schreiben Sie über ein Erlebnis". You cannot pass without Perfekt. Every sentence about the past needs it.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">🗓️</div><div><div class="lc-title">Lesson 1 — What is Perfekt and Why Germans Use It</div><div class="lc-desc">Not Präteritum. Why everyday German uses Perfekt for the past.</div></div><div class="lc-tag" style="color:var(--gold);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">🔵</div><div><div class="lc-title">Lesson 2 — Regular Verbs: ge + stem + t</div><div class="lc-desc">machen → gemacht. kaufen → gekauft. The simple, predictable pattern.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">🟠</div><div><div class="lc-title">Lesson 3 — Irregular Verbs: ge + stem + en</div><div class="lc-desc">fahren → gefahren. essen → gegessen. The stem changes — learn the common ones.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">⚡</div><div><div class="lc-title">Lesson 4 — haben vs sein: The Golden Rule</div><div class="lc-desc">Movement and change of state = sein. Everything else = haben. Why this matters.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">🔗</div><div><div class="lc-title">Lesson 5 — Separable Verbs in Perfekt</div><div class="lc-desc">aufmachen → aufgemacht. The ge goes in the middle. A common exam trap.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lesson 6 — Kwame, Amina, Kofi, Fatima</div><div class="lc-desc">African-context sentences. Common learner mistakes. Exam tips.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Begin Lesson 1 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lessons</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LESSON 1: What is Perfekt ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">Module 13 · Lesson 1 of 6</div>
+          <h2 class="lesson-h">What is Perfekt — and why Germans use it</h2>
+          <p class="body-text">English has many ways to express the past: "I went", "I have gone", "I was going", "I had gone." German simplifies this. For everyday conversation and most written tasks, Germans use <strong style="color:var(--gold)">Perfekt</strong> — one tense that covers what happened.</p>
+          <p class="body-text">There is another past tense called <strong style="color:var(--gray)">Präteritum</strong> (simple past), but it is mainly used in formal writing, novels, and news. When a German says <em>"What did you do yesterday?"</em> and you answer, you use Perfekt. When you write an email in your Goethe exam, you use Perfekt.</p>
+
+          <div class="info-box"><strong style="color:var(--gold)">The single most important fact about German past tense:</strong><br><br>
+          English: "I worked yesterday." — one word for the verb.<br>
+          German Perfekt: uses <strong>two parts</strong> — an auxiliary verb (haben or sein) + a past participle.<br><br>
+          <span style="font-family:'DM Mono',monospace;color:var(--haben)">Ich habe</span> <span style="font-family:'DM Mono',monospace;color:var(--part)">gearbeitet</span>. → I worked / I have worked.<br>
+          <span style="font-family:'DM Mono',monospace;color:var(--sein)">Ich bin</span> <span style="font-family:'DM Mono',monospace;color:var(--part)">gefahren</span>. → I travelled / I have travelled.</div>
+
+          <div class="sec-label">The Perfekt sentence structure</div>
+          <p class="body-text" style="margin-bottom:10px;">Just like modal verbs, Perfekt has a two-part verb system. The auxiliary (haben/sein) sits in position 2. The past participle goes to the <strong style="color:var(--part)">end</strong> of the sentence.</p>
+
+          <div class="sent-block">
+            <div class="sent-de">
+              <div class="stoken"><div class="sw sw-p1">Kwame</div><div class="sl sl-p1">SUBJECT</div></div>
+              <div class="stoken"><div class="sw sw-haben">hat</div><div class="sl sl-haben">HABEN · POS.2</div></div>
+              <div class="stoken"><div class="sw sw-gray">heute</div><div class="sl sl-gray">WHEN</div></div>
+              <div class="stoken"><div class="sw sw-gray">viel</div><div class="sl sl-gray">HOW MUCH</div></div>
+              <div class="stoken"><div class="sw sw-part">gearbeitet</div><div class="sl sl-part">PARTICIPLE · END</div></div>
+            </div>
+            <div class="sent-en">Kwame worked a lot today.</div>
+            <button class="speak-btn" onclick="speakSentence(this,'Kwame hat heute viel gearbeitet.')">🔊 Hear it</button>
+          </div>
+
+          <div class="sent-block">
+            <div class="sent-de">
+              <div class="stoken"><div class="sw sw-p1">Amina</div><div class="sl sl-p1">SUBJECT</div></div>
+              <div class="stoken"><div class="sw sw-sein">ist</div><div class="sl sl-sein">SEIN · POS.2</div></div>
+              <div class="stoken"><div class="sw sw-gray">nach Berlin</div><div class="sl sl-gray">WHERE TO</div></div>
+              <div class="stoken"><div class="sw sw-part">gefahren</div><div class="sl sl-part">PARTICIPLE · END</div></div>
+            </div>
+            <div class="sent-en">Amina travelled to Berlin.</div>
+            <button class="speak-btn" onclick="speakSentence(this,'Amina ist nach Berlin gefahren.')">🔊 Hear it</button>
+          </div>
+
+          <div class="sec-label">Perfekt vs Präteritum — the African learner trap</div>
+          <p class="body-text">Most African English speakers translate from English simple past directly into German: "I went" → "Ich ging." This is Präteritum. It is grammatically correct but sounds formal and strange in conversation and standard exam writing. Use Perfekt instead.</p>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">AVOID IN EXAM (Präteritum)</div>
+              <div class="wr-word">Ich ging nach Hause.<br>Sie aß Reis.<br>Er arbeitete viel.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">USE THIS (Perfekt)</div>
+              <div class="wr-word">Ich bin nach Hause gegangen.<br>Sie hat Reis gegessen.<br>Er hat viel gearbeitet.</div>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue)">Exception — sein, haben, werden, and modal verbs</strong> use Präteritum even in spoken German. "Ich war müde" (I was tired), "Ich hatte Hunger" (I was hungry), "Ich musste arbeiten" (I had to work). You will see these in Goethe texts. They are correct — they are the exception, not the rule.</div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">Module 13 · Lesson 1 · Quiz</div><h2 class="lesson-h">What is Perfekt — Check</h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 2: Regular Verbs ── -->
+    <div id="lesson-1" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">Module 13 · Lesson 2 of 6</div>
+          <h2 class="lesson-h">Regular verbs: <span style="color:var(--haben)">ge</span> + stem + <span style="color:var(--part)">t</span></h2>
+          <p class="body-text">Regular verbs (also called "weak verbs") follow a completely predictable pattern. Take the infinitive, remove –en, then wrap it: add <strong style="color:var(--haben)">ge–</strong> at the front and <strong style="color:var(--part)">–t</strong> at the end. That's it.</p>
+
+          <div class="formula-grid">
+            <div class="formula-card fc-regular" style="grid-column:1/-1;">
+              <div class="fc-label">REGULAR PAST PARTICIPLE FORMULA</div>
+              <div class="fc-formula">ge + STEM + t</div>
+              <div class="fc-example">
+                machen → mach → <strong>ge</strong>mach<strong>t</strong> (done / made)<br>
+                kaufen → kauf → <strong>ge</strong>kauf<strong>t</strong> (bought)<br>
+                lernen → lern → <strong>ge</strong>lern<strong>t</strong> (learned)<br>
+                arbeiten → arbeit → <strong>ge</strong>arbeit<strong>et</strong> (worked) ← stem ends in t/d: add –et
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">Regular participles you need to know</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--haben);">INFINITIVE → PARTICIPLE · REGULAR VERBS</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:13px;">
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--haben)">machen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--part)">gemacht</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--haben)">kaufen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--part)">gekauft</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--haben)">lernen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--part)">gelernt</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--haben)">spielen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--part)">gespielt</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--haben)">kochen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--part)">gekocht</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--haben)">wohnen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--part)">gewohnt</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--haben)">arbeiten</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--part)">gearbeitet</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--haben)">sagen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--part)">gesagt</div>
+            </div>
+          </div>
+
+          <div class="sec-label">Regular verbs in sentences — haben as auxiliary</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--haben);">HABEN + REGULAR</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi <strong style="color:var(--haben)">hat</strong> Deutsch <strong style="color:var(--part)">gelernt</strong>.</div>
+                <div class="ex-en">Kofi learned German.</div>
+                <div class="ex-note">haben conjugated for er (hat) + participle at end. lernen is regular: ge+lern+t.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi hat Deutsch gelernt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--haben);">HABEN + REGULAR</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima <strong style="color:var(--haben)">hat</strong> Fußball <strong style="color:var(--part)">gespielt</strong>.</div>
+                <div class="ex-en">Fatima played football.</div>
+                <div class="ex-note">spielen → gespielt. Regular: ge+spiel+t.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima hat Fußball gespielt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--haben);">HABEN + REGULAR</div>
+              <div style="flex:1;">
+                <div class="ex-de">Wir <strong style="color:var(--haben)">haben</strong> jollof Reis <strong style="color:var(--part)">gekocht</strong>.</div>
+                <div class="ex-en">We cooked jollof rice.</div>
+                <div class="ex-note">kochen → gekocht. haben conjugated for wir (haben).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wir haben Jollof Reis gekocht.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="success-box"><strong style="color:var(--green)">Quick check — how to form regular Perfekt:</strong><br><br>
+            1. Take the infinitive: <span style="font-family:'DM Mono',monospace">kaufen</span><br>
+            2. Remove –en: <span style="font-family:'DM Mono',monospace">kauf</span><br>
+            3. Add ge– at front and –t at end: <span style="font-family:'DM Mono',monospace;color:var(--part)">ge</span><span style="font-family:'DM Mono',monospace">kauf</span><span style="font-family:'DM Mono',monospace;color:var(--part)">t</span><br>
+            4. Use haben in position 2, participle at end: Ich <span style="font-family:'DM Mono',monospace;color:var(--haben)">habe</span> Brot <span style="font-family:'DM Mono',monospace;color:var(--part)">gekauft</span>.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">Module 13 · Lesson 2 · Quiz</div><h2 class="lesson-h">Regular Verbs Quiz</h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 3: Irregular Verbs ── -->
+    <div id="lesson-2" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">Module 13 · Lesson 3 of 6</div>
+          <h2 class="lesson-h">Irregular verbs: <span style="color:var(--haben)">ge</span> + <span style="color:var(--sein)">changed stem</span> + <span style="color:var(--part)">en</span></h2>
+          <p class="body-text">Irregular verbs (also called "strong verbs") change their stem vowel and end in <strong style="color:var(--part)">–en</strong> instead of –t. There is no formula for the stem change — you have to learn the common ones. The good news: the most important ones repeat constantly in exam tasks, so they become automatic quickly.</p>
+
+          <div class="formula-grid">
+            <div class="formula-card fc-irregular" style="grid-column:1/-1;">
+              <div class="fc-label">IRREGULAR PAST PARTICIPLE FORMULA</div>
+              <div class="fc-formula">ge + CHANGED STEM + en</div>
+              <div class="fc-example">
+                fahren → fahr → <strong>ge</strong>fahr<strong>en</strong> (driven / travelled)<br>
+                essen → iss → <strong>ge</strong>gess<strong>en</strong> (eaten)<br>
+                schreiben → schreib → <strong>ge</strong>schrieb<strong>en</strong> (written)<br>
+                sehen → seh → <strong>ge</strong>seh<strong>en</strong> (seen)
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">The essential irregular participles for Goethe A2</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--sein);">INFINITIVE → PARTICIPLE · IRREGULAR VERBS</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:13px;">
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(230,126,34,0.06);border-radius:6px;color:var(--sein)">fahren</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--part)">gefahren</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(230,126,34,0.06);border-radius:6px;color:var(--sein)">gehen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--part)">gegangen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(230,126,34,0.06);border-radius:6px;color:var(--sein)">kommen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--part)">gekommen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(230,126,34,0.06);border-radius:6px;color:var(--sein)">essen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--part)">gegessen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(230,126,34,0.06);border-radius:6px;color:var(--sein)">trinken</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--part)">getrunken</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(230,126,34,0.06);border-radius:6px;color:var(--sein)">schreiben</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--part)">geschrieben</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(230,126,34,0.06);border-radius:6px;color:var(--sein)">sehen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--part)">gesehen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(230,126,34,0.06);border-radius:6px;color:var(--sein)">lesen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--part)">gelesen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(230,126,34,0.06);border-radius:6px;color:var(--sein)">sprechen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--part)">gesprochen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(230,126,34,0.06);border-radius:6px;color:var(--sein)">nehmen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--part)">genommen</div>
+            </div>
+          </div>
+
+          <div class="sec-label">Irregular verbs in African-context sentences</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--sein);">GEHEN → GEGANGEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina <strong style="color:var(--sein)">ist</strong> zum Markt <strong style="color:var(--part)">gegangen</strong>.</div>
+                <div class="ex-en">Amina went to the market.</div>
+                <div class="ex-note">gehen = movement → uses sein (not haben). Participle: gegangen.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina ist zum Markt gegangen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--haben);">ESSEN → GEGESSEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi <strong style="color:var(--haben)">hat</strong> Fufu <strong style="color:var(--part)">gegessen</strong>.</div>
+                <div class="ex-en">Kofi ate fufu.</div>
+                <div class="ex-note">essen = no movement → uses haben. Participle: gegessen.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi hat Fufu gegessen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--haben);">SCHREIBEN → GESCHRIEBEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima <strong style="color:var(--haben)">hat</strong> einen Brief <strong style="color:var(--part)">geschrieben</strong>.</div>
+                <div class="ex-en">Fatima wrote a letter.</div>
+                <div class="ex-note">schreiben → geschrieben. Uses haben. Exam Schreiben tasks require this exact structure.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima hat einen Brief geschrieben.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">Module 13 · Lesson 3 · Quiz</div><h2 class="lesson-h">Irregular Verbs Quiz</h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 4: haben vs sein ── -->
+    <div id="lesson-3" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">Module 13 · Lesson 4 of 6</div>
+          <h2 class="lesson-h"><span style="color:var(--haben)">haben</span> vs <span style="color:var(--sein)">sein</span> — The Golden Rule</h2>
+          <p class="body-text">This is the biggest source of confusion in German Perfekt — and the most tested element in the Goethe A2 exam. Every Perfekt sentence uses either <strong style="color:var(--haben)">haben</strong> or <strong style="color:var(--sein)">sein</strong> as the auxiliary. Get this right and you will score heavily in Schreiben.</p>
+
+          <div class="hs-grid">
+            <div class="hs-col hs-haben">
+              <div class="hs-title">haben</div>
+              <div class="hs-sub">MOST VERBS</div>
+              <div class="hs-rule">Use <strong style="color:var(--haben)">haben</strong> with:<br>• Actions done to an object (transitive verbs)<br>• Activities with no movement<br>• Actions that stay in one place</div>
+              <div class="hs-verbs">essen → hat gegessen<br>trinken → hat getrunken<br>schreiben → hat geschrieben<br>kaufen → hat gekauft<br>arbeiten → hat gearbeitet<br>lernen → hat gelernt<br>kochen → hat gekocht<br>machen → hat gemacht</div>
+            </div>
+            <div class="hs-col hs-sein">
+              <div class="hs-title">sein</div>
+              <div class="hs-sub">MOVEMENT + CHANGE</div>
+              <div class="hs-rule">Use <strong style="color:var(--sein)">sein</strong> with:<br>• Movement from A to B (travel, go, come, fly)<br>• Change of state (wake up, die, grow, become)<br>• The verbs bleiben and passieren</div>
+              <div class="hs-verbs">gehen → ist gegangen<br>fahren → ist gefahren<br>fliegen → ist geflogen<br>kommen → ist gekommen<br>laufen → ist gelaufen<br>aufwachen → ist aufgewacht<br>werden → ist geworden<br>bleiben → ist geblieben</div>
+            </div>
+          </div>
+
+          <div class="info-box"><strong style="color:var(--gold)">The Golden Rule — memorise this test:</strong><br><br>
+            Ask yourself: <em>"Did the subject move from one place to another, or change state?"</em><br><br>
+            ✓ YES → use <strong style="color:var(--sein)">sein</strong><br>
+            ✗ NO → use <strong style="color:var(--haben)">haben</strong><br><br>
+            Kwame is going to work: movement ✓ → <span style="font-family:'DM Mono',monospace;color:var(--sein)">Kwame ist zur Arbeit gegangen.</span><br>
+            Kwame is eating: no movement ✗ → <span style="font-family:'DM Mono',monospace;color:var(--haben)">Kwame hat gegessen.</span>
+          </div>
+
+          <div class="sec-label">haben and sein — full conjugation for Perfekt</div>
+          <div class="conj-wrap">
+            <div class="conj-title">AUXILIARY VERB CONJUGATION IN PERFEKT</div>
+            <div class="conj-grid">
+              <div class="cg-h"></div>
+              <div class="cg-h" style="color:var(--haben);">HABEN</div>
+              <div class="cg-h" style="color:var(--sein);">SEIN</div>
+              <div class="cg-pron">ich</div>
+              <div class="cg-form cg-haben-cell">habe</div>
+              <div class="cg-form cg-sein-cell">bin</div>
+              <div class="cg-pron">du</div>
+              <div class="cg-form cg-haben-cell">hast</div>
+              <div class="cg-form cg-sein-cell">bist</div>
+              <div class="cg-pron">er/sie/es</div>
+              <div class="cg-form cg-haben-cell">hat</div>
+              <div class="cg-form cg-sein-cell">ist</div>
+              <div class="cg-pron">wir</div>
+              <div class="cg-form cg-haben-cell">haben</div>
+              <div class="cg-form cg-sein-cell">sind</div>
+              <div class="cg-pron">ihr</div>
+              <div class="cg-form cg-haben-cell">habt</div>
+              <div class="cg-form cg-sein-cell">seid</div>
+              <div class="cg-pron">sie/Sie</div>
+              <div class="cg-form cg-haben-cell">haben</div>
+              <div class="cg-form cg-sein-cell">sind</div>
+            </div>
+          </div>
+
+          <div class="sec-label">Side-by-side examples</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--sein);">SEIN · MOVEMENT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame <strong style="color:var(--sein)">ist</strong> nach Deutschland <strong style="color:var(--part)">geflogen</strong>.</div>
+                <div class="ex-en">Kwame flew to Germany. (movement: Lagos → Frankfurt)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame ist nach Deutschland geflogen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--haben);">HABEN · NO MOVEMENT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame <strong style="color:var(--haben)">hat</strong> im Flugzeug <strong style="color:var(--part)">geschlafen</strong>.</div>
+                <div class="ex-en">Kwame slept on the plane. (no movement — staying in the seat)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame hat im Flugzeug geschlafen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--sein);">SEIN · CHANGE OF STATE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina <strong style="color:var(--sein)">ist</strong> Ärztin <strong style="color:var(--part)">geworden</strong>.</div>
+                <div class="ex-en">Amina became a doctor. (change of state: not-a-doctor → doctor)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina ist Ärztin geworden.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">Module 13 · Lesson 4 · Quiz</div><h2 class="lesson-h">haben vs sein Quiz</h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 5: Separable Verbs ── -->
+    <div id="lesson-4" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">Module 13 · Lesson 5 of 6</div>
+          <h2 class="lesson-h">Separable verbs in <span style="color:var(--gold)">Perfekt</span></h2>
+          <p class="body-text">Separable verbs are verbs with a detachable prefix: <em>auf</em>machen, <em>an</em>rufen, <em>ein</em>kaufen, <em>ab</em>fahren. In present tense the prefix detaches to the end. In Perfekt, the ge– goes <strong>between the prefix and the stem</strong> — not before everything.</p>
+
+          <div class="formula-grid">
+            <div class="formula-card fc-separable" style="grid-column:1/-1;">
+              <div class="fc-label">SEPARABLE VERB PERFEKT FORMULA</div>
+              <div class="fc-formula">PREFIX + ge + STEM + t/en</div>
+              <div class="fc-example">
+                aufmachen → auf + ge + mach + t → <strong>aufgemacht</strong><br>
+                anrufen → an + ge + ruf + en → <strong>angerufen</strong><br>
+                einkaufen → ein + ge + kauf + t → <strong>eingekauft</strong><br>
+                abfahren → ab + ge + fahr + en → <strong>abgefahren</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">Common separable verbs you need in the exam</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--p3);">SEPARABLE VERB → PERFEKT PARTICIPLE</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:13px;">
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(155,89,182,0.06);border-radius:6px;color:var(--p3)">aufmachen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--part)">aufgemacht</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(155,89,182,0.06);border-radius:6px;color:var(--p3)">anrufen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--part)">angerufen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(155,89,182,0.06);border-radius:6px;color:var(--p3)">einkaufen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--part)">eingekauft</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(155,89,182,0.06);border-radius:6px;color:var(--p3)">abfahren</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--part)">abgefahren</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(155,89,182,0.06);border-radius:6px;color:var(--p3)">aufwachen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--part)">aufgewacht</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(155,89,182,0.06);border-radius:6px;color:var(--p3)">mitbringen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--part)">mitgebracht</div>
+            </div>
+          </div>
+
+          <div class="sec-label">The common mistake — ge– before the whole verb</div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">WRONG · ge before prefix</div>
+              <div class="wr-word">geaufgemacht<br>geangekommen<br>geeingekauft</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT · ge between</div>
+              <div class="wr-word">aufgemacht<br>angekommen<br>eingekauft</div>
+            </div>
+          </div>
+
+          <div class="sec-label">Separable verbs in sentences</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--p3);">ANRUFEN · SEPARABLE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi <strong style="color:var(--haben)">hat</strong> seine Mutter <strong style="color:var(--part)">angerufen</strong>.</div>
+                <div class="ex-en">Kofi called his mother.</div>
+                <div class="ex-note">anrufen: an+ge+ruf+en = angerufen. Uses haben (not movement).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi hat seine Mutter angerufen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--p3);">AUFWACHEN · SEPARABLE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima <strong style="color:var(--sein)">ist</strong> früh <strong style="color:var(--part)">aufgewacht</strong>.</div>
+                <div class="ex-en">Fatima woke up early.</div>
+                <div class="ex-note">aufwachen = change of state (sleeping → awake) → uses sein. auf+ge+wach+t = aufgewacht.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima ist früh aufgewacht.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="danger-box"><strong style="color:var(--red)">Verbs with inseparable prefixes (be–, ver–, er–, ge–, ent–) have NO ge– added!</strong><br><br>
+          besuchen → besucht (not gebesucht)<br>
+          verkaufen → verkauft (not geverkauft)<br>
+          erklären → erklärt (not geerklären)<br><br>
+          These prefixes can never be separated — the ge– rule does not apply to them.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">Module 13 · Lesson 5 · Quiz</div><h2 class="lesson-h">Separable Verbs Quiz</h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 6: African Context + Mistakes ── -->
+    <div id="lesson-5" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">Module 13 · Lesson 6 of 6</div>
+          <h2 class="lesson-h">Kwame, Amina, Kofi, Fatima — Perfekt in context</h2>
+          <p class="body-text">Six Perfekt sentences in African situations. Each sentence is marked to show: the auxiliary (haben or sein), the reason for the choice, and the participle type. Read, listen, and internalise the pattern.</p>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--sein);">SEIN · MOVEMENT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame <strong style="color:var(--sein)">ist</strong> von Accra nach Frankfurt <strong style="color:var(--part)">geflogen</strong>.</div>
+                <div class="ex-en">Kwame flew from Accra to Frankfurt.</div>
+                <div class="ex-note">fliegen = movement from city to city → sein. Irregular: ge+flog+en = geflogen.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame ist von Accra nach Frankfurt geflogen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--haben);">HABEN · ACTIVITY</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina <strong style="color:var(--haben)">hat</strong> den ganzen Tag Deutsch <strong style="color:var(--part)">gelernt</strong>.</div>
+                <div class="ex-en">Amina studied German all day.</div>
+                <div class="ex-note">lernen = activity, no movement → haben. Regular: ge+lern+t = gelernt.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina hat den ganzen Tag Deutsch gelernt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--haben);">HABEN · TRANSITIVE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi <strong style="color:var(--haben)">hat</strong> eine E-Mail <strong style="color:var(--part)">geschrieben</strong>.</div>
+                <div class="ex-en">Kofi wrote an email.</div>
+                <div class="ex-note">schreiben = acting on an object (die E-Mail) → haben. Irregular: ge+schrieb+en = geschrieben.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi hat eine E-Mail geschrieben.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--sein);">SEIN · CHANGE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima <strong style="color:var(--sein)">ist</strong> Lehrerin in Berlin <strong style="color:var(--part)">geworden</strong>.</div>
+                <div class="ex-en">Fatima became a teacher in Berlin.</div>
+                <div class="ex-note">werden = change of state → sein. Irregular: ge+word+en = geworden.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima ist Lehrerin in Berlin geworden.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--p3);">SEPARABLE · HABEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame <strong style="color:var(--haben)">hat</strong> Essen für die Familie <strong style="color:var(--part)">eingekauft</strong>.</div>
+                <div class="ex-en">Kwame went shopping for food for the family.</div>
+                <div class="ex-note">einkaufen = separable, no movement → haben. ein+ge+kauf+t = eingekauft.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame hat Essen für die Familie eingekauft.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--sein);">SEPARABLE · SEIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina <strong style="color:var(--sein)">ist</strong> um sechs Uhr <strong style="color:var(--part)">aufgewacht</strong>.</div>
+                <div class="ex-en">Amina woke up at six o'clock.</div>
+                <div class="ex-note">aufwachen = change of state (sleeping→awake) → sein. Separable: auf+ge+wach+t = aufgewacht.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina ist um sechs Uhr aufgewacht.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">The most common African learner mistakes in Perfekt</div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">LITERAL TRANSLATION FROM ENGLISH</div>
+              <div class="wr-word">Ich went to school.<br>Ich goed zur Schule.<br>Ich bin gehen zur Schule.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT PERFEKT</div>
+              <div class="wr-word">Ich bin zur Schule gegangen.</div>
+            </div>
+          </div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">WRONG AUXILIARY</div>
+              <div class="wr-word">Ich habe nach Hause gegangen.<br>Kofi hat geflogen.<br>Sie hat aufgewacht.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT AUXILIARY</div>
+              <div class="wr-word">Ich bin nach Hause gegangen.<br>Kofi ist geflogen.<br>Sie ist aufgewacht.</div>
+            </div>
+          </div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">PARTICIPLE AT WRONG POSITION</div>
+              <div class="wr-word">Ich habe gegessen Fufu.<br>Sie ist gegangen nach Hause.<br>Er hat gemacht Hausaufgaben.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">PARTICIPLE AT END</div>
+              <div class="wr-word">Ich habe Fufu gegessen.<br>Sie ist nach Hause gegangen.<br>Er hat Hausaufgaben gemacht.</div>
+            </div>
+          </div>
+
+          <div class="info-box"><strong style="color:var(--gold)">Exam tip — Goethe A2 Schreiben:</strong><br><br>
+          The Schreiben task will almost always contain a prompt like:<br>
+          <em>"Beschreiben Sie einen Ausflug / ein Erlebnis / Ihren letzten Geburtstag."</em><br><br>
+          Every sentence about what happened needs Perfekt. Examiners specifically look for:<br>
+          ✓ Correct auxiliary (haben/sein)<br>
+          ✓ Correct participle form<br>
+          ✓ Participle at the END of the sentence<br><br>
+          Write 3-4 Perfekt sentences in your Schreiben task and you will score 6+ out of 8 points.
+          </div>
+
+          <div class="success-box">
+            <strong style="color:var(--green)">What you now know:</strong><br><br>
+            ✓ Perfekt = auxiliary + past participle. Auxiliary in position 2, participle at END.<br>
+            ✓ Regular verbs: ge + stem + t (machen → gemacht)<br>
+            ✓ Irregular verbs: ge + changed stem + en (fahren → gefahren)<br>
+            ✓ The Golden Rule: movement / change of state → sein. Everything else → haben.<br>
+            ✓ Separable verbs: ge goes between prefix and stem (einkaufen → eingekauft)<br>
+            ✓ Inseparable prefixes (be–, ver–, er–): no ge– added (besuchen → besucht)<br>
+            ✓ In the Goethe A2 Schreiben exam, Perfekt appears in every task about the past.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Start Final Quiz →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">Module 13 · Final Quiz</div><h2 class="lesson-h">Module Complete — Final Check</h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Previous</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="showOverview()"><span class="nav-icon">📚</span><span class="nav-label">Overview</span></button>
+  <button class="nav-item" onclick="resumeLesson()"><span class="nav-icon">▶️</span><span class="nav-label">Resume</span></button>
+</nav>
+
+<script>
+var synth=(typeof window!=='undefined'&&window.speechSynthesis)?window.speechSynthesis:null;
+var deVoice=null,speechUnlocked=false;
+function loadVoices(){ if(!synth)return; try{ var v=synth.getVoices(); deVoice=v.find(function(x){return x.lang==='de-DE';})||v.find(function(x){return x.lang&&x.lang.startsWith('de');})||null; }catch(e){} }
+if(synth){ try{ loadVoices(); if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadVoices; }catch(e){} }
+function unlockSpeech(){ if(speechUnlocked||!synth)return; try{ var s=new SpeechSynthesisUtterance(''); s.volume=0; synth.speak(s); speechUnlocked=true; }catch(e){} }
+document.addEventListener('touchstart',unlockSpeech,{once:true,passive:true});
+document.addEventListener('click',unlockSpeech,{once:true});
+function speakDE(t){ if(!synth)return null; try{ if(!deVoice)loadVoices(); synth.cancel(); var u=new SpeechSynthesisUtterance(t); u.lang='de-DE'; u.rate=0.85; u.pitch=1.0; u.volume=1.0; if(deVoice)u.voice=deVoice; synth.speak(u); return u; }catch(e){return null;} }
+function speakSentence(btn,text){ unlockSpeech(); document.querySelectorAll('.speak-btn').forEach(function(b){b.classList.remove('speaking');}); if(btn&&btn.classList)btn.classList.add('speaking'); var u=speakDE(text); if(u){ u.onend=function(){if(btn&&btn.classList)btn.classList.remove('speaking');}; u.onerror=function(){if(btn&&btn.classList)btn.classList.remove('speaking');}; }else{ setTimeout(function(){if(btn&&btn.classList)btn.classList.remove('speaking');},1500); } }
+
+var currentLesson=0, xp=0, TOTAL=6;
+
+var QD={
+  0:[
+    {q:'Kofi wants to say "Kofi ate rice" in German Perfekt. Which sentence is correct?',
+     hint:'Perfekt uses two parts: auxiliary in position 2, participle at the end. essen is irregular.',
+     opts:['Kofi aß Reis.','Kofi hat Reis gegessen.','Kofi ist Reis gegessen.','Kofi hat gegessen Reis.'],
+     ans:1,
+     exp:'"Kofi hat Reis gegessen." — Correct Perfekt: haben auxiliary (hat) in position 2, irregular participle gegessen at the END. Option A is Präteritum (simple past) — avoid this in the exam. Option C uses sein — essen is not movement or change of state, so sein is wrong. Option D puts the participle before the object — the participle must go to the absolute end.',
+     rule:'Perfekt structure: SUBJECT + haben/sein (position 2) + [middle] + PARTICIPLE (END). Kofi hat Reis gegessen.'}
+  ],
+  1:[
+    {q:'What is the correct Perfekt participle for "kaufen" (to buy)?',
+     hint:'kaufen is a regular verb. Apply the formula: ge + stem + t.',
+     opts:['gekaufen','kaufte','gekauft','gekkauft'],
+     ans:2,
+     exp:'"gekauft" — kaufen is a regular (weak) verb. Formula: remove –en from infinitive → kauf. Add ge– at front and –t at end → gekauft. Option A keeps the –en ending — regular verbs end in –t not –en. Option B is Präteritum form. Option D has a double k — never double the consonant when adding ge–.',
+     rule:'Regular Perfekt formula: ge + STEM + t. kaufen → kauf → ge+kauf+t = gekauft. Always –t ending for regular verbs.'}
+  ],
+  2:[
+    {q:'Which sentence correctly says "Amina read a book" in Perfekt?',
+     hint:'lesen is irregular. Check the participle list: lesen → gelesen. Which auxiliary does lesen use?',
+     opts:['Amina ist ein Buch gelesen.','Amina hat ein Buch gelesen.','Amina hat ein Buch gelest.','Amina hat ein Buch lesen.'],
+     ans:1,
+     exp:'"Amina hat ein Buch gelesen." — lesen is irregular: ge+les+en = gelesen. It uses haben (reading a book = acting on an object, not movement). Option A uses sein — lesen is not movement or change of state, so sein is wrong. Option C "gelest" applies the regular –t ending to an irregular verb — lesen is irregular and ends in –en. Option D puts the infinitive instead of the participle.',
+     rule:'lesen is irregular: gelesen. Uses haben. Amina hat ein Buch gelesen. Irregular participles end in –en, not –t.'}
+  ],
+  3:[
+    {q:'Kwame flew from Lagos to Berlin. Which sentence is correct?',
+     hint:'fliegen = movement from one place to another. Which auxiliary do we use for movement? fliegen is irregular.',
+     opts:['Kwame hat von Lagos nach Berlin geflogen.','Kwame ist von Lagos nach Berlin geflogen.','Kwame ist von Lagos nach Berlin gefliegt.','Kwame hat von Lagos nach Berlin fliegen.'],
+     ans:1,
+     exp:'"Kwame ist von Lagos nach Berlin geflogen." — fliegen = movement from A to B → uses sein (the Golden Rule). Irregular participle: ge+flog+en = geflogen. Option A uses haben — wrong for movement verbs. Option C "gefliegt" applies the regular –t ending to an irregular verb. Option D uses the infinitive instead of the participle.',
+     rule:'Golden Rule: movement / change of state → sein. fliegen (to fly) = movement → sein. Irregular: geflogen. Kwame ist geflogen.'}
+  ],
+  4:[
+    {q:'What is the correct Perfekt participle for the separable verb "anrufen" (to call)?',
+     hint:'Separable verbs: prefix + ge + stem + t/en. anrufen is irregular (rufen → gerufen).',
+     opts:['geangekommen','angerufen','gerufenan','anrufte'],
+     ans:1,
+     exp:'"angerufen" — anrufen is separable: prefix is an–, stem is ruf–, it is irregular (en ending). Formula: an + ge + ruf + en = angerufen. Option A "geangekommen" confuses anrufen with ankommen and puts ge at the front — never put ge before the whole separable verb. Option C puts the prefix at the end — wrong. Option D is a made-up Präteritum form.',
+     rule:'Separable verb Perfekt: PREFIX + ge + STEM + t/en. anrufen → an+ge+ruf+en = angerufen. The ge always goes between the prefix and the stem.'}
+  ],
+  5:[
+    {q:'Complete: "Fatima ___ gestern in die Bibliothek ___ ." (Fatima went to the library yesterday.)',
+     hint:'gehen = movement from one place to another. Which auxiliary? gehen is irregular: gegangen.',
+     opts:['hat / gegangen','ist / gegangen','ist / gegehen','hat / gegangt'],
+     ans:1,
+     exp:'"ist / gegangen" — gehen = movement → sein. The er/sie/es form of sein is ist. Irregular participle: ge+gang+en = gegangen. Option A uses hat — haben is wrong for movement verbs. Option C "gegehen" keeps the original stem — the stem changes: geh → gang. Option D "gegangt" incorrectly applies the regular –t ending to an irregular verb.',
+     rule:'gehen = movement → sein. sein conjugation: ich bin / du bist / er/sie/es ist / wir sind. Irregular participle: gegangen. Fatima ist gegangen.'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">QUESTION '+(s.cur+1)+' OF '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint">'+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Next Question →':'See Results →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Correct!':'✗ Not quite'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent=q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' correct</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfect.':pct>=60?'Good work.':'Review and try again.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.12);border:1px solid var(--gold);border-radius:50px;padding:9px 22px;color:var(--gold);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Complete Module 13 →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Next Lesson →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">🎓</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Module 13 Complete!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">You have mastered the most important grammar in the Goethe A2 exam. Regular and irregular Perfekt formed correctly. haben vs sein distinction solid. Separable verbs handled. You can now write about the past in German — fluently and correctly.</p><div class="xp-badge">⚡ '+xp+' XP Earned</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">A2 Module 1 of 6 complete. Next: Module 14 — Präteritum of sein, haben &amp; modals.</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Back to Overview</button></div>'; }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function resumeLesson(){ goLesson(currentLesson); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+<script src="./ai-tutor.js" data-module="13"></script>
+</body>
+</html>
