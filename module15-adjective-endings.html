@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Module 15: Adjective Endings</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --masc:#3498db; --fem:#e67e22; --neut:#9b59b6; --end:#27ae60;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:rgba(10,10,10,0.96); backdrop-filter:blur(20px); border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:12px 0 20px; z-index:100; }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:8px 16px; border-radius:12px; transition:all 0.2s; border:none; background:none; color:var(--gray); }
+  .nav-item:hover, .nav-item.active { color:var(--gold); }
+  .nav-icon { font-size:20px; }
+  .nav-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; font-family:'DM Mono',monospace; }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--gold); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--gold); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--gold); color:var(--black); width:100%; }
+  .btn-primary:hover { background:var(--gold-light); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(201,168,76,0.2); }
+  .speak-btn.speaking { background:var(--gold); color:var(--black); }
+
+  /* SENTENCE BLOCKS */
+  .sent-block { margin:14px 0; }
+  .sent-de { display:flex; flex-wrap:wrap; gap:6px; align-items:flex-end; margin-bottom:10px; }
+  .stoken { display:flex; flex-direction:column; align-items:center; }
+  .sw { font-family:'DM Mono',monospace; font-size:16px; padding:8px 12px; border-radius:8px; font-weight:600; }
+  .sl { font-size:9px; letter-spacing:1.5px; text-align:center; margin-top:4px; font-family:'DM Mono',monospace; }
+  .sw-subj { background:rgba(52,152,219,0.12); border:1px solid rgba(52,152,219,0.3); color:var(--masc); }
+  .sl-subj { color:var(--masc); }
+  .sw-verb { background:rgba(201,168,76,0.12); border:1px solid rgba(201,168,76,0.35); color:var(--gold); }
+  .sl-verb { color:var(--gold); }
+  .sw-art { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:var(--cream); }
+  .sl-art { color:var(--gray); }
+  .sw-adj { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.25); color:var(--end); }
+  .sl-adj { color:var(--end); }
+  .sw-noun { background:rgba(201,168,76,0.08); border:1px solid rgba(201,168,76,0.2); color:var(--gold); }
+  .sl-noun { color:var(--gold); }
+  .sw-mid { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); color:var(--cream); }
+  .sl-mid { color:var(--gray); }
+  .sent-en { font-size:13px; color:var(--gray); margin-top:4px; padding-left:2px; }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-en { font-size:12px; color:var(--gray); margin-bottom:6px; }
+  .ex-note { font-size:12px; color:var(--cream); line-height:1.6; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Sans',sans-serif; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--gold); background:rgba(201,168,76,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(201,168,76,0.1); border-radius:8px; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(201,168,76,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(201,168,76,0.08); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(201,168,76,0.12); border:1px solid var(--gold); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--gold); font-size:18px; margin:18px 0; }
+
+  /* ADJECTIVE WORD — split stem + ending */
+  .adj-word { display:inline-flex; align-items:stretch; font-family:'DM Mono',monospace; font-size:17px; font-weight:700; margin:4px 2px; vertical-align:middle; }
+  .adj-stem { padding:8px 10px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-right:none; border-radius:8px 0 0 8px; color:var(--cream); }
+  .adj-end { padding:8px 10px; border-radius:0 8px 8px 0; font-weight:900; }
+  .ae-e  { background:rgba(201,168,76,0.15); border:1px solid rgba(201,168,76,0.4); color:var(--gold); }
+  .ae-en { background:rgba(52,152,219,0.14); border:1px solid rgba(52,152,219,0.4); color:var(--masc); }
+  .ae-er { background:rgba(230,126,34,0.14); border:1px solid rgba(230,126,34,0.4); color:var(--fem); }
+  .ae-es { background:rgba(155,89,182,0.14); border:1px solid rgba(155,89,182,0.4); color:var(--neut); }
+
+  /* DECLENSION TABLE */
+  .dec-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+  .dec-title { font-size:10px; letter-spacing:2.5px; font-family:'DM Mono',monospace; margin-bottom:12px; }
+  .dec-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .dec-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:9px 10px; text-align:center; border-bottom:1px solid rgba(255,255,255,0.07); color:var(--gray); white-space:nowrap; }
+  .dec-table td { padding:9px 10px; text-align:center; border-bottom:1px solid rgba(255,255,255,0.04); font-family:'DM Mono',monospace; font-size:13px; }
+  .dec-table tr:last-child td { border-bottom:none; }
+  .dt-case { text-align:left !important; color:var(--gray); font-size:11px; letter-spacing:1px; }
+  .dt-m { color:var(--masc); font-weight:700; }
+  .dt-f { color:var(--fem); font-weight:700; }
+  .dt-n { color:var(--neut); font-weight:700; }
+  .dt-pl { color:var(--gray); }
+  .dt-e  { color:var(--gold); font-weight:700; font-size:14px; }
+  .dt-en { color:var(--masc); font-weight:700; font-size:14px; }
+  .dt-er { color:var(--fem); font-weight:700; font-size:14px; }
+  .dt-es { color:var(--neut); font-weight:700; font-size:14px; }
+
+  /* ARTICLE-ADJ-NOUN ROW */
+  .aan-row { display:flex; flex-wrap:wrap; align-items:flex-end; gap:6px; margin:10px 0; }
+  .aan-art { font-family:'DM Mono',monospace; font-size:15px; padding:8px 12px; border-radius:8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.14); color:var(--cream); }
+  .aan-noun { font-family:'DM Mono',monospace; font-size:15px; padding:8px 12px; border-radius:8px; background:rgba(201,168,76,0.08); border:1px solid rgba(201,168,76,0.22); color:var(--gold); }
+  .aan-label { font-size:9px; font-family:'DM Mono',monospace; letter-spacing:1.5px; text-align:center; margin-top:4px; }
+  .aan-col { display:flex; flex-direction:column; align-items:center; }
+
+  /* GENDER STRIP */
+  .gender-strip { display:flex; gap:8px; margin:14px 0; flex-wrap:wrap; }
+  .g-card { flex:1; min-width:80px; border-radius:12px; padding:14px 12px; text-align:center; }
+  .g-label { font-size:9px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:6px; }
+  .g-art { font-family:'DM Mono',monospace; font-size:18px; font-weight:900; margin-bottom:4px; }
+  .g-ex { font-size:11px; line-height:1.6; }
+  .g-masc { background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.25); }
+  .g-masc .g-label { color:var(--masc); } .g-masc .g-art { color:var(--masc); }
+  .g-fem  { background:rgba(230,126,34,0.08); border:1px solid rgba(230,126,34,0.25); }
+  .g-fem .g-label  { color:var(--fem); }  .g-fem .g-art  { color:var(--fem); }
+  .g-neut { background:rgba(155,89,182,0.08); border:1px solid rgba(155,89,182,0.25); }
+  .g-neut .g-label { color:var(--neut); } .g-neut .g-art { color:var(--neut); }
+
+  /* WRONG/RIGHT */
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.2; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+
+  /* CONJ TABLE */
+  .conj-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; }
+  .conj-title { font-size:10px; letter-spacing:2.5px; font-family:'DM Mono',monospace; margin-bottom:12px; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .sw{font-size:13px;padding:6px 8px;} .lesson-h{font-size:22px;} .gender-strip{flex-direction:column;} .wr-grid{grid-template-columns:1fr;} .dec-table{font-size:11px;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">MODULE 15 · A2</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">A2 · Grammar</div>
+    <h1 class="lesson-h" style="font-size:36px;">Adjective<br><span style="color:var(--gold)">Endings</span></h1>
+    <p class="body-text">In English, adjectives never change: "a tall man", "a tall woman", "a tall child" — the same word every time. German is fundamentally different. Adjectives change their ending depending on the gender of the noun, the case (nominative/accusative/dative), and the article that comes before them. This is the biggest grammar shock for African English speakers entering A2.</p>
+    <div class="info-box"><strong style="color:var(--gold)">Why this matters for the Goethe A2 exam:</strong> Adjective endings appear in every A2 Schreiben task and are tested in Lesen. Wrong endings cost points in writing and can change meaning in reading. Master the three declension patterns and you unlock natural-sounding German.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">⚡</div><div><div class="lc-title">Lesson 1 — Why Adjective Endings Change</div><div class="lc-desc">The English vs German contrast. What the ending actually signals. The three declension types.</div></div><div class="lc-tag" style="color:var(--gold);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">🔵</div><div><div class="lc-title">Lesson 2 — After der / die / das (Weak)</div><div class="lc-desc">der alte Mann, die alte Frau, das alte Kind. Mostly -e and -en.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">🟠</div><div><div class="lc-title">Lesson 3 — After ein / eine (Mixed)</div><div class="lc-desc">ein alter Mann, eine alte Frau, ein altes Kind. The -er and -es hero endings.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">📍</div><div><div class="lc-title">Lesson 4 — Dative Case (Exam Focus)</div><div class="lc-desc">in der alten Stadt, mit einem neuen Freund. ALL dative adjectives end in -en.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">📝</div><div><div class="lc-title">Lesson 5 — The 10 Key A2 Adjectives</div><div class="lc-desc">neu, alt, groß, klein, gut, schlecht, schön, teuer, billig, interessant — in all patterns.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lesson 6 — Kwame, Amina, Kofi, Fatima</div><div class="lc-desc">African-context sentences. Common learner mistakes. Exam writing tips.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Begin Lesson 1 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lessons</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LESSON 1: Why Endings Change ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">Module 15 · Lesson 1 of 6</div>
+          <h2 class="lesson-h">Why do adjective endings <span style="color:var(--gold)">change</span>?</h2>
+          <p class="body-text">In English, adjectives are completely fixed. Whether you say "a good man", "a good woman", or "a good child" — the adjective "good" never changes. This is how all African English speakers learn adjectives: one word, one form, always.</p>
+          <p class="body-text">German works entirely differently. The adjective changes its ending based on three things: <strong style="color:var(--gold)">1) the grammatical gender</strong> of the noun (masculine/feminine/neuter), <strong style="color:var(--gold)">2) the case</strong> (nominative/accusative/dative), and <strong style="color:var(--gold)">3) what article</strong> comes before it (der/die/das, ein/eine, or nothing).</p>
+
+          <div class="sec-label">English vs German — the contrast</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--gray);">ENGLISH — adjective never changes</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px;">
+              <div style="font-family:'DM Mono',monospace;padding:8px 10px;background:rgba(255,255,255,0.04);border-radius:6px;">a good man</div>
+              <div style="font-family:'DM Mono',monospace;padding:8px 10px;background:rgba(255,255,255,0.04);border-radius:6px;">a good woman</div>
+              <div style="font-family:'DM Mono',monospace;padding:8px 10px;background:rgba(255,255,255,0.04);border-radius:6px;">a good child</div>
+              <div style="font-family:'DM Mono',monospace;padding:8px 10px;background:rgba(255,255,255,0.04);border-radius:6px;">a good house</div>
+            </div>
+          </div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--gold);">GERMAN — adjective changes with gender + article</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px;">
+              <div style="font-family:'DM Mono',monospace;padding:8px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--masc);">ein gut<strong style="color:var(--fem);">er</strong> Mann</div>
+              <div style="font-family:'DM Mono',monospace;padding:8px 10px;background:rgba(230,126,34,0.06);border-radius:6px;color:var(--fem);">eine gut<strong style="color:var(--gold);">e</strong> Frau</div>
+              <div style="font-family:'DM Mono',monospace;padding:8px 10px;background:rgba(155,89,182,0.06);border-radius:6px;color:var(--neut);">ein gut<strong style="color:var(--neut);">es</strong> Kind</div>
+              <div style="font-family:'DM Mono',monospace;padding:8px 10px;background:rgba(155,89,182,0.06);border-radius:6px;color:var(--neut);">ein gut<strong style="color:var(--neut);">es</strong> Haus</div>
+            </div>
+          </div>
+
+          <div class="sec-label">The three declension types at A2</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--masc);">TYPE 1 · WEAK</div>
+              <div style="flex:1;">
+                <div class="ex-de">After <strong style="color:var(--cream);">der / die / das / den / dem</strong></div>
+                <div class="ex-en">After the definite article — adjective mostly adds -e or -en</div>
+                <div class="ex-note">der alte Mann &nbsp;·&nbsp; die alte Frau &nbsp;·&nbsp; das alte Kind</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--fem);">TYPE 2 · MIXED</div>
+              <div style="flex:1;">
+                <div class="ex-de">After <strong style="color:var(--cream);">ein / eine / einen / einem / einer</strong></div>
+                <div class="ex-en">After the indefinite article — adjective sometimes must show the gender itself</div>
+                <div class="ex-note">ein alter Mann &nbsp;·&nbsp; eine alte Frau &nbsp;·&nbsp; ein altes Kind</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--neut);">TYPE 3 · STRONG</div>
+              <div style="flex:1;">
+                <div class="ex-de">After <strong style="color:var(--cream);">no article</strong></div>
+                <div class="ex-en">No article at all — adjective alone must signal all gender/case information</div>
+                <div class="ex-note">alter Mann &nbsp;·&nbsp; alte Frau &nbsp;·&nbsp; altes Kind — rare at A2, focus on Types 1&amp;2</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-box"><strong style="color:var(--gold)">The core insight:</strong> The German sentence always needs to communicate gender and case. If the article already does it clearly (der = definitely masculine nominative), the adjective can be "lazy" and add just -e. If the article is ambiguous (ein can be masculine OR neuter), the adjective must be the "hero" and carry the gender signal itself (-er for masculine, -es for neuter).</div>
+
+          <div class="sec-label">The three genders you must know for adjective endings</div>
+          <div class="gender-strip">
+            <div class="g-card g-masc">
+              <div class="g-label">MASCULINE</div>
+              <div class="g-art">der</div>
+              <div class="g-ex">der Mann<br>der Freund<br>der Bus</div>
+            </div>
+            <div class="g-card g-fem">
+              <div class="g-label">FEMININE</div>
+              <div class="g-art">die</div>
+              <div class="g-ex">die Frau<br>die Stadt<br>die Wohnung</div>
+            </div>
+            <div class="g-card g-neut">
+              <div class="g-label">NEUTER</div>
+              <div class="g-art">das</div>
+              <div class="g-ex">das Kind<br>das Haus<br>das Kleid</div>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">Module 15 · Lesson 1 · Quiz</div><h2 class="lesson-h">Why Endings Change — First Check</h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 2: After der/die/das (Weak) ── -->
+    <div id="lesson-1" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">Module 15 · Lesson 2 of 6</div>
+          <h2 class="lesson-h">After <span style="color:var(--masc)">der</span> / <span style="color:var(--fem)">die</span> / <span style="color:var(--neut)">das</span> — weak endings</h2>
+          <p class="body-text">When the definite article comes before the adjective, the article already carries the full gender and case signal. The adjective is "weak" — it just adds <strong style="color:var(--gold)">-e</strong> or <strong style="color:var(--masc)">-en</strong>. You never need -er, -es, or -em after der/die/das forms.</p>
+
+          <div class="info-box">
+            <strong style="color:var(--gold)">The weak declension golden rule:</strong><br><br>
+            ✓ After <strong>der / die / das</strong> in nominative → adjective gets <strong style="color:var(--gold)">-e</strong><br>
+            ✓ After <strong>den</strong> (accusative masculine) → adjective gets <strong style="color:var(--masc)">-en</strong><br>
+            ✓ After <strong>dem / der</strong> (all dative) → adjective gets <strong style="color:var(--masc)">-en</strong><br><br>
+            Pattern to memorise: <em>mostly -e, but accusative masculine and all dative = -en</em>
+          </div>
+
+          <div class="sec-label">Weak declension table — definite article</div>
+          <div class="dec-wrap">
+            <div class="dec-title" style="color:var(--gold);">AFTER DER / DIE / DAS — e.g. "alt" (old)</div>
+            <table class="dec-table">
+              <thead>
+                <tr>
+                  <th class="dt-case">CASE</th>
+                  <th class="dt-m">MASC</th>
+                  <th class="dt-f">FEM</th>
+                  <th class="dt-n">NEUT</th>
+                  <th class="dt-pl">PLURAL</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="dt-case">NOM</td>
+                  <td><span class="dt-e">der alte</span><br><span style="font-size:10px;color:var(--gray);">Mann</span></td>
+                  <td><span class="dt-e">die alte</span><br><span style="font-size:10px;color:var(--gray);">Frau</span></td>
+                  <td><span class="dt-e">das alte</span><br><span style="font-size:10px;color:var(--gray);">Kind</span></td>
+                  <td><span class="dt-en">die alten</span><br><span style="font-size:10px;color:var(--gray);">Männer</span></td>
+                </tr>
+                <tr>
+                  <td class="dt-case">ACC</td>
+                  <td><span class="dt-en">den alten</span><br><span style="font-size:10px;color:var(--gray);">Mann</span></td>
+                  <td><span class="dt-e">die alte</span><br><span style="font-size:10px;color:var(--gray);">Frau</span></td>
+                  <td><span class="dt-e">das alte</span><br><span style="font-size:10px;color:var(--gray);">Kind</span></td>
+                  <td><span class="dt-en">die alten</span><br><span style="font-size:10px;color:var(--gray);">Männer</span></td>
+                </tr>
+                <tr>
+                  <td class="dt-case">DAT</td>
+                  <td><span class="dt-en">dem alten</span><br><span style="font-size:10px;color:var(--gray);">Mann</span></td>
+                  <td><span class="dt-en">der alten</span><br><span style="font-size:10px;color:var(--gray);">Frau</span></td>
+                  <td><span class="dt-en">dem alten</span><br><span style="font-size:10px;color:var(--gray);">Kind</span></td>
+                  <td><span class="dt-en">den alten</span><br><span style="font-size:10px;color:var(--gray);">Männern</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="sec-label">Seeing the pattern — nominative (the subject)</div>
+          <div style="margin:14px 0;">
+            <div class="aan-row">
+              <div class="aan-col"><div class="aan-art" style="border-color:rgba(52,152,219,0.3);color:var(--masc);">Der</div><div class="aan-label" style="color:var(--masc);">NOM·M</div></div>
+              <div class="aan-col">
+                <div class="adj-word"><div class="adj-stem">alt</div><div class="adj-end ae-e">e</div></div>
+                <div class="aan-label" style="color:var(--gold);">ADJ</div>
+              </div>
+              <div class="aan-col"><div class="aan-noun">Mann</div><div class="aan-label" style="color:var(--gold);">NOUN</div></div>
+            </div>
+            <button class="speak-btn" onclick="speakSentence(this,'Der alte Mann kommt aus Ghana.')">🔊 Der alte Mann kommt aus Ghana.</button>
+          </div>
+          <div style="margin:14px 0;">
+            <div class="aan-row">
+              <div class="aan-col"><div class="aan-art" style="border-color:rgba(230,126,34,0.3);color:var(--fem);">Die</div><div class="aan-label" style="color:var(--fem);">NOM·F</div></div>
+              <div class="aan-col">
+                <div class="adj-word"><div class="adj-stem">alt</div><div class="adj-end ae-e">e</div></div>
+                <div class="aan-label" style="color:var(--gold);">ADJ</div>
+              </div>
+              <div class="aan-col"><div class="aan-noun">Frau</div><div class="aan-label" style="color:var(--gold);">NOUN</div></div>
+            </div>
+            <button class="speak-btn" onclick="speakSentence(this,'Die alte Frau wohnt in Berlin.')">🔊 Die alte Frau wohnt in Berlin.</button>
+          </div>
+          <div style="margin:14px 0;">
+            <div class="aan-row">
+              <div class="aan-col"><div class="aan-art" style="border-color:rgba(155,89,182,0.3);color:var(--neut);">Das</div><div class="aan-label" style="color:var(--neut);">NOM·N</div></div>
+              <div class="aan-col">
+                <div class="adj-word"><div class="adj-stem">alt</div><div class="adj-end ae-e">e</div></div>
+                <div class="aan-label" style="color:var(--gold);">ADJ</div>
+              </div>
+              <div class="aan-col"><div class="aan-noun">Kind</div><div class="aan-label" style="color:var(--gold);">NOUN</div></div>
+            </div>
+            <button class="speak-btn" onclick="speakSentence(this,'Das alte Kind schläft.')">🔊 Das alte Kind schläft.</button>
+          </div>
+
+          <div class="sec-label">Accusative masculine — the only change from nominative</div>
+          <p class="body-text">The accusative case is used for the direct object of a sentence. For masculine nouns, <strong>der → den</strong>, and the adjective ending changes from <strong style="color:var(--gold)">-e</strong> to <strong style="color:var(--masc)">-en</strong>. For feminine and neuter nouns, the accusative is the same as nominative.</p>
+          <div style="margin:14px 0;">
+            <div class="aan-row">
+              <div class="aan-col"><div class="aan-art" style="border-color:rgba(52,152,219,0.4);color:var(--masc);">Den</div><div class="aan-label" style="color:var(--masc);">ACC·M</div></div>
+              <div class="aan-col">
+                <div class="adj-word"><div class="adj-stem">alt</div><div class="adj-end ae-en">en</div></div>
+                <div class="aan-label" style="color:var(--masc);">-en</div>
+              </div>
+              <div class="aan-col"><div class="aan-noun">Mann</div><div class="aan-label" style="color:var(--gold);">NOUN</div></div>
+            </div>
+            <button class="speak-btn" onclick="speakSentence(this,'Amina kennt den alten Mann.')">🔊 Amina kennt den alten Mann.</button>
+          </div>
+
+          <div class="sec-label">More weak declension examples</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--masc);">NOM · MASC</div>
+              <div style="flex:1;">
+                <div class="ex-de">Der <strong style="color:var(--end);">neue</strong> Bus fährt um 8 Uhr ab.</div>
+                <div class="ex-en">The new bus departs at 8 o'clock.</div>
+                <div class="ex-note">der (def. art. masc. nom.) → adjective ending: -e. Bus is masculine → der neue Bus.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Der neue Bus fährt um acht Uhr ab.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--fem);">NOM · FEM</div>
+              <div style="flex:1;">
+                <div class="ex-de">Die <strong style="color:var(--end);">kleine</strong> Wohnung ist schön.</div>
+                <div class="ex-en">The small apartment is beautiful.</div>
+                <div class="ex-note">die (def. art. fem. nom.) → adjective ending: -e. Wohnung is feminine → die kleine Wohnung.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Die kleine Wohnung ist schön.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--masc);">ACC · MASC</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi kauft den <strong style="color:var(--end);">teuren</strong> Laptop.</div>
+                <div class="ex-en">Kofi buys the expensive laptop.</div>
+                <div class="ex-note">den (def. art. masc. acc.) → adjective ending: -en. Laptop is masculine, accusative object → den teuren Laptop.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi kauft den teuren Laptop.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">Module 15 · Lesson 2 · Quiz</div><h2 class="lesson-h">Weak Endings — Check</h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 3: After ein/eine (Mixed) ── -->
+    <div id="lesson-2" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">Module 15 · Lesson 3 of 6</div>
+          <h2 class="lesson-h">After <span style="color:var(--gold)">ein</span> / <span style="color:var(--fem)">eine</span> — mixed endings</h2>
+          <p class="body-text">The indefinite article <strong style="color:var(--gold)">ein</strong> is a problem: it is the same form for both masculine AND neuter nouns in the nominative case. There is no way to tell from "ein" alone whether the noun is masculine or neuter. So the adjective must step up and carry that information itself — this is called the <strong style="color:var(--cream)">mixed declension</strong>.</p>
+
+          <div class="info-box">
+            <strong style="color:var(--gold)">The mixed declension rule:</strong><br><br>
+            ✓ <strong style="color:var(--fem)">Nominative masculine after ein</strong> → adjective gets <strong style="color:var(--fem)">-er</strong> (signals: this is masculine!)<br>
+            ✓ <strong style="color:var(--neut)">Nominative/Accusative neuter after ein</strong> → adjective gets <strong style="color:var(--neut)">-es</strong> (signals: this is neuter!)<br>
+            ✓ <strong>Everything else</strong> → same as weak: -e or -en
+          </div>
+
+          <div class="sec-label">Mixed declension table — indefinite article</div>
+          <div class="dec-wrap">
+            <div class="dec-title" style="color:var(--gold);">AFTER EIN / EINE — e.g. "alt" (old)</div>
+            <table class="dec-table">
+              <thead>
+                <tr>
+                  <th class="dt-case">CASE</th>
+                  <th class="dt-m">MASC</th>
+                  <th class="dt-f">FEM</th>
+                  <th class="dt-n">NEUT</th>
+                  <th class="dt-pl" style="font-size:10px;">(kein+)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="dt-case">NOM</td>
+                  <td><span class="dt-er">ein alter</span><br><span style="font-size:10px;color:var(--gray);">Mann</span></td>
+                  <td><span class="dt-e">eine alte</span><br><span style="font-size:10px;color:var(--gray);">Frau</span></td>
+                  <td><span class="dt-es">ein altes</span><br><span style="font-size:10px;color:var(--gray);">Kind</span></td>
+                  <td><span class="dt-en">keine alten</span><br><span style="font-size:10px;color:var(--gray);">Männer</span></td>
+                </tr>
+                <tr>
+                  <td class="dt-case">ACC</td>
+                  <td><span class="dt-en">einen alten</span><br><span style="font-size:10px;color:var(--gray);">Mann</span></td>
+                  <td><span class="dt-e">eine alte</span><br><span style="font-size:10px;color:var(--gray);">Frau</span></td>
+                  <td><span class="dt-es">ein altes</span><br><span style="font-size:10px;color:var(--gray);">Kind</span></td>
+                  <td><span class="dt-en">keine alten</span><br><span style="font-size:10px;color:var(--gray);">Männer</span></td>
+                </tr>
+                <tr>
+                  <td class="dt-case">DAT</td>
+                  <td><span class="dt-en">einem alten</span><br><span style="font-size:10px;color:var(--gray);">Mann</span></td>
+                  <td><span class="dt-en">einer alten</span><br><span style="font-size:10px;color:var(--gray);">Frau</span></td>
+                  <td><span class="dt-en">einem alten</span><br><span style="font-size:10px;color:var(--gray);">Kind</span></td>
+                  <td><span class="dt-en">keinen alten</span><br><span style="font-size:10px;color:var(--gray);">Männern</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue);">Highlighted difference from weak declension:</strong> The only cells that change are nominative masculine (−er instead of -e) and nominative/accusative neuter (-es instead of -e). Everything else is the same as the weak declension.</div>
+
+          <div class="sec-label">The three hero endings — when the adjective carries the gender signal</div>
+          <div style="margin:14px 0;">
+            <div class="aan-row">
+              <div class="aan-col"><div class="aan-art">Ein</div><div class="aan-label" style="color:var(--gray);">ART</div></div>
+              <div class="aan-col">
+                <div class="adj-word"><div class="adj-stem">alt</div><div class="adj-end ae-er">er</div></div>
+                <div class="aan-label" style="color:var(--fem);">→ MASC</div>
+              </div>
+              <div class="aan-col"><div class="aan-noun" style="border-color:rgba(52,152,219,0.3);color:var(--masc);">Mann</div><div class="aan-label" style="color:var(--masc);">MASC</div></div>
+            </div>
+            <button class="speak-btn" onclick="speakSentence(this,'Ein alter Mann kommt.')">🔊 Ein alter Mann kommt.</button>
+          </div>
+          <div style="margin:14px 0;">
+            <div class="aan-row">
+              <div class="aan-col"><div class="aan-art" style="border-color:rgba(230,126,34,0.3);color:var(--fem);">Eine</div><div class="aan-label" style="color:var(--fem);">ART·F</div></div>
+              <div class="aan-col">
+                <div class="adj-word"><div class="adj-stem">alt</div><div class="adj-end ae-e">e</div></div>
+                <div class="aan-label" style="color:var(--gold);">-e same</div>
+              </div>
+              <div class="aan-col"><div class="aan-noun" style="border-color:rgba(230,126,34,0.3);color:var(--fem);">Frau</div><div class="aan-label" style="color:var(--fem);">FEM</div></div>
+            </div>
+            <button class="speak-btn" onclick="speakSentence(this,'Eine alte Frau kommt.')">🔊 Eine alte Frau kommt.</button>
+          </div>
+          <div style="margin:14px 0;">
+            <div class="aan-row">
+              <div class="aan-col"><div class="aan-art">Ein</div><div class="aan-label" style="color:var(--gray);">ART</div></div>
+              <div class="aan-col">
+                <div class="adj-word"><div class="adj-stem">alt</div><div class="adj-end ae-es">es</div></div>
+                <div class="aan-label" style="color:var(--neut);">→ NEUT</div>
+              </div>
+              <div class="aan-col"><div class="aan-noun" style="border-color:rgba(155,89,182,0.3);color:var(--neut);">Kind</div><div class="aan-label" style="color:var(--neut);">NEUT</div></div>
+            </div>
+            <button class="speak-btn" onclick="speakSentence(this,'Ein altes Kind schläft.')">🔊 Ein altes Kind schläft.</button>
+          </div>
+
+          <div class="sec-label">Mixed declension examples — Kwame, Amina, Kofi</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--fem);">NOM · MASC · -er</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame ist ein <strong style="color:var(--end);">guter</strong> Freund.</div>
+                <div class="ex-en">Kwame is a good friend.</div>
+                <div class="ex-note">ein + nominative masculine → adjective ending -er. gut → guter. The -er signals "masculine noun following".</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame ist ein guter Freund.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--neut);">NOM · NEUT · -es</div>
+              <div style="flex:1;">
+                <div class="ex-de">Accra ist eine <strong style="color:var(--end);">schöne</strong> Stadt.</div>
+                <div class="ex-en">Accra is a beautiful city.</div>
+                <div class="ex-note">eine + nominative feminine → adjective ending -e. Stadt is feminine → eine schöne Stadt.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Accra ist eine schöne Stadt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--neut);">ACC · NEUT · -es</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina hat ein <strong style="color:var(--end);">neues</strong> Kleid gekauft.</div>
+                <div class="ex-en">Amina bought a new dress.</div>
+                <div class="ex-note">ein + accusative neuter → -es. Kleid is neuter. Accusative neuter = same form as nominative. ein neues Kleid.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina hat ein neues Kleid gekauft.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--masc);">ACC · MASC · -en</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi hat einen <strong style="color:var(--end);">guten</strong> Job.</div>
+                <div class="ex-en">Kofi has a good job.</div>
+                <div class="ex-note">einen (accusative masculine) → adjective ending -en. The accusative masculine of ein is einen, so the adjective follows the weak rule: -en.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi hat einen guten Job.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">Module 15 · Lesson 3 · Quiz</div><h2 class="lesson-h">Mixed Endings — Check</h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 4: Dative Case ── -->
+    <div id="lesson-3" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">Module 15 · Lesson 4 of 6</div>
+          <h2 class="lesson-h">Dative case — always <span style="color:var(--masc)">-en</span></h2>
+          <p class="body-text">The dative case is used after certain prepositions and with indirect objects. For adjective endings, the dative has a beautifully simple rule: <strong style="color:var(--masc)">no matter what gender or article</strong>, the adjective always ends in <strong style="color:var(--masc)">-en</strong> in the dative. This is the easiest ending to memorise at A2 level.</p>
+
+          <div class="info-box">
+            <strong style="color:var(--gold)">Dative golden rule:</strong><br><br>
+            In dative, ALL adjective endings = <strong style="color:var(--masc)">-en</strong><br><br>
+            dem alten Mann &nbsp;·&nbsp; der alten Frau &nbsp;·&nbsp; dem alten Kind<br>
+            einem alten Mann &nbsp;·&nbsp; einer alten Frau &nbsp;·&nbsp; einem alten Kind
+          </div>
+
+          <div class="sec-label">Key dative prepositions — tested in Goethe A2</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--masc);">PREPOSITIONS THAT ALWAYS TAKE DATIVE</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:13px;">
+              <div style="font-family:'DM Mono',monospace;padding:8px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--masc);text-align:center;"><strong>in</strong><div style="font-size:10px;color:var(--gray);margin-top:3px;">in (location)</div></div>
+              <div style="font-family:'DM Mono',monospace;padding:8px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--masc);text-align:center;"><strong>mit</strong><div style="font-size:10px;color:var(--gray);margin-top:3px;">with</div></div>
+              <div style="font-family:'DM Mono',monospace;padding:8px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--masc);text-align:center;"><strong>bei</strong><div style="font-size:10px;color:var(--gray);margin-top:3px;">at / near</div></div>
+              <div style="font-family:'DM Mono',monospace;padding:8px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--masc);text-align:center;"><strong>nach</strong><div style="font-size:10px;color:var(--gray);margin-top:3px;">after / to</div></div>
+              <div style="font-family:'DM Mono',monospace;padding:8px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--masc);text-align:center;"><strong>aus</strong><div style="font-size:10px;color:var(--gray);margin-top:3px;">from / out of</div></div>
+              <div style="font-family:'DM Mono',monospace;padding:8px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--masc);text-align:center;"><strong>von</strong><div style="font-size:10px;color:var(--gray);margin-top:3px;">from / of</div></div>
+            </div>
+          </div>
+
+          <div class="sec-label">Dative adjective endings in sentences</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--masc);">DAT · in + DEM</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame wohnt in dem <strong style="color:var(--end);">alten</strong> Haus. → in dem = <strong style="color:var(--gold);">im</strong></div>
+                <div class="ex-en">Kwame lives in the old house.</div>
+                <div class="ex-note">in + dative. Haus is neuter → dem. After dem (dative) → adjective: -en. im alten Haus is the contracted form.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame wohnt im alten Haus.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--fem);">DAT · in + EINER</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima wohnt in einer <strong style="color:var(--end);">kleinen</strong> Wohnung.</div>
+                <div class="ex-en">Fatima lives in a small apartment.</div>
+                <div class="ex-note">in + dative. Wohnung is feminine → einer. After einer (dative) → adjective: -en. kleinen.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima wohnt in einer kleinen Wohnung.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--masc);">DAT · mit + EINEM</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina fährt mit einem <strong style="color:var(--end);">alten</strong> Bus.</div>
+                <div class="ex-en">Amina travels with an old bus.</div>
+                <div class="ex-note">mit + dative. Bus is masculine → einem. After einem (dative) → adjective: -en. alten.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina fährt mit einem alten Bus.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--neut);">DAT · bei + EINER</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi arbeitet bei einer <strong style="color:var(--end);">deutschen</strong> Firma.</div>
+                <div class="ex-en">Kofi works at a German company.</div>
+                <div class="ex-note">bei + dative. Firma is feminine → einer. After einer (dative) → adjective: -en. deutschen.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi arbeitet bei einer deutschen Firma.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">The A2 exam two-way prepositions in dative (location)</div>
+          <p class="body-text">Prepositions like <strong>in, an, auf, über, unter, neben, zwischen, vor, hinter</strong> take dative when expressing <em>location</em> (where?) and accusative when expressing <em>movement toward</em> (where to?). For A2, the location use (dative) with adjective -en is the most tested.</p>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--gold);">LOCATION · DAT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das Buch liegt auf dem <strong style="color:var(--end);">alten</strong> Tisch.</div>
+                <div class="ex-en">The book is (lying) on the old table.</div>
+                <div class="ex-note">auf + dative (location: where?). Tisch is masculine → dem. auf dem alten Tisch.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das Buch liegt auf dem alten Tisch.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">Module 15 · Lesson 4 · Quiz</div><h2 class="lesson-h">Dative Endings — Check</h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 5: 10 Key A2 Adjectives ── -->
+    <div id="lesson-4" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">Module 15 · Lesson 5 of 6</div>
+          <h2 class="lesson-h">The 10 key Goethe A2 <span style="color:var(--gold)">adjectives</span></h2>
+          <p class="body-text">These adjectives appear in nearly every Goethe A2 exam. Learn them in their three main forms — nominative masculine after ein (the "hero" form showing -er), nominative feminine after eine, and dative after einem/einer (-en for all). Once you know these, you cover the majority of adjective questions in A2 Lesen and Schreiben.</p>
+
+          <div class="sec-label">The 10 adjectives — with full paradigm</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--gold);">EIN+ADJ+MASC(NOM) · EINE+ADJ+FEM(NOM) · EINEM/EINER+ADJ+DAT</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:5px;font-size:11px;">
+              <div style="font-family:'DM Mono',monospace;padding:6px 8px;color:var(--gray);letter-spacing:1px;font-size:10px;">ADJ</div>
+              <div style="font-family:'DM Mono',monospace;padding:6px 8px;color:var(--fem);letter-spacing:1px;font-size:10px;">EIN … MASC</div>
+              <div style="font-family:'DM Mono',monospace;padding:6px 8px;color:var(--fem);letter-spacing:1px;font-size:10px;">EINE … FEM</div>
+              <div style="font-family:'DM Mono',monospace;padding:6px 8px;color:var(--masc);letter-spacing:1px;font-size:10px;">DAT …-en</div>
+
+              <div style="padding:7px 8px;color:var(--gold);font-family:'DM Mono',monospace;">neu</div>
+              <div style="padding:7px 8px;background:rgba(230,126,34,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--fem);">ein neu<strong>er</strong></div>
+              <div style="padding:7px 8px;background:rgba(201,168,76,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--gold);">eine neu<strong>e</strong></div>
+              <div style="padding:7px 8px;background:rgba(52,152,219,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--masc);">neu<strong>en</strong></div>
+
+              <div style="padding:7px 8px;color:var(--gold);font-family:'DM Mono',monospace;">alt</div>
+              <div style="padding:7px 8px;background:rgba(230,126,34,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--fem);">ein alt<strong>er</strong></div>
+              <div style="padding:7px 8px;background:rgba(201,168,76,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--gold);">eine alt<strong>e</strong></div>
+              <div style="padding:7px 8px;background:rgba(52,152,219,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--masc);">alt<strong>en</strong></div>
+
+              <div style="padding:7px 8px;color:var(--gold);font-family:'DM Mono',monospace;">groß</div>
+              <div style="padding:7px 8px;background:rgba(230,126,34,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--fem);">ein groß<strong>er</strong></div>
+              <div style="padding:7px 8px;background:rgba(201,168,76,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--gold);">eine groß<strong>e</strong></div>
+              <div style="padding:7px 8px;background:rgba(52,152,219,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--masc);">groß<strong>en</strong></div>
+
+              <div style="padding:7px 8px;color:var(--gold);font-family:'DM Mono',monospace;">klein</div>
+              <div style="padding:7px 8px;background:rgba(230,126,34,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--fem);">ein klein<strong>er</strong></div>
+              <div style="padding:7px 8px;background:rgba(201,168,76,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--gold);">eine klein<strong>e</strong></div>
+              <div style="padding:7px 8px;background:rgba(52,152,219,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--masc);">klein<strong>en</strong></div>
+
+              <div style="padding:7px 8px;color:var(--gold);font-family:'DM Mono',monospace;">gut</div>
+              <div style="padding:7px 8px;background:rgba(230,126,34,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--fem);">ein gut<strong>er</strong></div>
+              <div style="padding:7px 8px;background:rgba(201,168,76,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--gold);">eine gut<strong>e</strong></div>
+              <div style="padding:7px 8px;background:rgba(52,152,219,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--masc);">gut<strong>en</strong></div>
+
+              <div style="padding:7px 8px;color:var(--gold);font-family:'DM Mono',monospace;">schlecht</div>
+              <div style="padding:7px 8px;background:rgba(230,126,34,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--fem);">ein schlecht<strong>er</strong></div>
+              <div style="padding:7px 8px;background:rgba(201,168,76,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--gold);">eine schlecht<strong>e</strong></div>
+              <div style="padding:7px 8px;background:rgba(52,152,219,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--masc);">schlecht<strong>en</strong></div>
+
+              <div style="padding:7px 8px;color:var(--gold);font-family:'DM Mono',monospace;">schön</div>
+              <div style="padding:7px 8px;background:rgba(230,126,34,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--fem);">ein schön<strong>er</strong></div>
+              <div style="padding:7px 8px;background:rgba(201,168,76,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--gold);">eine schön<strong>e</strong></div>
+              <div style="padding:7px 8px;background:rgba(52,152,219,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--masc);">schön<strong>en</strong></div>
+
+              <div style="padding:7px 8px;color:var(--gold);font-family:'DM Mono',monospace;">teuer</div>
+              <div style="padding:7px 8px;background:rgba(230,126,34,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--fem);">ein teur<strong>er</strong></div>
+              <div style="padding:7px 8px;background:rgba(201,168,76,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--gold);">eine teur<strong>e</strong></div>
+              <div style="padding:7px 8px;background:rgba(52,152,219,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--masc);">teur<strong>en</strong></div>
+
+              <div style="padding:7px 8px;color:var(--gold);font-family:'DM Mono',monospace;">billig</div>
+              <div style="padding:7px 8px;background:rgba(230,126,34,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--fem);">ein billig<strong>er</strong></div>
+              <div style="padding:7px 8px;background:rgba(201,168,76,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--gold);">eine billig<strong>e</strong></div>
+              <div style="padding:7px 8px;background:rgba(52,152,219,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--masc);">billig<strong>en</strong></div>
+
+              <div style="padding:7px 8px;color:var(--gold);font-family:'DM Mono',monospace;">interessant</div>
+              <div style="padding:7px 8px;background:rgba(230,126,34,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--fem);">ein interessant<strong>er</strong></div>
+              <div style="padding:7px 8px;background:rgba(201,168,76,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--gold);">eine interessant<strong>e</strong></div>
+              <div style="padding:7px 8px;background:rgba(52,152,219,0.06);border-radius:5px;font-family:'DM Mono',monospace;color:var(--masc);">interessant<strong>en</strong></div>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue);">Note on "teuer":</strong> teuer drops the final -e before adding an ending: teuer → teur + er = teurer, teur + e = teure, teur + en = teuren. This is the only adjective in the A2 list with this irregularity.</div>
+
+          <div class="sec-label">These adjectives in African-context sentences</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--gold);">neu / alt</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame hat ein <strong style="color:var(--end);">neues</strong> Handy, aber Amina hat ein <strong style="color:var(--end);">altes</strong> Handy.</div>
+                <div class="ex-en">Kwame has a new phone, but Amina has an old phone.</div>
+                <div class="ex-note">Handy is neuter. After ein + neuter = -es. ein neues Handy, ein altes Handy.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame hat ein neues Handy, aber Amina hat ein altes Handy.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--gold);">teuer / billig</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das ist ein <strong style="color:var(--end);">teurer</strong> Markt. Fatima sucht einen <strong style="color:var(--end);">billigen</strong> Markt.</div>
+                <div class="ex-en">That is an expensive market. Fatima is looking for a cheap market.</div>
+                <div class="ex-note">Markt is masculine. After ein = -er (nom.). After einen (acc.) = -en. teurer vs billigen.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das ist ein teurer Markt. Fatima sucht einen billigen Markt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--gold);">interessant</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi liest ein <strong style="color:var(--end);">interessantes</strong> Buch über Deutschland.</div>
+                <div class="ex-en">Kofi reads an interesting book about Germany.</div>
+                <div class="ex-note">Buch is neuter. After ein + neuter (acc. = same as nom.) = -es. ein interessantes Buch.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi liest ein interessantes Buch über Deutschland.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">Module 15 · Lesson 5 · Quiz</div><h2 class="lesson-h">Key Adjectives — Check</h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 6: African Context + Mistakes ── -->
+    <div id="lesson-5" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">Module 15 · Lesson 6 of 6</div>
+          <h2 class="lesson-h">Kwame, Amina, Kofi, Fatima — all patterns, real mistakes</h2>
+          <p class="body-text">The most common error for African English speakers is using the adjective with <strong style="color:var(--red)">no ending at all</strong> — treating it like an English adjective. "ein gut Mann" sounds natural to an English speaker but is wrong in German. The second most common error is using the wrong ending (-e instead of -er for ein + masc. nom.).</p>
+
+          <div class="sec-label">The 4 most common African learner mistakes</div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">MISTAKE 1 · no ending</div>
+              <div class="wr-word">ein gut Mann<br>ein neu Kleid<br>ein klein Kind</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT · add ending</div>
+              <div class="wr-word">ein guter Mann<br>ein neues Kleid<br>ein kleines Kind</div>
+            </div>
+          </div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">MISTAKE 2 · -e after ein + masc</div>
+              <div class="wr-word">ein gute Mann<br>ein alte Freund<br>ein schöne Park</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT · -er after ein + masc</div>
+              <div class="wr-word">ein guter Mann<br>ein alter Freund<br>ein schöner Park</div>
+            </div>
+          </div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">MISTAKE 3 · -er after der + masc</div>
+              <div class="wr-word">der guter Mann<br>der alter Bus<br>der schöner Park</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT · -e after der + masc</div>
+              <div class="wr-word">der gute Mann<br>der alte Bus<br>der schöne Park</div>
+            </div>
+          </div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">MISTAKE 4 · not -en in dative</div>
+              <div class="wr-word">in einer kleine Wohnung<br>mit einem altes Bus<br>bei einer nette Familie</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT · always -en in dative</div>
+              <div class="wr-word">in einer kleinen Wohnung<br>mit einem alten Bus<br>bei einer netten Familie</div>
+            </div>
+          </div>
+
+          <div class="sec-label">Full African-context paragraph — all patterns</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--fem);">EIN + MASC · -er</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame ist ein <strong style="color:var(--end);">fleißiger</strong> Student.</div>
+                <div class="ex-en">Kwame is a hard-working student.</div>
+                <div class="ex-note">Student is masculine. After ein + nominative masculine → -er. fleißig → fleißiger.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame ist ein fleißiger Student.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--neut);">EIN + NEUT · -es</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina trägt ein <strong style="color:var(--end);">schönes</strong> Kleid zur Prüfung.</div>
+                <div class="ex-en">Amina wears a beautiful dress to the exam.</div>
+                <div class="ex-note">Kleid is neuter. Accusative neuter after ein = -es. ein schönes Kleid.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina trägt ein schönes Kleid zur Prüfung.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--masc);">DER + NOM · -e</div>
+              <div style="flex:1;">
+                <div class="ex-de">Der <strong style="color:var(--end);">neue</strong> Deutschkurs beginnt montags.</div>
+                <div class="ex-en">The new German course starts on Mondays.</div>
+                <div class="ex-note">Kurs is masculine. After der + nominative → -e. der neue Kurs.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Der neue Deutschkurs beginnt montags.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--masc);">DAT · -en</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi arbeitet in einem <strong style="color:var(--end);">großen</strong> Büro in Frankfurt.</div>
+                <div class="ex-en">Kofi works in a large office in Frankfurt.</div>
+                <div class="ex-note">in + dative. Büro is neuter → einem. After einem (dative) → -en. großen.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi arbeitet in einem großen Büro in Frankfurt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--masc);">ACC · MASC · -en</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima kauft einen <strong style="color:var(--end);">billigen</strong> Flug nach Lagos.</div>
+                <div class="ex-en">Fatima buys a cheap flight to Lagos.</div>
+                <div class="ex-note">Flug is masculine. Accusative after einen → -en. einen billigen Flug.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima kauft einen billigen Flug nach Lagos.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="info-box"><strong style="color:var(--gold);">Exam tip — Goethe A2 Schreiben:</strong><br><br>
+          In the A2 Schreiben task, you must write an email or short text. Adjective endings are scored under "grammatische Strukturen". The examiner looks for:<br><br>
+          ✓ Correct ending after ein + masculine nominative: -er (ein schöner Tag, ein guter Freund)<br>
+          ✓ Correct -en in dative: in einer kleinen Wohnung, mit einem alten Freund<br>
+          ✓ No bare adjectives: NEVER write "ein gut Mann" — always add the ending<br><br>
+          Strategy: before you write any noun phrase in Schreiben, ask yourself: "What article? What gender? What case?" Then add the correct ending. Two seconds of thought saves points.
+          </div>
+
+          <div class="success-box">
+            <strong style="color:var(--green)">What you now know:</strong><br><br>
+            ✓ German adjectives change ending based on article + gender + case<br>
+            ✓ After der/die/das (weak): mostly -e, accusative masculine and all dative = -en<br>
+            ✓ After ein/eine (mixed): same as weak EXCEPT nom.masc = -er, nom/acc.neut = -es<br>
+            ✓ In ALL dative cases: adjective ending is always -en<br>
+            ✓ Never use a bare adjective before a German noun — always add the ending<br>
+            ✓ The 10 key A2 adjectives: neu, alt, groß, klein, gut, schlecht, schön, teuer, billig, interessant
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Start Final Quiz →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">Module 15 · Final Quiz</div><h2 class="lesson-h">Module Complete — Final Check</h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Previous</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="showOverview()"><span class="nav-icon">📚</span><span class="nav-label">Overview</span></button>
+  <button class="nav-item" onclick="resumeLesson()"><span class="nav-icon">▶️</span><span class="nav-label">Resume</span></button>
+</nav>
+
+<script>
+var synth=(typeof window!=='undefined'&&window.speechSynthesis)?window.speechSynthesis:null;
+var deVoice=null,speechUnlocked=false;
+function loadVoices(){ if(!synth)return; try{ var v=synth.getVoices(); deVoice=v.find(function(x){return x.lang==='de-DE';})||v.find(function(x){return x.lang&&x.lang.startsWith('de');})||null; }catch(e){} }
+if(synth){ try{ loadVoices(); if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadVoices; }catch(e){} }
+function unlockSpeech(){ if(speechUnlocked||!synth)return; try{ var s=new SpeechSynthesisUtterance(''); s.volume=0; synth.speak(s); speechUnlocked=true; }catch(e){} }
+document.addEventListener('touchstart',unlockSpeech,{once:true,passive:true});
+document.addEventListener('click',unlockSpeech,{once:true});
+function speakDE(t){ if(!synth)return null; try{ if(!deVoice)loadVoices(); synth.cancel(); var u=new SpeechSynthesisUtterance(t); u.lang='de-DE'; u.rate=0.85; u.pitch=1.0; u.volume=1.0; if(deVoice)u.voice=deVoice; synth.speak(u); return u; }catch(e){return null;} }
+function speakSentence(btn,text){ unlockSpeech(); document.querySelectorAll('.speak-btn').forEach(function(b){b.classList.remove('speaking');}); if(btn&&btn.classList)btn.classList.add('speaking'); var u=speakDE(text); if(u){ u.onend=function(){if(btn&&btn.classList)btn.classList.remove('speaking');}; u.onerror=function(){if(btn&&btn.classList)btn.classList.remove('speaking');}; }else{ setTimeout(function(){if(btn&&btn.classList)btn.classList.remove('speaking');},1500); } }
+
+var currentLesson=0, xp=0, TOTAL=6;
+
+var QD={
+  0:[
+    {q:'In English, "a good man" and "a good woman" both use "good". What happens in German?',
+     hint:'Think about what changes with gender in German adjectives.',
+     opts:['Both use "gut" — German works exactly like English','Both use "guten" — German adjectives always take -en','ein guter Mann vs eine gute Frau — the ending changes with gender','ein gut Mann vs eine gut Frau — adjectives never change'],
+     ans:2,
+     exp:'"ein guter Mann" vs "eine gute Frau" — German adjective endings change based on the gender and case of the noun and the article before it. After ein + masculine nominative → -er. After eine + feminine nominative → -e. This is the fundamental difference from English.',
+     rule:'German adjectives change ending based on: 1) article type (definite/indefinite/none), 2) gender (masc/fem/neut), 3) case (nom/acc/dat). English adjectives never change.'}
+  ],
+  1:[
+    {q:'Fill in: "Der ___ Mann kommt aus Ghana." (alt — old)',
+     hint:'After a definite article (der) in nominative masculine, the adjective ending is weak.',
+     opts:['Der alter Mann...','Der alte Mann...','Der alten Mann...','Der altes Mann...'],
+     ans:1,
+     exp:'"Der alte Mann" — after der (definite article, masculine nominative), the adjective takes the weak ending -e. The article der already signals "masculine nominative", so the adjective is lazy and adds -e. Not -er (that is for after ein), not -en (that is for accusative masculine or dative).',
+     rule:'After der/die/das + nominative: adjective ending = -e. Der alte Mann, die alte Frau, das alte Kind.'}
+  ],
+  2:[
+    {q:'Kwame has a good job. How do you say this in German? (gut, Job = masculine)',
+     hint:'Job is masculine. "a" = ein. Check the case (nominative after haben? No — it is accusative here).',
+     opts:['Kwame hat ein guter Job.','Kwame hat einen guten Job.','Kwame hat einen guter Job.','Kwame hat ein guten Job.'],
+     ans:1,
+     exp:'"Kwame hat einen guten Job." — "hat" takes the accusative case for the object. Job is masculine. Accusative masculine indefinite article = einen. After einen (accusative masculine) → adjective ending is -en. Even after ein-forms, accusative masculine always gives -en.',
+     rule:'Accusative masculine after indefinite article: einen + adjective + -en. Kwame hat einen guten Job. The -er form only appears in NOMINATIVE masculine after ein.'}
+  ],
+  3:[
+    {q:'Fatima lives in a small apartment. How do you say "in a small apartment"? (Wohnung = feminine)',
+     hint:'In + dative. Wohnung is feminine. Indefinite article in dative feminine = einer.',
+     opts:['in eine kleine Wohnung','in einer kleiner Wohnung','in einer kleinen Wohnung','in einem kleinen Wohnung'],
+     ans:2,
+     exp:'"in einer kleinen Wohnung" — in takes the dative case (location). Wohnung is feminine. Dative feminine indefinite article = einer. After einer (dative) → adjective ALWAYS ends in -en. This is the golden dative rule: all adjectives in dative get -en.',
+     rule:'Dative: adjective ending is ALWAYS -en, regardless of gender. in einer kleinen Wohnung, mit einem alten Bus, bei dem netten Freund.'}
+  ],
+  4:[
+    {q:'Amina bought a new dress. How do you say "a new dress"? (Kleid = neuter)',
+     hint:'Kleid is neuter. "a" = ein. The verb kaufen takes accusative. Accusative neuter = same as nominative neuter.',
+     opts:['ein neue Kleid','ein neuer Kleid','ein neues Kleid','ein neuen Kleid'],
+     ans:2,
+     exp:'"ein neues Kleid" — Kleid is neuter. Accusative neuter after ein has the same form as nominative neuter: -es. The -es ending signals "this noun is neuter" — because ein alone could be masculine or neuter. So the adjective must carry the gender signal: -es.',
+     rule:'After ein + neuter (nominative or accusative): adjective ending = -es. ein neues Kleid, ein altes Haus, ein gutes Restaurant.'}
+  ],
+  5:[
+    {q:'Which sentence is completely correct? Kofi wants to describe his interesting new city.',
+     hint:'Think about the gender of Stadt (feminine) and case (nominative after ist = subject complement).',
+     opts:['Berlin ist eine interessanter Stadt.','Berlin ist eine interessantes Stadt.','Berlin ist eine interessante Stadt.','Berlin ist ein interessante Stadt.'],
+     ans:2,
+     exp:'"Berlin ist eine interessante Stadt." — Stadt is feminine. After eine + feminine nominative → adjective ending is -e. The verb "ist" with a predicate noun uses nominative. So: eine (fem. nom. article) + interessant + -e = interessante. Not -er (that is for masculine after ein), not -es (that is for neuter after ein).',
+     rule:'After eine + feminine nominative: adjective ending = -e. eine interessante Stadt, eine alte Frau, eine schöne Wohnung.'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">QUESTION '+(s.cur+1)+' OF '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint">'+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Next Question →':'See Results →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Correct!':'✗ Not quite'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent=q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' correct</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfect.':pct>=60?'Good work.':'Review and try again.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.12);border:1px solid var(--gold);border-radius:50px;padding:9px 22px;color:var(--gold);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Complete Module 15 →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Next Lesson →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">🎯</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Module 15 Complete!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">Adjective endings mastered. You can now apply weak endings after der/die/das, mixed endings after ein/eine (with -er for masculine and -es for neuter nominative), and the golden dative rule (-en for everything). Your A2 Schreiben is now significantly stronger.</p><div class="xp-badge">⚡ '+xp+' XP Earned</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">A2 Module 3 of 6 complete. Next: Module 16 — Subordinate Clauses (weil, dass, wenn).</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Back to Overview</button></div>'; }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function resumeLesson(){ goLesson(currentLesson); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+<script src="./ai-tutor.js" data-module="15"></script>
+</body>
+</html>
