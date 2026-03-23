@@ -227,7 +227,7 @@
 <!-- TOP NAV -->
 <div class="top-nav">
   <a href="index.html" class="logo">Deutsch<span>Weg</span></a>
-  <a href="#" class="nav-login">Already have an account? <em>Log in</em></a>
+  <a href="login.html" class="nav-login">Already have an account? <em>Log in</em></a>
 </div>
 
 <!-- PAGE -->
@@ -311,7 +311,7 @@
       </div>
 
       <div class="login-link">
-        Already have an account? <a href="#">Log in here</a>
+        Already have an account? <a href="login.html">Log in here</a>
       </div>
 
       <div class="trust">
@@ -355,21 +355,30 @@
   <a href="mailto:hello@deutschweg.com">Contact</a>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   document.body.classList.add('ready');
 
-  var form    = document.getElementById('signupForm');
-  var nameI   = document.getElementById('name');
-  var emailI  = document.getElementById('email');
-  var passI   = document.getElementById('password');
-  var countryI= document.getElementById('country');
+  var form     = document.getElementById('signupForm');
+  var nameI    = document.getElementById('name');
+  var emailI   = document.getElementById('email');
+  var passI    = document.getElementById('password');
+  var countryI = document.getElementById('country');
   var submitBtn= document.getElementById('submitBtn');
-  var btnText = document.getElementById('btnText');
-  var spinner = document.getElementById('spinner');
-  var formView= document.getElementById('formView');
-  var successV= document.getElementById('successView');
-  var pwToggle= document.getElementById('pwToggle');
+  var btnText  = document.getElementById('btnText');
+  var spinner  = document.getElementById('spinner');
+  var formView = document.getElementById('formView');
+  var successV = document.getElementById('successView');
+  var pwToggle = document.getElementById('pwToggle');
+
+  // If already logged in, go straight to dashboard
+  dwSupabase.auth.getSession().then(function(res) {
+    if (res.data && res.data.session) {
+      window.location.href = 'deutschweg-prototype.html';
+    }
+  });
 
   // Password visibility toggle
   pwToggle.addEventListener('click', function() {
@@ -388,10 +397,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  function showErr(input, errId) {
+  function showErr(input, errId, msg) {
     input.classList.add('error');
     var el = document.getElementById(errId);
-    if (el) el.classList.add('show');
+    if (el) { if (msg) el.textContent = msg; el.classList.add('show'); }
     return false;
   }
 
@@ -413,25 +422,74 @@ document.addEventListener('DOMContentLoaded', function() {
     return ok;
   }
 
+  function setLoading(on) {
+    submitBtn.disabled = on;
+    btnText.style.display = on ? 'none' : '';
+    spinner.classList.toggle('show', on);
+  }
+
   form.addEventListener('submit', function(e) {
     e.preventDefault();
     if (!validate()) return;
+    setLoading(true);
 
-    // Loading state
-    submitBtn.disabled = true;
-    btnText.style.display = 'none';
-    spinner.classList.add('show');
+    var trialStart = new Date();
+    var trialEnd   = new Date(trialStart.getTime() + 14 * 24 * 60 * 60 * 1000);
+    var fullName   = nameI.value.trim();
+    var email      = emailI.value.trim().toLowerCase();
+    var country    = countryI.value;
 
-    // Simulate network call — replace with real API call
-    setTimeout(function() {
-      // Store minimal info for the session
-      localStorage.setItem('dw_user_name', nameI.value.trim().split(' ')[0]);
-      localStorage.setItem('dw_trial_start', Date.now());
+    // Sign up with Supabase Auth
+    dwSupabase.auth.signUp({
+      email:    email,
+      password: passI.value,
+      options: {
+        data: {
+          full_name:   fullName,
+          country:     country,
+          trial_start: trialStart.toISOString(),
+          trial_end:   trialEnd.toISOString(),
+          plan:        'trial',
+        }
+      }
+    }).then(function(res) {
+      if (res.error) {
+        setLoading(false);
+        var msg = res.error.message || 'Sign up failed. Please try again.';
+        if (msg.toLowerCase().includes('email')) {
+          showErr(emailI, 'emailErr', msg);
+        } else {
+          showErr(passI, 'passwordErr', msg);
+        }
+        return;
+      }
+
+      var userId = res.data.user && res.data.user.id;
+
+      // Also save to profiles table for admin view
+      if (userId) {
+        dwSupabase.from('profiles').insert({
+          id:          userId,
+          full_name:   fullName,
+          email:       email,
+          country:     country,
+          trial_start: trialStart.toISOString(),
+          trial_end:   trialEnd.toISOString(),
+          plan:        'trial',
+        }).then(function() {}).catch(function() {});
+      }
+
+      // Store first name locally for quick greeting
+      localStorage.setItem('dw_user_name', fullName.split(' ')[0]);
 
       // Show success
+      setLoading(false);
       formView.style.display = 'none';
       successV.classList.add('show');
-    }, 1200);
+    }).catch(function(err) {
+      setLoading(false);
+      showErr(emailI, 'emailErr', 'Something went wrong. Please try again.');
+    });
   });
 });
 </script>

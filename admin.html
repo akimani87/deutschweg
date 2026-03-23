@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-serif;min-height:100vh;opacity:0;transition:opacity 0.25s;}
+  body.ready{opacity:1;}
+
+  /* Lock screen */
+  .lock-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;}
+  .lock-card{background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:44px 40px;width:100%;max-width:380px;text-align:center;}
+  .lock-logo{font-family:'Playfair Display',serif;font-size:24px;font-weight:900;margin-bottom:6px;}
+  .lock-logo span{color:var(--gold);}
+  .lock-sub{font-size:13px;color:var(--gray);margin-bottom:28px;}
+  .lock-input{width:100%;background:var(--card2-bg);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:13px 16px;font-family:'DM Mono',monospace;font-size:15px;color:var(--white);outline:none;text-align:center;letter-spacing:3px;margin-bottom:14px;transition:border-color 0.2s;}
+  .lock-input:focus{border-color:rgba(201,168,76,0.5);}
+  .lock-btn{width:100%;padding:13px;border-radius:50px;background:var(--gold);color:var(--black);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;border:none;cursor:pointer;transition:all 0.2s;}
+  .lock-btn:hover{background:var(--gold-light);}
+  .lock-err{font-size:13px;color:var(--red);margin-top:10px;display:none;}
+  .lock-err.show{display:block;}
+
+  /* Admin dashboard */
+  .admin-wrap{display:none;padding:28px 24px 60px;max-width:1100px;margin:0 auto;}
+  .admin-wrap.show{display:block;}
+  .admin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px;}
+  .admin-title{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;}
+  .admin-title span{color:var(--gold);}
+  .admin-logout{background:none;border:1px solid rgba(255,255,255,0.1);color:var(--gray);padding:8px 16px;border-radius:8px;font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;transition:all 0.2s;}
+  .admin-logout:hover{border-color:var(--red);color:var(--red);}
+
+  /* Stats row */
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
+  .stat-box{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:18px 20px;}
+  .stat-num{font-family:'Playfair Display',serif;font-size:32px;font-weight:900;color:var(--gold);}
+  .stat-lbl{font-size:12px;color:var(--gray);margin-top:4px;}
+
+  /* SQL setup box */
+  .setup-box{background:rgba(52,152,219,0.06);border:1px solid rgba(52,152,219,0.25);border-radius:14px;padding:20px 22px;margin-bottom:24px;}
+  .setup-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--blue);margin-bottom:10px;}
+  .setup-body{font-size:13px;color:var(--cream);line-height:1.75;}
+  .setup-body code{font-family:'DM Mono',monospace;font-size:12px;background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;}
+
+  /* Table */
+  .table-wrap{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+  .table-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.06);}
+  .table-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--gold);}
+  .table-refresh{background:none;border:1px solid rgba(255,255,255,0.1);color:var(--gray);padding:6px 14px;border-radius:8px;font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;transition:all 0.2s;}
+  .table-refresh:hover{border-color:var(--gold);color:var(--gold);}
+  table{width:100%;border-collapse:collapse;}
+  thead th{text-align:left;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--gray);padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);white-space:nowrap;}
+  tbody tr{border-bottom:1px solid rgba(255,255,255,0.04);transition:background 0.15s;}
+  tbody tr:last-child{border-bottom:none;}
+  tbody tr:hover{background:rgba(255,255,255,0.02);}
+  tbody td{padding:12px 16px;font-size:13px;color:var(--cream);}
+  .badge{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;padding:3px 10px;border-radius:20px;}
+  .badge-trial{background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);color:var(--gold);}
+  .badge-active{background:rgba(39,174,96,0.1);border:1px solid rgba(39,174,96,0.3);color:var(--green);}
+  .badge-expired{background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.3);color:var(--red);}
+  .empty-row{text-align:center;color:var(--gray);padding:32px;font-size:14px;}
+  .loading-row{text-align:center;color:var(--gray);padding:32px;font-family:'DM Mono',monospace;font-size:12px;}
+
+  @media(max-width:760px){
+    .stats-row{grid-template-columns:1fr 1fr;}
+    table{font-size:12px;}
+    tbody td,thead th{padding:10px 10px;}
+  }
+  @media(max-width:480px){
+    .stats-row{grid-template-columns:1fr;}
+    .lock-card{padding:32px 24px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- LOCK SCREEN -->
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-card">
+    <div class="lock-logo">Deutsch<span>Weg</span></div>
+    <div class="lock-sub">Admin access only</div>
+    <input type="password" class="lock-input" id="adminPass" placeholder="••••••••" autocomplete="off">
+    <button class="lock-btn" onclick="checkPassword()">Enter →</button>
+    <div class="lock-err" id="lockErr">Incorrect password.</div>
+  </div>
+</div>
+
+<!-- ADMIN DASHBOARD -->
+<div class="admin-wrap" id="adminWrap">
+
+  <div class="admin-header">
+    <div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);margin-bottom:6px;">ADMIN DASHBOARD</div>
+      <h1 class="admin-title">Deutsch<span>Weg</span> Users</h1>
+    </div>
+    <button class="admin-logout" onclick="logout()">Lock admin</button>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-num" id="statTotal">—</div>
+      <div class="stat-lbl">Total signups</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="statActive">—</div>
+      <div class="stat-lbl">Active trials</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="statExpired">—</div>
+      <div class="stat-lbl">Expired trials</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="statToday">—</div>
+      <div class="stat-lbl">Signed up today</div>
+    </div>
+  </div>
+
+  <!-- Setup instructions (shown if table missing) -->
+  <div class="setup-box" id="setupBox" style="display:none;">
+    <div class="setup-title">⚠ SUPABASE SETUP REQUIRED</div>
+    <div class="setup-body">
+      The <code>profiles</code> table doesn't exist yet or has no RLS read policy.
+      Run the SQL in <code>supabase-config.js</code> in your Supabase SQL editor
+      (<a href="https://app.supabase.com" target="_blank" style="color:var(--blue)">app.supabase.com</a> → SQL Editor),
+      then refresh this page.
+    </div>
+  </div>
+
+  <!-- Users table -->
+  <div class="table-wrap">
+    <div class="table-header">
+      <div class="table-title">ALL SIGNUPS</div>
+      <button class="table-refresh" onclick="loadUsers()">↻ Refresh</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Country</th>
+          <th>Signed up</th>
+          <th>Trial ends</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="usersBody">
+        <tr><td colspan="7" class="loading-row">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
+<script>
+// ── Admin password (change this to something strong) ─────────────────────────
+// To change: update the string below and redeploy.
+var ADMIN_PASSWORD = 'DW@dmin2025';
+
+function checkPassword() {
+  var val = document.getElementById('adminPass').value;
+  if (val === ADMIN_PASSWORD) {
+    document.getElementById('lockScreen').style.display = 'none';
+    document.getElementById('adminWrap').classList.add('show');
+    document.body.classList.add('ready');
+    loadUsers();
+  } else {
+    document.getElementById('lockErr').classList.add('show');
+    document.getElementById('adminPass').value = '';
+  }
+}
+
+document.getElementById('adminPass').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') checkPassword();
+  document.getElementById('lockErr').classList.remove('show');
+});
+
+function logout() {
+  document.getElementById('adminWrap').classList.remove('show');
+  document.getElementById('lockScreen').style.display = '';
+  document.getElementById('adminPass').value = '';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.body.classList.add('ready');
+});
+
+function fmt(iso) {
+  if (!iso) return '—';
+  var d = new Date(iso);
+  return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+function trialStatus(trialEnd) {
+  if (!trialEnd) return '<span class="badge badge-trial">TRIAL</span>';
+  var now = new Date();
+  var end = new Date(trialEnd);
+  if (now > end) return '<span class="badge badge-expired">EXPIRED</span>';
+  var days = Math.ceil((end - now) / 86400000);
+  return '<span class="badge badge-active">ACTIVE · ' + days + 'd left</span>';
+}
+
+function loadUsers() {
+  document.getElementById('usersBody').innerHTML = '<tr><td colspan="7" class="loading-row">Loading…</td></tr>';
+  document.getElementById('setupBox').style.display = 'none';
+
+  dwSupabase
+    .from('profiles')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .then(function(res) {
+      if (res.error) {
+        document.getElementById('setupBox').style.display = '';
+        document.getElementById('usersBody').innerHTML = '<tr><td colspan="7" class="empty-row">Could not load profiles. See setup instructions above.</td></tr>';
+        return;
+      }
+
+      var rows = res.data || [];
+      var now  = new Date();
+      var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+      var total   = rows.length;
+      var active  = 0;
+      var expired = 0;
+      var signedToday = 0;
+
+      rows.forEach(function(r) {
+        var end = r.trial_end ? new Date(r.trial_end) : null;
+        if (end && now > end) expired++;
+        else active++;
+        var created = r.created_at ? new Date(r.created_at) : null;
+        if (created && created >= today) signedToday++;
+      });
+
+      document.getElementById('statTotal').textContent   = total;
+      document.getElementById('statActive').textContent  = active;
+      document.getElementById('statExpired').textContent = expired;
+      document.getElementById('statToday').textContent   = signedToday;
+
+      if (rows.length === 0) {
+        document.getElementById('usersBody').innerHTML = '<tr><td colspan="7" class="empty-row">No signups yet. Share DeutschWeg!</td></tr>';
+        return;
+      }
+
+      var html = '';
+      rows.forEach(function(r, i) {
+        html += '<tr>' +
+          '<td style="color:var(--gray);">' + (i + 1) + '</td>' +
+          '<td>' + esc(r.full_name || '—') + '</td>' +
+          '<td style="font-family:\'DM Mono\',monospace;font-size:12px;">' + esc(r.email || '—') + '</td>' +
+          '<td>' + esc(r.country || '—') + '</td>' +
+          '<td style="color:var(--gray);">' + fmt(r.created_at) + '</td>' +
+          '<td style="color:var(--gray);">' + fmt(r.trial_end) + '</td>' +
+          '<td>' + trialStatus(r.trial_end) + '</td>' +
+        '</tr>';
+      });
+      document.getElementById('usersBody').innerHTML = html;
+    });
+}
+
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>

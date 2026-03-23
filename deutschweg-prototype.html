@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DeutschWeg — A1 Course Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
 <style>
   :root {
     --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
@@ -216,9 +218,12 @@
 <!-- TOP NAV -->
 <div class="top-nav">
   <div class="logo">Deutsch<span>Weg</span></div>
-  <div class="xp-display">
-    <span class="xp-star">✦</span>
-    <span id="xpDisp">0 XP</span>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div id="trialBadge" style="display:none;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;padding:5px 12px;border-radius:20px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);color:var(--gold);"></div>
+    <div class="xp-display">
+      <span class="xp-star">✦</span>
+      <span id="xpDisp">0 XP</span>
+    </div>
   </div>
 </div>
 
@@ -545,6 +550,47 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+
+  // ── Auth guard ────────────────────────────────────────────────────────────
+  dwSupabase.auth.getSession().then(function(res) {
+    var session = res.data && res.data.session;
+
+    if (!session) {
+      window.location.href = 'signup.html';
+      return;
+    }
+
+    var meta     = session.user.user_metadata || {};
+    var trialEnd = meta.trial_end ? new Date(meta.trial_end) : null;
+    var now      = new Date();
+
+    if (trialEnd && now > trialEnd) {
+      window.location.href = 'index.html#pricing';
+      return;
+    }
+
+    // Show trial badge
+    var badge = document.getElementById('trialBadge');
+    if (trialEnd) {
+      var daysLeft = Math.max(0, Math.ceil((trialEnd - now) / 86400000));
+      badge.textContent = daysLeft + ' trial days left';
+      badge.style.display = '';
+      if (daysLeft <= 3) {
+        badge.style.borderColor = 'rgba(192,57,43,0.4)';
+        badge.style.background  = 'rgba(192,57,43,0.08)';
+        badge.style.color       = 'var(--red)';
+      }
+    }
+
+    // Save name for greetings
+    if (meta.full_name) {
+      localStorage.setItem('dw_user_name', meta.full_name.split(' ')[0]);
+    }
+
+    initDashboard();
+  });
+
+  function initDashboard() {
   document.body.classList.add('ready');
 
   // Read XP from localStorage (shared with module files)
@@ -585,6 +631,7 @@ document.addEventListener('DOMContentLoaded', function() {
       openModule(href, title);
     });
   });
+  } // end initDashboard
 });
 
 function openModule(url, title) {
