@@ -16,6 +16,7 @@ const PORT = process.env.PORT || 3000;
 const allowedOrigins = [
   'https://deutschweg.netlify.app',
   'https://www.deutschweg.netlify.app',
+  'https://deutschweg.pages.dev',
   'http://localhost:3000',
   'http://127.0.0.1:3000',
   'null', // file:// opened locally shows origin "null"
