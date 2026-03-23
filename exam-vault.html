@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Exam Vault: A1 Simulation</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-serif;min-height:100vh;opacity:0;transition:opacity 0.25s;}
+  body.ready{opacity:1;}
+
+  /* ── TOP NAV ── */
+  .top-nav{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid rgba(201,168,76,0.1);background:rgba(10,10,10,0.97);position:sticky;top:0;z-index:50;}
+  .logo{font-family:'Playfair Display',serif;font-size:21px;font-weight:900;text-decoration:none;color:var(--white);}
+  .logo span{color:var(--gold);}
+  .nav-back{font-size:13px;color:var(--gray);text-decoration:none;transition:color 0.2s;}
+  .nav-back:hover{color:var(--cream);}
+
+  /* ── SCREENS ── */
+  .screen{display:none;padding:28px 24px 80px;max-width:800px;margin:0 auto;}
+  .screen.active{display:block;}
+
+  /* ── INTRO SCREEN ── */
+  .intro-eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);margin-bottom:14px;}
+  .intro-h{font-family:'Playfair Display',serif;font-size:36px;font-weight:900;line-height:1.15;margin-bottom:12px;}
+  .intro-h span{color:var(--gold);}
+  .intro-sub{font-size:15px;color:var(--gray);line-height:1.75;margin-bottom:32px;max-width:560px;}
+  .exam-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:32px;}
+  .exam-card{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:20px;}
+  .ec-icon{font-size:28px;margin-bottom:10px;}
+  .ec-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;margin-bottom:4px;}
+  .ec-meta{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--gray);}
+  .ec-pts{display:inline-block;margin-top:8px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);color:var(--gold);font-family:'DM Mono',monospace;font-size:10px;padding:3px 10px;border-radius:20px;}
+  .pass-note{background:rgba(39,174,96,0.06);border:1px solid rgba(39,174,96,0.2);border-radius:12px;padding:16px 18px;font-size:13px;color:var(--cream);line-height:1.7;margin-bottom:28px;}
+  .pass-note strong{color:var(--green);}
+  .btn-start{display:inline-flex;align-items:center;gap:10px;padding:16px 36px;border-radius:50px;background:var(--gold);color:var(--black);font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;border:none;cursor:pointer;transition:all 0.25s;box-shadow:0 6px 24px rgba(201,168,76,0.25);}
+  .btn-start:hover{background:var(--gold-light);transform:translateY(-2px);}
+
+  /* ── SECTION HEADER ── */
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+  .section-info{}
+  .section-eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);margin-bottom:6px;}
+  .section-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;}
+  .section-title span{color:var(--gold);}
+  .timer-box{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:10px 18px;display:flex;align-items:center;gap:10px;}
+  .timer-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--gray);}
+  .timer-display{font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:var(--gold);}
+  .timer-display.warning{color:#e67e22;}
+  .timer-display.danger{color:var(--red);animation:pulse 1s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.5;}}
+  .btn-pause{background:none;border:1px solid rgba(255,255,255,0.1);color:var(--gray);padding:6px 14px;border-radius:8px;font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;transition:all 0.2s;}
+  .btn-pause:hover{border-color:var(--gold);color:var(--gold);}
+
+  /* ── QUESTIONS ── */
+  .q-card{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:16px;}
+  .q-num{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--gray);margin-bottom:8px;}
+  .q-text{font-size:15px;color:var(--cream);line-height:1.65;margin-bottom:16px;}
+  .q-transcript{background:var(--card2-bg);border-radius:10px;padding:14px 16px;font-size:13px;color:var(--gray);line-height:1.7;margin-bottom:16px;font-style:italic;border-left:3px solid rgba(201,168,76,0.3);}
+  .q-transcript strong{color:var(--cream);font-style:normal;}
+  .options{display:flex;flex-direction:column;gap:8px;}
+  .option{display:flex;align-items:center;gap:12px;background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px 16px;cursor:pointer;transition:all 0.2s;}
+  .option:hover{border-color:rgba(201,168,76,0.3);}
+  .option.selected{border-color:var(--gold);background:rgba(201,168,76,0.06);}
+  .option.correct{border-color:var(--green);background:rgba(39,174,96,0.08);}
+  .option.wrong{border-color:var(--red);background:rgba(192,57,43,0.08);}
+  .opt-letter{font-family:'DM Mono',monospace;font-size:12px;color:var(--gray);min-width:20px;}
+  .opt-text{font-size:14px;color:var(--cream);}
+  .tf-options{display:flex;gap:10px;}
+  .tf-btn{flex:1;padding:12px;border-radius:10px;background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);color:var(--cream);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;transition:all 0.2s;text-align:center;}
+  .tf-btn:hover{border-color:rgba(201,168,76,0.3);}
+  .tf-btn.selected{border-color:var(--gold);background:rgba(201,168,76,0.06);}
+  .tf-btn.correct{border-color:var(--green);background:rgba(39,174,96,0.08);}
+  .tf-btn.wrong{border-color:var(--red);background:rgba(192,57,43,0.08);}
+  .match-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .match-col-h{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--gray);margin-bottom:8px;}
+  .match-item{background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--cream);}
+  select.match-select{width:100%;margin-top:6px;background:var(--black);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 10px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;cursor:pointer;}
+  select.match-select:focus{border-color:rgba(201,168,76,0.4);}
+
+  /* ── SCHREIBEN ── */
+  .schreiben-task{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:16px;}
+  .task-title{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--gold);margin-bottom:12px;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+  .form-field label{display:block;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--gray);margin-bottom:5px;}
+  .form-field input{width:100%;background:var(--card2-bg);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 12px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;}
+  .form-field input:focus{border-color:rgba(201,168,76,0.4);}
+  .task-prompt{font-size:14px;color:var(--cream);line-height:1.7;margin-bottom:12px;}
+  .word-limit{font-family:'DM Mono',monospace;font-size:11px;color:var(--gray);margin-bottom:8px;}
+  textarea.essay{width:100%;background:var(--card2-bg);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px 16px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.65;outline:none;resize:vertical;min-height:160px;}
+  textarea.essay:focus{border-color:rgba(201,168,76,0.4);}
+  .word-count{font-family:'DM Mono',monospace;font-size:11px;color:var(--gray);margin-top:6px;text-align:right;}
+
+  /* ── SPRECHEN ── */
+  .sprechen-part{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:16px;}
+  .sp-part-badge{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--gold);background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.2);padding:4px 12px;border-radius:20px;margin-bottom:14px;}
+  .sp-title{font-size:16px;font-weight:600;color:var(--cream);margin-bottom:8px;}
+  .sp-desc{font-size:13px;color:var(--gray);line-height:1.65;margin-bottom:14px;}
+  .sp-prompt{background:var(--card2-bg);border-radius:10px;padding:14px 16px;font-size:14px;color:var(--cream);line-height:1.65;margin-bottom:14px;border-left:3px solid rgba(201,168,76,0.3);}
+  .self-assess{display:flex;gap:8px;flex-wrap:wrap;}
+  .sa-btn{padding:8px 16px;border-radius:8px;background:var(--card2-bg);border:1px solid rgba(255,255,255,0.08);color:var(--gray);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all 0.2s;}
+  .sa-btn:hover{border-color:rgba(201,168,76,0.3);color:var(--cream);}
+  .sa-btn.selected-3{border-color:var(--green);background:rgba(39,174,96,0.08);color:var(--green);}
+  .sa-btn.selected-2{border-color:var(--gold);background:rgba(201,168,76,0.08);color:var(--gold);}
+  .sa-btn.selected-1{border-color:#e67e22;background:rgba(230,126,34,0.08);color:#e67e22;}
+  .sa-btn.selected-0{border-color:var(--red);background:rgba(192,57,43,0.08);color:var(--red);}
+
+  /* ── NEXT SECTION BTN ── */
+  .section-footer{display:flex;align-items:center;justify-content:space-between;margin-top:28px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.06);}
+  .score-preview{font-family:'DM Mono',monospace;font-size:12px;color:var(--gray);}
+  .btn-next{padding:14px 32px;border-radius:50px;background:var(--gold);color:var(--black);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;border:none;cursor:pointer;transition:all 0.25s;}
+  .btn-next:hover{background:var(--gold-light);transform:translateY(-2px);}
+  .btn-next:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+
+  /* ── AI SCORING LOADING ── */
+  .scoring-overlay{display:none;position:fixed;inset:0;background:rgba(10,10,10,0.92);z-index:200;align-items:center;justify-content:center;flex-direction:column;gap:18px;}
+  .scoring-overlay.show{display:flex;}
+  .scoring-spinner{width:48px;height:48px;border-radius:50%;border:3px solid rgba(201,168,76,0.15);border-top-color:var(--gold);animation:spin 0.8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .scoring-msg{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:2px;color:var(--gray);}
+
+  /* ── RESULTS SCREEN ── */
+  .results-eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);margin-bottom:14px;}
+  .results-h{font-family:'Playfair Display',serif;font-size:32px;font-weight:900;margin-bottom:8px;}
+  .score-circle-wrap{display:flex;justify-content:center;margin:32px 0;}
+  .score-circle{width:160px;height:160px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;}
+  .score-circle.pass{background:conic-gradient(var(--green) 0%, rgba(39,174,96,0.15) 0%);box-shadow:0 0 0 8px rgba(39,174,96,0.12);}
+  .score-circle.fail{background:conic-gradient(var(--red) 0%, rgba(192,57,43,0.15) 0%);box-shadow:0 0 0 8px rgba(192,57,43,0.12);}
+  .score-circle-inner{width:140px;height:140px;border-radius:50%;background:var(--black);display:flex;flex-direction:column;align-items:center;justify-content:center;position:absolute;}
+  .sc-num{font-family:'Playfair Display',serif;font-size:42px;font-weight:900;}
+  .sc-num.pass{color:var(--green);}
+  .sc-num.fail{color:var(--red);}
+  .sc-denom{font-family:'DM Mono',monospace;font-size:12px;color:var(--gray);}
+  .pass-badge{display:inline-flex;align-items:center;gap:8px;padding:10px 22px;border-radius:50px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;font-weight:700;margin-bottom:28px;}
+  .pass-badge.pass{background:rgba(39,174,96,0.12);border:1px solid rgba(39,174,96,0.35);color:var(--green);}
+  .pass-badge.fail{background:rgba(192,57,43,0.12);border:1px solid rgba(192,57,43,0.35);color:var(--red);}
+  .breakdown-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px;}
+  .breakdown-card{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:18px 20px;}
+  .bc-section{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--gray);margin-bottom:6px;}
+  .bc-score{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;}
+  .bc-score.pass-sec{color:var(--green);}
+  .bc-score.fail-sec{color:var(--red);}
+  .bc-bar-bg{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:10px;}
+  .bc-bar{height:4px;border-radius:2px;transition:width 0.6s ease;}
+  .bc-bar.pass-sec{background:var(--green);}
+  .bc-bar.fail-sec{background:var(--red);}
+  .bc-note{font-size:11px;color:var(--gray);margin-top:6px;}
+  .ai-feedback-box{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;}
+  .afb-title{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--gold);margin-bottom:12px;}
+  .afb-body{font-size:13px;color:var(--cream);line-height:1.75;}
+  .afb-body p{margin-bottom:8px;}
+  .afb-body strong{color:var(--white);}
+  .cta-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px;}
+  .btn-retry{padding:14px 28px;border-radius:50px;background:none;border:1px solid var(--border);color:var(--cream);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;}
+  .btn-retry:hover{border-color:var(--gold);color:var(--gold);}
+  .btn-goethe{padding:14px 28px;border-radius:50px;background:var(--gold);color:var(--black);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;border:none;cursor:pointer;transition:all 0.25s;text-decoration:none;display:inline-flex;align-items:center;gap:8px;}
+  .btn-goethe:hover{background:var(--gold-light);}
+
+  @media(max-width:600px){
+    .exam-grid{grid-template-columns:1fr;}
+    .breakdown-grid{grid-template-columns:1fr;}
+    .form-row{grid-template-columns:1fr;}
+    .section-header{flex-direction:column;align-items:flex-start;}
+    .intro-h{font-size:28px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="top-nav">
+  <a href="deutschweg-prototype.html" class="logo">Deutsch<span>Weg</span></a>
+  <a href="deutschweg-prototype.html" class="nav-back">← Dashboard</a>
+</div>
+
+<!-- AI SCORING OVERLAY -->
+<div class="scoring-overlay" id="scoringOverlay">
+  <div class="scoring-spinner"></div>
+  <div class="scoring-msg">EXAM WHISPERER IS MARKING…</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ INTRO ═══ -->
+<div class="screen active" id="screenIntro">
+  <br>
+  <div class="intro-eyebrow">EXAM VAULT</div>
+  <h1 class="intro-h">Goethe A1 <span>Simulation</span></h1>
+  <p class="intro-sub">A full mock exam that mirrors the real Goethe-Zertifikat A1. Four sections, timed, scored out of 100. Find out if you're ready before you pay for the real thing.</p>
+
+  <div class="exam-grid">
+    <div class="exam-card">
+      <div class="ec-icon">🎧</div>
+      <div class="ec-title">Hören</div>
+      <div class="ec-meta">LISTENING · 20 MINUTES</div>
+      <div class="ec-pts">20 points</div>
+    </div>
+    <div class="exam-card">
+      <div class="ec-icon">📖</div>
+      <div class="ec-title">Lesen</div>
+      <div class="ec-meta">READING · 25 MINUTES</div>
+      <div class="ec-pts">20 points</div>
+    </div>
+    <div class="exam-card">
+      <div class="ec-icon">✍️</div>
+      <div class="ec-title">Schreiben</div>
+      <div class="ec-meta">WRITING · 20 MINUTES</div>
+      <div class="ec-pts">20 points</div>
+    </div>
+    <div class="exam-card">
+      <div class="ec-icon">🎤</div>
+      <div class="ec-title">Sprechen</div>
+      <div class="ec-meta">SPEAKING · 15 MINUTES</div>
+      <div class="ec-pts">20 points</div>
+    </div>
+  </div>
+
+  <div class="pass-note">
+    <strong>To pass:</strong> You need at least <strong>60/100</strong> overall, AND at least <strong>8/20</strong> in every individual section. One weak section fails the whole exam.
+  </div>
+
+  <button class="btn-start" onclick="startExam()">Begin Exam →</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ HÖREN ═══ -->
+<div class="screen" id="screenHoeren">
+
+  <div class="section-header">
+    <div class="section-info">
+      <div class="section-eyebrow">SECTION 1 OF 4</div>
+      <div class="section-title">Hören <span>(Listening)</span></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="timer-box">
+        <div class="timer-label">TIME LEFT</div>
+        <div class="timer-display" id="timerHoeren">20:00</div>
+      </div>
+      <button class="btn-pause" onclick="togglePause('hoeren')">Pause</button>
+    </div>
+  </div>
+
+  <p style="font-size:13px;color:var(--gray);margin-bottom:20px;line-height:1.65;">Read each transcript carefully — in the real exam you hear audio. Choose the best answer for each question.</p>
+
+  <!-- Q1 -->
+  <div class="q-card">
+    <div class="q-num">QUESTION 1 OF 5</div>
+    <div class="q-text">Anna is leaving a voicemail for her friend. What does she want to do on Saturday?</div>
+    <div class="q-transcript"><strong>[Transcript]</strong> „Hallo! Hier ist Anna. Ich wollte fragen, ob du am Samstag Zeit hast. Ich möchte ins Kino gehen. Der neue Film läuft um 18 Uhr. Ruf mich bitte zurück!"</div>
+    <div class="options">
+      <div class="option" data-q="h1" data-v="A" onclick="selectOption(this)"><span class="opt-letter">A</span><span class="opt-text">Go shopping</span></div>
+      <div class="option" data-q="h1" data-v="B" onclick="selectOption(this)"><span class="opt-letter">B</span><span class="opt-text">Go to the cinema</span></div>
+      <div class="option" data-q="h1" data-v="C" onclick="selectOption(this)"><span class="opt-letter">C</span><span class="opt-text">Visit a friend</span></div>
+    </div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="q-card">
+    <div class="q-num">QUESTION 2 OF 5</div>
+    <div class="q-text">Where does Thomas work?</div>
+    <div class="q-transcript"><strong>[Transcript]</strong> „Mein Name ist Thomas. Ich bin 28 Jahre alt und komme aus München. Ich arbeite in einem Krankenhaus als Krankenpfleger. Die Arbeit ist anstrengend, aber ich helfe gern Menschen."</div>
+    <div class="options">
+      <div class="option" data-q="h2" data-v="A" onclick="selectOption(this)"><span class="opt-letter">A</span><span class="opt-text">In a school</span></div>
+      <div class="option" data-q="h2" data-v="B" onclick="selectOption(this)"><span class="opt-letter">B</span><span class="opt-text">In a hospital</span></div>
+      <div class="option" data-q="h2" data-v="C" onclick="selectOption(this)"><span class="opt-letter">C</span><span class="opt-text">In a supermarket</span></div>
+    </div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="q-card">
+    <div class="q-num">QUESTION 3 OF 5</div>
+    <div class="q-text">What does the announcement say about the train to Hamburg?</div>
+    <div class="q-transcript"><strong>[Transcript]</strong> „Achtung auf Gleis drei! Der Intercity nach Hamburg hat heute leider 15 Minuten Verspätung. Bitte warten Sie auf dem Bahnsteig. Wir entschuldigen uns für die Unannehmlichkeiten."</div>
+    <div class="options">
+      <div class="option" data-q="h3" data-v="A" onclick="selectOption(this)"><span class="opt-letter">A</span><span class="opt-text">The train is cancelled</span></div>
+      <div class="option" data-q="h3" data-v="B" onclick="selectOption(this)"><span class="opt-letter">B</span><span class="opt-text">The train is 15 minutes late</span></div>
+      <div class="option" data-q="h3" data-v="C" onclick="selectOption(this)"><span class="opt-letter">C</span><span class="opt-text">Passengers should go to platform 5</span></div>
+    </div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="q-card">
+    <div class="q-num">QUESTION 4 OF 5</div>
+    <div class="q-text">What time does the supermarket close on Sundays?</div>
+    <div class="q-transcript"><strong>[Transcript]</strong> „Herzlich willkommen bei Kaufland! Unsere Öffnungszeiten: Montag bis Samstag von 8 bis 22 Uhr. Sonntags sind wir leider geschlossen. Wir freuen uns auf Ihren Besuch!"</div>
+    <div class="options">
+      <div class="option" data-q="h4" data-v="A" onclick="selectOption(this)"><span class="opt-letter">A</span><span class="opt-text">At 22:00</span></div>
+      <div class="option" data-q="h4" data-v="B" onclick="selectOption(this)"><span class="opt-letter">B</span><span class="opt-text">At 08:00</span></div>
+      <div class="option" data-q="h4" data-v="C" onclick="selectOption(this)"><span class="opt-letter">C</span><span class="opt-text">Closed on Sundays</span></div>
+    </div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="q-card">
+    <div class="q-num">QUESTION 5 OF 5</div>
+    <div class="q-text">What is Maria's problem?</div>
+    <div class="q-transcript"><strong>[Transcript]</strong> „Guten Tag, hier ist Maria Schreiber. Ich habe am Montag einen Termin beim Zahnarzt um 10 Uhr, aber ich kann leider nicht kommen. Ich bin krank. Können Sie bitte einen neuen Termin für mich machen?"</div>
+    <div class="options">
+      <div class="option" data-q="h5" data-v="A" onclick="selectOption(this)"><span class="opt-letter">A</span><span class="opt-text">She forgot her appointment</span></div>
+      <div class="option" data-q="h5" data-v="B" onclick="selectOption(this)"><span class="opt-letter">B</span><span class="opt-text">She is sick and can't come</span></div>
+      <div class="option" data-q="h5" data-v="C" onclick="selectOption(this)"><span class="opt-letter">C</span><span class="opt-text">She wants to cancel the dentist permanently</span></div>
+    </div>
+  </div>
+
+  <div class="section-footer">
+    <div class="score-preview" id="hoeren-answered">0 / 5 answered</div>
+    <button class="btn-next" onclick="submitHoeren()">Next: Lesen →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ LESEN ═══ -->
+<div class="screen" id="screenLesen">
+
+  <div class="section-header">
+    <div class="section-info">
+      <div class="section-eyebrow">SECTION 2 OF 4</div>
+      <div class="section-title">Lesen <span>(Reading)</span></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="timer-box">
+        <div class="timer-label">TIME LEFT</div>
+        <div class="timer-display" id="timerLesen">25:00</div>
+      </div>
+      <button class="btn-pause" onclick="togglePause('lesen')">Pause</button>
+    </div>
+  </div>
+
+  <!-- Teil 1: True/False -->
+  <div class="q-card">
+    <div class="q-num">TEIL 1 — TRUE OR FALSE (5 Questions)</div>
+    <div class="q-text">Read the notice. Decide if each statement is <strong>Richtig</strong> (True) or <strong>Falsch</strong> (False).</div>
+    <div class="q-transcript">
+      <strong>Notice on a community board:</strong><br><br>
+      Liebe Nachbarn,<br>
+      Am Samstag, den 15. März findet ein Hoffest statt. Wir beginnen um 14 Uhr. Bitte bringen Sie etwas zu essen oder zu trinken mit. Kinder sind herzlich willkommen! Das Fest endet um 20 Uhr. Bei Regen findet das Fest im Keller statt.<br><br>
+      — Familie Müller, Zimmer 12
+    </div>
+    <div id="tf-questions">
+      <div class="q-card" style="margin-bottom:10px;">
+        <div class="q-text" style="margin-bottom:10px;">1. The party starts at 2pm.</div>
+        <div class="tf-options">
+          <button class="tf-btn" data-q="l1" data-v="R" onclick="selectTF(this)">✓ Richtig</button>
+          <button class="tf-btn" data-q="l1" data-v="F" onclick="selectTF(this)">✗ Falsch</button>
+        </div>
+      </div>
+      <div class="q-card" style="margin-bottom:10px;">
+        <div class="q-text" style="margin-bottom:10px;">2. Guests should not bring any food.</div>
+        <div class="tf-options">
+          <button class="tf-btn" data-q="l2" data-v="R" onclick="selectTF(this)">✓ Richtig</button>
+          <button class="tf-btn" data-q="l2" data-v="F" onclick="selectTF(this)">✗ Falsch</button>
+        </div>
+      </div>
+      <div class="q-card" style="margin-bottom:10px;">
+        <div class="q-text" style="margin-bottom:10px;">3. Children are welcome at the event.</div>
+        <div class="tf-options">
+          <button class="tf-btn" data-q="l3" data-v="R" onclick="selectTF(this)">✓ Richtig</button>
+          <button class="tf-btn" data-q="l3" data-v="F" onclick="selectTF(this)">✗ Falsch</button>
+        </div>
+      </div>
+      <div class="q-card" style="margin-bottom:10px;">
+        <div class="q-text" style="margin-bottom:10px;">4. The party is in Apartment 15.</div>
+        <div class="tf-options">
+          <button class="tf-btn" data-q="l4" data-v="R" onclick="selectTF(this)">✓ Richtig</button>
+          <button class="tf-btn" data-q="l4" data-v="F" onclick="selectTF(this)">✗ Falsch</button>
+        </div>
+      </div>
+      <div class="q-card" style="margin-bottom:10px;">
+        <div class="q-text" style="margin-bottom:10px;">5. If it rains, the event moves inside.</div>
+        <div class="tf-options">
+          <button class="tf-btn" data-q="l5" data-v="R" onclick="selectTF(this)">✓ Richtig</button>
+          <button class="tf-btn" data-q="l5" data-v="F" onclick="selectTF(this)">✗ Falsch</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Teil 2: MCQ reading -->
+  <div class="q-card">
+    <div class="q-num">TEIL 2 — MULTIPLE CHOICE (3 Questions)</div>
+    <div class="q-text">Read the email and choose the correct answer.</div>
+    <div class="q-transcript">
+      <strong>Email:</strong><br><br>
+      Von: kofi.mensah@email.com<br>
+      An: sprachschule@deutsch-plus.de<br>
+      Betreff: Kursanmeldung<br><br>
+      Sehr geehrte Damen und Herren,<br><br>
+      ich möchte mich für einen Deutschkurs anmelden. Ich bin Anfänger und suche einen Kurs am Morgen, weil ich nachmittags arbeite. Ich komme aus Ghana und lebe seit drei Monaten in Berlin. Bitte schicken Sie mir Informationen über Ihre Kurse und die Preise.<br><br>
+      Mit freundlichen Grüßen,<br>
+      Kofi Mensah
+    </div>
+    <div style="margin-bottom:14px;">
+      <div class="q-text" style="margin-bottom:10px;">6. Why does Kofi want a morning course?</div>
+      <div class="options">
+        <div class="option" data-q="l6" data-v="A" onclick="selectOption(this)"><span class="opt-letter">A</span><span class="opt-text">He sleeps in the afternoon</span></div>
+        <div class="option" data-q="l6" data-v="B" onclick="selectOption(this)"><span class="opt-letter">B</span><span class="opt-text">He works in the afternoon</span></div>
+        <div class="option" data-q="l6" data-v="C" onclick="selectOption(this)"><span class="opt-letter">C</span><span class="opt-text">The school is only open in the morning</span></div>
+      </div>
+    </div>
+    <div style="margin-bottom:14px;">
+      <div class="q-text" style="margin-bottom:10px;">7. How long has Kofi been in Berlin?</div>
+      <div class="options">
+        <div class="option" data-q="l7" data-v="A" onclick="selectOption(this)"><span class="opt-letter">A</span><span class="opt-text">One year</span></div>
+        <div class="option" data-q="l7" data-v="B" onclick="selectOption(this)"><span class="opt-letter">B</span><span class="opt-text">Three months</span></div>
+        <div class="option" data-q="l7" data-v="C" onclick="selectOption(this)"><span class="opt-letter">C</span><span class="opt-text">Six months</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="q-text" style="margin-bottom:10px;">8. What does Kofi ask for in his email?</div>
+      <div class="options">
+        <div class="option" data-q="l8" data-v="A" onclick="selectOption(this)"><span class="opt-letter">A</span><span class="opt-text">A job at the school</span></div>
+        <div class="option" data-q="l8" data-v="B" onclick="selectOption(this)"><span class="opt-letter">B</span><span class="opt-text">Course information and prices</span></div>
+        <div class="option" data-q="l8" data-v="C" onclick="selectOption(this)"><span class="opt-letter">C</span><span class="opt-text">A free trial lesson</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Teil 3: Matching -->
+  <div class="q-card">
+    <div class="q-num">TEIL 3 — MATCHING (2 Questions)</div>
+    <div class="q-text">Match each sign to its correct meaning.</div>
+    <div style="margin-bottom:14px;">
+      <div class="q-text" style="margin-bottom:8px;">9. <em>„Eingang"</em></div>
+      <select class="match-select" data-q="l9">
+        <option value="">— Select —</option>
+        <option value="A">Exit</option>
+        <option value="B">Entrance</option>
+        <option value="C">Elevator</option>
+        <option value="D">Emergency exit</option>
+      </select>
+    </div>
+    <div>
+      <div class="q-text" style="margin-bottom:8px;">10. <em>„Außer Betrieb"</em></div>
+      <select class="match-select" data-q="l10">
+        <option value="">— Select —</option>
+        <option value="A">Out of order</option>
+        <option value="B">Under construction</option>
+        <option value="C">Private property</option>
+        <option value="D">No entry</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="section-footer">
+    <div class="score-preview" id="lesen-answered">0 / 10 answered</div>
+    <button class="btn-next" onclick="submitLesen()">Next: Schreiben →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ SCHREIBEN ═══ -->
+<div class="screen" id="screenSchreiben">
+
+  <div class="section-header">
+    <div class="section-info">
+      <div class="section-eyebrow">SECTION 3 OF 4</div>
+      <div class="section-title">Schreiben <span>(Writing)</span></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="timer-box">
+        <div class="timer-label">TIME LEFT</div>
+        <div class="timer-display" id="timerSchreiben">20:00</div>
+      </div>
+      <button class="btn-pause" onclick="togglePause('schreiben')">Pause</button>
+    </div>
+  </div>
+
+  <!-- Task 1: Form -->
+  <div class="schreiben-task">
+    <div class="task-title">TEIL 1 — FILL IN THE FORM (8 points)</div>
+    <p class="task-prompt">You are registering at a language school in Germany. Complete the registration form with your own details (real or made-up).</p>
+    <div class="form-row">
+      <div class="form-field">
+        <label>Vorname (First Name)</label>
+        <input type="text" id="f-vorname" placeholder="e.g. Amara">
+      </div>
+      <div class="form-field">
+        <label>Nachname (Last Name)</label>
+        <input type="text" id="f-nachname" placeholder="e.g. Diallo">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label>Geburtsdatum (Date of Birth)</label>
+        <input type="text" id="f-geburt" placeholder="e.g. 15.03.1995">
+      </div>
+      <div class="form-field">
+        <label>Nationalität (Nationality)</label>
+        <input type="text" id="f-nation" placeholder="e.g. Ghanaisch">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label>Straße (Street &amp; Number)</label>
+        <input type="text" id="f-strasse" placeholder="e.g. Hauptstraße 12">
+      </div>
+      <div class="form-field">
+        <label>Stadt (City)</label>
+        <input type="text" id="f-stadt" placeholder="e.g. Berlin">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label>E-Mail</label>
+        <input type="email" id="f-email" placeholder="e.g. amara@example.com">
+      </div>
+      <div class="form-field">
+        <label>Telefon (Phone Number)</label>
+        <input type="tel" id="f-telefon" placeholder="e.g. 01234 567890">
+      </div>
+    </div>
+  </div>
+
+  <!-- Task 2: Email -->
+  <div class="schreiben-task">
+    <div class="task-title">TEIL 2 — WRITE AN EMAIL (12 points)</div>
+    <p class="task-prompt">Your friend Esi is coming to visit you in Germany next month. Write her a short email (30–40 words). Include:</p>
+    <ul style="font-size:13px;color:var(--cream);line-height:1.9;margin:10px 0 14px 20px;">
+      <li>A greeting</li>
+      <li>When she is arriving</li>
+      <li>What you want to do together</li>
+      <li>A sign-off</li>
+    </ul>
+    <div class="word-limit">Target: 30–40 words</div>
+    <textarea class="essay" id="schreiben-email" placeholder="Liebe Esi,&#10;&#10;...&#10;&#10;Viele Grüße,&#10;[Your name]" oninput="updateWordCount()"></textarea>
+    <div class="word-count" id="wordCount">0 words</div>
+  </div>
+
+  <div class="section-footer">
+    <div class="score-preview">AI will score your email</div>
+    <button class="btn-next" onclick="submitSchreiben()">Next: Sprechen →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ SPRECHEN ═══ -->
+<div class="screen" id="screenSprechen">
+
+  <div class="section-header">
+    <div class="section-info">
+      <div class="section-eyebrow">SECTION 4 OF 4</div>
+      <div class="section-title">Sprechen <span>(Speaking)</span></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="timer-box">
+        <div class="timer-label">TIME LEFT</div>
+        <div class="timer-display" id="timerSprechen">15:00</div>
+      </div>
+      <button class="btn-pause" onclick="togglePause('sprechen')">Pause</button>
+    </div>
+  </div>
+
+  <p style="font-size:13px;color:var(--gray);margin-bottom:20px;line-height:1.65;">Prepare your answers out loud. Then rate how well you did for each part. Be honest — this is your practice result.</p>
+
+  <!-- Teil 1 -->
+  <div class="sprechen-part">
+    <div class="sp-part-badge">TEIL 1 · SELF-INTRODUCTION</div>
+    <div class="sp-title">Introduce yourself</div>
+    <div class="sp-desc">Speak for about 1 minute. Cover: your name, age, where you are from, where you live now, your job or studies, and one hobby.</div>
+    <div class="sp-prompt">Suggested structure: "Ich heiße… Ich bin … Jahre alt. Ich komme aus… Ich lebe jetzt in… Ich bin [Beruf/Student]. Mein Hobby ist…"</div>
+    <div style="font-size:13px;color:var(--gray);margin-bottom:10px;">How did you do?</div>
+    <div class="self-assess">
+      <button class="sa-btn" data-part="sp1" data-score="5" onclick="rateSprechen(this)">Excellent (5/5)</button>
+      <button class="sa-btn" data-part="sp1" data-score="4" onclick="rateSprechen(this)">Good (4/5)</button>
+      <button class="sa-btn" data-part="sp1" data-score="3" onclick="rateSprechen(this)">OK (3/5)</button>
+      <button class="sa-btn" data-part="sp1" data-score="2" onclick="rateSprechen(this)">Struggled (2/5)</button>
+      <button class="sa-btn" data-part="sp1" data-score="1" onclick="rateSprechen(this)">Couldn't do it (1/5)</button>
+    </div>
+  </div>
+
+  <!-- Teil 2 -->
+  <div class="sprechen-part">
+    <div class="sp-part-badge">TEIL 2 · KEYWORD TASK</div>
+    <div class="sp-title">Talk about a topic using keywords</div>
+    <div class="sp-desc">You receive a card with keywords. Make sentences using each word — don't just read them out.</div>
+    <div class="sp-prompt">Your card: <strong>Wohnung — Zimmer — Miete — Nachbarn — ruhig</strong><br><br>
+    Example: "Ich wohne in einer kleinen Wohnung. Sie hat zwei Zimmer…"</div>
+    <div style="font-size:13px;color:var(--gray);margin-bottom:10px;">How did you do?</div>
+    <div class="self-assess">
+      <button class="sa-btn" data-part="sp2" data-score="5" onclick="rateSprechen(this)">Used all 5 keywords fluently (5/5)</button>
+      <button class="sa-btn" data-part="sp2" data-score="4" onclick="rateSprechen(this)">Used 4 keywords well (4/5)</button>
+      <button class="sa-btn" data-part="sp2" data-score="3" onclick="rateSprechen(this)">Used 3 keywords (3/5)</button>
+      <button class="sa-btn" data-part="sp2" data-score="2" onclick="rateSprechen(this)">Only 1–2 keywords (2/5)</button>
+      <button class="sa-btn" data-part="sp2" data-score="1" onclick="rateSprechen(this)">Couldn't complete it (1/5)</button>
+    </div>
+  </div>
+
+  <!-- Teil 3 -->
+  <div class="sprechen-part">
+    <div class="sp-part-badge">TEIL 3 · INTERACTION</div>
+    <div class="sp-title">Ask for and give information</div>
+    <div class="sp-desc">Imagine your partner asks you these questions. Answer each one naturally in a complete sentence.</div>
+    <div class="sp-prompt">
+      1. "Wann fährt der nächste Bus?" → Give a time.<br>
+      2. "Wo ist die Toilette?" → Give directions.<br>
+      3. "Was kostet das?" → Give a price.<br>
+      4. "Haben Sie einen Tisch für zwei?" → Respond at a restaurant.
+    </div>
+    <div style="font-size:13px;color:var(--gray);margin-bottom:10px;">How did you do?</div>
+    <div class="self-assess">
+      <button class="sa-btn" data-part="sp3" data-score="5" onclick="rateSprechen(this)">Answered all 4 confidently (5/5)</button>
+      <button class="sa-btn" data-part="sp3" data-score="4" onclick="rateSprechen(this)">Answered 3 well (4/5)</button>
+      <button class="sa-btn" data-part="sp3" data-score="3" onclick="rateSprechen(this)">Answered 2 (3/5)</button>
+      <button class="sa-btn" data-part="sp3" data-score="2" onclick="rateSprechen(this)">Managed 1 (2/5)</button>
+      <button class="sa-btn" data-part="sp3" data-score="1" onclick="rateSprechen(this)">Couldn't answer (1/5)</button>
+    </div>
+  </div>
+
+  <!-- Teil 4 -->
+  <div class="sprechen-part">
+    <div class="sp-part-badge">TEIL 4 · REQUESTS</div>
+    <div class="sp-title">Make polite requests</div>
+    <div class="sp-desc">Practice saying these requests aloud in German using "Könnten Sie bitte…" or "Darf ich…"</div>
+    <div class="sp-prompt">
+      • Ask someone to speak more slowly<br>
+      • Ask where the train station is<br>
+      • Ask if you can open the window<br>
+      • Ask for the bill at a restaurant
+    </div>
+    <div style="font-size:13px;color:var(--gray);margin-bottom:10px;">How did you do?</div>
+    <div class="self-assess">
+      <button class="sa-btn" data-part="sp4" data-score="5" onclick="rateSprechen(this)">All 4 correctly and politely (5/5)</button>
+      <button class="sa-btn" data-part="sp4" data-score="4" onclick="rateSprechen(this)">3 requests correct (4/5)</button>
+      <button class="sa-btn" data-part="sp4" data-score="3" onclick="rateSprechen(this)">2 requests correct (3/5)</button>
+      <button class="sa-btn" data-part="sp4" data-score="2" onclick="rateSprechen(this)">1 request only (2/5)</button>
+      <button class="sa-btn" data-part="sp4" data-score="1" onclick="rateSprechen(this)">Couldn't do it (1/5)</button>
+    </div>
+  </div>
+
+  <div class="section-footer">
+    <div class="score-preview" id="sprechen-rated">0 / 4 rated</div>
+    <button class="btn-next" onclick="submitSprechen()">Submit Exam →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ RESULTS ═══ -->
+<div class="screen" id="screenResults">
+
+  <div class="results-eyebrow">EXAM RESULTS</div>
+  <div class="results-h" id="resultsHeadline">Your A1 Simulation Score</div>
+  <div style="text-align:center;">
+    <div class="score-circle-wrap">
+      <div class="score-circle" id="scoreCircle">
+        <div class="score-circle-inner">
+          <div class="sc-num" id="scoreFinal">—</div>
+          <div class="sc-denom">out of 80</div>
+        </div>
+      </div>
+    </div>
+    <div class="pass-badge" id="passBadge">CALCULATING…</div>
+  </div>
+
+  <div class="breakdown-grid">
+    <div class="breakdown-card">
+      <div class="bc-section">HÖREN</div>
+      <div class="bc-score" id="bc-hoeren">—</div>
+      <div class="bc-bar-bg"><div class="bc-bar" id="bar-hoeren" style="width:0%"></div></div>
+      <div class="bc-note" id="note-hoeren"></div>
+    </div>
+    <div class="breakdown-card">
+      <div class="bc-section">LESEN</div>
+      <div class="bc-score" id="bc-lesen">—</div>
+      <div class="bc-bar-bg"><div class="bc-bar" id="bar-lesen" style="width:0%"></div></div>
+      <div class="bc-note" id="note-lesen"></div>
+    </div>
+    <div class="breakdown-card">
+      <div class="bc-section">SCHREIBEN</div>
+      <div class="bc-score" id="bc-schreiben">—</div>
+      <div class="bc-bar-bg"><div class="bc-bar" id="bar-schreiben" style="width:0%"></div></div>
+      <div class="bc-note" id="note-schreiben">AI-scored</div>
+    </div>
+    <div class="breakdown-card">
+      <div class="bc-section">SPRECHEN</div>
+      <div class="bc-score" id="bc-sprechen">—</div>
+      <div class="bc-bar-bg"><div class="bc-bar" id="bar-sprechen" style="width:0%"></div></div>
+      <div class="bc-note" id="note-sprechen">Self-assessed</div>
+    </div>
+  </div>
+
+  <div class="ai-feedback-box" id="aiFeedbackBox" style="display:none;">
+    <div class="afb-title">✍️ SCHREIBEN — AI EXAMINER FEEDBACK</div>
+    <div class="afb-body" id="aiFeedbackBody"></div>
+  </div>
+
+  <div class="cta-row">
+    <button class="btn-retry" onclick="retryExam()">↩ Retry Exam</button>
+    <a href="sprechen-prep.html" class="btn-goethe" style="background:none;border:1px solid var(--border);color:var(--cream);">🎤 Sprechen Practice</a>
+    <a href="https://www.goethe.de/en/spr/kup/prf/prf/a1.html" target="_blank" class="btn-goethe">Book Real Exam →</a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
+<script>
+var API_BASE = 'https://deutschweg.onrender.com';
+
+// ── Answer keys ──────────────────────────────────────────────────────────────
+var ANSWERS = {
+  h1:'B', h2:'B', h3:'B', h4:'C', h5:'B',
+  l1:'R', l2:'F', l3:'R', l4:'F', l5:'R',
+  l6:'B', l7:'B', l8:'B',
+  l9:'B', l10:'A'
+};
+
+// ── State ────────────────────────────────────────────────────────────────────
+var answers     = {};
+var scores      = { hoeren: 0, lesen: 0, schreiben: 0, sprechen: 0 };
+var sprechenScores = { sp1: null, sp2: null, sp3: null, sp4: null };
+var timers      = {};
+var paused      = {};
+var aiFeedback  = '';
+
+// ── Utility ──────────────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function startExam() {
+  showScreen('screenHoeren');
+  startTimer('hoeren', 20 * 60, 'timerHoeren');
+}
+
+// ── Timer ────────────────────────────────────────────────────────────────────
+function startTimer(key, seconds, displayId) {
+  var remaining = seconds;
+  var el = document.getElementById(displayId);
+  paused[key] = false;
+  timers[key] = setInterval(function() {
+    if (paused[key]) return;
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(timers[key]);
+      remaining = 0;
+    }
+    var m = Math.floor(remaining / 60);
+    var s = remaining % 60;
+    el.textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+    el.className = 'timer-display';
+    if (remaining <= 120) el.classList.add('warning');
+    if (remaining <= 30)  el.classList.add('danger');
+  }, 1000);
+}
+
+function togglePause(key) {
+  paused[key] = !paused[key];
+  var btn = event.target;
+  btn.textContent = paused[key] ? 'Resume' : 'Pause';
+}
+
+function stopTimer(key) {
+  if (timers[key]) clearInterval(timers[key]);
+}
+
+// ── Option selection ─────────────────────────────────────────────────────────
+function selectOption(el) {
+  var q = el.getAttribute('data-q');
+  document.querySelectorAll('[data-q="' + q + '"]').forEach(function(o){ o.classList.remove('selected'); });
+  el.classList.add('selected');
+  answers[q] = el.getAttribute('data-v');
+  updateAnsweredCount();
+}
+
+function selectTF(el) {
+  var q = el.getAttribute('data-q');
+  document.querySelectorAll('[data-q="' + q + '"]').forEach(function(o){ o.classList.remove('selected'); });
+  el.classList.add('selected');
+  answers[q] = el.getAttribute('data-v');
+  updateAnsweredCount();
+}
+
+function updateAnsweredCount() {
+  var hCount = ['h1','h2','h3','h4','h5'].filter(function(k){ return answers[k]; }).length;
+  var lCount = ['l1','l2','l3','l4','l5','l6','l7','l8','l9','l10'].filter(function(k){ return answers[k] || (document.querySelector('[data-q="' + k + '"]') && document.querySelector('[data-q="' + k + '"]').value); }).length;
+  var hEl = document.getElementById('hoeren-answered');
+  var lEl = document.getElementById('lesen-answered');
+  if (hEl) hEl.textContent = hCount + ' / 5 answered';
+  if (lEl) {
+    var matchCount = 0;
+    document.querySelectorAll('.match-select').forEach(function(s){ if(s.value) matchCount++; });
+    lEl.textContent = (lCount - matchCount + matchCount) + ' / 10 answered';
+  }
+}
+
+function rateSprechen(el) {
+  var part = el.getAttribute('data-part');
+  var score = parseInt(el.getAttribute('data-score'));
+  document.querySelectorAll('[data-part="' + part + '"]').forEach(function(b){
+    b.className = 'sa-btn';
+  });
+  el.className = 'sa-btn selected-' + (score >= 4 ? 3 : score === 3 ? 2 : score === 2 ? 1 : 0);
+  sprechenScores[part] = score;
+  var rated = Object.values(sprechenScores).filter(function(v){ return v !== null; }).length;
+  document.getElementById('sprechen-rated').textContent = rated + ' / 4 rated';
+}
+
+// ── Word count ───────────────────────────────────────────────────────────────
+function updateWordCount() {
+  var text = document.getElementById('schreiben-email').value.trim();
+  var words = text ? text.split(/\s+/).length : 0;
+  document.getElementById('wordCount').textContent = words + ' words';
+}
+
+// ── Section submissions ──────────────────────────────────────────────────────
+function submitHoeren() {
+  stopTimer('hoeren');
+  var correct = 0;
+  ['h1','h2','h3','h4','h5'].forEach(function(q) {
+    var selected = document.querySelector('[data-q="' + q + '"].selected');
+    if (selected) {
+      var isCorrect = answers[q] === ANSWERS[q];
+      if (isCorrect) { correct++; selected.classList.add('correct'); }
+      else { selected.classList.add('wrong'); }
+    }
+  });
+  scores.hoeren = correct * 4; // 5 questions × 4 pts = 20
+  showScreen('screenLesen');
+  startTimer('lesen', 25 * 60, 'timerLesen');
+}
+
+function submitLesen() {
+  stopTimer('lesen');
+  var correct = 0;
+  // TF questions
+  ['l1','l2','l3','l4','l5'].forEach(function(q) {
+    var selected = document.querySelector('[data-q="' + q + '"].selected');
+    if (selected) {
+      var isCorrect = answers[q] === ANSWERS[q];
+      if (isCorrect) { correct++; selected.classList.add('correct'); }
+      else { selected.classList.add('wrong'); }
+    }
+  });
+  // MCQ
+  ['l6','l7','l8'].forEach(function(q) {
+    var selected = document.querySelector('[data-q="' + q + '"].selected');
+    if (selected) {
+      var isCorrect = answers[q] === ANSWERS[q];
+      if (isCorrect) { correct++; selected.classList.add('correct'); }
+      else { selected.classList.add('wrong'); }
+    }
+  });
+  // Matching
+  document.querySelectorAll('.match-select').forEach(function(sel) {
+    var q = sel.getAttribute('data-q');
+    var val = sel.value;
+    if (val && val === ANSWERS[q]) correct++;
+  });
+  scores.lesen = Math.round((correct / 10) * 20);
+  showScreen('screenSchreiben');
+  startTimer('schreiben', 20 * 60, 'timerSchreiben');
+}
+
+function submitSchreiben() {
+  stopTimer('schreiben');
+  showScreen('screenSprechen');
+  startTimer('sprechen', 15 * 60, 'timerSprechen');
+}
+
+function submitSprechen() {
+  stopTimer('sprechen');
+  var spTotal = Object.values(sprechenScores).reduce(function(sum, v){ return sum + (v || 0); }, 0);
+  scores.sprechen = Math.round((spTotal / 20) * 20); // out of 20
+  scoreSchreiben();
+}
+
+// ── AI scoring for Schreiben ─────────────────────────────────────────────────
+function scoreSchreiben() {
+  var email = document.getElementById('schreiben-email').value.trim();
+  if (!email || email.length < 10) {
+    scores.schreiben = 0;
+    aiFeedback = '<p>No email was written for Teil 2. <strong>0 points</strong> awarded for the writing section.</p>';
+    showResults();
+    return;
+  }
+
+  document.getElementById('scoringOverlay').classList.add('show');
+
+  var prompt = 'You are a strict Goethe A1 exam examiner. Score this student email out of 12 points.\n\nTask: Write an email to friend Esi about her visit to Germany. Must include: greeting, arrival time, planned activity, sign-off. Target: 30-40 words.\n\nStudent\'s email:\n"""\n' + email + '\n"""\n\nScoring (12 points total):\n- Task completion (included all 4 required elements): 0-4 points\n- Language accuracy (grammar, spelling, word order): 0-4 points\n- Vocabulary range and appropriateness: 0-4 points\n\nRespond ONLY as valid JSON:\n{\n  "task_score": <0-4>,\n  "language_score": <0-4>,\n  "vocab_score": <0-4>,\n  "total": <0-12>,\n  "passed": <true/false>,\n  "feedback": "<2-3 sentences with specific praise and corrections>",\n  "missing": "<what was missing, or null>",\n  "corrected": "<improved version under 50 words>"\n}';
+
+  fetch(API_BASE + '/api/score', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text: email, customPrompt: prompt })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    document.getElementById('scoringOverlay').classList.remove('show');
+    var raw = data.breakdown || data;
+    var total12 = 0;
+    var feedback = '';
+    try {
+      var parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      total12 = Math.min(12, Math.max(0, parseInt(parsed.total || 0)));
+      feedback = '<p>' + (parsed.feedback || '') + '</p>';
+      if (parsed.missing) feedback += '<p><strong>Missing:</strong> ' + parsed.missing + '</p>';
+      if (parsed.corrected) feedback += '<p><strong>Model version:</strong> <em>' + parsed.corrected + '</em></p>';
+    } catch(e) {
+      total12 = 6;
+      feedback = '<p>AI scoring completed.</p>';
+    }
+    // Form fills = 8 pts if ≥6 fields filled
+    var formFilled = [
+      document.getElementById('f-vorname').value,
+      document.getElementById('f-nachname').value,
+      document.getElementById('f-geburt').value,
+      document.getElementById('f-nation').value,
+      document.getElementById('f-strasse').value,
+      document.getElementById('f-stadt').value,
+      document.getElementById('f-email').value,
+      document.getElementById('f-telefon').value
+    ].filter(function(v){ return v.trim().length > 1; }).length;
+    var formScore = Math.round((formFilled / 8) * 8);
+    scores.schreiben = formScore + total12;
+    aiFeedback = feedback;
+    showResults();
+  })
+  .catch(function() {
+    document.getElementById('scoringOverlay').classList.remove('show');
+    // Fallback: basic scoring
+    var formFilled = [
+      document.getElementById('f-vorname').value,
+      document.getElementById('f-nachname').value,
+      document.getElementById('f-geburt').value,
+      document.getElementById('f-nation').value
+    ].filter(function(v){ return v.trim().length > 1; }).length;
+    scores.schreiben = Math.round((formFilled / 4) * 8) + (email.length > 50 ? 8 : 4);
+    aiFeedback = '<p>AI scoring was unavailable. Your score is estimated based on word count and form completion.</p>';
+    showResults();
+  });
+}
+
+// ── Show results ─────────────────────────────────────────────────────────────
+function showResults() {
+  showScreen('screenResults');
+
+  var h = Math.min(20, scores.hoeren);
+  var l = Math.min(20, scores.lesen);
+  var s = Math.min(20, scores.schreiben);
+  var sp = Math.min(20, scores.sprechen);
+  var total = h + l + s + sp;
+  var maxTotal = 80;
+  var passMark = 48; // 60% of 80
+  var passSection = 8; // min per section
+
+  // Determine pass/fail per section
+  function sectionClass(score) { return score >= passSection ? 'pass-sec' : 'fail-sec'; }
+  function sectionNote(score) { return score >= passSection ? '✓ Pass' : '✗ Below minimum (need 8)'; }
+
+  // Set scores
+  document.getElementById('bc-hoeren').textContent = h + '/20';
+  document.getElementById('bc-lesen').textContent   = l + '/20';
+  document.getElementById('bc-schreiben').textContent = s + '/20';
+  document.getElementById('bc-sprechen').textContent = sp + '/20';
+  document.getElementById('bc-hoeren').className   = 'bc-score ' + sectionClass(h);
+  document.getElementById('bc-lesen').className     = 'bc-score ' + sectionClass(l);
+  document.getElementById('bc-schreiben').className = 'bc-score ' + sectionClass(s);
+  document.getElementById('bc-sprechen').className  = 'bc-score ' + sectionClass(sp);
+  document.getElementById('note-hoeren').textContent   = sectionNote(h);
+  document.getElementById('note-lesen').textContent     = sectionNote(l);
+  document.getElementById('note-schreiben').textContent = sectionNote(s);
+  document.getElementById('note-sprechen').textContent  = sectionNote(sp);
+  document.getElementById('bar-hoeren').className   = 'bc-bar ' + sectionClass(h);
+  document.getElementById('bar-lesen').className     = 'bc-bar ' + sectionClass(l);
+  document.getElementById('bar-schreiben').className = 'bc-bar ' + sectionClass(s);
+  document.getElementById('bar-sprechen').className  = 'bc-bar ' + sectionClass(sp);
+  setTimeout(function() {
+    document.getElementById('bar-hoeren').style.width   = (h/20*100)  + '%';
+    document.getElementById('bar-lesen').style.width     = (l/20*100)  + '%';
+    document.getElementById('bar-schreiben').style.width = (s/20*100)  + '%';
+    document.getElementById('bar-sprechen').style.width  = (sp/20*100) + '%';
+  }, 100);
+
+  var allSectionsPassed = h >= passSection && l >= passSection && s >= passSection && sp >= passSection;
+  var overallPassed = total >= passMark && allSectionsPassed;
+
+  document.getElementById('scoreFinal').textContent = total;
+  document.getElementById('scoreFinal').className = 'sc-num ' + (overallPassed ? 'pass' : 'fail');
+  document.getElementById('scoreCircle').className = 'score-circle ' + (overallPassed ? 'pass' : 'fail');
+
+  var badge = document.getElementById('passBadge');
+  if (overallPassed) {
+    badge.textContent = '✓ PASS — Ready for the real exam!';
+    badge.className = 'pass-badge pass';
+    document.getElementById('resultsHeadline').textContent = 'Congratulations — You Passed!';
+  } else {
+    var needed = passMark - total;
+    var failMsg = !allSectionsPassed
+      ? '✗ FAIL — One or more sections below minimum'
+      : '✗ FAIL — Need ' + needed + ' more points overall';
+    badge.textContent = failMsg;
+    badge.className = 'pass-badge fail';
+    document.getElementById('resultsHeadline').textContent = 'Keep Practising — Not There Yet';
+  }
+
+  if (aiFeedback) {
+    document.getElementById('aiFeedbackBody').innerHTML = aiFeedback;
+    document.getElementById('aiFeedbackBox').style.display = '';
+  }
+}
+
+function retryExam() {
+  answers = {};
+  scores = { hoeren: 0, lesen: 0, schreiben: 0, sprechen: 0 };
+  sprechenScores = { sp1: null, sp2: null, sp3: null, sp4: null };
+  aiFeedback = '';
+  // Reset UI
+  document.querySelectorAll('.option').forEach(function(o){ o.className = 'option'; });
+  document.querySelectorAll('.tf-btn').forEach(function(b){ b.className = 'tf-btn'; });
+  document.querySelectorAll('.sa-btn').forEach(function(b){ b.className = 'sa-btn'; });
+  document.querySelectorAll('.match-select').forEach(function(s){ s.value = ''; });
+  document.getElementById('schreiben-email').value = '';
+  document.getElementById('wordCount').textContent = '0 words';
+  ['f-vorname','f-nachname','f-geburt','f-nation','f-strasse','f-stadt','f-email','f-telefon'].forEach(function(id){
+    document.getElementById(id).value = '';
+  });
+  showScreen('screenIntro');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.body.classList.add('ready');
+  // Wakeup ping
+  setTimeout(function(){
+    fetch(API_BASE + '/api/health').catch(function(){});
+  }, 1500);
+});
+</script>
+</body>
+</html>
