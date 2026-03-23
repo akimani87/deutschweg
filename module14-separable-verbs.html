@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Module 14: Separable &amp; Inseparable Verbs</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --p1:#3498db; --p2:#e67e22; --p3:#9b59b6; --verb:#c9a84c;
+    --sep:#3498db; --insep:#e67e22; --prefix:#9b59b6; --stem:#27ae60;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:rgba(10,10,10,0.96); backdrop-filter:blur(20px); border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:12px 0 20px; z-index:100; }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:8px 16px; border-radius:12px; transition:all 0.2s; border:none; background:none; color:var(--gray); }
+  .nav-item:hover, .nav-item.active { color:var(--gold); }
+  .nav-icon { font-size:20px; }
+  .nav-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; font-family:'DM Mono',monospace; }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--gold); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--gold); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--gold); color:var(--black); width:100%; }
+  .btn-primary:hover { background:var(--gold-light); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(201,168,76,0.2); }
+  .speak-btn.speaking { background:var(--gold); color:var(--black); }
+
+  /* SENTENCE BLOCKS */
+  .sent-block { margin:14px 0; }
+  .sent-de { display:flex; flex-wrap:wrap; gap:6px; align-items:flex-end; margin-bottom:10px; }
+  .stoken { display:flex; flex-direction:column; align-items:center; }
+  .sw { font-family:'DM Mono',monospace; font-size:16px; padding:8px 12px; border-radius:8px; font-weight:600; }
+  .sl { font-size:9px; letter-spacing:1.5px; text-align:center; margin-top:4px; font-family:'DM Mono',monospace; }
+  .sw-subj { background:rgba(52,152,219,0.12); border:1px solid rgba(52,152,219,0.3); color:var(--sep); }
+  .sl-subj { color:var(--sep); }
+  .sw-verb { background:rgba(201,168,76,0.12); border:1px solid rgba(201,168,76,0.35); color:var(--verb); }
+  .sl-verb { color:var(--verb); }
+  .sw-mid { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); color:var(--cream); }
+  .sl-mid { color:var(--gray); }
+  .sw-prefix { background:rgba(155,89,182,0.12); border:1px solid rgba(155,89,182,0.35); color:var(--prefix); }
+  .sl-prefix { color:var(--prefix); }
+  .sw-insep { background:rgba(230,126,34,0.12); border:1px solid rgba(230,126,34,0.35); color:var(--insep); }
+  .sl-insep { color:var(--insep); }
+  .sw-part { background:rgba(39,174,96,0.12); border:1px solid rgba(39,174,96,0.35); color:var(--stem); }
+  .sl-part { color:var(--stem); }
+  .sw-gray { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); color:var(--cream); }
+  .sl-gray { color:var(--gray); }
+  .sent-en { font-size:13px; color:var(--gray); margin-top:4px; padding-left:2px; }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-en { font-size:12px; color:var(--gray); margin-bottom:6px; }
+  .ex-note { font-size:12px; color:var(--cream); line-height:1.6; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Sans',sans-serif; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--gold); background:rgba(201,168,76,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(201,168,76,0.1); border-radius:8px; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(201,168,76,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(201,168,76,0.08); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(201,168,76,0.12); border:1px solid var(--gold); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--gold); font-size:18px; margin:18px 0; }
+
+  /* PREFIX GRID */
+  .prefix-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin:14px 0; }
+  .prefix-card { border-radius:12px; padding:14px 12px; text-align:center; }
+  .pc-prefix { font-family:'Playfair Display',serif; font-size:22px; font-weight:900; margin-bottom:4px; }
+  .pc-meaning { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; margin-bottom:8px; }
+  .pc-ex { font-size:11px; color:var(--cream); line-height:1.65; opacity:0.9; }
+  .pc-sep { background:rgba(52,152,219,0.07); border:1px solid rgba(52,152,219,0.25); }
+  .pc-sep .pc-prefix { color:var(--sep); } .pc-sep .pc-meaning { color:var(--sep); }
+  .pc-insep { background:rgba(230,126,34,0.07); border:1px solid rgba(230,126,34,0.25); }
+  .pc-insep .pc-prefix { color:var(--insep); } .pc-insep .pc-meaning { color:var(--insep); }
+
+  /* SPLIT DIAGRAM */
+  .split-diagram { display:flex; align-items:center; gap:10px; margin:14px 0; flex-wrap:wrap; }
+  .split-whole { font-family:'DM Mono',monospace; font-size:18px; font-weight:700; color:var(--cream); padding:10px 16px; background:var(--card2-bg); border:1px solid rgba(255,255,255,0.1); border-radius:10px; }
+  .split-arrow { font-size:18px; color:var(--gold); }
+  .split-parts { display:flex; gap:6px; align-items:center; }
+  .split-prefix-part { font-family:'DM Mono',monospace; font-size:16px; font-weight:700; color:var(--prefix); background:rgba(155,89,182,0.12); border:1px solid rgba(155,89,182,0.3); padding:8px 12px; border-radius:8px; }
+  .split-stem-part { font-family:'DM Mono',monospace; font-size:16px; font-weight:700; color:var(--stem); background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.25); padding:8px 12px; border-radius:8px; }
+  .split-plus { font-size:14px; color:var(--gray); }
+
+  /* WORD ORDER DIAGRAM */
+  .wo-row { display:flex; align-items:stretch; gap:4px; margin:10px 0; flex-wrap:wrap; }
+  .wo-cell { border-radius:8px; padding:10px 12px; text-align:center; min-width:60px; }
+  .wo-pos { font-size:9px; letter-spacing:1.5px; font-family:'DM Mono',monospace; margin-bottom:5px; }
+  .wo-word { font-family:'DM Mono',monospace; font-size:14px; font-weight:700; }
+  .wo-subj { background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.2); }
+  .wo-subj .wo-pos { color:var(--sep); } .wo-subj .wo-word { color:var(--sep); }
+  .wo-v { background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); }
+  .wo-v .wo-pos { color:var(--gold); } .wo-v .wo-word { color:var(--gold); }
+  .wo-mid { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); }
+  .wo-mid .wo-pos { color:var(--gray); } .wo-mid .wo-word { color:var(--cream); }
+  .wo-pfx { background:rgba(155,89,182,0.1); border:1px solid rgba(155,89,182,0.3); }
+  .wo-pfx .wo-pos { color:var(--prefix); } .wo-pfx .wo-word { color:var(--prefix); }
+  .wo-part { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.25); }
+  .wo-part .wo-pos { color:var(--stem); } .wo-part .wo-word { color:var(--stem); }
+
+  /* WRONG/RIGHT */
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.2; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+
+  /* CONJ TABLE */
+  .conj-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; }
+  .conj-title { font-size:10px; letter-spacing:2.5px; font-family:'DM Mono',monospace; margin-bottom:12px; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .sw{font-size:13px;padding:6px 8px;} .lesson-h{font-size:22px;} .prefix-grid{grid-template-columns:1fr 1fr;} .split-diagram{flex-direction:column;align-items:flex-start;} .wr-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">MODULE 14 · A2</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">A2 · Verb Structure</div>
+    <h1 class="lesson-h" style="font-size:36px;">Separable &amp;<br><span style="color:var(--gold)">Inseparable Verbs</span></h1>
+    <p class="body-text">German verbs can be extended with prefixes that completely change their meaning. The critical distinction: some prefixes <strong style="color:var(--sep)">separate</strong> from the verb in a sentence (sending the prefix to the end), while others stay <strong style="color:var(--insep)">permanently attached</strong>. Both types appear constantly in the Goethe A2 Hören and Lesen tasks — and getting word order wrong in separable verbs is one of the most penalised errors in A2 Schreiben.</p>
+    <div class="info-box"><strong style="color:var(--gold)">The single most important fact:</strong> In a main clause, a separable verb splits — the stem stays in position 2, but the prefix flies to the <strong>very end</strong> of the sentence. Forgetting this is the #1 word order mistake at A2 level.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">✂️</div><div><div class="lc-title">Lesson 1 — What Separable Verbs Are</div><div class="lc-desc">How the verb splits. The most common separable prefixes: auf, an, aus, ein, mit, zu, ab, vor, nach.</div></div><div class="lc-tag" style="color:var(--gold);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">📍</div><div><div class="lc-title">Lesson 2 — Word Order: Prefix to the End</div><div class="lc-desc">Stem in position 2, prefix to the sentence end. Questions and negation.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">🔒</div><div><div class="lc-title">Lesson 3 — Inseparable Verbs</div><div class="lc-desc">be, ge, er, ver, zer, ent, emp, miss — these prefixes never separate. besuchen, verstehen, erklären.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">⏮️</div><div><div class="lc-title">Lesson 4 — Separable Verbs in Perfekt</div><div class="lc-desc">The ge goes between prefix and stem. aufgemacht, angerufen, eingekauft.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">🔗</div><div><div class="lc-title">Lesson 5 — Separable Verbs with Modal Verbs</div><div class="lc-desc">Modal + infinitive: the prefix stays attached in the infinitive at the end.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lesson 6 — Kwame, Amina, Kofi, Fatima</div><div class="lc-desc">African-context sentences. The most common learner mistakes. Exam tips.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Begin Lesson 1 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lessons</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LESSON 1: What Separable Verbs Are ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">Module 14 · Lesson 1 of 6</div>
+          <h2 class="lesson-h">What are separable verbs?</h2>
+          <p class="body-text">A <strong style="color:var(--sep)">separable verb</strong> is a verb built from a base verb + a short prefix. The prefix adds a specific meaning. When you use the verb in a sentence, the two parts <em>split</em>: the base verb stays in position 2, and the prefix jumps to the very end of the sentence.</p>
+          <p class="body-text">Think of it like a sentence with a delayed punch — the prefix arrives last and completes the meaning.</p>
+
+          <div class="sec-label">How the split works — the visual</div>
+          <div class="split-diagram">
+            <div class="split-whole">aufmachen</div>
+            <div class="split-arrow">→</div>
+            <div class="split-parts">
+              <div class="split-prefix-part">auf</div>
+              <div class="split-plus">+</div>
+              <div class="split-stem-part">machen</div>
+            </div>
+          </div>
+
+          <div class="sent-block">
+            <div class="sent-de">
+              <div class="stoken"><div class="sw sw-subj">Kwame</div><div class="sl sl-subj">SUBJECT</div></div>
+              <div class="stoken"><div class="sw sw-verb">macht</div><div class="sl sl-verb">STEM · POS.2</div></div>
+              <div class="stoken"><div class="sw sw-mid">die Tür</div><div class="sl sl-mid">OBJECT</div></div>
+              <div class="stoken"><div class="sw sw-prefix">auf</div><div class="sl sl-prefix">PREFIX · END</div></div>
+            </div>
+            <div class="sent-en">Kwame opens the door.</div>
+            <button class="speak-btn" onclick="speakSentence(this,'Kwame macht die Tür auf.')">🔊 Hear it</button>
+          </div>
+
+          <div class="sec-label">The 9 most common separable prefixes</div>
+          <div class="prefix-grid">
+            <div class="prefix-card pc-sep">
+              <div class="pc-prefix">auf</div>
+              <div class="pc-meaning">UP / OPEN</div>
+              <div class="pc-ex">aufmachen (open)<br>aufstehen (get up)<br>aufhören (stop)</div>
+            </div>
+            <div class="prefix-card pc-sep">
+              <div class="pc-prefix">an</div>
+              <div class="pc-meaning">ON / BEGIN</div>
+              <div class="pc-ex">anrufen (call sb.)<br>ankommen (arrive)<br>anfangen (start)</div>
+            </div>
+            <div class="prefix-card pc-sep">
+              <div class="pc-prefix">aus</div>
+              <div class="pc-meaning">OUT / OFF</div>
+              <div class="pc-ex">ausgehen (go out)<br>ausziehen (move out)<br>ausmachen (turn off)</div>
+            </div>
+            <div class="prefix-card pc-sep">
+              <div class="pc-prefix">ein</div>
+              <div class="pc-meaning">IN / INTO</div>
+              <div class="pc-ex">einkaufen (shop)<br>einladen (invite)<br>einschlafen (fall asleep)</div>
+            </div>
+            <div class="prefix-card pc-sep">
+              <div class="pc-prefix">mit</div>
+              <div class="pc-meaning">WITH / ALONG</div>
+              <div class="pc-ex">mitkommen (come along)<br>mitbringen (bring along)<br>mitnehmen (take along)</div>
+            </div>
+            <div class="prefix-card pc-sep">
+              <div class="pc-prefix">nach</div>
+              <div class="pc-meaning">AFTER / CHECK</div>
+              <div class="pc-ex">nachschauen (look up)<br>nachfragen (ask again)<br>nachholen (catch up)</div>
+            </div>
+            <div class="prefix-card pc-sep">
+              <div class="pc-prefix">vor</div>
+              <div class="pc-meaning">BEFORE / PRE</div>
+              <div class="pc-ex">vorstellen (introduce)<br>vorbereiten (prepare)<br>vorlesen (read aloud)</div>
+            </div>
+            <div class="prefix-card pc-sep">
+              <div class="pc-prefix">zu</div>
+              <div class="pc-meaning">TO / SHUT</div>
+              <div class="pc-ex">zumachen (close)<br>zuhören (listen to)<br>zuschauen (watch)</div>
+            </div>
+            <div class="prefix-card pc-sep">
+              <div class="pc-prefix">ab</div>
+              <div class="pc-meaning">OFF / AWAY</div>
+              <div class="pc-ex">abfahren (depart)<br>abholen (pick up)<br>abmachen (take off)</div>
+            </div>
+          </div>
+
+          <div class="sec-label">Key separable verbs you will meet in the Goethe A2 exam</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--sep);">SEPARABLE VERB → MEANING → SPLIT EXAMPLE</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:12px;">
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--sep);">aufstehen</div>
+              <div style="padding:7px 10px;color:var(--gray);">get up</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--cream);">Ich stehe auf.</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--sep);">anrufen</div>
+              <div style="padding:7px 10px;color:var(--gray);">call (phone)</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--cream);">Ich rufe an.</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--sep);">einkaufen</div>
+              <div style="padding:7px 10px;color:var(--gray);">go shopping</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--cream);">Ich kaufe ein.</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--sep);">mitbringen</div>
+              <div style="padding:7px 10px;color:var(--gray);">bring along</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--cream);">Er bringt mit.</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--sep);">abfahren</div>
+              <div style="padding:7px 10px;color:var(--gray);">depart</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--cream);">Der Zug fährt ab.</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--sep);">vorstellen</div>
+              <div style="padding:7px 10px;color:var(--gray);">introduce / imagine</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--cream);">Ich stelle vor.</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--sep);">einschlafen</div>
+              <div style="padding:7px 10px;color:var(--gray);">fall asleep</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--cream);">Sie schläft ein.</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--sep);">zuhören</div>
+              <div style="padding:7px 10px;color:var(--gray);">listen (to)</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--cream);">Hör bitte zu!</div>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">Module 14 · Lesson 1 · Quiz</div><h2 class="lesson-h">Separable Verbs — First Check</h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 2: Word Order ── -->
+    <div id="lesson-1" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">Module 14 · Lesson 2 of 6</div>
+          <h2 class="lesson-h">Word order — prefix to the <span style="color:var(--prefix)">end</span></h2>
+          <p class="body-text">In a main clause, the stem of the separable verb goes to position 2 (right after the subject, as always), and the prefix travels to the very last position in the sentence. Everything else — the object, adverbs, prepositional phrases — stays in the middle.</p>
+
+          <div class="sec-label">Main clause — the standard pattern</div>
+          <div style="margin-bottom:18px;">
+            <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:2px;margin-bottom:10px;">AUFMACHEN — "Amina opens the window"</div>
+            <div class="wo-row">
+              <div class="wo-cell wo-subj"><div class="wo-pos">POS.1</div><div class="wo-word">Amina</div></div>
+              <div class="wo-cell wo-v"><div class="wo-pos">POS.2 · STEM</div><div class="wo-word">macht</div></div>
+              <div class="wo-cell wo-mid"><div class="wo-pos">MIDDLE</div><div class="wo-word">das Fenster</div></div>
+              <div class="wo-cell wo-pfx"><div class="wo-pos">END · PREFIX</div><div class="wo-word">auf</div></div>
+            </div>
+            <button class="speak-btn" onclick="speakSentence(this,'Amina macht das Fenster auf.')">🔊 Amina macht das Fenster auf.</button>
+          </div>
+
+          <div style="margin-bottom:18px;">
+            <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:2px;margin-bottom:10px;">ABFAHREN — "The bus departs at 8 o'clock"</div>
+            <div class="wo-row">
+              <div class="wo-cell wo-subj"><div class="wo-pos">POS.1</div><div class="wo-word">Der Bus</div></div>
+              <div class="wo-cell wo-v"><div class="wo-pos">POS.2 · STEM</div><div class="wo-word">fährt</div></div>
+              <div class="wo-cell wo-mid"><div class="wo-pos">MIDDLE</div><div class="wo-word">um 8 Uhr</div></div>
+              <div class="wo-cell wo-pfx"><div class="wo-pos">END · PREFIX</div><div class="wo-word">ab</div></div>
+            </div>
+            <button class="speak-btn" onclick="speakSentence(this,'Der Bus fährt um acht Uhr ab.')">🔊 Der Bus fährt um 8 Uhr ab.</button>
+          </div>
+
+          <div class="sec-label">Questions — stem still in position 2 (or position 1 for yes/no)</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--sep);">W-QUESTION</div>
+              <div style="flex:1;">
+                <div class="ex-de">Wann <strong style="color:var(--gold)">fährt</strong> der Zug <strong style="color:var(--prefix)">ab</strong>?</div>
+                <div class="ex-en">When does the train depart?</div>
+                <div class="ex-note">W-word takes position 1 → stem in position 2 → prefix still goes to the end.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wann fährt der Zug ab?')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--sep);">YES/NO QUESTION</div>
+              <div style="flex:1;">
+                <div class="ex-de"><strong style="color:var(--gold)">Rufst</strong> du mich <strong style="color:var(--prefix)">an</strong>?</div>
+                <div class="ex-en">Are you calling me? / Will you call me?</div>
+                <div class="ex-note">In yes/no questions, stem moves to position 1. Prefix still last.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Rufst du mich an?')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.12);color:var(--gold);">IMPERATIVE</div>
+              <div style="flex:1;">
+                <div class="ex-de"><strong style="color:var(--gold)">Hör</strong> bitte <strong style="color:var(--prefix)">zu</strong>!</div>
+                <div class="ex-en">Please listen! (to someone)</div>
+                <div class="ex-note">In imperatives, stem comes first. Prefix still goes to the end.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Hör bitte zu!')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Negation — nicht goes before the prefix</div>
+          <div class="ex-card" style="margin-bottom:14px;">
+            <div class="ex-tag" style="background:rgba(192,57,43,0.1);color:var(--red);">NICHT + PREFIX</div>
+            <div style="flex:1;">
+              <div class="ex-de">Kofi <strong style="color:var(--gold)">ruft</strong> heute <strong style="color:var(--red)">nicht</strong> <strong style="color:var(--prefix)">an</strong>.</div>
+              <div class="ex-en">Kofi is not calling today.</div>
+              <div class="ex-note">nicht sits directly before the prefix at the end: …nicht an. This is the standard negation position for separable verbs.</div>
+            </div>
+            <button class="speak-btn" onclick="speakSentence(this,'Kofi ruft heute nicht an.')">🔊</button>
+          </div>
+
+          <div class="danger-box"><strong style="color:var(--red)">The most penalised mistake in A2 Schreiben:</strong> leaving the prefix attached to the stem in position 2.<br><br>
+            ✗ <span style="font-family:'DM Mono',monospace;color:#e74c3c;">Ich aufmache die Tür.</span> — prefix stays attached → WRONG<br>
+            ✓ <span style="font-family:'DM Mono',monospace;color:var(--green);">Ich mache die Tür auf.</span> — stem in position 2, prefix at END → CORRECT
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">Module 14 · Lesson 2 · Quiz</div><h2 class="lesson-h">Word Order Quiz</h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 3: Inseparable Verbs ── -->
+    <div id="lesson-2" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">Module 14 · Lesson 3 of 6</div>
+          <h2 class="lesson-h"><span style="color:var(--insep)">Inseparable</span> verbs — prefixes that never leave</h2>
+          <p class="body-text">Some prefixes are permanently glued to the verb. They never separate, no matter the sentence type. The verb always moves as one complete unit to position 2 and stays there. These are called <strong style="color:var(--insep)">inseparable verbs</strong> (untrennbare Verben).</p>
+          <p class="body-text">There are eight inseparable prefixes. If you see any of these at the start of a verb, you know it will never split:</p>
+
+          <div class="prefix-grid">
+            <div class="prefix-card pc-insep">
+              <div class="pc-prefix">be–</div>
+              <div class="pc-meaning">ACTION ON</div>
+              <div class="pc-ex">besuchen (visit)<br>bestellen (order)<br>bezahlen (pay)</div>
+            </div>
+            <div class="prefix-card pc-insep">
+              <div class="pc-prefix">ge–</div>
+              <div class="pc-meaning">COMPLETION</div>
+              <div class="pc-ex">gefallen (please/like)<br>gehören (belong to)<br>gelingen (succeed)</div>
+            </div>
+            <div class="prefix-card pc-insep">
+              <div class="pc-prefix">er–</div>
+              <div class="pc-meaning">RESULT / END</div>
+              <div class="pc-ex">erklären (explain)<br>erlauben (allow)<br>erhalten (receive)</div>
+            </div>
+            <div class="prefix-card pc-insep">
+              <div class="pc-prefix">ver–</div>
+              <div class="pc-meaning">WRONG / CHANGE</div>
+              <div class="pc-ex">verstehen (understand)<br>verkaufen (sell)<br>vergessen (forget)</div>
+            </div>
+            <div class="prefix-card pc-insep">
+              <div class="pc-prefix">zer–</div>
+              <div class="pc-meaning">APART / DESTROY</div>
+              <div class="pc-ex">zerbrechen (break apart)<br>zerstören (destroy)<br>zerreißen (tear up)</div>
+            </div>
+            <div class="prefix-card pc-insep">
+              <div class="pc-prefix">ent–</div>
+              <div class="pc-meaning">AWAY / REMOVE</div>
+              <div class="pc-ex">entscheiden (decide)<br>entfernen (remove)<br>entlassen (dismiss)</div>
+            </div>
+            <div class="prefix-card pc-insep">
+              <div class="pc-prefix">emp–</div>
+              <div class="pc-meaning">RECEIVE</div>
+              <div class="pc-ex">empfehlen (recommend)<br>empfangen (receive)<br>empfinden (feel)</div>
+            </div>
+            <div class="prefix-card pc-insep">
+              <div class="pc-prefix">miss–</div>
+              <div class="pc-meaning">WRONG / FAIL</div>
+              <div class="pc-ex">missverstehen (misunderstand)<br>misslingen (fail)<br>missbrauchen (misuse)</div>
+            </div>
+          </div>
+
+          <div class="sec-label">Inseparable verbs in sentences — the whole verb stays in position 2</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--insep);">VERSTEHEN · INSEP</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima <strong style="color:var(--insep)">versteht</strong> Deutsch sehr gut.</div>
+                <div class="ex-en">Fatima understands German very well.</div>
+                <div class="ex-note">verstehen is inseparable (ver–). The whole word stays in position 2. Nothing moves to the end.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima versteht Deutsch sehr gut.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--insep);">BESUCHEN · INSEP</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame <strong style="color:var(--insep)">besucht</strong> seine Familie in Accra.</div>
+                <div class="ex-en">Kwame visits his family in Accra.</div>
+                <div class="ex-note">besuchen is inseparable (be–). Conjugated as one unit in position 2.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame besucht seine Familie in Accra.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--insep);">ERKLÄREN · INSEP</div>
+              <div style="flex:1;">
+                <div class="ex-de">Die Lehrerin <strong style="color:var(--insep)">erklärt</strong> die Grammatik.</div>
+                <div class="ex-en">The teacher explains the grammar.</div>
+                <div class="ex-note">erklären is inseparable (er–). Stays together.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Die Lehrerin erklärt die Grammatik.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="info-box"><strong style="color:var(--gold)">The key difference — side by side:</strong><br><br>
+            <span style="font-family:'DM Mono',monospace;color:var(--sep)">aufmachen (SEPARABLE):</span> Ich <strong>mache</strong> die Tür <strong>auf</strong>. ← prefix splits to end<br>
+            <span style="font-family:'DM Mono',monospace;color:var(--insep)">besuchen (INSEPARABLE):</span> Ich <strong>besuche</strong> meine Mutter. ← stays together, nothing moves
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue)">Some prefixes are ambiguous!</strong> A handful of prefixes (über, unter, um, durch, wieder) can be separable OR inseparable depending on the verb and its meaning. The best strategy: learn each specific verb individually. If in doubt, a dictionary will mark it as <em>trennbar</em> (separable) or <em>untrennbar</em> (inseparable).</div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">Module 14 · Lesson 3 · Quiz</div><h2 class="lesson-h">Inseparable Verbs Quiz</h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 4: Separable Verbs in Perfekt ── -->
+    <div id="lesson-3" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">Module 14 · Lesson 4 of 6</div>
+          <h2 class="lesson-h">Separable verbs in <span style="color:var(--gold)">Perfekt</span></h2>
+          <p class="body-text">In Module 13 you learned that regular Perfekt adds <em>ge–</em> at the front of the stem. For separable verbs, the <em>ge–</em> goes <strong>between the prefix and the stem</strong> — not before the whole word.</p>
+
+          <div class="split-diagram">
+            <div class="split-whole">aufmachen</div>
+            <div class="split-arrow">→ Perfekt →</div>
+            <div class="split-parts">
+              <div class="split-prefix-part">auf</div>
+              <div class="split-plus">+</div>
+              <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:700;color:var(--stem);background:rgba(39,174,96,0.1);border:1px solid rgba(39,174,96,0.25);padding:8px 12px;border-radius:8px;">ge</div>
+              <div class="split-plus">+</div>
+              <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:700;color:var(--cream);background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);padding:8px 12px;border-radius:8px;">macht</div>
+              <div class="split-arrow">=</div>
+              <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:700;color:var(--part);background:rgba(39,174,96,0.1);border:1px solid rgba(39,174,96,0.3);padding:8px 14px;border-radius:8px;">aufgemacht</div>
+            </div>
+          </div>
+
+          <div class="sec-label">Separable verb Perfekt — the formula</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--stem);">SEPARABLE VERB → PERFEKT PARTICIPLE · PREFIX + ge + STEM + t/en</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:13px;">
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--sep);">aufmachen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--stem);">aufgemacht</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--sep);">anrufen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--stem);">angerufen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--sep);">einkaufen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--stem);">eingekauft</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--sep);">abfahren</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--stem);">abgefahren</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--sep);">aufstehen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--stem);">aufgestanden</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--sep);">mitbringen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--stem);">mitgebracht</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(52,152,219,0.06);border-radius:6px;color:var(--sep);">einschlafen</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;color:var(--gray);">→</div>
+              <div style="font-family:'DM Mono',monospace;padding:7px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--stem);">eingeschlafen</div>
+            </div>
+          </div>
+
+          <div class="sec-label">Inseparable verbs in Perfekt — NO ge added</div>
+          <p class="body-text">Inseparable verbs never add <em>ge–</em> to their Perfekt participle. The inseparable prefix acts as the ge– equivalent.</p>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">WRONG · adding ge</div>
+              <div class="wr-word">gebesucht<br>geverstanden<br>geerklärt</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT · no ge</div>
+              <div class="wr-word">besucht<br>verstanden<br>erklärt</div>
+            </div>
+          </div>
+
+          <div class="sec-label">Perfekt sentences in context</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--sep);">SEP · HABEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina <strong style="color:var(--sep)">hat</strong> Lebensmittel <strong style="color:var(--stem)">eingekauft</strong>.</div>
+                <div class="ex-en">Amina went grocery shopping. (lit. bought in groceries)</div>
+                <div class="ex-note">einkaufen is separable, no movement → haben. ein+ge+kauf+t = eingekauft. Participle at end.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina hat Lebensmittel eingekauft.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--insep);">INSEP · HABEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi <strong style="color:var(--sep)">hat</strong> die Aufgabe <strong style="color:var(--stem)">verstanden</strong>.</div>
+                <div class="ex-en">Kofi understood the task.</div>
+                <div class="ex-note">verstehen is inseparable (ver–). Perfekt participle: verstanden. No ge– added.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi hat die Aufgabe verstanden.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">Module 14 · Lesson 4 · Quiz</div><h2 class="lesson-h">Perfekt Quiz</h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 5: With Modal Verbs ── -->
+    <div id="lesson-4" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">Module 14 · Lesson 5 of 6</div>
+          <h2 class="lesson-h">Separable verbs with <span style="color:var(--gold)">modal verbs</span></h2>
+          <p class="body-text">When a separable verb is used together with a modal verb, the separable verb appears at the <strong>end</strong> of the sentence as an infinitive — and it stays <strong>together</strong> as one word. The prefix does not separate because the whole separable verb is being used as an infinitive.</p>
+
+          <div class="info-box"><strong style="color:var(--gold)">The rule with modals:</strong> Modal in position 2 → separable verb at end as infinitive → prefix stays attached.<br><br>
+            Ich <strong style="color:var(--gold)">muss</strong> morgen früh <strong style="color:var(--prefix)">auf</strong><strong style="color:var(--stem)">stehen</strong>.<br>
+            I have to get up early tomorrow.<br><br>
+            The infinitive aufstehen goes to the end complete — NOT "Ich muss morgen früh stehen auf."
+          </div>
+
+          <div class="sec-label">Modal + separable verb — diagrams</div>
+          <div style="margin-bottom:18px;">
+            <div class="wo-row">
+              <div class="wo-cell wo-subj"><div class="wo-pos">SUBJECT</div><div class="wo-word">Ich</div></div>
+              <div class="wo-cell wo-v"><div class="wo-pos">MODAL · POS.2</div><div class="wo-word">muss</div></div>
+              <div class="wo-cell wo-mid"><div class="wo-pos">MIDDLE</div><div class="wo-word">früh</div></div>
+              <div class="wo-cell wo-part"><div class="wo-pos">INFINITIVE · END</div><div class="wo-word">aufstehen</div></div>
+            </div>
+            <button class="speak-btn" onclick="speakSentence(this,'Ich muss früh aufstehen.')">🔊 Ich muss früh aufstehen.</button>
+          </div>
+          <div style="margin-bottom:18px;">
+            <div class="wo-row">
+              <div class="wo-cell wo-subj"><div class="wo-pos">SUBJECT</div><div class="wo-word">Fatima</div></div>
+              <div class="wo-cell wo-v"><div class="wo-pos">MODAL · POS.2</div><div class="wo-word">möchte</div></div>
+              <div class="wo-cell wo-mid"><div class="wo-pos">MIDDLE</div><div class="wo-word">ihre Freunde</div></div>
+              <div class="wo-cell wo-part"><div class="wo-pos">INFINITIVE · END</div><div class="wo-word">einladen</div></div>
+            </div>
+            <button class="speak-btn" onclick="speakSentence(this,'Fatima möchte ihre Freunde einladen.')">🔊 Fatima möchte ihre Freunde einladen.</button>
+          </div>
+
+          <div class="sec-label">More modal + separable examples</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--gold);">KÖNNEN + SEP</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame <strong style="color:var(--gold)">kann</strong> gut <strong style="color:var(--prefix)">zu</strong><strong style="color:var(--stem)">hören</strong>.</div>
+                <div class="ex-en">Kwame can listen well.</div>
+                <div class="ex-note">zuhören = separable, but used as infinitive after modal → stays together at end.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame kann gut zuhören.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--gold);">MÜSSEN + SEP</div>
+              <div style="flex:1;">
+                <div class="ex-de">Der Zug <strong style="color:var(--gold)">muss</strong> jetzt <strong style="color:var(--prefix)">ab</strong><strong style="color:var(--stem)">fahren</strong>.</div>
+                <div class="ex-en">The train has to depart now.</div>
+                <div class="ex-note">abfahren as infinitive after müssen → stays together. Not "…fahren ab".</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Der Zug muss jetzt abfahren.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--gold);">WOLLEN + SEP</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina <strong style="color:var(--gold)">will</strong> Deutsch <strong style="color:var(--prefix)">an</strong><strong style="color:var(--stem)">fangen</strong>.</div>
+                <div class="ex-en">Amina wants to start German.</div>
+                <div class="ex-note">anfangen = separable. As infinitive after modal, it stays as one unit at end.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina will Deutsch anfangen.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">WRONG · prefix splits with modal</div>
+              <div class="wr-word">Ich muss stehen auf.<br>Er kann rufen an.<br>Sie will kaufen ein.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT · whole infinitive at end</div>
+              <div class="wr-word">Ich muss aufstehen.<br>Er kann anrufen.<br>Sie will einkaufen.</div>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">Module 14 · Lesson 5 · Quiz</div><h2 class="lesson-h">Modal + Separable Quiz</h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 6: African Context + Mistakes ── -->
+    <div id="lesson-5" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">Module 14 · Lesson 6 of 6</div>
+          <h2 class="lesson-h">Kwame, Amina, Kofi, Fatima — all patterns in context</h2>
+          <p class="body-text">All four patterns you have learned — present tense split, questions, Perfekt, and modal verbs — demonstrated in sentences set in African and German daily life.</p>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--sep);">PRESENT · SPLIT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame <strong style="color:var(--gold)">steht</strong> jeden Morgen um sechs Uhr <strong style="color:var(--prefix)">auf</strong>.</div>
+                <div class="ex-en">Kwame gets up at six every morning.</div>
+                <div class="ex-note">aufstehen: stem steht in pos. 2, prefix auf at end. Adverb "jeden Morgen um sechs Uhr" stays in middle.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame steht jeden Morgen um sechs Uhr auf.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--sep);">PRESENT · QUESTION</div>
+              <div style="flex:1;">
+                <div class="ex-de">Wann <strong style="color:var(--gold)">fängt</strong> der Deutschkurs <strong style="color:var(--prefix)">an</strong>?</div>
+                <div class="ex-en">When does the German course start?</div>
+                <div class="ex-note">anfangen: wann takes pos.1, fängt in pos.2, an at the end.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wann fängt der Deutschkurs an?')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.1);color:var(--stem);">PERFEKT · SEPARABLE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina <strong style="color:var(--sep)">hat</strong> gestern ihre Schwester <strong style="color:var(--stem)">angerufen</strong>.</div>
+                <div class="ex-en">Amina called her sister yesterday.</div>
+                <div class="ex-note">anrufen → angerufen. haben (not movement). Participle at end of sentence.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina hat gestern ihre Schwester angerufen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--insep);">PERFEKT · INSEPARABLE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi <strong style="color:var(--sep)">hat</strong> endlich die Prüfung <strong style="color:var(--stem)">bestanden</strong>.</div>
+                <div class="ex-en">Kofi finally passed the exam.</div>
+                <div class="ex-note">bestehen is inseparable (be–). Perfekt participle: bestanden. No ge– added.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi hat endlich die Prüfung bestanden.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--gold);">MODAL + SEPARABLE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima <strong style="color:var(--gold)">möchte</strong> ihre Kollegen zum Essen <strong style="color:var(--prefix)">ein</strong><strong style="color:var(--stem)">laden</strong>.</div>
+                <div class="ex-en">Fatima would like to invite her colleagues to dinner.</div>
+                <div class="ex-note">einladen with möchten: infinitive stays together at end. Perfect polite exam register.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima möchte ihre Kollegen zum Essen einladen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--sep);">NEGATION</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame <strong style="color:var(--gold)">macht</strong> das Fenster <strong style="color:var(--red)">nicht</strong> <strong style="color:var(--prefix)">auf</strong>.</div>
+                <div class="ex-en">Kwame is not opening the window.</div>
+                <div class="ex-note">nicht comes directly before the prefix: …nicht auf. This is the fixed position for negating separable verbs.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame macht das Fenster nicht auf.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">The 4 most common African learner mistakes</div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">MISTAKE 1 · prefix stays in pos.2</div>
+              <div class="wr-word">Ich aufmache die Tür.<br>Amina anruft ihre Mutter.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT · prefix goes to end</div>
+              <div class="wr-word">Ich mache die Tür auf.<br>Amina ruft ihre Mutter an.</div>
+            </div>
+          </div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">MISTAKE 2 · ge before whole verb</div>
+              <div class="wr-word">geaufgemacht<br>geeingekauft<br>geangerufen</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT · ge in the middle</div>
+              <div class="wr-word">aufgemacht<br>eingekauft<br>angerufen</div>
+            </div>
+          </div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">MISTAKE 3 · ge on insep. verb</div>
+              <div class="wr-word">gebesucht<br>geverstanden<br>geerklärt</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT · no ge for insep.</div>
+              <div class="wr-word">besucht<br>verstanden<br>erklärt</div>
+            </div>
+          </div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">MISTAKE 4 · modal splits prefix</div>
+              <div class="wr-word">Ich muss stehen auf.<br>Er kann rufen an.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT · infinitive stays whole</div>
+              <div class="wr-word">Ich muss aufstehen.<br>Er kann anrufen.</div>
+            </div>
+          </div>
+
+          <div class="info-box"><strong style="color:var(--gold)">Exam tip — Goethe A2 Hören and Lesen:</strong><br><br>
+          Separable verbs appear in almost every A2 listening and reading text. When you hear or read a sentence, listen for:<br><br>
+          ✓ A short word at the very end of the sentence that seems to "complete" the verb → that's a separated prefix<br>
+          ✓ Common ones in exam texts: <em>an</em>, <em>aus</em>, <em>auf</em>, <em>ab</em>, <em>ein</em>, <em>mit</em>, <em>zu</em><br><br>
+          In Schreiben, always double-check that your separable verb prefix is at the END of the sentence — not attached to the stem in position 2.
+          </div>
+
+          <div class="success-box">
+            <strong style="color:var(--green)">What you now know:</strong><br><br>
+            ✓ Separable verbs split: stem in pos. 2, prefix goes to END of sentence<br>
+            ✓ The 9 separable prefixes: auf, an, aus, ein, mit, nach, vor, zu, ab<br>
+            ✓ The 8 inseparable prefixes: be, ge, er, ver, zer, ent, emp, miss — never separate<br>
+            ✓ Perfekt of separable verbs: PREFIX + ge + STEM + t/en (aufgemacht, angerufen)<br>
+            ✓ Perfekt of inseparable verbs: no ge– added (besucht, verstanden)<br>
+            ✓ With modal verbs: the separable verb stays as one infinitive at the end<br>
+            ✓ Negation: nicht goes directly before the prefix (…nicht auf)
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Start Final Quiz →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">Module 14 · Final Quiz</div><h2 class="lesson-h">Module Complete — Final Check</h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Previous</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="showOverview()"><span class="nav-icon">📚</span><span class="nav-label">Overview</span></button>
+  <button class="nav-item" onclick="resumeLesson()"><span class="nav-icon">▶️</span><span class="nav-label">Resume</span></button>
+</nav>
+
+<script>
+var synth=(typeof window!=='undefined'&&window.speechSynthesis)?window.speechSynthesis:null;
+var deVoice=null,speechUnlocked=false;
+function loadVoices(){ if(!synth)return; try{ var v=synth.getVoices(); deVoice=v.find(function(x){return x.lang==='de-DE';})||v.find(function(x){return x.lang&&x.lang.startsWith('de');})||null; }catch(e){} }
+if(synth){ try{ loadVoices(); if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadVoices; }catch(e){} }
+function unlockSpeech(){ if(speechUnlocked||!synth)return; try{ var s=new SpeechSynthesisUtterance(''); s.volume=0; synth.speak(s); speechUnlocked=true; }catch(e){} }
+document.addEventListener('touchstart',unlockSpeech,{once:true,passive:true});
+document.addEventListener('click',unlockSpeech,{once:true});
+function speakDE(t){ if(!synth)return null; try{ if(!deVoice)loadVoices(); synth.cancel(); var u=new SpeechSynthesisUtterance(t); u.lang='de-DE'; u.rate=0.85; u.pitch=1.0; u.volume=1.0; if(deVoice)u.voice=deVoice; synth.speak(u); return u; }catch(e){return null;} }
+function speakSentence(btn,text){ unlockSpeech(); document.querySelectorAll('.speak-btn').forEach(function(b){b.classList.remove('speaking');}); if(btn&&btn.classList)btn.classList.add('speaking'); var u=speakDE(text); if(u){ u.onend=function(){if(btn&&btn.classList)btn.classList.remove('speaking');}; u.onerror=function(){if(btn&&btn.classList)btn.classList.remove('speaking');}; }else{ setTimeout(function(){if(btn&&btn.classList)btn.classList.remove('speaking');},1500); } }
+
+var currentLesson=0, xp=0, TOTAL=6;
+
+var QD={
+  0:[
+    {q:'"aufmachen" is a separable verb. Which sentence correctly uses it to mean "Kwame opens the window"?',
+     hint:'Separable verbs split: the stem goes to position 2, the prefix goes to the very end.',
+     opts:['Kwame aufmacht das Fenster.','Kwame macht auf das Fenster.','Kwame macht das Fenster auf.','Kwame aufmacht das Fenster auf.'],
+     ans:2,
+     exp:'"Kwame macht das Fenster auf." — Correct split: stem machen conjugated as macht in position 2, object das Fenster in the middle, prefix auf at the very end. Option A "aufmacht" keeps the prefix attached — the verb must split. Option B puts "auf" before the object — the prefix must go to the END of the whole sentence. Option D double-counts the prefix.',
+     rule:'Separable verb structure: SUBJECT + STEM(pos.2) + [middle: objects, adverbs] + PREFIX(end). Kwame macht das Fenster auf.'}
+  ],
+  1:[
+    {q:'Amina is going to the market. How does "einkaufen" correctly split in this sentence: "Amina ___ auf dem Markt ___"?',
+     hint:'einkaufen → stem is kaufen, prefix is ein. Conjugate for sie (Amina).',
+     opts:['einkauft / —','kauft / ein','kauft ein / —','ein / kauft'],
+     ans:1,
+     exp:'"kauft / ein" — einkaufen splits: stem kaufen conjugated for sie = kauft goes to position 2, prefix ein goes to the end. Full sentence: "Amina kauft auf dem Markt ein." Option A uses the unsplit form as if it were not separable. Option C puts the whole "kauft ein" in position 2 — the prefix cannot stay in position 2. Option D reverses the order entirely.',
+     rule:'einkaufen → kauft (pos.2) … ein (end). Amina kauft auf dem Markt ein. The adverbial phrase "auf dem Markt" stays in the middle.'}
+  ],
+  2:[
+    {q:'Which of these verbs is INSEPARABLE — meaning it will never split in a sentence?',
+     hint:'Look at the prefix. Inseparable prefixes: be, ge, er, ver, zer, ent, emp, miss.',
+     opts:['aufmachen','anrufen','verstehen','einkaufen'],
+     ans:2,
+     exp:'"verstehen" is inseparable. Its prefix is ver–, which is one of the eight inseparable prefixes (be, ge, er, ver, zer, ent, emp, miss). "aufmachen" has prefix auf– which is separable. "anrufen" has prefix an– which is separable. "einkaufen" has prefix ein– which is separable. Only ver– is an inseparable prefix in this list.',
+     rule:'Inseparable prefixes: be, ge, er, ver, zer, ent, emp, miss. Any verb starting with these never splits. verstehen → ich verstehe (never splits).'}
+  ],
+  3:[
+    {q:'What is the correct Perfekt form of the separable verb "anrufen"?',
+     hint:'Separable Perfekt formula: PREFIX + ge + STEM + t/en. anrufen is irregular (rufen → gerufen).',
+     opts:['geangekommen','anrufte','angerufen','gerufenan'],
+     ans:2,
+     exp:'"angerufen" — anrufen is separable and irregular. Formula: prefix an + ge + stem ruf + irregular ending en = angerufen. Option A confuses anrufen with ankommen. Option B is a made-up Präteritum form. Option D puts the prefix at the end of the participle — in a participle the prefix comes FIRST (an-ge-rufen), not last.',
+     rule:'Separable Perfekt: PREFIX + ge + STEM + t/en. anrufen → an + ge + ruf + en = angerufen. Prefix always comes first in the participle.'}
+  ],
+  4:[
+    {q:'Kofi wants to call his mother. Which sentence with a modal verb is correct?',
+     hint:'Modal verbs send the infinitive to the end. With separable verbs, the infinitive stays together as one word.',
+     opts:['Kofi will rufen seine Mutter an.','Kofi will anrufen seine Mutter.','Kofi will seine Mutter anrufen.','Kofi ruft seine Mutter anwollen.'],
+     ans:2,
+     exp:'"Kofi will seine Mutter anrufen." — With a modal, the separable verb goes to the end as a complete infinitive: anrufen (not split). Modal will in position 2. Object seine Mutter in the middle. Infinitive anrufen at the END. Option A splits anrufen even with the modal — wrong. Option B puts the infinitive before the object — infinitive must go to the very end. Option D is meaningless.',
+     rule:'Modal + separable verb: SUBJECT + MODAL(pos.2) + [middle] + SEPARABLE-INFINITIVE(end). Kofi will seine Mutter anrufen. The infinitive stays whole.'}
+  ],
+  5:[
+    {q:'Which sentence correctly says "Fatima has visited her family" using Perfekt?',
+     hint:'besuchen has prefix be– which is inseparable. Inseparable verbs do NOT add ge– in Perfekt. Uses haben.',
+     opts:['Fatima ist ihre Familie besucht.','Fatima hat ihre Familie gebesucht.','Fatima hat ihre Familie besucht.','Fatima hat ihre Familie besuchtet.'],
+     ans:2,
+     exp:'"Fatima hat ihre Familie besucht." — besuchen is inseparable (be–). Inseparable verbs: (1) use haben as auxiliary (besuchen is not movement), (2) do NOT add ge– to the participle. besucht = the plain Perfekt participle without ge–. Option A uses sein — wrong auxiliary for besuchen. Option B adds ge– to an inseparable verb: "gebesucht" is incorrect. Option D adds –et instead of –t: the stem is besuch, participle is besucht.',
+     rule:'Inseparable verbs in Perfekt: NO ge– added. besuchen → besucht (not gebesucht). Fatima hat ihre Familie besucht.'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">QUESTION '+(s.cur+1)+' OF '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint">'+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Next Question →':'See Results →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Correct!':'✗ Not quite'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent=q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' correct</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfect.':pct>=60?'Good work.':'Review and try again.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.12);border:1px solid var(--gold);border-radius:50px;padding:9px 22px;color:var(--gold);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Complete Module 14 →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Next Lesson →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">🔗</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Module 14 Complete!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">Separable and inseparable verbs mastered. You can now split separable verbs correctly in present tense, form their Perfekt participles, use them with modal verbs, and recognise inseparable verbs by their prefixes. German sentences will start to feel natural.</p><div class="xp-badge">⚡ '+xp+' XP Earned</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">A2 Module 2 of 6 complete. Next: Module 15 — Konjunktiv II (würden, wäre, hätte).</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Back to Overview</button></div>'; }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function resumeLesson(){ goLesson(currentLesson); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+<script src="./ai-tutor.js" data-module="14"></script>
+</body>
+</html>
