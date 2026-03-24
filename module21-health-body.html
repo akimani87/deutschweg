@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Module 21: Health &amp; Body</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --body:#3498db; --ache:#e67e22; --doc:#9b59b6; --rx:#27ae60;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--gold); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--gold); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--gold); color:var(--black); width:100%; }
+  .btn-primary:hover { background:var(--gold-light); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(201,168,76,0.2); }
+  .speak-btn.speaking { background:var(--gold); color:var(--black); }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-en { font-size:12px; color:var(--gray); margin-bottom:6px; }
+  .ex-note { font-size:12px; color:var(--cream); line-height:1.6; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Sans',sans-serif; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--gold); background:rgba(201,168,76,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(201,168,76,0.1); border-radius:8px; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(201,168,76,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(201,168,76,0.08); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(201,168,76,0.12); border:1px solid var(--gold); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--gold); font-size:18px; margin:18px 0; }
+
+  /* WRONG/RIGHT */
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.2; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+
+  /* CONJ TABLE */
+  .conj-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; }
+  .conj-title { font-size:10px; letter-spacing:2.5px; font-family:'DM Mono',monospace; margin-bottom:12px; }
+
+  /* BODY PARTS GRID */
+  .bp-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .bp-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:12px 14px; display:flex; align-items:center; gap:10px; }
+  .bp-icon { font-size:20px; flex-shrink:0; width:32px; text-align:center; }
+  .bp-art { font-family:'DM Mono',monospace; font-size:10px; margin-bottom:2px; }
+  .bp-art.m { color:var(--body); }
+  .bp-art.f { color:var(--ache); }
+  .bp-art.n { color:var(--doc); }
+  .bp-de { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; color:var(--cream); }
+  .bp-en { font-size:11px; color:var(--gray); }
+
+  /* COMPLAINT CARDS */
+  .complaint-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .complaint-card { background:var(--card2-bg); border-radius:12px; padding:16px; display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+  .cc-left { flex:1; }
+  .cc-de { font-family:'DM Mono',monospace; font-size:14px; font-weight:700; margin-bottom:4px; }
+  .cc-en { font-size:12px; color:var(--gray); margin-bottom:6px; }
+  .cc-note { font-size:12px; color:var(--cream); line-height:1.6; }
+  .cc-tag { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .cc-haben { border:1px solid rgba(52,152,219,0.3); color:var(--body); }
+  .cc-sein { border:1px solid rgba(230,126,34,0.3); color:var(--ache); }
+  .cc-tut { border:1px solid rgba(155,89,182,0.3); color:var(--doc); }
+  .cc-mir { border:1px solid rgba(39,174,96,0.3); color:var(--rx); }
+  .complaint-card.c-haben { border:1px solid rgba(52,152,219,0.15); }
+  .complaint-card.c-sein  { border:1px solid rgba(230,126,34,0.15); }
+  .complaint-card.c-tut   { border:1px solid rgba(155,89,182,0.15); }
+  .complaint-card.c-mir   { border:1px solid rgba(39,174,96,0.15); }
+
+  /* SCHMERZEN VISUAL */
+  .schmerz-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0; }
+  .sz-card { background:var(--card2-bg); border:1px solid rgba(230,126,34,0.18); border-radius:12px; padding:14px; }
+  .sz-part { font-family:'DM Mono',monospace; font-size:12px; color:var(--gray); margin-bottom:4px; }
+  .sz-word { font-family:'DM Mono',monospace; font-size:15px; font-weight:700; color:var(--ache); margin-bottom:3px; }
+  .sz-ex { font-family:'DM Mono',monospace; font-size:11px; color:var(--cream); line-height:1.65; }
+
+  /* TUT WEH */
+  .weh-list { display:flex; flex-direction:column; gap:8px; margin:14px 0; }
+  .weh-row { background:var(--card2-bg); border:1px solid rgba(155,89,182,0.15); border-radius:10px; padding:12px 16px; display:flex; align-items:center; gap:12px; font-family:'DM Mono',monospace; font-size:13px; }
+  .weh-subject { color:var(--cream); min-width:120px; }
+  .weh-verb { color:var(--doc); font-weight:700; min-width:60px; }
+  .weh-rest { color:var(--gold); }
+
+  /* DOCTOR VOCAB */
+  .doc-table-wrap { background:var(--card2-bg); border:1px solid rgba(155,89,182,0.12); border-radius:14px; padding:18px; margin:14px 0; }
+  .doc-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .doc-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:9px 12px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.07); color:var(--gray); }
+  .doc-table td { padding:9px 12px; border-bottom:1px solid rgba(255,255,255,0.04); font-family:'DM Mono',monospace; font-size:13px; }
+  .doc-table tr:last-child td { border-bottom:none; }
+  .dt-de { color:var(--doc); font-weight:600; }
+  .dt-en { color:var(--gray); }
+  .dt-note { font-size:11px; color:rgba(201,168,76,0.7); }
+
+  /* HIGHLIGHTS */
+  .bh { color:var(--body); font-weight:700; }
+  .ah { color:var(--ache); font-weight:700; }
+  .dh { color:var(--doc); font-weight:700; }
+  .rh { color:var(--rx); font-weight:700; }
+  .plh { color:var(--ache); font-weight:900; font-size:1.05em; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .lesson-h{font-size:22px;} .wr-grid{grid-template-columns:1fr;} .bp-grid{grid-template-columns:1fr 1fr;} .schmerz-grid{grid-template-columns:1fr 1fr;} .weh-row{flex-wrap:wrap;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">MODULE 21 · A2</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">A2 · Vocabulary</div>
+    <h1 class="lesson-h" style="font-size:36px;">Health &amp;<br><span style="color:var(--gold)">Body</span></h1>
+    <p class="body-text">Health is one of the most personal and practical topics in A2 German — and one of the most exam-tested. You need to name body parts, describe symptoms, talk to a doctor, and make an appointment. For African learners arriving in Germany, these situations are real: understanding a German doctor for the first time is not just an exam task — it is daily life.</p>
+    <div class="info-box"><strong style="color:var(--gold)">The African learner trap:</strong> In English you say "I have a headache" — singular. In German, <em>Schmerzen</em> (pains) is almost always used in the <strong style="color:var(--ache)">plural</strong>. "Ich habe <strong style="color:var(--ache)">Kopfschmerzen</strong>" — never "Ich habe Kopfschmerz". This applies to all compound Schmerzen words: Bauchschmerzen, Rückenschmerzen, Halsschmerzen.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">🫀</div><div><div class="lc-title">Lesson 1 — Body Parts</div><div class="lc-desc">der Kopf, der Hals, die Brust, der Bauch, der Rücken, der Arm, die Hand, das Bein, der Fuß, das Auge, das Ohr, die Nase, der Mund.</div></div><div class="lc-tag" style="color:var(--gold);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">🤒</div><div><div class="lc-title">Lesson 2 — Health Complaints</div><div class="lc-desc">Kopfschmerzen, Fieber, Husten, erkältet. Ich habe… / Mir ist… / Ich bin… patterns.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">🏥</div><div><div class="lc-title">Lesson 3 — At the Doctor</div><div class="lc-desc">Was fehlt Ihnen? Seit wann? Ich verschreibe Ihnen… das Rezept, die Apotheke.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">📅</div><div><div class="lc-title">Lesson 4 — Making an Appointment</div><div class="lc-desc">Ich brauche einen Termin. Haben Sie einen Termin frei? Calling in sick.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">🩹</div><div><div class="lc-title">Lesson 5 — Schmerzen &amp; tut weh</div><div class="lc-desc">Always plural: Kopfschmerzen, Rückenschmerzen. mein Rücken tut weh — the weh pattern.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lesson 6 — Kwame &amp; Amina at the Doctor</div><div class="lc-desc">First visit to a German doctor. African learner mistakes. Exam tips for Sprechen Teil 3.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Begin Lesson 1 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lessons</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LESSON 1: Body Parts ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">Module 21 · Lesson 1 of 6</div>
+          <h2 class="lesson-h">Body <span style="color:var(--body)">parts</span></h2>
+          <p class="body-text">Knowing the gender of each body part is essential — you will need to say "my back hurts" (mein Rücken tut weh) or "my throat hurts" (mein Hals tut weh). The possessive article <em>mein/meine</em> depends on gender, so gender must be memorised alongside the noun.</p>
+
+          <div class="sec-label">Head and face</div>
+          <div class="bp-grid">
+            <div class="bp-card"><div class="bp-icon">💭</div><div><div class="bp-art m">MASKULIN</div><div class="bp-de">der Kopf</div><div class="bp-en">the head</div></div></div>
+            <div class="bp-card"><div class="bp-icon">👁️</div><div><div class="bp-art n">NEUTRUM</div><div class="bp-de">das Auge</div><div class="bp-en">the eye (pl: die Augen)</div></div></div>
+            <div class="bp-card"><div class="bp-icon">👂</div><div><div class="bp-art n">NEUTRUM</div><div class="bp-de">das Ohr</div><div class="bp-en">the ear (pl: die Ohren)</div></div></div>
+            <div class="bp-card"><div class="bp-icon">👃</div><div><div class="bp-art f">FEMININ</div><div class="bp-de">die Nase</div><div class="bp-en">the nose</div></div></div>
+            <div class="bp-card"><div class="bp-icon">👄</div><div><div class="bp-art m">MASKULIN</div><div class="bp-de">der Mund</div><div class="bp-en">the mouth</div></div></div>
+            <div class="bp-card"><div class="bp-icon">🦷</div><div><div class="bp-art m">MASKULIN</div><div class="bp-de">der Zahn</div><div class="bp-en">the tooth (pl: die Zähne)</div></div></div>
+          </div>
+
+          <div class="sec-label">Neck and torso</div>
+          <div class="bp-grid">
+            <div class="bp-card"><div class="bp-icon">🦒</div><div><div class="bp-art m">MASKULIN</div><div class="bp-de">der Hals</div><div class="bp-en">the throat / neck</div></div></div>
+            <div class="bp-card"><div class="bp-icon">🫁</div><div><div class="bp-art f">FEMININ</div><div class="bp-de">die Brust</div><div class="bp-en">the chest / breast</div></div></div>
+            <div class="bp-card"><div class="bp-icon">🫃</div><div><div class="bp-art m">MASKULIN</div><div class="bp-de">der Bauch</div><div class="bp-en">the stomach / belly</div></div></div>
+            <div class="bp-card"><div class="bp-icon">🔙</div><div><div class="bp-art m">MASKULIN</div><div class="bp-de">der Rücken</div><div class="bp-en">the back</div></div></div>
+          </div>
+
+          <div class="sec-label">Arms and legs</div>
+          <div class="bp-grid">
+            <div class="bp-card"><div class="bp-icon">💪</div><div><div class="bp-art m">MASKULIN</div><div class="bp-de">der Arm</div><div class="bp-en">the arm (pl: die Arme)</div></div></div>
+            <div class="bp-card"><div class="bp-icon">✋</div><div><div class="bp-art f">FEMININ</div><div class="bp-de">die Hand</div><div class="bp-en">the hand (pl: die Hände)</div></div></div>
+            <div class="bp-card"><div class="bp-icon">🦵</div><div><div class="bp-art n">NEUTRUM</div><div class="bp-de">das Bein</div><div class="bp-en">the leg (pl: die Beine)</div></div></div>
+            <div class="bp-card"><div class="bp-icon">🦶</div><div><div class="bp-art m">MASKULIN</div><div class="bp-de">der Fuß</div><div class="bp-en">the foot (pl: die Füße)</div></div></div>
+          </div>
+
+          <div class="info-box">
+            <strong style="color:var(--gold);">Gender pattern tip:</strong><br><br>
+            Most body parts are <strong style="color:var(--body);">masculine (der)</strong>: Kopf, Hals, Mund, Bauch, Rücken, Arm, Fuß, Zahn, Finger.<br>
+            A few are <strong style="color:var(--ache);">feminine (die)</strong>: Nase, Hand, Brust, Schulter, Zunge.<br>
+            A few are <strong style="color:var(--doc);">neuter (das)</strong>: Auge, Ohr, Bein, Knie, Gesicht.<br><br>
+            When in doubt, guess masculine — most body parts are der.
+          </div>
+
+          <div class="sec-label">Body parts in sentences — possessive</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--body);">MEIN · MASC/NEUT</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="bh">Mein</span> Rücken schmerzt.</div>
+                <div class="ex-en">My back hurts.</div>
+                <div class="ex-note">der Rücken (masculine) → mein Rücken. mein is used for masculine and neuter.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Mein Rücken schmerzt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--ache);">MEINE · FEM</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="ah">Meine</span> Nase läuft.</div>
+                <div class="ex-en">My nose is running.</div>
+                <div class="ex-note">die Nase (feminine) → meine Nase. meine is used for feminine and plural.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Meine Nase läuft.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--doc);">MEIN · NEUT</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="dh">Mein</span> Bein ist geschwollen.</div>
+                <div class="ex-en">My leg is swollen.</div>
+                <div class="ex-note">das Bein (neuter) → mein Bein. geschwollen = swollen.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Mein Bein ist geschwollen.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">Module 21 · Lesson 1 · Quiz</div><h2 class="lesson-h">Body Parts — First Check</h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 2: Health Complaints ── -->
+    <div id="lesson-1" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">Module 21 · Lesson 2 of 6</div>
+          <h2 class="lesson-h">Health <span style="color:var(--ache)">complaints</span></h2>
+          <p class="body-text">German uses three different grammatical patterns to express health problems. Knowing which pattern goes with which complaint is essential — mixing them up sounds unnatural and costs marks.</p>
+
+          <div class="info-box">
+            <strong style="color:var(--gold);">Three complaint patterns:</strong><br><br>
+            <strong style="color:var(--body);">Ich habe + [noun]</strong> — I have [a symptom]. Most common.<br>
+            <strong style="color:var(--ache);">Ich bin + [adjective]</strong> — I am [condition].<br>
+            <strong style="color:var(--doc);">[body part] tut weh</strong> — [body part] hurts.<br>
+            <strong style="color:var(--rx);">Mir ist + [adjective]</strong> — I feel [way]. Special dative construction.
+          </div>
+
+          <div class="sec-label">ich habe — most common pattern</div>
+          <div class="complaint-list">
+            <div class="complaint-card c-haben">
+              <div class="cc-left">
+                <div class="cc-de" style="color:var(--body);">Ich habe <span class="plh">Kopfschmerzen</span>.</div>
+                <div class="cc-en">I have a headache.</div>
+                <div class="cc-note">Kopf (head) + Schmerzen (plural!) = headache. Always plural.</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+                <span class="cc-tag cc-haben">HABEN</span>
+                <button class="speak-btn" onclick="speakSentence(this,'Ich habe Kopfschmerzen.')">🔊</button>
+              </div>
+            </div>
+            <div class="complaint-card c-haben">
+              <div class="cc-left">
+                <div class="cc-de" style="color:var(--body);">Ich habe <span class="plh">Fieber</span>.</div>
+                <div class="cc-en">I have a fever.</div>
+                <div class="cc-note">das Fieber. No article needed after haben here. Fieber ist singular.</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+                <span class="cc-tag cc-haben">HABEN</span>
+                <button class="speak-btn" onclick="speakSentence(this,'Ich habe Fieber.')">🔊</button>
+              </div>
+            </div>
+            <div class="complaint-card c-haben">
+              <div class="cc-left">
+                <div class="cc-de" style="color:var(--body);">Ich habe <span class="plh">Husten</span>.</div>
+                <div class="cc-en">I have a cough.</div>
+                <div class="cc-note">der Husten. No article after haben. Also: Ich habe Schnupfen (I have a runny nose).</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+                <span class="cc-tag cc-haben">HABEN</span>
+                <button class="speak-btn" onclick="speakSentence(this,'Ich habe Husten.')">🔊</button>
+              </div>
+            </div>
+            <div class="complaint-card c-haben">
+              <div class="cc-left">
+                <div class="cc-de" style="color:var(--body);">Ich habe <span class="plh">Bauchschmerzen</span>.</div>
+                <div class="cc-en">I have a stomach ache.</div>
+                <div class="cc-note">Bauch + Schmerzen. Also: Halsschmerzen, Rückenschmerzen, Zahnschmerzen — all plural.</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+                <span class="cc-tag cc-haben">HABEN</span>
+                <button class="speak-btn" onclick="speakSentence(this,'Ich habe Bauchschmerzen.')">🔊</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">ich bin — condition/state</div>
+          <div class="complaint-list">
+            <div class="complaint-card c-sein">
+              <div class="cc-left">
+                <div class="cc-de" style="color:var(--ache);">Ich bin <span class="ah">erkältet</span>.</div>
+                <div class="cc-en">I have a cold. (I am cold-infected.)</div>
+                <div class="cc-note">erkältet = the past participle of erkälten. Used as an adjective after sein.</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+                <span class="cc-tag cc-sein">SEIN</span>
+                <button class="speak-btn" onclick="speakSentence(this,'Ich bin erkältet.')">🔊</button>
+              </div>
+            </div>
+            <div class="complaint-card c-sein">
+              <div class="cc-left">
+                <div class="cc-de" style="color:var(--ache);">Ich bin <span class="ah">krank</span>.</div>
+                <div class="cc-en">I am ill / sick.</div>
+                <div class="cc-note">krank = sick/ill. Very useful when calling in sick: Ich bin leider krank.</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+                <span class="cc-tag cc-sein">SEIN</span>
+                <button class="speak-btn" onclick="speakSentence(this,'Ich bin krank.')">🔊</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">mir ist — dative feeling</div>
+          <div class="complaint-list">
+            <div class="complaint-card c-mir">
+              <div class="cc-left">
+                <div class="cc-de" style="color:var(--rx);">Mir ist <span class="rh">schlecht</span>.</div>
+                <div class="cc-en">I feel sick / I feel nauseous.</div>
+                <div class="cc-note">Mir (Dativ of ich) ist schlecht = literally "to me it is bad". A fixed expression — do not translate literally.</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+                <span class="cc-tag cc-mir">MIR IST</span>
+                <button class="speak-btn" onclick="speakSentence(this,'Mir ist schlecht.')">🔊</button>
+              </div>
+            </div>
+            <div class="complaint-card c-mir">
+              <div class="cc-left">
+                <div class="cc-de" style="color:var(--rx);">Mir ist <span class="rh">schwindelig</span>.</div>
+                <div class="cc-en">I feel dizzy.</div>
+                <div class="cc-note">schwindelig = dizzy. Same dative mir construction. Also: Mir ist übel (I feel nauseous).</div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+                <span class="cc-tag cc-mir">MIR IST</span>
+                <button class="speak-btn" onclick="speakSentence(this,'Mir ist schwindelig.')">🔊</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">Module 21 · Lesson 2 · Quiz</div><h2 class="lesson-h">Health Complaints — Check</h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 3: At the Doctor ── -->
+    <div id="lesson-2" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">Module 21 · Lesson 3 of 6</div>
+          <h2 class="lesson-h">At the <span style="color:var(--doc)">doctor</span></h2>
+          <p class="body-text">A visit to the Arzt or Ärztin follows a predictable script in Germany — and in the A2 exam. The doctor will ask set questions, and you will need to understand and respond. Learn the doctor's questions alongside your answers.</p>
+
+          <div class="sec-label">Doctor and pharmacy vocabulary</div>
+          <div class="doc-table-wrap">
+            <div class="conj-title" style="color:var(--doc);">ARZT / APOTHEKE — KEY VOCABULARY</div>
+            <table class="doc-table">
+              <thead><tr><th>DEUTSCH</th><th>ENGLISH</th><th>NOTES</th></tr></thead>
+              <tbody>
+                <tr><td class="dt-de">der Arzt / die Ärztin</td><td class="dt-en">doctor (m/f)</td><td class="dt-note">zum Arzt gehen = to go to the doctor</td></tr>
+                <tr><td class="dt-de">die Praxis</td><td class="dt-en">doctor's practice / office</td><td class="dt-note">in die Praxis gehen</td></tr>
+                <tr><td class="dt-de">der Termin</td><td class="dt-en">appointment</td><td class="dt-note">einen Termin machen/vereinbaren</td></tr>
+                <tr><td class="dt-de">das Rezept</td><td class="dt-en">prescription</td><td class="dt-note">ein Rezept bekommen / ausstellen</td></tr>
+                <tr><td class="dt-de">die Apotheke</td><td class="dt-en">pharmacy / chemist</td><td class="dt-note">in die Apotheke gehen</td></tr>
+                <tr><td class="dt-de">das Medikament</td><td class="dt-en">medication / medicine</td><td class="dt-note">Medikamente nehmen = to take medication</td></tr>
+                <tr><td class="dt-de">die Tablette</td><td class="dt-en">tablet / pill</td><td class="dt-note">3 × täglich eine Tablette</td></tr>
+                <tr><td class="dt-de">die Krankenversicherung</td><td class="dt-en">health insurance</td><td class="dt-note">essential in Germany — always carry your card</td></tr>
+                <tr><td class="dt-de">die Beschwerden (pl)</td><td class="dt-en">complaints / symptoms</td><td class="dt-note">Seit wann haben Sie die Beschwerden?</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="sec-label">The doctor's questions — and your answers</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--doc);">BEIM ARZT — AT THE DOCTOR</div>
+            <div style="font-family:'DM Mono',monospace;font-size:13px;line-height:2.6;color:var(--cream);">
+              <span style="color:var(--doc);">Ärztin:</span> &nbsp;Guten Tag. Was fehlt Ihnen?<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;What is wrong with you? (lit: What is missing from you?)</span><br>
+              <span style="color:var(--body);">Kwame:</span> &nbsp;Ich habe Halsschmerzen und Fieber.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I have a sore throat and a fever.</span><br>
+              <span style="color:var(--doc);">Ärztin:</span> &nbsp;Seit wann haben Sie die Beschwerden?<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Since when have you had the symptoms?</span><br>
+              <span style="color:var(--body);">Kwame:</span> &nbsp;Seit drei Tagen.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For three days. (since three days)</span><br>
+              <span style="color:var(--doc);">Ärztin:</span> &nbsp;Ich verschreibe Ihnen Antibiotika.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I will prescribe you antibiotics.</span><br>
+              <span style="color:var(--body);">Kwame:</span> &nbsp;Wo ist die nächste Apotheke?<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Where is the nearest pharmacy?</span>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Ich habe Halsschmerzen und Fieber. Seit drei Tagen.')">🔊 Kwame's answers</button>
+
+          <div class="info-box">
+            <strong style="color:var(--gold);">seit + Dativ — very important for health:</strong><br><br>
+            <strong style="color:var(--doc);">Seit wann?</strong> = Since when? / For how long?<br><br>
+            Seit <strong style="color:var(--doc);">drei Tagen</strong>. — For three days.<br>
+            Seit <strong style="color:var(--doc);">einer Woche</strong>. — For a week. (eine Woche → einer Woche, Dativ feminine)<br>
+            Seit <strong style="color:var(--doc);">gestern</strong>. — Since yesterday.<br><br>
+            seit always takes Dativ. This question appears in almost every A2 medical dialogue.
+          </div>
+
+          <div class="sec-label">Key doctor phrases</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--doc);">ARZT SAGT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Zeigen Sie mir, <span class="dh">wo es wehtut</span>.</div>
+                <div class="ex-en">Show me where it hurts.</div>
+                <div class="ex-note">Zeigen Sie mir = show me (Sie-form imperative). wo es wehtut = where it hurts (subordinate clause — verb to end).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Zeigen Sie mir, wo es wehtut.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--body);">PATIENT SAGT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Es tut <span class="bh">hier</span> weh.</div>
+                <div class="ex-en">It hurts here.</div>
+                <div class="ex-note">hier = here. Point to the area when saying this. Very direct and useful.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Es tut hier weh.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--doc);">ARZT SAGT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Nehmen Sie <span class="dh">dreimal täglich</span> eine Tablette.</div>
+                <div class="ex-en">Take one tablet three times a day.</div>
+                <div class="ex-note">dreimal täglich = three times daily. Common prescription instruction. You will hear/read this at the pharmacy.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Nehmen Sie dreimal täglich eine Tablette.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">Module 21 · Lesson 3 · Quiz</div><h2 class="lesson-h">At the Doctor — Check</h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 4: Making an Appointment ── -->
+    <div id="lesson-3" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">Module 21 · Lesson 4 of 6</div>
+          <h2 class="lesson-h">Making an <span style="color:var(--gold)">appointment</span></h2>
+          <p class="body-text">Calling the doctor's practice (Praxis) to make an appointment is a key A2 scenario. It appears in Sprechen Teil 2 (roleplay) and in Hören (phone call listening tasks). These phrases follow a very predictable script — learn it completely.</p>
+
+          <div class="sec-label">Phone call — making an appointment</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--gold);">TERMIN MACHEN — TELEFONGESPRÄCH</div>
+            <div style="font-family:'DM Mono',monospace;font-size:13px;line-height:2.6;color:var(--cream);">
+              <span style="color:var(--doc);">Praxis:</span> &nbsp;Praxis Dr. Müller, guten Morgen.<br>
+              <span style="color:var(--body);">Amina:</span> &nbsp;Guten Morgen. Ich brauche einen Termin, bitte.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Good morning. I need an appointment, please.</span><br>
+              <span style="color:var(--doc);">Praxis:</span> &nbsp;Was sind Ihre Beschwerden?<br>
+              <span style="color:var(--body);">Amina:</span> &nbsp;Ich habe starke Kopfschmerzen und Fieber.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I have a severe headache and fever.</span><br>
+              <span style="color:var(--doc);">Praxis:</span> &nbsp;Haben Sie morgen um 10 Uhr Zeit?<br>
+              <span style="color:var(--body);">Amina:</span> &nbsp;Ja, das passt gut. Vielen Dank.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Yes, that works well. Many thanks.</span>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Guten Morgen. Ich brauche einen Termin, bitte. Ich habe starke Kopfschmerzen und Fieber.')">🔊 Amina's lines</button>
+
+          <div class="sec-label">Calling in sick — krankmelden</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--ache);">SICH KRANKMELDEN — CALLING IN SICK TO WORK</div>
+            <div style="font-family:'DM Mono',monospace;font-size:13px;line-height:2.6;color:var(--cream);">
+              <span style="color:var(--doc);">Chef:</span> &nbsp;Hallo, Kofi. Was ist los?<br>
+              <span style="color:var(--body);">Kofi:</span> &nbsp;Guten Morgen. Es tut mir leid, ich bin leider krank.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Good morning. I'm sorry, I'm unfortunately sick.</span><br>
+              <span style="color:var(--body);">Kofi:</span> &nbsp;Ich habe Fieber und kann heute nicht zur Arbeit kommen.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I have a fever and cannot come to work today.</span><br>
+              <span style="color:var(--doc);">Chef:</span> &nbsp;Gute Besserung, Kofi!<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Get well soon, Kofi! (lit: Good improvement)</span>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Es tut mir leid, ich bin leider krank. Ich habe Fieber und kann heute nicht zur Arbeit kommen.')">🔊 Kofi's lines</button>
+
+          <div class="sec-label">Essential appointment phrases</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--rx);">PHONE PHRASE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich brauche <span class="rh">einen Termin</span> beim Arzt.</div>
+                <div class="ex-en">I need a doctor's appointment.</div>
+                <div class="ex-note">beim Arzt = at the doctor's. bei + dem = beim. einen Termin = accusative.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich brauche einen Termin beim Arzt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--rx);">QUESTION</div>
+              <div style="flex:1;">
+                <div class="ex-de">Haben Sie <span class="rh">einen Termin frei</span>?</div>
+                <div class="ex-en">Do you have an appointment available?</div>
+                <div class="ex-note">frei = free/available. You might hear this back: "Ja, wir haben morgen Nachmittag einen Termin frei."</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Haben Sie einen Termin frei?')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--ache);">SICK NOTE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich brauche eine <span class="ah">Krankmeldung</span>.</div>
+                <div class="ex-en">I need a sick note.</div>
+                <div class="ex-note">die Krankmeldung = sick note / doctor's certificate. Required in Germany when absent from work more than 3 days.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich brauche eine Krankmeldung.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="success-box">
+            <strong style="color:var(--green);">Exam tip — Sprechen Teil 3:</strong><br><br>
+            The A2 Sprechen Teil 3 task often presents a situation card like: <em>"Sie fühlen sich nicht gut. Rufen Sie beim Arzt an und machen Sie einen Termin."</em><br><br>
+            Your response should include:<br>
+            1. Greeting: Guten Morgen / Tag.<br>
+            2. Request: Ich brauche einen Termin, bitte.<br>
+            3. Symptoms: Ich habe [complaint] seit [time].<br>
+            4. Confirm: Ja, das passt. Vielen Dank.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">Module 21 · Lesson 4 · Quiz</div><h2 class="lesson-h">Making an Appointment — Check</h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 5: Schmerzen & tut weh ── -->
+    <div id="lesson-4" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">Module 21 · Lesson 5 of 6</div>
+          <h2 class="lesson-h"><span style="color:var(--ache)">Schmerzen</span> &amp; tut weh</h2>
+          <p class="body-text">German has two ways to say something hurts. Both are used constantly in health contexts and both must be mastered for the A2 exam. The critical rule: <em>Schmerzen</em> is almost always <strong style="color:var(--ache)">plural</strong>.</p>
+
+          <div class="sec-label">Compound Schmerzen words — always plural</div>
+          <div class="schmerz-grid">
+            <div class="sz-card">
+              <div class="sz-part">Kopf (head)</div>
+              <div class="sz-word">Kopfschmerzen</div>
+              <div class="sz-ex">Ich habe Kopfschmerzen.<br><span style="color:var(--gray);">headache</span></div>
+            </div>
+            <div class="sz-card">
+              <div class="sz-part">Hals (throat)</div>
+              <div class="sz-word">Halsschmerzen</div>
+              <div class="sz-ex">Ich habe Halsschmerzen.<br><span style="color:var(--gray);">sore throat</span></div>
+            </div>
+            <div class="sz-card">
+              <div class="sz-part">Bauch (stomach)</div>
+              <div class="sz-word">Bauchschmerzen</div>
+              <div class="sz-ex">Ich habe Bauchschmerzen.<br><span style="color:var(--gray);">stomach ache</span></div>
+            </div>
+            <div class="sz-card">
+              <div class="sz-part">Rücken (back)</div>
+              <div class="sz-word">Rückenschmerzen</div>
+              <div class="sz-ex">Ich habe Rückenschmerzen.<br><span style="color:var(--gray);">back pain</span></div>
+            </div>
+            <div class="sz-card">
+              <div class="sz-part">Zahn (tooth)</div>
+              <div class="sz-word">Zahnschmerzen</div>
+              <div class="sz-ex">Ich habe Zahnschmerzen.<br><span style="color:var(--gray);">toothache</span></div>
+            </div>
+            <div class="sz-card">
+              <div class="sz-part">Ohr (ear)</div>
+              <div class="sz-word">Ohrenschmerzen</div>
+              <div class="sz-ex">Ich habe Ohrenschmerzen.<br><span style="color:var(--gray);">earache</span></div>
+            </div>
+          </div>
+
+          <div class="danger-box">
+            <strong style="color:var(--red);">Always plural — no exceptions:</strong><br>
+            ✗ Ich habe Kopf<strong>schmerz</strong>. &nbsp;(singular — wrong)<br>
+            ✗ Ich habe einen Kopfschmerz. &nbsp;(article + singular — wrong)<br>
+            ✓ Ich habe Kopf<strong style="color:var(--ache);">schmerzen</strong>. &nbsp;(plural — correct, no article)
+          </div>
+
+          <div class="sec-label">tut weh — the second way to say "hurts"</div>
+          <p class="body-text"><em>wehtun</em> is a separable verb: <strong style="color:var(--doc);">tut</strong>…<strong style="color:var(--doc);">weh</strong>. The subject is the body part that hurts. The verb agrees with the body part, not with the person.</p>
+
+          <div class="weh-list">
+            <div class="weh-row">
+              <span class="weh-subject">Mein Rücken</span>
+              <span class="weh-verb">tut</span>
+              <span class="weh-rest">weh.</span>
+              <span style="color:var(--gray);font-size:11px;margin-left:auto;">My back hurts.</span>
+            </div>
+            <div class="weh-row">
+              <span class="weh-subject">Mein Hals</span>
+              <span class="weh-verb">tut</span>
+              <span class="weh-rest">weh.</span>
+              <span style="color:var(--gray);font-size:11px;margin-left:auto;">My throat hurts.</span>
+            </div>
+            <div class="weh-row">
+              <span class="weh-subject">Mein Fuß</span>
+              <span class="weh-verb">tut</span>
+              <span class="weh-rest">weh.</span>
+              <span style="color:var(--gray);font-size:11px;margin-left:auto;">My foot hurts.</span>
+            </div>
+            <div class="weh-row">
+              <span class="weh-subject">Meine Hand</span>
+              <span class="weh-verb">tut</span>
+              <span class="weh-rest">weh.</span>
+              <span style="color:var(--gray);font-size:11px;margin-left:auto;">My hand hurts.</span>
+            </div>
+            <div class="weh-row">
+              <span class="weh-subject">Mein Knie</span>
+              <span class="weh-verb">tut</span>
+              <span class="weh-rest">weh.</span>
+              <span style="color:var(--gray);font-size:11px;margin-left:auto;">My knee hurts.</span>
+            </div>
+            <div class="weh-row">
+              <span class="weh-subject">Meine Augen</span>
+              <span class="weh-verb">tun</span>
+              <span class="weh-rest">weh.</span>
+              <span style="color:var(--gray);font-size:11px;margin-left:auto;">My eyes hurt. (plural → tun)</span>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue);">tut vs tun:</strong> When the body part is plural, use <strong>tun</strong> instead of tut. Meine Augen <strong>tun</strong> weh. Meine Füße <strong>tun</strong> weh. For singular body parts: <strong>tut</strong>. Mein Rücken <strong>tut</strong> weh.</div>
+
+          <div class="info-box">
+            <strong style="color:var(--gold);">Schmerzen vs tut weh — both are correct:</strong><br><br>
+            Ich habe <strong style="color:var(--ache);">Rückenschmerzen</strong>. = Mein <strong style="color:var(--doc);">Rücken tut weh</strong>.<br>
+            Ich habe <strong style="color:var(--ache);">Kopfschmerzen</strong>. = Mein <strong style="color:var(--doc);">Kopf tut weh</strong>.<br><br>
+            Both express the same meaning. In the exam, use whichever form flows more naturally. At the doctor's, <em>tut weh</em> feels more direct and immediate.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">Module 21 · Lesson 5 · Quiz</div><h2 class="lesson-h">Schmerzen &amp; tut weh — Check</h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 6: African Context + Mistakes ── -->
+    <div id="lesson-5" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">Module 21 · Lesson 6 of 6</div>
+          <h2 class="lesson-h">Kwame &amp; Amina — <span style="color:var(--gold)">first doctor visit</span></h2>
+          <p class="body-text">For many Africans arriving in Germany, visiting a German doctor for the first time is a stressful experience. The formal Sie-form, the requirement for a Krankenversicherungskarte (health insurance card), and the clinical vocabulary are all new. This lesson prepares you to navigate that situation in German.</p>
+
+          <div class="sec-label">Cultural context — what is different in Germany</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--gold);">ARZTBESUCH IN DEUTSCHLAND — WHAT TO EXPECT</div>
+            <div style="font-family:'DM Mono',monospace;font-size:13px;line-height:2.6;color:var(--cream);">
+              <span style="color:var(--doc);">1.</span> &nbsp;You always use the formal <strong style="color:var(--doc);">Sie</strong> with a doctor.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;Never du — even if they seem friendly.</span><br>
+              <span style="color:var(--doc);">2.</span> &nbsp;Bring your <strong style="color:var(--gold);">Krankenversicherungskarte</strong> (health insurance card).<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;Without it, you may have to pay and claim back later.</span><br>
+              <span style="color:var(--doc);">3.</span> &nbsp;You need an <strong style="color:var(--gold);">appointment (Termin)</strong> — walk-ins are rare.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;For emergencies: Notaufnahme (emergency room) or Notarzt.</span><br>
+              <span style="color:var(--doc);">4.</span> &nbsp;Prescriptions (<strong style="color:var(--gold);">Rezepte</strong>) are taken to the Apotheke.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;The Apotheke is not a general shop — it only sells medicines.</span>
+            </div>
+          </div>
+
+          <div class="sec-label">Amina's full doctor visit</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.12);color:var(--gold);">AMINA · SENEGAL → BERLIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina ist erkältet. Seit zwei Tagen hat sie <span class="ah">Halsschmerzen</span> und <span class="ah">Fieber</span>.</div>
+                <div class="ex-en">Amina has a cold. For two days she has had a sore throat and fever.</div>
+                <div class="ex-note">seit + Dativ. zwei Tagen = two days (Dativ plural). Halsschmerzen, Fieber = typical cold symptoms.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina ist erkältet. Seit zwei Tagen hat sie Halsschmerzen und Fieber.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.12);color:var(--gold);">BEIM ARZT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Sie geht in die Praxis und sagt: „<span class="ah">Mir ist sehr schlecht</span>. Mein <span class="dh">Hals tut weh</span>."</div>
+                <div class="ex-en">She goes to the practice and says: "I feel very unwell. My throat hurts."</div>
+                <div class="ex-note">Mir ist schlecht + tut weh — two different patterns, both in one natural sentence.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Mir ist sehr schlecht. Mein Hals tut weh.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--rx);">REZEPT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Die Ärztin gibt ihr ein <span class="rh">Rezept</span>. Amina geht in die <span class="rh">Apotheke</span>.</div>
+                <div class="ex-en">The doctor gives her a prescription. Amina goes to the pharmacy.</div>
+                <div class="ex-note">gibt ihr = gives her (ihr = dative of sie). in die Apotheke = Akkusativ movement.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Die Ärztin gibt ihr ein Rezept. Amina geht in die Apotheke.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">African learner mistakes — wrong and right</div>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Ich habe Kopfschmerz.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Ich habe Kopfschmerzen.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Schmerzen is always plural in German. Every compound (-kopf, -bauch, -rücken, -hals, -zahn) ends in -schmerzen, never -schmerz.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Mein Fuß hat weh.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Mein Fuß tut weh.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">wehtun uses tun/tut, not haben. "tut weh" not "hat weh". The verb is wehtun (separable): tut…weh.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Ich fühle schlecht.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Mir ist schlecht.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">"I feel sick/nauseous" is mir ist schlecht — a dative idiom. "Ich fühle schlecht" is not natural German. Also: "Ich fühle mich schlecht" works (reflexive), but mir ist schlecht is more idiomatic for nausea.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Ich bin krank seit drei Tag.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Ich bin seit drei Tagen krank.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Two errors: (1) seit goes before the time phrase in German word order, (2) drei Tagen — plural Dativ of Tag is Tagen (add -en).</p>
+
+          <div class="success-box">
+            <strong style="color:var(--green);">Final exam summary:</strong><br><br>
+            1. Body parts: most are <strong style="color:var(--body);">masculine</strong> · key feminines: Nase, Hand, Brust · key neuters: Auge, Ohr, Bein<br>
+            2. Complaints: <strong style="color:var(--body);">Ich habe</strong> + Schmerzen/Fieber/Husten · <strong style="color:var(--ache);">Ich bin</strong> erkältet/krank · <strong style="color:var(--rx);">Mir ist</strong> schlecht<br>
+            3. <strong style="color:var(--ache);">Schmerzen always plural</strong>: Kopfschmerzen, Halsschmerzen, Rückenschmerzen<br>
+            4. tut weh: Mein Rücken <strong style="color:var(--doc);">tut</strong> weh · Meine Augen <strong style="color:var(--doc);">tun</strong> weh<br>
+            5. Doctor phrases: <em>Was fehlt Ihnen? · Seit wann? · Ich verschreibe Ihnen…</em>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">Module 21 · Lesson 6 · Quiz</div><h2 class="lesson-h">Health &amp; Body — Final Check</h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Previous</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var TOTAL=6, currentLesson=0, xp=0;
+var synth=window.speechSynthesis, voices=[], deVoice=null;
+function loadVoices(){ voices=synth.getVoices(); deVoice=voices.find(function(v){return v.lang==='de-DE';})||voices.find(function(v){return v.lang.startsWith('de');})||null; }
+if(synth.onvoiceschanged!==undefined){synth.onvoiceschanged=loadVoices;}
+function speakDE(text){ if(!synth)return; synth.cancel(); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; synth.speak(u); }
+function speakSentence(btn,text){ if(!synth)return; synth.cancel(); document.querySelectorAll('.speak-btn.speaking').forEach(function(b){b.classList.remove('speaking');}); btn.classList.add('speaking'); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; u.onend=function(){btn.classList.remove('speaking');}; synth.speak(u); }
+
+var QD={
+  0:[
+    {q:'Which article is correct for "Rücken" (back)?',
+     hint:'Think about the gender pattern: most body parts in German are masculine. Rücken follows this pattern.',
+     opts:['die Rücken','das Rücken','der Rücken','den Rücken'],
+     ans:2,
+     exp:'"der Rücken" — Rücken is masculine. Most body parts in German are masculine: der Kopf, der Hals, der Bauch, der Arm, der Fuß, der Rücken. The feminine exceptions are die Nase, die Hand, die Brust. The neuter exceptions are das Auge, das Ohr, das Bein. "den Rücken" is the accusative form of der Rücken — grammatically possible as an object but not as the standalone article.',
+     rule:'Most body parts are masculine (der): Kopf, Hals, Bauch, Arm, Fuß, Rücken. Feminine: Nase, Hand, Brust. Neuter: Auge, Ohr, Bein.'}
+  ],
+  1:[
+    {q:'How do you correctly say "I have a headache" in German?',
+     hint:'Schmerzen in German is always used in the plural — never singular. Think about what happens to the -schmerz ending.',
+     opts:['Ich habe Kopfschmerz.','Ich habe Kopfschmerzen.','Mein Kopf ist schlecht.','Ich bin Kopfschmerzen.'],
+     ans:1,
+     exp:'"Ich habe Kopfschmerzen." — Schmerzen (pains) is always plural in German when used in compound words. Kopfschmerzen, Halsschmerzen, Bauchschmerzen, Rückenschmerzen — all end in -schmerzen (plural). Never use the singular -schmerz. "Mein Kopf ist schlecht" is not a natural phrase — ist schlecht works with Mir (Mir ist schlecht = I feel sick). "Ich bin Kopfschmerzen" — you cannot be a noun.',
+     rule:'Schmerzen is always plural. Ich habe Kopfschmerzen / Halsschmerzen / Bauchschmerzen. Never -schmerz (singular).'}
+  ],
+  2:[
+    {q:'The doctor asks: "Was fehlt Ihnen?" What is she asking?',
+     hint:'fehlen = to be missing, to be lacking. Ihnen = to you (Dativ Sie-form). What might a doctor want to know from you?',
+     opts:['Where does it hurt?','Since when do you have the symptoms?','What is wrong with you?','Do you have a prescription?'],
+     ans:2,
+     exp:'"What is wrong with you?" — "Was fehlt Ihnen?" literally means "What is missing from you?" but it is the standard German doctor\'s opening question, equivalent to "What\'s wrong?" or "What brings you in today?". Ihnen is the Dativ of Sie (formal you). "Where does it hurt?" would be "Wo tut es weh?" or "Wo haben Sie Schmerzen?". "Since when?" would be "Seit wann?". "Do you have a prescription?" would be "Haben Sie ein Rezept?".',
+     rule:'"Was fehlt Ihnen?" = What is wrong with you? (standard doctor\'s opening question). Your answer: "Ich habe [complaint]." or "Mir ist [adjective]."'}
+  ],
+  3:[
+    {q:'Kwame needs to make a doctor\'s appointment by phone. Which sentence does he use?',
+     hint:'He needs to state his reason for calling. What is the most direct and polite way to request an appointment?',
+     opts:['Ich brauche einen Termin, bitte.','Ich brauche ein Rezept, bitte.','Ich gehe in die Apotheke.','Mir ist heute sehr schlecht.'],
+     ans:0,
+     exp:'"Ich brauche einen Termin, bitte." — The most direct and natural way to request an appointment. einen Termin = accusative (making a new appointment). brauche = need (from brauchen). Option B asks for a prescription — that comes from the doctor, not over the phone when booking. Option C says he is going to the pharmacy — unrelated to making an appointment. Option D describes his symptom (I feel very sick today) — useful to add, but alone it doesn\'t request an appointment.',
+     rule:'To make a doctor\'s appointment: Ich brauche einen Termin, bitte. Also: Ich möchte einen Termin vereinbaren / machen.'}
+  ],
+  4:[
+    {q:'Which sentence correctly says "My foot hurts"?',
+     hint:'The verb you need is wehtun (separable). The body part is the subject. Which verb form goes with "mein Fuß" (singular)?',
+     opts:['Mein Fuß hat weh.','Mein Fuß tut weh.','Ich habe Fuß weh.','Der Fuß ist weh.'],
+     ans:1,
+     exp:'"Mein Fuß tut weh." — wehtun is a separable verb: tut (conjugated) + weh (prefix at the end). The body part is the subject, so the verb agrees with it: mein Fuß (singular) → tut. "hat weh" uses haben — wrong verb. "Ich habe Fuß weh" — incomplete and unnatural construction. "ist weh" — weh is not used as a predicate adjective after sein; use schmerzhaft or tut weh instead.',
+     rule:'wehtun (separable): Mein Rücken tut weh. Mein Fuß tut weh. Plural: Meine Augen tun weh. Never "hat weh" — always "tut weh".'}
+  ],
+  5:[
+    {q:'Which sentence is completely correct?',
+     hint:'Check two things: (1) Is Schmerzen plural? (2) Is the verb correct for a pain sentence?',
+     opts:['Ich habe Rückenschmerz.','Ich habe Rückenschmerzen.','Mein Rücken hat Schmerz.','Ich bin Rückenschmerzen.'],
+     ans:1,
+     exp:'"Ich habe Rückenschmerzen." — Rücken + Schmerzen = Rückenschmerzen (always plural). Ich habe = correct verb for this pattern. No article needed. Option A uses the singular Rückenschmerz — always wrong. Option C says "Mein Rücken hat Schmerz" — use "tut weh" or "Ich habe Rückenschmerzen", not haben for a body part. Option D says "Ich bin Rückenschmerzen" — you cannot be a noun/symptom in German.',
+     rule:'All compound Schmerzen words are always plural: Rückenschmerzen, Kopfschmerzen, Halsschmerzen. Ich habe [body part]schmerzen. Never singular.'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">QUESTION '+(s.cur+1)+' OF '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint">'+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Next Question →':'See Results →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Correct!':'✗ Not quite'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent=q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' correct</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfect.':pct>=60?'Good work.':'Review and try again.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.12);border:1px solid var(--gold);border-radius:50px;padding:9px 22px;color:var(--gold);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Complete Module 21 →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Next Lesson →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">🏥</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Module 21 Complete!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">Health and body mastered. You know the genders of all major body parts, three complaint patterns (ich habe, ich bin, mir ist), the plural Schmerzen rule, and the tut-weh construction. You can make a doctor\'s appointment, describe symptoms in formal Sie-form, and call in sick to work. Your A2 Sprechen Teil 3 is ready.</p><div class="xp-badge">⚡ '+xp+' XP Earned</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Module 21 complete. Next: Module 22 — Food and Shopping (Essen und Einkaufen).</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Back to Overview</button></div>'; }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function resumeLesson(){ goLesson(currentLesson); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+<script src="./ai-tutor.js" data-module="21"></script>
+</body>
+</html>
