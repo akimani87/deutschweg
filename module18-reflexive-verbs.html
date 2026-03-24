@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Module 18: Reflexive Verbs</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --refl:#3498db; --acc:#e67e22; --dat:#9b59b6; --verb:#27ae60;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:rgba(10,10,10,0.96); backdrop-filter:blur(20px); border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:12px 0 20px; z-index:100; }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:8px 16px; border-radius:12px; transition:all 0.2s; border:none; background:none; color:var(--gray); }
+  .nav-item:hover, .nav-item.active { color:var(--gold); }
+  .nav-icon { font-size:20px; }
+  .nav-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; font-family:'DM Mono',monospace; }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--gold); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--gold); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--gold); color:var(--black); width:100%; }
+  .btn-primary:hover { background:var(--gold-light); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(201,168,76,0.2); }
+  .speak-btn.speaking { background:var(--gold); color:var(--black); }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-en { font-size:12px; color:var(--gray); margin-bottom:6px; }
+  .ex-note { font-size:12px; color:var(--cream); line-height:1.6; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Sans',sans-serif; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--gold); background:rgba(201,168,76,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(201,168,76,0.1); border-radius:8px; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(201,168,76,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(201,168,76,0.08); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(201,168,76,0.12); border:1px solid var(--gold); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--gold); font-size:18px; margin:18px 0; }
+
+  /* WRONG/RIGHT */
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.2; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+
+  /* CONJ TABLE */
+  .conj-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; }
+  .conj-title { font-size:10px; letter-spacing:2.5px; font-family:'DM Mono',monospace; margin-bottom:12px; }
+
+  /* REFLEXIVE PRONOUN TABLE */
+  .pron-table-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+  .pron-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .pron-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:9px 12px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.07); color:var(--gray); }
+  .pron-table td { padding:9px 12px; border-bottom:1px solid rgba(255,255,255,0.04); font-family:'DM Mono',monospace; font-size:13px; }
+  .pron-table tr:last-child td { border-bottom:none; }
+  .pt-sub { color:var(--cream); }
+  .pt-acc { color:var(--acc); font-weight:700; }
+  .pt-dat { color:var(--dat); font-weight:700; }
+  .pt-note { color:var(--gray); font-size:11px; }
+  .pt-same { color:var(--gold); font-size:11px; font-family:'DM Mono',monospace; }
+
+  /* PRONOUN CARDS — big visual pair */
+  .pron-pair-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0; }
+  .pron-pair { border-radius:14px; padding:16px 14px; text-align:center; }
+  .pp-acc { background:rgba(230,126,34,0.08); border:1px solid rgba(230,126,34,0.28); }
+  .pp-dat { background:rgba(155,89,182,0.08); border:1px solid rgba(155,89,182,0.28); }
+  .pp-label { font-size:10px; letter-spacing:2.5px; font-family:'DM Mono',monospace; margin-bottom:10px; }
+  .pp-acc .pp-label { color:var(--acc); }
+  .pp-dat .pp-label { color:var(--dat); }
+  .pp-pron { font-family:'Playfair Display',serif; font-size:30px; font-weight:900; margin-bottom:6px; }
+  .pp-acc .pp-pron { color:var(--acc); }
+  .pp-dat .pp-pron { color:var(--dat); }
+  .pp-rule { font-size:11px; color:var(--gray); line-height:1.65; }
+  .pp-ex { font-family:'DM Mono',monospace; font-size:11px; margin-top:8px; line-height:1.75; }
+  .pp-acc .pp-ex { color:rgba(230,126,34,0.75); }
+  .pp-dat .pp-ex { color:rgba(155,89,182,0.75); }
+
+  /* REFLEXIVE VERB CARDS */
+  .rv-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0; }
+  .rv-card { background:var(--card2-bg); border:1px solid rgba(52,152,219,0.18); border-radius:12px; padding:14px; }
+  .rv-verb { font-family:'DM Mono',monospace; font-size:14px; font-weight:700; color:var(--refl); margin-bottom:4px; }
+  .rv-eng { font-size:12px; color:var(--gray); margin-bottom:6px; }
+  .rv-ex { font-family:'DM Mono',monospace; font-size:11px; color:var(--cream); line-height:1.7; }
+  .rv-refl { color:var(--refl); }
+
+  /* REFL HIGHLIGHT in sentences */
+  .rh { color:var(--refl); font-weight:700; }
+
+  /* ACC / DAT COMPARE */
+  .acc-dat-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0; }
+  .ad-box { border-radius:12px; padding:16px; }
+  .ad-acc { background:rgba(230,126,34,0.07); border:1px solid rgba(230,126,34,0.25); }
+  .ad-dat { background:rgba(155,89,182,0.07); border:1px solid rgba(155,89,182,0.25); }
+  .ad-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .ad-acc .ad-label { color:var(--acc); }
+  .ad-dat .ad-label { color:var(--dat); }
+  .ad-rule { font-size:12px; color:var(--cream); line-height:1.65; margin-bottom:8px; }
+  .ad-ex { font-family:'DM Mono',monospace; font-size:11px; line-height:1.8; }
+  .ad-acc .ad-ex { color:rgba(230,126,34,0.8); }
+  .ad-dat .ad-ex { color:rgba(155,89,182,0.8); }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .lesson-h{font-size:22px;} .wr-grid{grid-template-columns:1fr;} .pron-pair-grid{grid-template-columns:1fr;} .rv-grid{grid-template-columns:1fr;} .acc-dat-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">MODULE 18 · A2</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">A2 · Verbs</div>
+    <h1 class="lesson-h" style="font-size:36px;">Reflexive<br><span style="color:var(--gold)">Verbs</span></h1>
+    <p class="body-text">Reflexive verbs describe actions you do to yourself. "I wash myself", "I feel myself", "I introduce myself". In German, these verbs always travel with a reflexive pronoun — <strong style="color:var(--refl)">mich</strong> or <strong style="color:var(--dat)">mir</strong> for ich, <strong style="color:var(--refl)">dich</strong> or <strong style="color:var(--dat)">dir</strong> for du, and <strong style="color:var(--refl)">sich</strong> for all third-person forms. Forgetting this pronoun is the single biggest African learner mistake with these verbs.</p>
+    <div class="info-box"><strong style="color:var(--gold)">The African learner trap:</strong> In English, "I feel good" is perfectly natural — no reflexive pronoun needed. In German, "Ich fühle gut" is wrong. The verb <em>sich fühlen</em> always requires its reflexive pronoun: <strong style="color:var(--refl)">Ich fühle mich gut.</strong> Without <em>mich</em>, the sentence is incomplete and will lose exam marks.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">🔄</div><div><div class="lc-title">Lesson 1 — What Are Reflexive Verbs?</div><div class="lc-desc">Actions done to yourself. sich waschen, sich fühlen. The reflexive pronoun is not optional.</div></div><div class="lc-tag" style="color:var(--gold);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">📋</div><div><div class="lc-title">Lesson 2 — All Reflexive Pronouns</div><div class="lc-desc">ich → mich/mir, du → dich/dir, er/sie/es → sich, wir → uns, ihr → euch, sie/Sie → sich.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">📚</div><div><div class="lc-title">Lesson 3 — 8 Essential A2 Reflexive Verbs</div><div class="lc-desc">sich waschen, sich anziehen, sich fühlen, sich freuen, sich interessieren für, sich vorstellen, sich erinnern, sich setzen.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">⚖️</div><div><div class="lc-title">Lesson 4 — Accusative vs Dative Reflexive</div><div class="lc-desc">Ich wasche mich (whole body) vs Ich wasche mir die Hände (specific body part).</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">🎤</div><div><div class="lc-title">Lesson 5 — sich vorstellen: Your Exam Superpower</div><div class="lc-desc">Sprechen Teil 1 requires a self-introduction. Ich heiße Kwame. Ich komme aus Ghana. Ich interessiere mich für…</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lesson 6 — Kwame, Amina, Kofi, Fatima</div><div class="lc-desc">Daily routine in Lagos and Accra. African learner mistakes. Final exam tips.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Begin Lesson 1 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lessons</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LESSON 1: What Are Reflexive Verbs? ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">Module 18 · Lesson 1 of 6</div>
+          <h2 class="lesson-h">What are <span style="color:var(--refl)">reflexive verbs</span>?</h2>
+          <p class="body-text">A reflexive verb describes an action where the subject and the object are the same person — you do the action <strong>to yourself</strong>. In English you sometimes say "I wash myself" — the "myself" makes it reflexive. In German, this reflexive meaning is built into the verb: the verb <em>waschen</em> (to wash) becomes <strong style="color:var(--refl)">sich waschen</strong> (to wash oneself).</p>
+
+          <div class="info-box">
+            <strong style="color:var(--gold)">The reflexive pronoun is part of the verb:</strong><br><br>
+            German infinitive: <strong style="color:var(--refl)">sich</strong> waschen &nbsp;·&nbsp; <strong style="color:var(--refl)">sich</strong> fühlen &nbsp;·&nbsp; <strong style="color:var(--refl)">sich</strong> setzen<br><br>
+            When you conjugate, <em>sich</em> changes to match the subject. You cannot drop it — it is not optional.
+          </div>
+
+          <div class="sec-label">Non-reflexive vs reflexive — the difference</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(107,107,107,0.15);color:var(--gray);">NON-REFLEX</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina wäscht das Auto.</div>
+                <div class="ex-en">Amina washes the car.</div>
+                <div class="ex-note">The action goes onto something else (the car). No reflexive pronoun needed.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina wäscht das Auto.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--refl);">REFLEXIVE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina wäscht <span class="rh">sich</span>.</div>
+                <div class="ex-en">Amina washes herself.</div>
+                <div class="ex-note">The action comes back to Amina herself. Reflexive pronoun <em>sich</em> is required.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina wäscht sich.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--refl);">REFLEXIVE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich fühle <span class="rh">mich</span> gut.</div>
+                <div class="ex-en">I feel good.</div>
+                <div class="ex-note">sich fühlen always reflexive in German. mich is the reflexive pronoun for ich.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich fühle mich gut.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--refl);">REFLEXIVE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame setzt <span class="rh">sich</span>.</div>
+                <div class="ex-en">Kwame sits down.</div>
+                <div class="ex-note">sich setzen — the action of sitting down is done by Kwame to himself.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame setzt sich.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Word order — where does the reflexive pronoun go?</div>
+          <p class="body-text">The reflexive pronoun comes immediately after the conjugated verb — just like any other object pronoun.</p>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--refl);">REFLEXIVE PRONOUN POSITION</div>
+            <div style="font-family:'DM Mono',monospace;font-size:13px;line-height:2.5;color:var(--cream);">
+              Ich &nbsp;<strong style="color:var(--gold)">wasche</strong> &nbsp;<strong style="color:var(--refl)">mich</strong> &nbsp;morgens. &nbsp;<span style="color:var(--gray);font-size:11px;">— I wash myself in the morning.</span><br>
+              Du &nbsp;<strong style="color:var(--gold)">wäschst</strong> &nbsp;<strong style="color:var(--refl)">dich</strong> &nbsp;schnell. &nbsp;<span style="color:var(--gray);font-size:11px;">— You wash yourself quickly.</span><br>
+              Er &nbsp;<strong style="color:var(--gold)">wäscht</strong> &nbsp;<strong style="color:var(--refl)">sich</strong> &nbsp;jeden Tag. &nbsp;<span style="color:var(--gray);font-size:11px;">— He washes himself every day.</span>
+            </div>
+          </div>
+
+          <div class="danger-box">
+            <strong style="color:var(--red);">Never drop the reflexive pronoun:</strong><br>
+            ✗ Ich wasche morgens. (incomplete — wasche what? whom?)<br>
+            ✗ Ich fühle gut. (wrong — fühlen always takes mich/sich)<br>
+            ✓ Ich wasche <strong style="color:var(--refl)">mich</strong> morgens.<br>
+            ✓ Ich fühle <strong style="color:var(--refl)">mich</strong> gut.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">Module 18 · Lesson 1 · Quiz</div><h2 class="lesson-h">Reflexive Verbs — First Check</h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 2: All Reflexive Pronouns ── -->
+    <div id="lesson-1" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">Module 18 · Lesson 2 of 6</div>
+          <h2 class="lesson-h">All <span style="color:var(--refl)">reflexive pronouns</span></h2>
+          <p class="body-text">German reflexive pronouns come in two cases — <strong style="color:var(--acc)">accusative</strong> (most common, for the whole action) and <strong style="color:var(--dat)">dative</strong> (used when there is a separate accusative object, like a body part). Most of the time, you use the accusative form.</p>
+
+          <div class="pron-table-wrap">
+            <div class="conj-title" style="color:var(--refl);">ALL REFLEXIVE PRONOUNS — FULL TABLE</div>
+            <table class="pron-table">
+              <thead>
+                <tr>
+                  <th>SUBJECT</th>
+                  <th style="color:var(--acc);">ACCUSATIVE</th>
+                  <th style="color:var(--dat);">DATIVE</th>
+                  <th>NOTES</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td class="pt-sub">ich</td><td class="pt-acc">mich</td><td class="pt-dat">mir</td><td class="pt-note">unique forms — must memorise</td></tr>
+                <tr><td class="pt-sub">du</td><td class="pt-acc">dich</td><td class="pt-dat">dir</td><td class="pt-note">unique forms — must memorise</td></tr>
+                <tr><td class="pt-sub">er / sie / es</td><td class="pt-acc">sich</td><td class="pt-dat">sich</td><td class="pt-same">✦ same form both cases</td></tr>
+                <tr><td class="pt-sub">wir</td><td class="pt-acc">uns</td><td class="pt-dat">uns</td><td class="pt-same">✦ same form both cases</td></tr>
+                <tr><td class="pt-sub">ihr</td><td class="pt-acc">euch</td><td class="pt-dat">euch</td><td class="pt-same">✦ same form both cases</td></tr>
+                <tr><td class="pt-sub">sie / Sie</td><td class="pt-acc">sich</td><td class="pt-dat">sich</td><td class="pt-same">✦ same form both cases</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="info-box">
+            <strong style="color:var(--gold)">The shortcut:</strong> Only <strong style="color:var(--acc)">ich</strong> and <strong style="color:var(--acc)">du</strong> have different accusative and dative reflexive forms. All other persons use the same word for both cases:<br><br>
+            er/sie/es → always <strong style="color:var(--refl)">sich</strong><br>
+            wir → always <strong style="color:var(--refl)">uns</strong><br>
+            ihr → always <strong style="color:var(--refl)">euch</strong><br>
+            sie/Sie → always <strong style="color:var(--refl)">sich</strong>
+          </div>
+
+          <div class="sec-label">sich waschen — conjugated in full</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--refl);">SICH WASCHEN — TO WASH ONESELF</div>
+            <div style="font-family:'DM Mono',monospace;font-size:13px;line-height:2.6;color:var(--cream);">
+              ich &nbsp;<span style="color:var(--gold);">wasche</span> &nbsp;<span class="rh">mich</span><br>
+              du &nbsp;<span style="color:var(--gold);">wäschst</span> &nbsp;<span class="rh">dich</span><br>
+              er/sie/es &nbsp;<span style="color:var(--gold);">wäscht</span> &nbsp;<span class="rh">sich</span><br>
+              wir &nbsp;<span style="color:var(--gold);">waschen</span> &nbsp;<span class="rh">uns</span><br>
+              ihr &nbsp;<span style="color:var(--gold);">wascht</span> &nbsp;<span class="rh">euch</span><br>
+              sie/Sie &nbsp;<span style="color:var(--gold);">waschen</span> &nbsp;<span class="rh">sich</span>
+            </div>
+          </div>
+
+          <div class="sec-label">sich fühlen — conjugated in full</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--refl);">SICH FÜHLEN — TO FEEL</div>
+            <div style="font-family:'DM Mono',monospace;font-size:13px;line-height:2.6;color:var(--cream);">
+              ich &nbsp;<span style="color:var(--gold);">fühle</span> &nbsp;<span class="rh">mich</span> &nbsp;gut<br>
+              du &nbsp;<span style="color:var(--gold);">fühlst</span> &nbsp;<span class="rh">dich</span> &nbsp;müde<br>
+              er/sie/es &nbsp;<span style="color:var(--gold);">fühlt</span> &nbsp;<span class="rh">sich</span> &nbsp;krank<br>
+              wir &nbsp;<span style="color:var(--gold);">fühlen</span> &nbsp;<span class="rh">uns</span> &nbsp;wohl<br>
+              ihr &nbsp;<span style="color:var(--gold);">fühlt</span> &nbsp;<span class="rh">euch</span> &nbsp;besser<br>
+              sie/Sie &nbsp;<span style="color:var(--gold);">fühlen</span> &nbsp;<span class="rh">sich</span> &nbsp;glücklich
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue);">Memory tip:</strong> Think of the reflexive pronoun as glued to the verb. You never say <em>fühlen</em> without the reflexive. Whenever you see <em>sich</em> in front of a verb in the dictionary, that verb always needs its reflexive pronoun when conjugated.</div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">Module 18 · Lesson 2 · Quiz</div><h2 class="lesson-h">Reflexive Pronouns — Check</h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 3: 8 Essential A2 Reflexive Verbs ── -->
+    <div id="lesson-2" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">Module 18 · Lesson 3 of 6</div>
+          <h2 class="lesson-h">8 essential <span style="color:var(--refl)">A2 reflexive verbs</span></h2>
+          <p class="body-text">These eight reflexive verbs appear frequently in Goethe A2 exam tasks — in Lesen texts, Hören recordings, and Schreiben prompts. Master all eight and you will recognise them immediately.</p>
+
+          <div class="rv-grid">
+            <div class="rv-card">
+              <div class="rv-verb">sich waschen</div>
+              <div class="rv-eng">to wash oneself</div>
+              <div class="rv-ex">Ich wasche <span class="rv-refl">mich</span> morgens.<br><span style="color:var(--gray);">I wash myself in the morning.</span></div>
+            </div>
+            <div class="rv-card">
+              <div class="rv-verb">sich anziehen</div>
+              <div class="rv-eng">to get dressed</div>
+              <div class="rv-ex">Kofi zieht <span class="rv-refl">sich</span> an.<br><span style="color:var(--gray);">Kofi gets dressed.</span></div>
+            </div>
+            <div class="rv-card">
+              <div class="rv-verb">sich fühlen</div>
+              <div class="rv-eng">to feel</div>
+              <div class="rv-ex">Ich fühle <span class="rv-refl">mich</span> gut.<br><span style="color:var(--gray);">I feel good.</span></div>
+            </div>
+            <div class="rv-card">
+              <div class="rv-verb">sich freuen</div>
+              <div class="rv-eng">to be happy / look forward to</div>
+              <div class="rv-ex">Amina freut <span class="rv-refl">sich</span>.<br><span style="color:var(--gray);">Amina is happy.</span></div>
+            </div>
+            <div class="rv-card">
+              <div class="rv-verb">sich interessieren für</div>
+              <div class="rv-eng">to be interested in</div>
+              <div class="rv-ex">Ich interessiere <span class="rv-refl">mich</span> für Musik.<br><span style="color:var(--gray);">I am interested in music.</span></div>
+            </div>
+            <div class="rv-card">
+              <div class="rv-verb">sich vorstellen</div>
+              <div class="rv-eng">to introduce oneself</div>
+              <div class="rv-ex">Ich stelle <span class="rv-refl">mich</span> vor.<br><span style="color:var(--gray);">I introduce myself.</span></div>
+            </div>
+            <div class="rv-card">
+              <div class="rv-verb">sich erinnern an</div>
+              <div class="rv-eng">to remember</div>
+              <div class="rv-ex">Fatima erinnert <span class="rv-refl">sich</span> daran.<br><span style="color:var(--gray);">Fatima remembers it.</span></div>
+            </div>
+            <div class="rv-card">
+              <div class="rv-verb">sich setzen</div>
+              <div class="rv-eng">to sit down</div>
+              <div class="rv-ex">Bitte setzen Sie <span class="rv-refl">sich</span>!<br><span style="color:var(--gray);">Please sit down!</span></div>
+            </div>
+          </div>
+
+          <div class="sec-label">Verbs with fixed prepositions</div>
+          <div class="info-box">
+            <strong style="color:var(--gold)">Three of these verbs carry a fixed preposition:</strong><br><br>
+            sich interessieren <strong style="color:var(--refl)">für</strong> + accusative &nbsp;&nbsp;— Ich interessiere mich für Fußball.<br>
+            sich freuen <strong style="color:var(--refl)">auf</strong> + accusative &nbsp;&nbsp;&nbsp;— Ich freue mich auf den Urlaub. (looking forward to)<br>
+            sich freuen <strong style="color:var(--refl)">über</strong> + accusative &nbsp;— Ich freue mich über das Geschenk. (happy about)<br>
+            sich erinnern <strong style="color:var(--refl)">an</strong> + accusative &nbsp;— Ich erinnere mich an Ghana.
+          </div>
+
+          <div class="sec-label">sich anziehen — separable verb + reflexive</div>
+          <p class="body-text">Notice that <em>sich anziehen</em> is also a separable verb — <em>an-</em> separates to the end of the clause.</p>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--refl);">SEPARABLE + REFL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich ziehe <span class="rh">mich</span> schnell <strong>an</strong>.</div>
+                <div class="ex-en">I get dressed quickly.</div>
+                <div class="ex-note">an- separates to the end. Reflexive mich stays right after the verb ziehe.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich ziehe mich schnell an.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--refl);">SEPARABLE + REFL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame zieht <span class="rh">sich</span> warm <strong>an</strong>.</div>
+                <div class="ex-en">Kwame dresses warmly.</div>
+                <div class="ex-note">sich directly after conjugated verb zieht. an at the very end.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame zieht sich warm an.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">Module 18 · Lesson 3 · Quiz</div><h2 class="lesson-h">8 Reflexive Verbs — Check</h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 4: Accusative vs Dative Reflexive ── -->
+    <div id="lesson-3" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">Module 18 · Lesson 4 of 6</div>
+          <h2 class="lesson-h"><span style="color:var(--acc)">Accusative</span> vs <span style="color:var(--dat)">dative</span> reflexive</h2>
+          <p class="body-text">Most reflexive verbs use the <strong style="color:var(--acc)">accusative</strong> form — the pronoun refers to the whole action being done to yourself. However, when the sentence already has another accusative object (usually a specific body part), the reflexive pronoun switches to the <strong style="color:var(--dat)">dative</strong>.</p>
+
+          <div class="acc-dat-grid">
+            <div class="ad-box ad-acc">
+              <div class="ad-label">ACCUSATIVE — mich / dich / sich</div>
+              <div class="ad-rule">No other accusative object in the sentence. The reflexive IS the object.</div>
+              <div class="ad-ex">Ich wasche <strong>mich</strong>.<br>Du wäschst <strong>dich</strong>.<br>Er wäscht <strong>sich</strong>.</div>
+            </div>
+            <div class="ad-box ad-dat">
+              <div class="ad-label">DATIVE — mir / dir / sich</div>
+              <div class="ad-rule">Another accusative object is present (body part). Reflexive becomes dative.</div>
+              <div class="ad-ex">Ich wasche <strong>mir</strong> die Hände.<br>Du wäschst <strong>dir</strong> das Gesicht.<br>Er wäscht <strong>sich</strong> die Haare.</div>
+            </div>
+          </div>
+
+          <div class="info-box">
+            <strong style="color:var(--gold)">The rule in one sentence:</strong><br><br>
+            If a body part (or other noun) is the accusative object, the reflexive pronoun becomes dative.<br><br>
+            Ich wasche <strong style="color:var(--acc)">mich</strong>. &nbsp;→&nbsp; <em>mich</em> is accusative (the whole object)<br>
+            Ich wasche <strong style="color:var(--dat)">mir</strong> die Hände. &nbsp;→&nbsp; <em>die Hände</em> is accusative; <em>mir</em> is now dative
+          </div>
+
+          <div class="sec-label">Accusative reflexive — full action</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--acc);">ACCUSATIVE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina kämmt <span style="color:var(--acc);font-weight:700;">sich</span>.</div>
+                <div class="ex-en">Amina combs her hair (herself).</div>
+                <div class="ex-note">sich = accusative reflexive. No specific body part mentioned.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina kämmt sich.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--acc);">ACCUSATIVE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich rasiere <span style="color:var(--acc);font-weight:700;">mich</span>.</div>
+                <div class="ex-en">I shave (myself).</div>
+                <div class="ex-note">mich = accusative reflexive for ich.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich rasiere mich.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Dative reflexive — with body part</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--dat);">DATIVE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich wasche <span style="color:var(--dat);font-weight:700;">mir</span> die Hände.</div>
+                <div class="ex-en">I wash my hands.</div>
+                <div class="ex-note">die Hände is accusative → reflexive becomes dative mir. Note: no possessive pronoun — German uses the dative reflexive instead of "meine".</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich wasche mir die Hände.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--dat);">DATIVE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi kämmt <span style="color:var(--dat);font-weight:700;">sich</span> die Haare.</div>
+                <div class="ex-en">Kofi combs his hair.</div>
+                <div class="ex-note">die Haare is accusative → reflexive sich is dative (er/sie/es: dative sich = same form).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi kämmt sich die Haare.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--dat);">DATIVE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima putzt <span style="color:var(--dat);font-weight:700;">sich</span> die Zähne.</div>
+                <div class="ex-en">Fatima brushes her teeth.</div>
+                <div class="ex-note">die Zähne is accusative → reflexive sich is dative. Standard morning routine sentence.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima putzt sich die Zähne.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue);">Exam note:</strong> For wir/ihr/er/sie — the dative reflexive looks identical to the accusative (sich, uns, euch). Only ich and du show the difference: mich/mir and dich/dir. Exam tasks often test this with ich/du sentences.</div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">Module 18 · Lesson 4 · Quiz</div><h2 class="lesson-h">Accusative vs Dative — Check</h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 5: sich vorstellen — Exam Superpower ── -->
+    <div id="lesson-4" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">Module 18 · Lesson 5 of 6</div>
+          <h2 class="lesson-h">sich vorstellen — your <span style="color:var(--gold)">exam superpower</span></h2>
+          <p class="body-text">The Goethe A2 Sprechen exam (Part 1) requires you to introduce yourself. Every A2 candidate must do this. The verb <strong style="color:var(--refl)">sich vorstellen</strong> is the first thing you say. If you use it correctly — with the reflexive pronoun — you immediately signal to the examiner that you know reflexive verbs.</p>
+
+          <div class="success-box">
+            <strong style="color:var(--green);">Exam tip — Sprechen Teil 1:</strong><br><br>
+            The examiner will say: <em>"Bitte stellen Sie sich vor."</em> (Please introduce yourself.)<br><br>
+            Your answer must begin with a reflexive verb:<br>
+            <strong style="color:var(--refl);">Ich stelle mich vor.</strong> Ich heiße Kwame Mensah. Ich komme aus Ghana, aus Accra.
+          </div>
+
+          <div class="sec-label">A complete self-introduction script</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--gold);">SPRECHEN TEIL 1 — MUSTER (KWAME)</div>
+            <div style="font-family:'DM Mono',monospace;font-size:13px;line-height:2.5;color:var(--cream);">
+              Ich stelle <span class="rh">mich</span> vor.<br>
+              <span style="color:var(--gray);font-size:11px;">I introduce myself.</span><br>
+              Ich heiße Kwame Mensah.<br>
+              <span style="color:var(--gray);font-size:11px;">My name is Kwame Mensah.</span><br>
+              Ich komme aus Ghana, aus Accra.<br>
+              <span style="color:var(--gray);font-size:11px;">I come from Ghana, from Accra.</span><br>
+              Ich bin 24 Jahre alt.<br>
+              <span style="color:var(--gray);font-size:11px;">I am 24 years old.</span><br>
+              Ich interessiere <span class="rh">mich</span> für Musik und Sport.<br>
+              <span style="color:var(--gray);font-size:11px;">I am interested in music and sport.</span><br>
+              Ich freue <span class="rh">mich</span> auf die Prüfung.<br>
+              <span style="color:var(--gray);font-size:11px;">I am looking forward to the exam.</span>
+            </div>
+          </div>
+
+          <div class="sec-label">A complete self-introduction — Amina's version</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--gold);">SPRECHEN TEIL 1 — MUSTER (AMINA)</div>
+            <div style="font-family:'DM Mono',monospace;font-size:13px;line-height:2.5;color:var(--cream);">
+              Ich stelle <span class="rh">mich</span> vor.<br>
+              Ich heiße Amina Diallo.<br>
+              Ich komme aus Senegal, aus Dakar.<br>
+              Ich bin Lehrerin und unterrichte Englisch.<br>
+              Ich interessiere <span class="rh">mich</span> für deutsche Kultur.<br>
+              Ich erinnere <span class="rh">mich</span> gut an meine erste Deutschstunde.
+            </div>
+          </div>
+
+          <div class="sec-label">Common expressions with sich freuen</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--green);">FREUEN AUF</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich freue <span class="rh">mich</span> auf den Urlaub.</div>
+                <div class="ex-en">I am looking forward to the holiday.</div>
+                <div class="ex-note">sich freuen auf = to look forward to (future event). + accusative.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich freue mich auf den Urlaub.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--green);">FREUEN ÜBER</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima freut <span class="rh">sich</span> über die gute Note.</div>
+                <div class="ex-en">Fatima is happy about the good grade.</div>
+                <div class="ex-note">sich freuen über = to be happy about (something that already happened). + accusative.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima freut sich über die gute Note.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="info-box">
+            <strong style="color:var(--gold);">sich vorstellen — two meanings!</strong><br><br>
+            <strong style="color:var(--refl)">Ich stelle mich vor.</strong> &nbsp;→&nbsp; I introduce myself. (reflexive, mich is reflexive pronoun)<br><br>
+            <strong style="color:var(--refl)">Ich stelle mir vor</strong>, dass… &nbsp;→&nbsp; I imagine that… (mir is dative reflexive, different meaning)<br><br>
+            For the exam, you only need the first meaning. Ich stelle mich vor.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">Module 18 · Lesson 5 · Quiz</div><h2 class="lesson-h">sich vorstellen — Check</h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 6: African Context + Mistakes ── -->
+    <div id="lesson-5" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">Module 18 · Lesson 6 of 6</div>
+          <h2 class="lesson-h"><span style="color:var(--gold)">Kwame, Amina, Kofi, Fatima</span> — daily routine</h2>
+          <p class="body-text">Morning routines are a favourite Goethe A2 topic — both in reading texts and in writing tasks. Here is a complete African daily routine using all the reflexive verbs you have learned.</p>
+
+          <div class="sec-label">Kwame's morning in Lagos</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--refl);">ROUTINE · 1</div>
+              <div style="flex:1;">
+                <div class="ex-de">Um 6 Uhr wäscht <span class="rh">sich</span> Kwame.</div>
+                <div class="ex-en">At 6 o'clock Kwame washes himself.</div>
+                <div class="ex-note">sich waschen. Third person → sich (accusative).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Um 6 Uhr wäscht sich Kwame.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--refl);">ROUTINE · 2</div>
+              <div style="flex:1;">
+                <div class="ex-de">Dann putzt er <span class="rh">sich</span> die Zähne.</div>
+                <div class="ex-en">Then he brushes his teeth.</div>
+                <div class="ex-note">die Zähne = accusative object → dative sich. But sich looks the same for er either way.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Dann putzt er sich die Zähne.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--refl);">ROUTINE · 3</div>
+              <div style="flex:1;">
+                <div class="ex-de">Danach zieht er <span class="rh">sich</span> an.</div>
+                <div class="ex-en">After that he gets dressed.</div>
+                <div class="ex-note">sich anziehen is separable — an goes to the end.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Danach zieht er sich an.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--refl);">ROUTINE · 4</div>
+              <div style="flex:1;">
+                <div class="ex-de">Er fühlt <span class="rh">sich</span> bereit für die Arbeit.</div>
+                <div class="ex-en">He feels ready for work.</div>
+                <div class="ex-note">sich fühlen. bereit = ready. Common in Schreiben tasks.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Er fühlt sich bereit für die Arbeit.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">African learner mistakes — wrong and right</div>
+          <p class="body-text">English speakers from Ghana, Nigeria, Senegal and across Africa share the same reflexive verb errors. Here are the four most important ones.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Ich fühle gut.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Ich fühle mich gut.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">sich fühlen is always reflexive. The pronoun mich cannot be dropped — even though English "I feel good" has no reflexive pronoun.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Ich erinnere das.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Ich erinnere mich daran.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">sich erinnern requires both the reflexive pronoun and the preposition an. "Ich erinnere das" copies the English "I remember that" directly — wrong in German.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Ich interessiere Musik.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Ich interessiere mich für Musik.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">sich interessieren requires the reflexive pronoun AND the preposition für. Never omit either one.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Ich stelle vor.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Ich stelle mich vor.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">sich vorstellen always needs its reflexive pronoun. Without mich, the sentence sounds incomplete. The examiner expects to hear mich immediately after stelle.</p>
+
+          <div class="success-box">
+            <strong style="color:var(--green);">Exam summary — three things to remember:</strong><br><br>
+            1. Reflexive pronouns are <strong>not optional</strong> — always include mich, dich, sich, uns, euch.<br>
+            2. Use <strong style="color:var(--acc)">accusative</strong> (mich, dich, sich) normally. Switch to <strong style="color:var(--dat)">dative</strong> (mir, dir, sich) when a body part is the accusative object.<br>
+            3. <strong style="color:var(--refl)">Sich vorstellen</strong> is your Sprechen Teil 1 opener — master it. Ich stelle mich vor. Ich heiße…
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">Module 18 · Lesson 6 · Quiz</div><h2 class="lesson-h">African Context — Final Check</h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Previous</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var TOTAL=6, currentLesson=0, xp=0;
+var synth=window.speechSynthesis, voices=[], deVoice=null;
+function loadVoices(){ voices=synth.getVoices(); deVoice=voices.find(function(v){return v.lang==='de-DE';})||voices.find(function(v){return v.lang.startsWith('de');})||null; }
+if(synth.onvoiceschanged!==undefined){synth.onvoiceschanged=loadVoices;}
+function speakDE(text){ if(!synth)return; synth.cancel(); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; synth.speak(u); }
+function speakSentence(btn,text){ if(!synth)return; synth.cancel(); document.querySelectorAll('.speak-btn.speaking').forEach(function(b){b.classList.remove('speaking');}); btn.classList.add('speaking'); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; u.onend=function(){btn.classList.remove('speaking');}; synth.speak(u); }
+
+var QD={
+  0:[
+    {q:'Which sentence uses the reflexive verb correctly?',
+     hint:'A reflexive verb needs its reflexive pronoun. Check which sentence has the pronoun in the right place.',
+     opts:['Er sich wäscht täglich.','Er wäscht sich täglich.','Er wäscht täglich sich.','Sich er wäscht täglich.'],
+     ans:1,
+     exp:'"Er wäscht sich täglich." — The reflexive pronoun comes immediately after the conjugated verb. Option A puts sich before the verb — wrong word order. Option C puts sich at the end — wrong. Option D inverts the subject and pronoun — not possible. The verb is always position 2 in a main clause, and the reflexive pronoun follows it directly.',
+     rule:'Reflexive pronoun position: subject + conjugated verb + reflexive pronoun. Er wäscht sich. Ich wasche mich.'}
+  ],
+  1:[
+    {q:'Which reflexive pronoun goes with "du"?',
+     hint:'du is the familiar singular "you". Remember the two forms that are unique: ich → mich, and du → ?',
+     opts:['sich','mich','dich','euch'],
+     ans:2,
+     exp:'"dich" — du uses dich (accusative) and dir (dative) as its reflexive pronouns. sich is for er/sie/es and sie/Sie. mich is for ich. euch is for ihr (plural you). The forms for ich and du are the only ones that are unique — all other persons share sich, uns, or euch.',
+     rule:'Reflexive pronouns: ich → mich/mir, du → dich/dir, er/sie/es → sich, wir → uns, ihr → euch, sie/Sie → sich.'}
+  ],
+  2:[
+    {q:'What does "sich freuen" mean?',
+     hint:'Context: Amina bekommt gute Noten. Amina freut sich. Think about her emotion.',
+     opts:['to wash oneself','to sit down','to be happy / look forward to','to introduce oneself'],
+     ans:2,
+     exp:'"to be happy / look forward to" — sich freuen has two preposition variants: sich freuen über = to be happy about something (past/present event), and sich freuen auf = to look forward to something (future event). In both cases it expresses positive emotion. sich waschen = to wash oneself. sich setzen = to sit down. sich vorstellen = to introduce oneself.',
+     rule:'sich freuen über + Akk = to be happy about. sich freuen auf + Akk = to look forward to. Both always need the reflexive pronoun.'}
+  ],
+  3:[
+    {q:'Ich wasche ___ die Hände. Which reflexive pronoun correctly fills the blank?',
+     hint:'There is a body part (die Hände) as the accusative object. That changes the case of the reflexive pronoun for ich.',
+     opts:['mich','mir','sich','dich'],
+     ans:1,
+     exp:'"mir" — When there is already an accusative object in the sentence (die Hände = accusative), the reflexive pronoun switches from accusative to dative. For ich: accusative = mich, dative = mir. So: Ich wasche mir die Hände. If there were no body part (Ich wasche mich), then mich (accusative) would be correct. sich is for er/sie/es/sie/Sie. dich is for du.',
+     rule:'Dative reflexive rule: wenn ein anderes Akkusativobjekt (body part) vorhanden ist → Reflexivpronomen wird Dativ. ich: mich → mir. Ich wasche mir die Hände.'}
+  ],
+  4:[
+    {q:'Kwame wants to introduce himself to the class. Which sentence is correct?',
+     hint:'sich vorstellen is a separable verb. The separable prefix vor- goes to the end. The reflexive pronoun comes right after the verb.',
+     opts:['Kwame vorstellt sich.','Kwame stellt sich vor.','Kwame sich stellt vor.','Kwame stellt vor sich.'],
+     ans:1,
+     exp:'"Kwame stellt sich vor." — sich vorstellen is separable: vor- separates. In a main clause: conjugated verb (stellt) in position 2, reflexive pronoun (sich) directly after, separable prefix (vor) at the end. Option A conjugates incorrectly (vorstellt is not a valid form — the prefix must separate). Option C puts sich before the verb — wrong. Option D puts sich after vor — wrong.',
+     rule:'Separable reflexive verb: Kwame stellt sich vor. Verb in position 2, reflexive pronoun after verb, prefix at end.'}
+  ],
+  5:[
+    {q:'Which sentence is completely correct?',
+     hint:'Check two things: (1) Is the reflexive pronoun present? (2) Is it the right form — mich (accusative) or mir (dative)?',
+     opts:['Ich fühle gut.','Ich fühle mir gut.','Ich fühle mich gut.','Mich ich fühle gut.'],
+     ans:2,
+     exp:'"Ich fühle mich gut." — sich fühlen always requires its reflexive pronoun. For ich, the accusative reflexive pronoun is mich. There is no other accusative object in the sentence, so we use accusative mich (not dative mir). Option A drops the pronoun entirely — the most common African learner error. Option B uses mir (dative) — but without a body part as accusative object, we use accusative mich. Option D inverts subject and pronoun — wrong word order.',
+     rule:'Ich fühle mich gut. — sich fühlen always needs its reflexive pronoun. No other accusative object → use accusative: mich (not mir).'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">QUESTION '+(s.cur+1)+' OF '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint">'+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Next Question →':'See Results →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Correct!':'✗ Not quite'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent=q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' correct</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfect.':pct>=60?'Good work.':'Review and try again.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.12);border:1px solid var(--gold);border-radius:50px;padding:9px 22px;color:var(--gold);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Complete Module 18 →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Next Lesson →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">🔄</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Module 18 Complete!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">Reflexive verbs mastered. You can now use sich waschen, sich fühlen, sich vorstellen and all eight essential A2 reflexive verbs correctly. You know the accusative/dative reflexive rule, and you will never drop the reflexive pronoun again. Your Sprechen Teil 1 self-introduction is exam-ready.</p><div class="xp-badge">⚡ '+xp+' XP Earned</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">A2 Module 6 of 6 complete. A2 grammar done! Next: Module 19 — Perfekt Tense (haben &amp; sein).</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Back to Overview</button></div>'; }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function resumeLesson(){ goLesson(currentLesson); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+<script src="./ai-tutor.js" data-module="18"></script>
+</body>
+</html>
