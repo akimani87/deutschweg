@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Module 19: Two-way Prepositions</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --akk:#3498db; --dat:#e67e22; --prep:#9b59b6; --contr:#27ae60;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:rgba(10,10,10,0.96); backdrop-filter:blur(20px); border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:12px 0 20px; z-index:100; }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:8px 16px; border-radius:12px; transition:all 0.2s; border:none; background:none; color:var(--gray); }
+  .nav-item:hover, .nav-item.active { color:var(--gold); }
+  .nav-icon { font-size:20px; }
+  .nav-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; font-family:'DM Mono',monospace; }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--gold); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--gold); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--gold); color:var(--black); width:100%; }
+  .btn-primary:hover { background:var(--gold-light); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(201,168,76,0.2); }
+  .speak-btn.speaking { background:var(--gold); color:var(--black); }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-en { font-size:12px; color:var(--gray); margin-bottom:6px; }
+  .ex-note { font-size:12px; color:var(--cream); line-height:1.6; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Sans',sans-serif; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--gold); background:rgba(201,168,76,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(201,168,76,0.1); border-radius:8px; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(201,168,76,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(201,168,76,0.08); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(201,168,76,0.12); border:1px solid var(--gold); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--gold); font-size:18px; margin:18px 0; }
+
+  /* WRONG/RIGHT */
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.2; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+
+  /* CONJ TABLE */
+  .conj-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; }
+  .conj-title { font-size:10px; letter-spacing:2.5px; font-family:'DM Mono',monospace; margin-bottom:12px; }
+
+  /* 9 PREPOSITION CHIPS */
+  .prep-grid { display:flex; flex-wrap:wrap; gap:10px; margin:14px 0; }
+  .prep-chip { font-family:'DM Mono',monospace; font-size:15px; font-weight:700; padding:10px 18px; border-radius:10px; background:rgba(155,89,182,0.1); border:1px solid rgba(155,89,182,0.3); color:var(--prep); }
+
+  /* WO? / WOHIN? COMPARISON CARDS */
+  .ww-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0; }
+  .ww-box { border-radius:14px; padding:18px; }
+  .ww-akk { background:rgba(52,152,219,0.07); border:1px solid rgba(52,152,219,0.28); }
+  .ww-dat { background:rgba(230,126,34,0.07); border:1px solid rgba(230,126,34,0.28); }
+  .ww-q { font-family:'Playfair Display',serif; font-size:26px; font-weight:900; margin-bottom:4px; }
+  .ww-akk .ww-q { color:var(--akk); }
+  .ww-dat .ww-q { color:var(--dat); }
+  .ww-sub { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; margin-bottom:10px; }
+  .ww-akk .ww-sub { color:var(--akk); }
+  .ww-dat .ww-sub { color:var(--dat); }
+  .ww-rule { font-size:12px; color:var(--cream); line-height:1.65; margin-bottom:8px; }
+  .ww-case { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; padding:6px 12px; border-radius:8px; display:inline-block; margin-bottom:8px; }
+  .ww-akk .ww-case { background:rgba(52,152,219,0.15); color:var(--akk); }
+  .ww-dat .ww-case { background:rgba(230,126,34,0.15); color:var(--dat); }
+  .ww-ex { font-family:'DM Mono',monospace; font-size:11px; line-height:1.85; }
+  .ww-akk .ww-ex { color:rgba(52,152,219,0.75); }
+  .ww-dat .ww-ex { color:rgba(230,126,34,0.75); }
+
+  /* ARTICLE CHANGE TABLE */
+  .art-table-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+  .art-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .art-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:9px 12px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.07); color:var(--gray); }
+  .art-table td { padding:9px 12px; border-bottom:1px solid rgba(255,255,255,0.04); font-family:'DM Mono',monospace; font-size:13px; }
+  .art-table tr:last-child td { border-bottom:none; }
+  .at-gender { color:var(--cream); }
+  .at-nom { color:var(--gray); }
+  .at-akk { color:var(--akk); font-weight:700; }
+  .at-dat { color:var(--dat); font-weight:700; }
+  .at-change { color:var(--gold); font-size:11px; }
+
+  /* CONTRACTIONS */
+  .contr-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0; }
+  .contr-card { background:var(--card2-bg); border:1px solid rgba(39,174,96,0.2); border-radius:12px; padding:14px; text-align:center; }
+  .contr-formula { font-family:'DM Mono',monospace; font-size:12px; color:var(--gray); margin-bottom:6px; }
+  .contr-result { font-family:'Playfair Display',serif; font-size:24px; font-weight:900; color:var(--contr); margin-bottom:4px; }
+  .contr-ex { font-family:'DM Mono',monospace; font-size:11px; color:var(--cream); line-height:1.75; }
+
+  /* PREP PAIR — side-by-side akkusativ/dativ for each preposition */
+  .prep-pair-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:10px 0; }
+  .pp-prep-title { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; color:var(--prep); margin-bottom:4px; }
+  .pp-prep-eng { font-size:11px; color:var(--gray); font-family:'DM Mono',monospace; letter-spacing:1.5px; margin-bottom:12px; }
+  .pp-rows { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .pp-akk-row { background:rgba(52,152,219,0.06); border:1px solid rgba(52,152,219,0.18); border-radius:8px; padding:10px 12px; }
+  .pp-dat-row { background:rgba(230,126,34,0.06); border:1px solid rgba(230,126,34,0.18); border-radius:8px; padding:10px 12px; }
+  .pp-case-tag { font-size:9px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:6px; }
+  .pp-akk-row .pp-case-tag { color:var(--akk); }
+  .pp-dat-row .pp-case-tag { color:var(--dat); }
+  .pp-sent { font-family:'DM Mono',monospace; font-size:12px; color:var(--cream); line-height:1.75; }
+  .pp-eng { font-size:11px; color:var(--gray); margin-top:3px; }
+
+  /* HIGHLIGHT SPANS */
+  .ah { color:var(--akk); font-weight:700; }   /* accusative highlight */
+  .dh { color:var(--dat); font-weight:700; }   /* dative highlight */
+  .ph { color:var(--prep); font-weight:700; }  /* preposition highlight */
+  .ch { color:var(--contr); font-weight:700; } /* contraction highlight */
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .lesson-h{font-size:22px;} .wr-grid{grid-template-columns:1fr;} .ww-grid{grid-template-columns:1fr;} .contr-grid{grid-template-columns:1fr 1fr;} .pp-rows{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">MODULE 19 · A2</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">A2 · Prepositions</div>
+    <h1 class="lesson-h" style="font-size:36px;">Two-way<br><span style="color:var(--gold)">Prepositions</span></h1>
+    <p class="body-text">Nine German prepositions — an, auf, hinter, in, neben, über, unter, vor, zwischen — can take either <strong style="color:var(--akk)">Akkusativ</strong> or <strong style="color:var(--dat)">Dativ</strong> depending on whether the sentence expresses <strong style="color:var(--akk)">movement toward</strong> or <strong style="color:var(--dat)">location</strong>. Getting this right separates A2 passers from those who lose marks on every single sentence involving place.</p>
+    <div class="info-box"><strong style="color:var(--gold)">The memory trick:</strong> Ask yourself one question before choosing the case:<br><br>
+    <strong style="color:var(--akk)">Wohin?</strong> (Where to? — something is moving) → <strong style="color:var(--akk)">Akkusativ</strong> &nbsp;·&nbsp; <em>A for Action</em><br>
+    <strong style="color:var(--dat)">Wo?</strong> (Where? — something is staying) → <strong style="color:var(--dat)">Dativ</strong> &nbsp;·&nbsp; <em>D for Dwelling</em></div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">📍</div><div><div class="lc-title">Lesson 1 — The 9 Prepositions &amp; The Golden Rule</div><div class="lc-desc">an, auf, hinter, in, neben, über, unter, vor, zwischen. Movement = Akk, Location = Dat.</div></div><div class="lc-tag" style="color:var(--gold);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">❓</div><div><div class="lc-title">Lesson 2 — Wo? vs Wohin? — The Test</div><div class="lc-desc">Ask Wo? or Wohin? before every sentence. That question decides the case.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">🔗</div><div><div class="lc-title">Lesson 3 — Article Changes &amp; Contractions</div><div class="lc-desc">in + dem = im · in + das = ins · an + dem = am · an + das = ans. When to contract.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">🗂️</div><div><div class="lc-title">Lesson 4 — All 9 Prepositions with Examples</div><div class="lc-desc">Every preposition paired with both Akkusativ and Dativ examples.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">⭐</div><div><div class="lc-title">Lesson 5 — Most Tested A2 Combinations</div><div class="lc-desc">im Büro, ins Kino, am Markt, auf dem Tisch, in die Stadt. The phrases examiners love.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lesson 6 — Kwame, Amina, Kofi, Fatima</div><div class="lc-desc">Market, office, school, home. African daily life situations. Mistakes &amp; exam tips.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Begin Lesson 1 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lessons</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LESSON 1: The 9 Prepositions & The Golden Rule ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">Module 19 · Lesson 1 of 6</div>
+          <h2 class="lesson-h">The 9 <span style="color:var(--prep)">two-way prepositions</span></h2>
+          <p class="body-text">Most German prepositions are fixed — they always take the same case. But these nine prepositions take either <strong style="color:var(--akk)">Akkusativ</strong> or <strong style="color:var(--dat)">Dativ</strong> depending on the meaning of the sentence. This is why they are called <em>Wechselpräpositionen</em> — switching prepositions.</p>
+
+          <div class="prep-grid">
+            <div class="prep-chip">an</div>
+            <div class="prep-chip">auf</div>
+            <div class="prep-chip">hinter</div>
+            <div class="prep-chip">in</div>
+            <div class="prep-chip">neben</div>
+            <div class="prep-chip">über</div>
+            <div class="prep-chip">unter</div>
+            <div class="prep-chip">vor</div>
+            <div class="prep-chip">zwischen</div>
+          </div>
+
+          <div class="info-box">
+            <strong style="color:var(--gold);">Memorise the 9 with this phrase:</strong><br><br>
+            <span style="font-family:'DM Mono',monospace;font-size:14px;">an · auf · hinter · in · neben · über · unter · vor · zwischen</span><br><br>
+            All nine describe <strong>position in space</strong>. They tell you where something is or where something is going.
+          </div>
+
+          <div class="sec-label">The golden rule — one question, one answer</div>
+          <div class="ww-grid">
+            <div class="ww-box ww-akk">
+              <div class="ww-q">Wohin?</div>
+              <div class="ww-sub">WHERE TO? · MOVEMENT</div>
+              <div class="ww-case">AKKUSATIV</div>
+              <div class="ww-rule">Something is <strong>moving toward</strong> a place. The action creates a new position.</div>
+              <div class="ww-ex">Ich gehe <strong>in die</strong> Schule.<br>Kwame legt das Buch <strong>auf den</strong> Tisch.<br>Die Katze springt <strong>unter das</strong> Bett.</div>
+            </div>
+            <div class="ww-box ww-dat">
+              <div class="ww-q">Wo?</div>
+              <div class="ww-sub">WHERE? · LOCATION</div>
+              <div class="ww-case">DATIV</div>
+              <div class="ww-rule">Something is <strong>staying in</strong> a place. No movement, just position.</div>
+              <div class="ww-ex">Ich bin <strong>in der</strong> Schule.<br>Das Buch liegt <strong>auf dem</strong> Tisch.<br>Die Katze schläft <strong>unter dem</strong> Bett.</div>
+            </div>
+          </div>
+
+          <div class="info-box">
+            <strong style="color:var(--gold);">Memory trick — A and D:</strong><br><br>
+            <strong style="color:var(--akk);">A</strong> for <strong style="color:var(--akk);">Action</strong> = <strong style="color:var(--akk);">Akkusativ</strong> &nbsp;(something is happening, moving, changing)<br>
+            <strong style="color:var(--dat);">D</strong> for <strong style="color:var(--dat);">Dwelling</strong> = <strong style="color:var(--dat);">Dativ</strong> &nbsp;(something is staying put, resting, living there)
+          </div>
+
+          <div class="sec-label">The contrast in one pair</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--akk);">WOHIN? · AKK</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina geht <span class="ph">in</span> <span class="ah">die Küche</span>.</div>
+                <div class="ex-en">Amina goes into the kitchen.</div>
+                <div class="ex-note">She is moving. Wohin? → in + die (die Küche, feminine, Akk unchanged).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina geht in die Küche.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--dat);">WO? · DAT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina kocht <span class="ph">in</span> <span class="dh">der Küche</span>.</div>
+                <div class="ex-en">Amina is cooking in the kitchen.</div>
+                <div class="ex-note">She is already there. Wo? → in + der (die Küche → der Küche in Dativ, feminine).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina kocht in der Küche.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="danger-box">
+            <strong style="color:var(--red);">The trap:</strong> Both sentences use the same preposition <strong style="color:var(--prep);">in</strong> and the same noun <em>Küche</em>. The only thing that changes is the article — <strong style="color:var(--akk);">die</strong> (Akkusativ) or <strong style="color:var(--dat);">der</strong> (Dativ). This tiny word change carries all the meaning.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">Module 19 · Lesson 1 · Quiz</div><h2 class="lesson-h">The Golden Rule — First Check</h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 2: Wo? vs Wohin? ── -->
+    <div id="lesson-1" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">Module 19 · Lesson 2 of 6</div>
+          <h2 class="lesson-h"><span style="color:var(--akk)">Wohin?</span> vs <span style="color:var(--dat)">Wo?</span></h2>
+          <p class="body-text">Before writing any sentence with a two-way preposition, ask yourself one question. That question will tell you which case to use. Train this as a reflex — it takes only a second and prevents every case error.</p>
+
+          <div class="info-box">
+            <strong style="color:var(--gold);">The two-step method:</strong><br><br>
+            Step 1 — Find the verb. Is it a <strong style="color:var(--akk);">movement verb</strong> or a <strong style="color:var(--dat);">position verb</strong>?<br>
+            Step 2 — Ask: <strong style="color:var(--akk);">Wohin?</strong> (Where to?) → Akkusativ &nbsp;·&nbsp; <strong style="color:var(--dat);">Wo?</strong> (Where?) → Dativ
+          </div>
+
+          <div class="sec-label">Movement verbs → Akkusativ (Wohin?)</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--akk);">VERBS THAT SIGNAL MOVEMENT → ALWAYS AKKUSATIV</div>
+            <div style="font-family:'DM Mono',monospace;font-size:13px;line-height:2.6;color:var(--cream);">
+              gehen &nbsp;<span style="color:var(--gray);font-size:11px;">— to go</span> &nbsp;·&nbsp; kommen &nbsp;<span style="color:var(--gray);font-size:11px;">— to come</span><br>
+              fahren &nbsp;<span style="color:var(--gray);font-size:11px;">— to drive/travel</span> &nbsp;·&nbsp; fliegen &nbsp;<span style="color:var(--gray);font-size:11px;">— to fly</span><br>
+              legen &nbsp;<span style="color:var(--gray);font-size:11px;">— to lay/put (flat)</span> &nbsp;·&nbsp; stellen &nbsp;<span style="color:var(--gray);font-size:11px;">— to place (upright)</span><br>
+              hängen &nbsp;<span style="color:var(--gray);font-size:11px;">— to hang (action)</span> &nbsp;·&nbsp; setzen &nbsp;<span style="color:var(--gray);font-size:11px;">— to set/place</span>
+            </div>
+          </div>
+
+          <div class="sec-label">Position verbs → Dativ (Wo?)</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--dat);">VERBS THAT SIGNAL POSITION → ALWAYS DATIV</div>
+            <div style="font-family:'DM Mono',monospace;font-size:13px;line-height:2.6;color:var(--cream);">
+              sein &nbsp;<span style="color:var(--gray);font-size:11px;">— to be</span> &nbsp;·&nbsp; bleiben &nbsp;<span style="color:var(--gray);font-size:11px;">— to stay/remain</span><br>
+              liegen &nbsp;<span style="color:var(--gray);font-size:11px;">— to lie/be lying</span> &nbsp;·&nbsp; stehen &nbsp;<span style="color:var(--gray);font-size:11px;">— to stand/be standing</span><br>
+              hängen &nbsp;<span style="color:var(--gray);font-size:11px;">— to hang (state)</span> &nbsp;·&nbsp; sitzen &nbsp;<span style="color:var(--gray);font-size:11px;">— to sit/be sitting</span><br>
+              arbeiten &nbsp;<span style="color:var(--gray);font-size:11px;">— to work</span> &nbsp;·&nbsp; wohnen &nbsp;<span style="color:var(--gray);font-size:11px;">— to live (reside)</span>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue);">Note — hängen:</strong> This verb exists in two forms. <em>hängen</em> (weak, regular) = to hang something up → Wohin? → Akkusativ. <em>hängen</em> (strong, irregular — hing, gehangen) = to be hanging → Wo? → Dativ. Context always makes it clear.</div>
+
+          <div class="sec-label">Full sentence pairs — Wohin? vs Wo?</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--akk);">GEHEN · WOHIN?</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame geht <span class="ph">in</span> <span class="ah">den Supermarkt</span>.</div>
+                <div class="ex-en">Kwame goes into the supermarket.</div>
+                <div class="ex-note">gehen = movement. Wohin? → Akkusativ. der Supermarkt (masc) → den Supermarkt.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame geht in den Supermarkt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--dat);">ARBEITEN · WO?</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi arbeitet <span class="ph">in</span> <span class="dh">dem Büro</span>.</div>
+                <div class="ex-en">Kofi works in the office.</div>
+                <div class="ex-note">arbeiten = position (stays there). Wo? → Dativ. das Büro (neut) → dem Büro → usually contracted: im Büro.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi arbeitet im Büro.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--akk);">LEGEN · WOHIN?</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima legt das Buch <span class="ph">auf</span> <span class="ah">den Tisch</span>.</div>
+                <div class="ex-en">Fatima puts the book on the table.</div>
+                <div class="ex-note">legen = placing action. Wohin? → Akkusativ. der Tisch (masc) → den Tisch.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima legt das Buch auf den Tisch.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--dat);">LIEGEN · WO?</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das Buch liegt <span class="ph">auf</span> <span class="dh">dem Tisch</span>.</div>
+                <div class="ex-en">The book is lying on the table.</div>
+                <div class="ex-note">liegen = position/state. Wo? → Dativ. der Tisch (masc) → dem Tisch.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das Buch liegt auf dem Tisch.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">Module 19 · Lesson 2 · Quiz</div><h2 class="lesson-h">Wo? vs Wohin? — Check</h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 3: Article Changes & Contractions ── -->
+    <div id="lesson-2" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">Module 19 · Lesson 3 of 6</div>
+          <h2 class="lesson-h">Article changes &amp; <span style="color:var(--contr)">contractions</span></h2>
+          <p class="body-text">Once you know whether to use Akkusativ or Dativ, you need the correct article. In Dativ, all articles change. In Akkusativ, only masculine changes. And in everyday speech, some article combinations are almost always contracted into a single word.</p>
+
+          <div class="sec-label">Article changes — the full table</div>
+          <div class="art-table-wrap">
+            <div class="conj-title" style="color:var(--gold);">DEFINITE ARTICLE AFTER TWO-WAY PREPOSITIONS</div>
+            <table class="art-table">
+              <thead>
+                <tr>
+                  <th>GENDER</th>
+                  <th>NOMINATIV</th>
+                  <th style="color:var(--akk);">AKKUSATIV (Wohin?)</th>
+                  <th style="color:var(--dat);">DATIV (Wo?)</th>
+                  <th>CHANGES?</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td class="at-gender">Masculine</td><td class="at-nom">der</td><td class="at-akk">den</td><td class="at-dat">dem</td><td class="at-change">✦ both change</td></tr>
+                <tr><td class="at-gender">Feminine</td><td class="at-nom">die</td><td class="at-akk">die</td><td class="at-dat">der</td><td class="at-change">Dat only</td></tr>
+                <tr><td class="at-gender">Neuter</td><td class="at-nom">das</td><td class="at-akk">das</td><td class="at-dat">dem</td><td class="at-change">Dat only</td></tr>
+                <tr><td class="at-gender">Plural</td><td class="at-nom">die</td><td class="at-akk">die</td><td class="at-dat">den (+n)</td><td class="at-change">Dat only</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue);">The key insight:</strong> In Akkusativ, only <strong>masculine</strong> changes (der → den). Feminine, neuter, and plural stay the same. That's why masculine is always the tricky one. In Dativ, all four change — <strong>der, die, das, die</strong> all become <strong>dem, der, dem, den</strong>.</div>
+
+          <div class="sec-label">Contractions — the four you must know</div>
+          <div class="contr-grid">
+            <div class="contr-card">
+              <div class="contr-formula">in + dem</div>
+              <div class="contr-result">im</div>
+              <div class="contr-ex">Kofi ist <strong>im</strong> Büro.<br><span style="color:var(--gray);">Kofi is in the office.</span><br><span style="font-size:10px;color:var(--dat);">DATIV</span></div>
+            </div>
+            <div class="contr-card">
+              <div class="contr-formula">in + das</div>
+              <div class="contr-result">ins</div>
+              <div class="contr-ex">Wir gehen <strong>ins</strong> Kino.<br><span style="color:var(--gray);">We go to the cinema.</span><br><span style="font-size:10px;color:var(--akk);">AKKUSATIV</span></div>
+            </div>
+            <div class="contr-card">
+              <div class="contr-formula">an + dem</div>
+              <div class="contr-result">am</div>
+              <div class="contr-ex">Amina steht <strong>am</strong> Markt.<br><span style="color:var(--gray);">Amina stands at the market.</span><br><span style="font-size:10px;color:var(--dat);">DATIV</span></div>
+            </div>
+            <div class="contr-card">
+              <div class="contr-formula">an + das</div>
+              <div class="contr-result">ans</div>
+              <div class="contr-ex">Kwame geht <strong>ans</strong> Fenster.<br><span style="color:var(--gray);">Kwame goes to the window.</span><br><span style="font-size:10px;color:var(--akk);">AKKUSATIV</span></div>
+            </div>
+          </div>
+
+          <div class="info-box">
+            <strong style="color:var(--gold);">Contraction rule:</strong> In everyday German, <em>in dem</em> and <em>an dem</em> are almost always contracted. Writing "in dem Büro" instead of "im Büro" is grammatically correct but sounds unnatural and will be marked as awkward on the exam. Use the contracted form whenever possible.<br><br>
+            <strong>Other contractions</strong> exist (auf das → aufs, vor das → vors, etc.) but <strong style="color:var(--contr);">im, ins, am, ans</strong> are the four you must know for A2.
+          </div>
+
+          <div class="sec-label">Contractions in context — both cases of "in"</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--contr);">INS · IN + DAS · AKK</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima geht <span class="ch">ins</span> Krankenhaus.</div>
+                <div class="ex-en">Fatima goes to the hospital.</div>
+                <div class="ex-note">das Krankenhaus (neuter). Movement → Akkusativ → in + das = ins.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima geht ins Krankenhaus.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--contr);">IM · IN + DEM · DAT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima arbeitet <span class="ch">im</span> Krankenhaus.</div>
+                <div class="ex-en">Fatima works in the hospital.</div>
+                <div class="ex-note">das Krankenhaus (neuter). Location → Dativ → in + dem = im.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima arbeitet im Krankenhaus.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">Module 19 · Lesson 3 · Quiz</div><h2 class="lesson-h">Contractions — Check</h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 4: All 9 Prepositions with Examples ── -->
+    <div id="lesson-3" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">Module 19 · Lesson 4 of 6</div>
+          <h2 class="lesson-h">All <span style="color:var(--prep)">9 prepositions</span> — paired</h2>
+          <p class="body-text">Each preposition below is shown with one Akkusativ example (movement/Wohin?) and one Dativ example (location/Wo?). Study the verb — it tells you the case before you even look at the article.</p>
+
+          <div class="prep-pair-wrap">
+            <div class="pp-prep-title">an</div>
+            <div class="pp-prep-eng">AT · ON (vertical surface) · TO (water/border)</div>
+            <div class="pp-rows">
+              <div class="pp-akk-row">
+                <div class="pp-case-tag">WOHIN? → AKKUSATIV</div>
+                <div class="pp-sent">Kwame geht <strong>an die</strong> Tafel.</div>
+                <div class="pp-eng">Kwame goes to the board.</div>
+              </div>
+              <div class="pp-dat-row">
+                <div class="pp-case-tag">WO? → DATIV</div>
+                <div class="pp-sent">Das Bild hängt <strong>an der</strong> Wand.</div>
+                <div class="pp-eng">The picture hangs on the wall.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="prep-pair-wrap">
+            <div class="pp-prep-title">auf</div>
+            <div class="pp-prep-eng">ON (horizontal surface) · ON TOP OF</div>
+            <div class="pp-rows">
+              <div class="pp-akk-row">
+                <div class="pp-case-tag">WOHIN? → AKKUSATIV</div>
+                <div class="pp-sent">Amina legt das Geld <strong>auf den</strong> Tisch.</div>
+                <div class="pp-eng">Amina puts the money on the table.</div>
+              </div>
+              <div class="pp-dat-row">
+                <div class="pp-case-tag">WO? → DATIV</div>
+                <div class="pp-sent">Das Geld liegt <strong>auf dem</strong> Tisch.</div>
+                <div class="pp-eng">The money is lying on the table.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="prep-pair-wrap">
+            <div class="pp-prep-title">in</div>
+            <div class="pp-prep-eng">IN · INTO · INSIDE</div>
+            <div class="pp-rows">
+              <div class="pp-akk-row">
+                <div class="pp-case-tag">WOHIN? → AKKUSATIV</div>
+                <div class="pp-sent">Kofi geht <strong>in die</strong> Stadt.</div>
+                <div class="pp-eng">Kofi goes into the city.</div>
+              </div>
+              <div class="pp-dat-row">
+                <div class="pp-case-tag">WO? → DATIV</div>
+                <div class="pp-sent">Kofi wohnt <strong>in der</strong> Stadt.</div>
+                <div class="pp-eng">Kofi lives in the city.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="prep-pair-wrap">
+            <div class="pp-prep-title">über</div>
+            <div class="pp-prep-eng">OVER · ABOVE · ACROSS</div>
+            <div class="pp-rows">
+              <div class="pp-akk-row">
+                <div class="pp-case-tag">WOHIN? → AKKUSATIV</div>
+                <div class="pp-sent">Die Katze springt <strong>über den</strong> Zaun.</div>
+                <div class="pp-eng">The cat jumps over the fence.</div>
+              </div>
+              <div class="pp-dat-row">
+                <div class="pp-case-tag">WO? → DATIV</div>
+                <div class="pp-sent">Das Flugzeug fliegt <strong>über dem</strong> See.</div>
+                <div class="pp-eng">The plane flies above the lake.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="prep-pair-wrap">
+            <div class="pp-prep-title">unter</div>
+            <div class="pp-prep-eng">UNDER · BELOW · BENEATH</div>
+            <div class="pp-rows">
+              <div class="pp-akk-row">
+                <div class="pp-case-tag">WOHIN? → AKKUSATIV</div>
+                <div class="pp-sent">Das Kind kriecht <strong>unter den</strong> Tisch.</div>
+                <div class="pp-eng">The child crawls under the table.</div>
+              </div>
+              <div class="pp-dat-row">
+                <div class="pp-case-tag">WO? → DATIV</div>
+                <div class="pp-sent">Die Schuhe stehen <strong>unter dem</strong> Bett.</div>
+                <div class="pp-eng">The shoes are standing under the bed.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="prep-pair-wrap">
+            <div class="pp-prep-title">vor</div>
+            <div class="pp-prep-eng">IN FRONT OF · BEFORE</div>
+            <div class="pp-rows">
+              <div class="pp-akk-row">
+                <div class="pp-case-tag">WOHIN? → AKKUSATIV</div>
+                <div class="pp-sent">Fatima stellt sich <strong>vor das</strong> Mikrofon.</div>
+                <div class="pp-eng">Fatima stands in front of the microphone.</div>
+              </div>
+              <div class="pp-dat-row">
+                <div class="pp-case-tag">WO? → DATIV</div>
+                <div class="pp-sent">Das Auto steht <strong>vor dem</strong> Haus.</div>
+                <div class="pp-eng">The car is standing in front of the house.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="prep-pair-wrap">
+            <div class="pp-prep-title">hinter</div>
+            <div class="pp-prep-eng">BEHIND · AT THE BACK OF</div>
+            <div class="pp-rows">
+              <div class="pp-akk-row">
+                <div class="pp-case-tag">WOHIN? → AKKUSATIV</div>
+                <div class="pp-sent">Der Hund läuft <strong>hinter das</strong> Sofa.</div>
+                <div class="pp-eng">The dog runs behind the sofa.</div>
+              </div>
+              <div class="pp-dat-row">
+                <div class="pp-case-tag">WO? → DATIV</div>
+                <div class="pp-sent">Der Hund schläft <strong>hinter dem</strong> Sofa.</div>
+                <div class="pp-eng">The dog is sleeping behind the sofa.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="prep-pair-wrap">
+            <div class="pp-prep-title">neben</div>
+            <div class="pp-prep-eng">NEXT TO · BESIDE · ALONGSIDE</div>
+            <div class="pp-rows">
+              <div class="pp-akk-row">
+                <div class="pp-case-tag">WOHIN? → AKKUSATIV</div>
+                <div class="pp-sent">Amina setzt sich <strong>neben den</strong> Lehrer.</div>
+                <div class="pp-eng">Amina sits down next to the teacher.</div>
+              </div>
+              <div class="pp-dat-row">
+                <div class="pp-case-tag">WO? → DATIV</div>
+                <div class="pp-sent">Amina sitzt <strong>neben dem</strong> Lehrer.</div>
+                <div class="pp-eng">Amina is sitting next to the teacher.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="prep-pair-wrap">
+            <div class="pp-prep-title">zwischen</div>
+            <div class="pp-prep-eng">BETWEEN</div>
+            <div class="pp-rows">
+              <div class="pp-akk-row">
+                <div class="pp-case-tag">WOHIN? → AKKUSATIV</div>
+                <div class="pp-sent">Kwame stellt den Stuhl <strong>zwischen den</strong> Tisch und die Wand.</div>
+                <div class="pp-eng">Kwame places the chair between the table and the wall.</div>
+              </div>
+              <div class="pp-dat-row">
+                <div class="pp-case-tag">WO? → DATIV</div>
+                <div class="pp-sent">Der Stuhl steht <strong>zwischen dem</strong> Tisch und der Wand.</div>
+                <div class="pp-eng">The chair stands between the table and the wall.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">Module 19 · Lesson 4 · Quiz</div><h2 class="lesson-h">All 9 Prepositions — Check</h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 5: Most Tested A2 Combinations ── -->
+    <div id="lesson-4" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">Module 19 · Lesson 5 of 6</div>
+          <h2 class="lesson-h">Most tested <span style="color:var(--gold)">A2 combinations</span></h2>
+          <p class="body-text">Certain preposition + article combinations appear again and again in A2 Hören and Lesen texts. Recognising them instantly — without stopping to analyse case — saves you valuable time in the exam.</p>
+
+          <div class="sec-label">Fixed location phrases — Dativ (Wo?)</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--dat);">HIGH-FREQUENCY LOCATION PHRASES — ALWAYS DATIV</div>
+            <div style="font-family:'DM Mono',monospace;font-size:13px;line-height:2.8;color:var(--cream);">
+              <span class="ch">im</span> Büro &nbsp;<span style="color:var(--gray);font-size:11px;">— in the office</span> &nbsp;·&nbsp;
+              <span class="ch">im</span> Supermarkt &nbsp;<span style="color:var(--gray);font-size:11px;">— in the supermarket</span><br>
+              <span class="ch">im</span> Restaurant &nbsp;<span style="color:var(--gray);font-size:11px;">— in the restaurant</span> &nbsp;·&nbsp;
+              <span class="ch">im</span> Krankenhaus &nbsp;<span style="color:var(--gray);font-size:11px;">— in the hospital</span><br>
+              <span class="ch">am</span> Markt &nbsp;<span style="color:var(--gray);font-size:11px;">— at the market</span> &nbsp;·&nbsp;
+              <span class="ch">am</span> Bahnhof &nbsp;<span style="color:var(--gray);font-size:11px;">— at the train station</span><br>
+              <span class="dh">auf dem</span> Tisch &nbsp;<span style="color:var(--gray);font-size:11px;">— on the table</span> &nbsp;·&nbsp;
+              <span class="dh">auf dem</span> Markt &nbsp;<span style="color:var(--gray);font-size:11px;">— at the market</span><br>
+              <span class="dh">in der</span> Schule &nbsp;<span style="color:var(--gray);font-size:11px;">— in/at school</span> &nbsp;·&nbsp;
+              <span class="dh">in der</span> Stadt &nbsp;<span style="color:var(--gray);font-size:11px;">— in the city</span><br>
+              <span class="dh">an der</span> Tür &nbsp;<span style="color:var(--gray);font-size:11px;">— at the door</span> &nbsp;·&nbsp;
+              <span class="dh">vor dem</span> Haus &nbsp;<span style="color:var(--gray);font-size:11px;">— in front of the house</span>
+            </div>
+          </div>
+
+          <div class="sec-label">Movement phrases — Akkusativ (Wohin?)</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--akk);">HIGH-FREQUENCY MOVEMENT PHRASES — ALWAYS AKKUSATIV</div>
+            <div style="font-family:'DM Mono',monospace;font-size:13px;line-height:2.8;color:var(--cream);">
+              <span class="ch">ins</span> Kino &nbsp;<span style="color:var(--gray);font-size:11px;">— to the cinema</span> &nbsp;·&nbsp;
+              <span class="ch">ins</span> Büro &nbsp;<span style="color:var(--gray);font-size:11px;">— into the office</span><br>
+              <span class="ch">ins</span> Krankenhaus &nbsp;<span style="color:var(--gray);font-size:11px;">— to the hospital</span> &nbsp;·&nbsp;
+              <span class="ch">ans</span> Meer &nbsp;<span style="color:var(--gray);font-size:11px;">— to the sea</span><br>
+              <span class="ah">in die</span> Schule &nbsp;<span style="color:var(--gray);font-size:11px;">— to school</span> &nbsp;·&nbsp;
+              <span class="ah">in die</span> Stadt &nbsp;<span style="color:var(--gray);font-size:11px;">— into the city</span><br>
+              <span class="ah">auf den</span> Markt &nbsp;<span style="color:var(--gray);font-size:11px;">— to the market</span> &nbsp;·&nbsp;
+              <span class="ah">an den</span> See &nbsp;<span style="color:var(--gray);font-size:11px;">— to the lake</span>
+            </div>
+          </div>
+
+          <div class="success-box">
+            <strong style="color:var(--green);">Exam tip:</strong> In A2 Hören, the speaker will describe where people are going and where things are located. The moment you hear <em>geht / fährt / kommt</em> before a preposition — Akkusativ. The moment you hear <em>ist / bleibt / arbeitet / wohnt / liegt / steht</em> — Dativ. Train your ear to catch the verb first.
+          </div>
+
+          <div class="sec-label">Full exam-style sentences</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--contr);">IM · DATIV</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi arbeitet jeden Tag <span class="ch">im</span> Büro.</div>
+                <div class="ex-en">Kofi works in the office every day.</div>
+                <div class="ex-note">arbeiten = position verb. das Büro → in + dem = im. Dativ.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi arbeitet jeden Tag im Büro.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--akk);">INS · AKKUSATIV</div>
+              <div style="flex:1;">
+                <div class="ex-de">Am Freitag gehen wir <span class="ch">ins</span> Kino.</div>
+                <div class="ex-en">On Friday we go to the cinema.</div>
+                <div class="ex-note">gehen = movement verb. das Kino → in + das = ins. Akkusativ.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Am Freitag gehen wir ins Kino.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--contr);">AM · DATIV</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina kauft Gemüse <span class="ch">am</span> Markt.</div>
+                <div class="ex-en">Amina buys vegetables at the market.</div>
+                <div class="ex-note">kaufen here = position at the market. der Markt → an + dem = am. Dativ.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina kauft Gemüse am Markt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--akk);">IN DIE · AKKUSATIV</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame fährt jeden Morgen <span class="ah">in die</span> Stadt.</div>
+                <div class="ex-en">Kwame drives into the city every morning.</div>
+                <div class="ex-note">fahren = movement verb. die Stadt (feminine) → in die Stadt. Akkusativ unchanged.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame fährt jeden Morgen in die Stadt.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">Module 19 · Lesson 5 · Quiz</div><h2 class="lesson-h">A2 Combinations — Check</h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 6: African Context + Mistakes ── -->
+    <div id="lesson-5" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">Module 19 · Lesson 6 of 6</div>
+          <h2 class="lesson-h"><span style="color:var(--gold)">Kwame, Amina, Kofi, Fatima</span> — market, office, school</h2>
+          <p class="body-text">Two-way prepositions describe everyday life: going to school, being at the market, working in the office. Here are real A2-level sentences built around African daily routines — the kind that appear in A2 exam texts.</p>
+
+          <div class="sec-label">A day in Lagos — full routine</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--akk);">WOHIN? · AKK</div>
+              <div style="flex:1;">
+                <div class="ex-de">Um 7 Uhr fährt Kwame <span class="ch">ins</span> Büro.</div>
+                <div class="ex-en">At 7 o'clock Kwame drives to the office.</div>
+                <div class="ex-note">fährt = movement. das Büro → ins. Akkusativ.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Um 7 Uhr fährt Kwame ins Büro.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--dat);">WO? · DAT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Er arbeitet bis 17 Uhr <span class="ch">im</span> Büro.</div>
+                <div class="ex-en">He works in the office until 5pm.</div>
+                <div class="ex-note">arbeitet = position. das Büro → im. Dativ.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Er arbeitet bis 17 Uhr im Büro.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--akk);">WOHIN? · AKK</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina geht <span class="ah">auf den</span> Markt.</div>
+                <div class="ex-en">Amina goes to the market.</div>
+                <div class="ex-note">geht = movement. der Markt (masc) → auf den Markt. Akkusativ.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina geht auf den Markt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--dat);">WO? · DAT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Sie kauft frisches Gemüse <span class="dh">auf dem</span> Markt.</div>
+                <div class="ex-en">She buys fresh vegetables at the market.</div>
+                <div class="ex-note">kauft = position. der Markt (masc) → auf dem Markt. Dativ.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Sie kauft frisches Gemüse auf dem Markt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--akk);">WOHIN? · AKK</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi bringt das Essen <span class="ah">in die</span> Schule.</div>
+                <div class="ex-en">Kofi brings the food to school.</div>
+                <div class="ex-note">bringt = movement/direction. die Schule (fem) → in die Schule. Akkusativ unchanged.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi bringt das Essen in die Schule.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--dat);">WO? · DAT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima lernt jeden Tag <span class="dh">in der</span> Bibliothek.</div>
+                <div class="ex-en">Fatima studies in the library every day.</div>
+                <div class="ex-note">lernt = position. die Bibliothek (fem) → in der Bibliothek. Dativ.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima lernt jeden Tag in der Bibliothek.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">African learner mistakes — wrong and right</div>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Ich gehe in der Schule.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Ich gehe in die Schule.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">gehen = movement → Wohin? → Akkusativ. die Schule stays die in Akkusativ (feminine). Using der (Dativ) here is the most common African learner error.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Das Buch liegt auf den Tisch.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Das Buch liegt auf dem Tisch.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">liegen = position → Wo? → Dativ. der Tisch → dem Tisch. Using den (Akkusativ masculine) with a position verb is wrong.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Kofi ist in das Büro.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Kofi ist im Büro.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">sein = position → Dativ → in + dem = im. "in das" signals movement — you can only use it with verbs like gehen, fahren, kommen.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Wir gehen im Kino.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Wir gehen ins Kino.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">gehen = movement → Akkusativ → in + das = ins. Using im (Dativ contraction) with a movement verb is wrong — im means you are already there.</p>
+
+          <div class="success-box">
+            <strong style="color:var(--green);">Final exam summary:</strong><br><br>
+            1. Learn the 9 prepositions: <strong style="color:var(--prep);">an, auf, hinter, in, neben, über, unter, vor, zwischen</strong><br>
+            2. Ask the question: <strong style="color:var(--akk);">Wohin?</strong> → Akkusativ (A for Action) · <strong style="color:var(--dat);">Wo?</strong> → Dativ (D for Dwelling)<br>
+            3. Know the contractions: <strong style="color:var(--contr);">im, ins, am, ans</strong><br>
+            4. In Akkusativ, only masculine changes: der → <strong style="color:var(--akk);">den</strong>. Feminine and neuter stay the same.<br>
+            5. In Dativ, all change: der/die/das → <strong style="color:var(--dat);">dem/der/dem</strong>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">Module 19 · Lesson 6 · Quiz</div><h2 class="lesson-h">African Context — Final Check</h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Previous</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var TOTAL=6, currentLesson=0, xp=0;
+var synth=window.speechSynthesis, voices=[], deVoice=null;
+function loadVoices(){ voices=synth.getVoices(); deVoice=voices.find(function(v){return v.lang==='de-DE';})||voices.find(function(v){return v.lang.startsWith('de');})||null; }
+if(synth.onvoiceschanged!==undefined){synth.onvoiceschanged=loadVoices;}
+function speakDE(text){ if(!synth)return; synth.cancel(); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; synth.speak(u); }
+function speakSentence(btn,text){ if(!synth)return; synth.cancel(); document.querySelectorAll('.speak-btn.speaking').forEach(function(b){b.classList.remove('speaking');}); btn.classList.add('speaking'); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; u.onend=function(){btn.classList.remove('speaking');}; synth.speak(u); }
+
+var QD={
+  0:[
+    {q:'Kwame legt das Buch ___ den Tisch. Which is the correct complete phrase?',
+     hint:'legen = to place/lay — this is an action. Ask: Wohin? Where to? That tells you the case.',
+     opts:['auf dem Tisch','auf den Tisch','auf der Tisch','auf das Tisch'],
+     ans:1,
+     exp:'"auf den Tisch" — legen is a movement/action verb. Ask Wohin? → Akkusativ. der Tisch is masculine, and in Akkusativ masculine changes: der → den. So auf + den = auf den Tisch. "auf dem" would be Dativ (correct if the book is already lying there). "auf der" is Dativ feminine — Tisch is not feminine. "auf das" would be neuter Akkusativ — Tisch is not neuter.',
+     rule:'legen = Wohin? → Akkusativ. Masculine: der → den. Kwame legt das Buch auf den Tisch.'}
+  ],
+  1:[
+    {q:'Das Buch liegt ___ Tisch. Which article is correct?',
+     hint:'liegen = to be lying (a position verb). Ask: Wo? Where? That tells you the case. der Tisch is masculine.',
+     opts:['auf den','auf dem','auf der','auf das'],
+     ans:1,
+     exp:'"auf dem" — liegen is a position verb. Ask Wo? → Dativ. der Tisch is masculine. In Dativ, masculine changes: der → dem. So auf + dem = auf dem Tisch. "auf den" is Akkusativ masculine — correct for legen (placing action) but not for liegen (position). "auf der" is Dativ feminine — Tisch is masculine. "auf das" is Akkusativ neuter — wrong gender and wrong case.',
+     rule:'liegen = Wo? → Dativ. Masculine: der → dem. Das Buch liegt auf dem Tisch.'}
+  ],
+  2:[
+    {q:'Amina und Kofi gehen ___ Kino. Which contraction is correct?',
+     hint:'gehen = movement verb → Akkusativ. das Kino is neuter. What is in + das?',
+     opts:['in das Kino','im Kino','ins Kino','in dem Kino'],
+     ans:2,
+     exp:'"ins Kino" — gehen = movement → Akkusativ. das Kino is neuter. In Akkusativ, neuter stays das. So in + das = ins. The contraction ins is standard and expected. "in das Kino" is grammatically correct but sounds unnatural — always contract in everyday use. "im Kino" = in + dem = Dativ — correct for saying you are already there (Wir sind im Kino), not for going there. "in dem Kino" is Dativ long form — wrong case and awkward.',
+     rule:'gehen + das (neuter) → Akkusativ → in + das = ins. Amina geht ins Kino. im = Dativ (already there).'}
+  ],
+  3:[
+    {q:'Kofi hängt das Bild ___ Wand. (hanging the picture on the wall — action). Which is correct?',
+     hint:'hängen here = to hang something up (action). Wohin? → Akkusativ. die Wand is feminine. What happens to feminine in Akkusativ?',
+     opts:['an der Wand','an die Wand','am Wand','ans Wand'],
+     ans:1,
+     exp:'"an die Wand" — hängen (to hang something up) = action/movement → Wohin? → Akkusativ. die Wand is feminine. In Akkusativ, feminine does NOT change: die stays die. So an + die = an die Wand. "an der Wand" is Dativ — correct for "Das Bild hängt an der Wand" (the picture is hanging there). "am Wand" is an + dem = Dativ masculine/neuter contraction — Wand is not masculine or neuter. "ans Wand" is an + das — wrong gender.',
+     rule:'Feminine in Akkusativ: die stays die. Kofi hängt das Bild an die Wand. (an der = Dativ = already hanging)'}
+  ],
+  4:[
+    {q:'Fatima arbeitet ___ Büro. Which phrase correctly says she works IN the office?',
+     hint:'arbeiten = position verb (she stays there). Wo? → Dativ. das Büro is neuter. Which Dativ contraction applies?',
+     opts:['ins Büro','in das Büro','im Büro','in dem Büro'],
+     ans:2,
+     exp:'"im Büro" — arbeiten = position verb → Wo? → Dativ. das Büro is neuter. In Dativ, neuter changes: das → dem. So in + dem = im. "ins Büro" = in + das = Akkusativ neuter — correct for going into the office (Fatima geht ins Büro), not for working there. "in das Büro" is Akkusativ long form — same problem. "in dem Büro" is grammatically correct Dativ but never contracted, which sounds unnatural — use im.',
+     rule:'arbeiten = Wo? → Dativ. das Büro → in + dem = im. Fatima arbeitet im Büro.'}
+  ],
+  5:[
+    {q:'Which sentence is completely correct?',
+     hint:'Check the verb first. Is it a movement verb or a position verb? That tells you the case.',
+     opts:['Kwame ist in das Büro.','Das Handy liegt auf den Tisch.','Amina geht in die Schule.','Kofi fährt im Supermarkt.'],
+     ans:2,
+     exp:'"Amina geht in die Schule." — geht = movement → Wohin? → Akkusativ. die Schule (feminine) stays die in Akkusativ → in die Schule. Correct! Option A: ist = position → Dativ → "in dem Büro" or "im Büro" — not "in das". Option B: liegt = position → Dativ → "auf dem Tisch" — not "auf den" (Akkusativ). Option D: fährt = movement → Akkusativ → "in den Supermarkt" or "ins..." — not "im" (Dativ).',
+     rule:'Movement verb → Akkusativ (Wohin?). Position verb → Dativ (Wo?). Amina geht in die Schule. Amina ist in der Schule.'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">QUESTION '+(s.cur+1)+' OF '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint">'+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Next Question →':'See Results →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Correct!':'✗ Not quite'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent=q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' correct</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfect.':pct>=60?'Good work.':'Review and try again.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.12);border:1px solid var(--gold);border-radius:50px;padding:9px 22px;color:var(--gold);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Complete Module 19 →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Next Lesson →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">📍</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Module 19 Complete!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">Two-way prepositions mastered. You now know all 9 Wechselpräpositionen and can apply the Wohin/Wo rule automatically. You recognise im, ins, am, ans instantly and know exactly when to use Akkusativ or Dativ. Every A2 sentence with a preposition of place is now under your control.</p><div class="xp-badge">⚡ '+xp+' XP Earned</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">A2 Module 7 of 8 complete. Next: Module 20 — Modal Verbs in Past Tense (musste, durfte, konnte).</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Back to Overview</button></div>'; }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function resumeLesson(){ goLesson(currentLesson); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+<script src="./ai-tutor.js" data-module="19"></script>
+</body>
+</html>
