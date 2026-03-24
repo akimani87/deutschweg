@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Module 16: Subordinate Clauses</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --weil:#3498db; --dass:#e67e22; --wenn:#9b59b6; --ob:#27ae60;
+    --vend:#c9a84c;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:rgba(10,10,10,0.96); backdrop-filter:blur(20px); border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:12px 0 20px; z-index:100; }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:8px 16px; border-radius:12px; transition:all 0.2s; border:none; background:none; color:var(--gray); }
+  .nav-item:hover, .nav-item.active { color:var(--gold); }
+  .nav-icon { font-size:20px; }
+  .nav-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; font-family:'DM Mono',monospace; }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--gold); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--gold); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--gold); color:var(--black); width:100%; }
+  .btn-primary:hover { background:var(--gold-light); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(201,168,76,0.2); }
+  .speak-btn.speaking { background:var(--gold); color:var(--black); }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-en { font-size:12px; color:var(--gray); margin-bottom:6px; }
+  .ex-note { font-size:12px; color:var(--cream); line-height:1.6; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Sans',sans-serif; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--gold); background:rgba(201,168,76,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(201,168,76,0.1); border-radius:8px; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(201,168,76,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(201,168,76,0.08); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(201,168,76,0.12); border:1px solid var(--gold); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--gold); font-size:18px; margin:18px 0; }
+
+  /* WRONG/RIGHT */
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.2; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+
+  /* CONJ TABLE */
+  .conj-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; }
+  .conj-title { font-size:10px; letter-spacing:2.5px; font-family:'DM Mono',monospace; margin-bottom:12px; }
+
+  /* CLAUSE DIAGRAM — the key visual for this module */
+  .clause-diagram { margin:14px 0; }
+  .clause-row { display:flex; flex-wrap:wrap; gap:4px; align-items:stretch; margin:8px 0; }
+  .cd-mc { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:10px 0 0 10px; padding:12px 14px; display:flex; flex-direction:column; justify-content:center; }
+  .cd-comma { display:flex; align-items:center; padding:0 4px; font-family:'DM Mono',monospace; font-size:20px; color:var(--gold); font-weight:900; }
+  .cd-conj { border-radius:8px; padding:12px 14px; display:flex; flex-direction:column; justify-content:center; }
+  .cd-sc { border-radius:0 10px 10px 0; padding:12px 14px; flex:1; display:flex; flex-direction:column; justify-content:center; }
+  .cd-label { font-size:9px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:6px; }
+  .cd-mc .cd-label { color:var(--gray); }
+  .cd-conj .cd-label { color:var(--gold); }
+  .cd-sc .cd-label { color:var(--green); }
+  .cd-text { font-family:'DM Mono',monospace; font-size:14px; font-weight:600; color:var(--cream); line-height:1.7; }
+  .cd-conj .cd-text { font-size:16px; font-weight:900; }
+  .cd-vend { font-weight:900; }
+  /* per-conjunction colours */
+  .cd-weil { background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.3); }
+  .cd-weil .cd-label { color:var(--weil); } .cd-weil .cd-text { color:var(--weil); }
+  .cd-dass { background:rgba(230,126,34,0.1); border:1px solid rgba(230,126,34,0.3); }
+  .cd-dass .cd-label { color:var(--dass); } .cd-dass .cd-text { color:var(--dass); }
+  .cd-wenn { background:rgba(155,89,182,0.1); border:1px solid rgba(155,89,182,0.3); }
+  .cd-wenn .cd-label { color:var(--wenn); } .cd-wenn .cd-text { color:var(--wenn); }
+  .cd-ob   { background:rgba(39,174,96,0.1);  border:1px solid rgba(39,174,96,0.3); }
+  .cd-ob .cd-label { color:var(--ob); }   .cd-ob .cd-text { color:var(--ob); }
+  .cd-sc-weil { background:rgba(52,152,219,0.05); border:1px solid rgba(52,152,219,0.15); }
+  .cd-sc-dass { background:rgba(230,126,34,0.05); border:1px solid rgba(230,126,34,0.15); }
+  .cd-sc-wenn { background:rgba(155,89,182,0.05); border:1px solid rgba(155,89,182,0.15); }
+  .cd-sc-ob   { background:rgba(39,174,96,0.05);  border:1px solid rgba(39,174,96,0.15); }
+
+  /* WORD ORDER COMPARISON */
+  .wo-compare { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0; }
+  .woc-box { border-radius:12px; padding:16px; }
+  .woc-mc { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); }
+  .woc-sc { background:rgba(201,168,76,0.05); border:1px solid rgba(201,168,76,0.15); }
+  .woc-title { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:10px; }
+  .woc-mc .woc-title { color:var(--gray); }
+  .woc-sc .woc-title { color:var(--gold); }
+  .woc-slot { margin-bottom:6px; }
+  .woc-pos { font-size:9px; letter-spacing:1.5px; font-family:'DM Mono',monospace; color:var(--gray); margin-bottom:2px; }
+  .woc-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; padding:5px 10px; border-radius:6px; display:inline-block; }
+  .woc-verb-pos2 { background:rgba(201,168,76,0.12); border:1px solid rgba(201,168,76,0.3); color:var(--gold); }
+  .woc-verb-end  { background:rgba(39,174,96,0.12); border:1px solid rgba(39,174,96,0.3); color:var(--green); }
+  .woc-conj      { background:rgba(201,168,76,0.08); border:1px solid rgba(201,168,76,0.2); color:var(--gold); }
+  .woc-norm      { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); color:var(--cream); }
+
+  /* CONJUNCTION OVERVIEW GRID */
+  .conj-overview { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0; }
+  .co-card { border-radius:14px; padding:18px; }
+  .co-word { font-family:'Playfair Display',serif; font-size:26px; font-weight:900; margin-bottom:4px; }
+  .co-meaning { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; margin-bottom:8px; }
+  .co-use { font-size:12px; color:var(--cream); line-height:1.65; }
+  .co-ex { font-family:'DM Mono',monospace; font-size:11px; margin-top:8px; line-height:1.75; }
+  .co-weil { background:rgba(52,152,219,0.07); border:1px solid rgba(52,152,219,0.22); }
+  .co-weil .co-word { color:var(--weil); } .co-weil .co-meaning { color:var(--weil); }
+  .co-dass { background:rgba(230,126,34,0.07); border:1px solid rgba(230,126,34,0.22); }
+  .co-dass .co-word { color:var(--dass); } .co-dass .co-meaning { color:var(--dass); }
+  .co-wenn { background:rgba(155,89,182,0.07); border:1px solid rgba(155,89,182,0.22); }
+  .co-wenn .co-word { color:var(--wenn); } .co-wenn .co-meaning { color:var(--wenn); }
+  .co-ob   { background:rgba(39,174,96,0.07);  border:1px solid rgba(39,174,96,0.22); }
+  .co-ob .co-word   { color:var(--ob); }   .co-ob .co-meaning   { color:var(--ob); }
+
+  /* INVERSION BOX */
+  .inv-box { background:rgba(155,89,182,0.06); border:1px solid rgba(155,89,182,0.2); border-radius:12px; padding:16px; margin:12px 0; }
+  .inv-title { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; color:var(--wenn); margin-bottom:10px; }
+  .inv-ex { font-family:'DM Mono',monospace; font-size:13px; line-height:2; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .lesson-h{font-size:22px;} .wr-grid{grid-template-columns:1fr;} .conj-overview{grid-template-columns:1fr;} .wo-compare{grid-template-columns:1fr;} .clause-row{flex-direction:column;} .cd-mc,.cd-sc{border-radius:10px;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">MODULE 16 · A2</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">A2 · Sentence Structure</div>
+    <h1 class="lesson-h" style="font-size:36px;">Subordinate<br><span style="color:var(--gold)">Clauses</span></h1>
+    <p class="body-text">A subordinate clause connects two ideas into one sentence. The four conjunctions that create them — <strong style="color:var(--weil)">weil</strong>, <strong style="color:var(--dass)">dass</strong>, <strong style="color:var(--wenn)">wenn</strong>, <strong style="color:var(--ob)">ob</strong> — each trigger the same golden rule: the verb moves to the very end of the clause. This single rule is the most-tested sentence structure on the Goethe A2 exam.</p>
+    <div class="info-box"><strong style="color:var(--gold)">Why this matters:</strong> Every A2 Schreiben task rewards you for connecting sentences. "Ich lerne Deutsch. Ich möchte arbeiten." = 2 simple sentences. "Ich lerne Deutsch, <strong style="color:var(--weil)">weil</strong> ich in Deutschland arbeiten <strong style="color:var(--green)">möchte</strong>." = 1 complex sentence that scores higher. The examiner is looking exactly for this.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">⚙️</div><div><div class="lc-title">Lesson 1 — The Golden Rule: Verb Goes to End</div><div class="lc-desc">What a subordinate clause is. How the verb moves. The comma rule. The four conjunctions.</div></div><div class="lc-tag" style="color:var(--gold);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon" style="color:var(--weil);">💙</div><div><div class="lc-title">Lesson 2 — weil (because)</div><div class="lc-desc">Giving reasons. Kwame and Amina explain why they do things.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">🗣️</div><div><div class="lc-title">Lesson 3 — dass (that)</div><div class="lc-desc">Reporting thoughts, opinions, statements. Ich denke, dass... / Ich weiß, dass...</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">🔀</div><div><div class="lc-title">Lesson 4 — wenn (when / if)</div><div class="lc-desc">Conditions and repeated time. Plus: inversion when wenn-clause comes first.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">❓</div><div><div class="lc-title">Lesson 5 — ob (whether / if)</div><div class="lc-desc">Indirect yes/no questions. Ich weiß nicht, ob er kommt.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lesson 6 — Kwame, Amina, Kofi, Fatima</div><div class="lc-desc">All four conjunctions in African situations. Most common mistakes. Exam tips.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Begin Lesson 1 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lessons</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LESSON 1: The Golden Rule ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">Module 16 · Lesson 1 of 6</div>
+          <h2 class="lesson-h">The golden rule: verb goes to the <span style="color:var(--green)">end</span></h2>
+          <p class="body-text">A subordinate clause is a second sentence that you attach to a main sentence using a conjunction. In English, the word order stays the same in both halves. In German, one rule changes everything: <strong style="color:var(--green)">when a conjunction starts a subordinate clause, the verb in that clause moves to the very last position.</strong></p>
+
+          <div class="info-box">
+            <strong style="color:var(--gold)">The golden rule:</strong><br><br>
+            MAIN CLAUSE — verb in <strong>position 2</strong> as normal<br>
+            SUBORDINATE CLAUSE (after weil / dass / wenn / ob) — verb goes to the <strong style="color:var(--green)">END</strong><br><br>
+            Ich lerne Deutsch. + Ich möchte in Deutschland arbeiten.<br>
+            → Ich lerne Deutsch, <strong style="color:var(--weil)">weil</strong> ich in Deutschland arbeiten <strong style="color:var(--green)">möchte</strong>.
+          </div>
+
+          <div class="sec-label">Main clause vs subordinate clause — word order</div>
+          <div class="wo-compare">
+            <div class="woc-box woc-mc">
+              <div class="woc-title">MAIN CLAUSE — normal order</div>
+              <div class="woc-slot"><div class="woc-pos">POSITION 1</div><div class="woc-word woc-norm">Ich</div></div>
+              <div class="woc-slot"><div class="woc-pos">POSITION 2 — VERB HERE</div><div class="woc-word woc-verb-pos2">lerne</div></div>
+              <div class="woc-slot"><div class="woc-pos">MIDDLE</div><div class="woc-word woc-norm">Deutsch</div></div>
+            </div>
+            <div class="woc-box woc-sc">
+              <div class="woc-title">SUBORDINATE CLAUSE — verb to end</div>
+              <div class="woc-slot"><div class="woc-pos">CONJUNCTION</div><div class="woc-word woc-conj">weil</div></div>
+              <div class="woc-slot"><div class="woc-pos">SUBJECT</div><div class="woc-word woc-norm">ich</div></div>
+              <div class="woc-slot"><div class="woc-pos">MIDDLE</div><div class="woc-word woc-norm">Deutsch</div></div>
+              <div class="woc-slot"><div class="woc-pos">END — VERB HERE</div><div class="woc-word woc-verb-end">lerne</div></div>
+            </div>
+          </div>
+
+          <div class="sec-label">The clause diagram — one complete sentence</div>
+          <div class="clause-diagram">
+            <div class="clause-row">
+              <div class="cd-mc">
+                <div class="cd-label">MAIN CLAUSE</div>
+                <div class="cd-text">Ich lerne Deutsch</div>
+              </div>
+              <div class="cd-comma">,</div>
+              <div class="cd-conj cd-weil">
+                <div class="cd-label">CONJ</div>
+                <div class="cd-text">weil</div>
+              </div>
+              <div class="cd-sc cd-sc-weil">
+                <div class="cd-label">SUBORDINATE CLAUSE</div>
+                <div class="cd-text">ich in Deutschland arbeiten <span class="cd-vend" style="color:var(--green);">möchte</span></div>
+              </div>
+            </div>
+            <button class="speak-btn" onclick="speakSentence(this,'Ich lerne Deutsch, weil ich in Deutschland arbeiten möchte.')">🔊 Hear it</button>
+          </div>
+
+          <div class="sec-label">The comma rule — always a comma before the conjunction</div>
+          <div class="danger-box">
+            <strong style="color:var(--red);">Always place a comma</strong> before weil, dass, wenn, and ob when they introduce a subordinate clause. No exceptions.<br><br>
+            ✗ Ich lerne Deutsch weil ich in Deutschland arbeiten möchte.<br>
+            ✓ Ich lerne Deutsch<strong style="color:var(--gold);">,</strong> weil ich in Deutschland arbeiten möchte.
+          </div>
+
+          <div class="sec-label">The four A2 subordinating conjunctions</div>
+          <div class="conj-overview">
+            <div class="co-card co-weil">
+              <div class="co-word">weil</div>
+              <div class="co-meaning">BECAUSE · REASON</div>
+              <div class="co-use">Gives the reason for something in the main clause.</div>
+              <div class="co-ex">..., weil ich müde <strong>bin</strong>.<br>..., weil er arbeiten <strong>muss</strong>.</div>
+            </div>
+            <div class="co-card co-dass">
+              <div class="co-word">dass</div>
+              <div class="co-meaning">THAT · REPORTING</div>
+              <div class="co-use">Reports what someone thinks, says, knows, or believes.</div>
+              <div class="co-ex">..., dass er morgen <strong>kommt</strong>.<br>..., dass es schwer <strong>ist</strong>.</div>
+            </div>
+            <div class="co-card co-wenn">
+              <div class="co-word">wenn</div>
+              <div class="co-meaning">WHEN / IF · CONDITION</div>
+              <div class="co-use">Expresses a condition (if) or repeated time (when/whenever).</div>
+              <div class="co-ex">..., wenn ich Zeit <strong>habe</strong>.<br>..., wenn das Wetter gut <strong>ist</strong>.</div>
+            </div>
+            <div class="co-card co-ob">
+              <div class="co-word">ob</div>
+              <div class="co-meaning">WHETHER / IF · INDIRECT ❓</div>
+              <div class="co-use">Turns a yes/no question into an indirect question.</div>
+              <div class="co-ex">..., ob er <strong>kommt</strong>.<br>..., ob das stimmt <strong>(right)</strong>.</div>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">Module 16 · Lesson 1 · Quiz</div><h2 class="lesson-h">The Golden Rule — First Check</h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 2: weil ── -->
+    <div id="lesson-1" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">Module 16 · Lesson 2 of 6</div>
+          <h2 class="lesson-h"><span style="color:var(--weil)">weil</span> — because</h2>
+          <p class="body-text"><strong style="color:var(--weil)">weil</strong> introduces the reason for the action or state in the main clause. After weil, the entire verb — including modals, separable prefixes, and Perfekt auxiliaries — moves to the very end of the clause.</p>
+
+          <div class="info-box">
+            <strong style="color:var(--gold)">weil word order:</strong><br><br>
+            weil + SUBJECT + [objects/adverbs] + <strong style="color:var(--green)">VERB (end)</strong><br><br>
+            With modal: weil + SUBJECT + [middle] + INFINITIVE + <strong style="color:var(--green)">MODAL (very end)</strong><br><br>
+            Ich lerne Deutsch, weil ich in Deutschland arbeiten <strong style="color:var(--green)">möchte</strong>.<br>
+            <span style="font-size:12px;color:var(--gray);">↑ modal verb goes last, infinitive just before it</span>
+          </div>
+
+          <div class="sec-label">weil — simple verb at end</div>
+          <div class="clause-diagram">
+            <div class="clause-row">
+              <div class="cd-mc"><div class="cd-label">MAIN CLAUSE</div><div class="cd-text">Kwame bleibt zu Hause</div></div>
+              <div class="cd-comma">,</div>
+              <div class="cd-conj cd-weil"><div class="cd-label">REASON</div><div class="cd-text">weil</div></div>
+              <div class="cd-sc cd-sc-weil"><div class="cd-label">SUBORDINATE CLAUSE</div><div class="cd-text">er krank <span class="cd-vend" style="color:var(--green);">ist</span></div></div>
+            </div>
+            <button class="speak-btn" onclick="speakSentence(this,'Kwame bleibt zu Hause, weil er krank ist.')">🔊 Kwame bleibt zu Hause, weil er krank ist.</button>
+          </div>
+
+          <div class="sec-label">weil — with modal verb (most tested form)</div>
+          <div class="clause-diagram">
+            <div class="clause-row">
+              <div class="cd-mc"><div class="cd-label">MAIN CLAUSE</div><div class="cd-text">Amina lernt Deutsch</div></div>
+              <div class="cd-comma">,</div>
+              <div class="cd-conj cd-weil"><div class="cd-label">REASON</div><div class="cd-text">weil</div></div>
+              <div class="cd-sc cd-sc-weil"><div class="cd-label">SUB CLAUSE — MODAL LAST</div><div class="cd-text">sie in Deutschland arbeiten <span class="cd-vend" style="color:var(--green);">möchte</span></div></div>
+            </div>
+            <button class="speak-btn" onclick="speakSentence(this,'Amina lernt Deutsch, weil sie in Deutschland arbeiten möchte.')">🔊 Amina lernt Deutsch, weil sie in Deutschland arbeiten möchte.</button>
+          </div>
+
+          <div class="sec-label">weil — with Perfekt (haben/sein goes to end)</div>
+          <div class="clause-diagram">
+            <div class="clause-row">
+              <div class="cd-mc"><div class="cd-label">MAIN CLAUSE</div><div class="cd-text">Kofi ist glücklich</div></div>
+              <div class="cd-comma">,</div>
+              <div class="cd-conj cd-weil"><div class="cd-label">REASON</div><div class="cd-text">weil</div></div>
+              <div class="cd-sc cd-sc-weil"><div class="cd-label">PERFEKT — AUX LAST</div><div class="cd-text">er die Prüfung bestanden <span class="cd-vend" style="color:var(--green);">hat</span></div></div>
+            </div>
+            <button class="speak-btn" onclick="speakSentence(this,'Kofi ist glücklich, weil er die Prüfung bestanden hat.')">🔊 Kofi ist glücklich, weil er die Prüfung bestanden hat.</button>
+          </div>
+
+          <div class="sec-label">More weil sentences — African context</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--weil);">WEIL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima kauft das Kleid nicht, weil es zu teuer <strong style="color:var(--green);">ist</strong>.</div>
+                <div class="ex-en">Fatima doesn't buy the dress because it is too expensive.</div>
+                <div class="ex-note">Negation in the main clause doesn't affect the weil-clause structure. Verb ist goes to the end.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima kauft das Kleid nicht, weil es zu teuer ist.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--weil);">WEIL + MODAL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame geht zur Bibliothek, weil er für die Prüfung lernen <strong style="color:var(--green);">muss</strong>.</div>
+                <div class="ex-en">Kwame goes to the library because he has to study for the exam.</div>
+                <div class="ex-note">muss (modal) goes to the very end. The infinitive lernen goes just before the modal.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame geht zur Bibliothek, weil er für die Prüfung lernen muss.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--weil);">WEIL + SEIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina ist früh aufgestanden, weil sie einen frühen Bus nehmen <strong style="color:var(--green);">musste</strong>.</div>
+                <div class="ex-en">Amina got up early because she had to take an early bus.</div>
+                <div class="ex-note">musste (past modal) goes to end. nehmen (infinitive) comes just before it.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina ist früh aufgestanden, weil sie einen frühen Bus nehmen musste.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">Module 16 · Lesson 2 · Quiz</div><h2 class="lesson-h">weil — Check</h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 3: dass ── -->
+    <div id="lesson-2" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">Module 16 · Lesson 3 of 6</div>
+          <h2 class="lesson-h"><span style="color:var(--dass)">dass</span> — that</h2>
+          <p class="body-text"><strong style="color:var(--dass)">dass</strong> introduces a subordinate clause that reports what someone thinks, says, knows, or believes. In English you can often drop "that" — "I think (that) German is difficult." In German, <em>dass</em> cannot be omitted, and the verb always moves to the end.</p>
+
+          <div class="sec-label">Common verbs that take dass-clauses</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--dass);">MAIN CLAUSE VERBS THAT INTRODUCE DASS</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:12px;">
+              <div style="font-family:'DM Mono',monospace;padding:8px 10px;background:rgba(230,126,34,0.06);border-radius:6px;color:var(--dass);">ich denke</div><div style="padding:8px 10px;color:var(--gray);">I think</div><div style="font-family:'DM Mono',monospace;padding:8px 10px;color:var(--cream);font-size:11px;">ich denke, dass…</div>
+              <div style="font-family:'DM Mono',monospace;padding:8px 10px;background:rgba(230,126,34,0.06);border-radius:6px;color:var(--dass);">ich glaube</div><div style="padding:8px 10px;color:var(--gray);">I believe</div><div style="font-family:'DM Mono',monospace;padding:8px 10px;color:var(--cream);font-size:11px;">ich glaube, dass…</div>
+              <div style="font-family:'DM Mono',monospace;padding:8px 10px;background:rgba(230,126,34,0.06);border-radius:6px;color:var(--dass);">ich weiß</div><div style="padding:8px 10px;color:var(--gray);">I know</div><div style="font-family:'DM Mono',monospace;padding:8px 10px;color:var(--cream);font-size:11px;">ich weiß, dass…</div>
+              <div style="font-family:'DM Mono',monospace;padding:8px 10px;background:rgba(230,126,34,0.06);border-radius:6px;color:var(--dass);">ich finde</div><div style="padding:8px 10px;color:var(--gray);">I find/think</div><div style="font-family:'DM Mono',monospace;padding:8px 10px;color:var(--cream);font-size:11px;">ich finde, dass…</div>
+              <div style="font-family:'DM Mono',monospace;padding:8px 10px;background:rgba(230,126,34,0.06);border-radius:6px;color:var(--dass);">er sagt</div><div style="padding:8px 10px;color:var(--gray);">he says</div><div style="font-family:'DM Mono',monospace;padding:8px 10px;color:var(--cream);font-size:11px;">er sagt, dass…</div>
+              <div style="font-family:'DM Mono',monospace;padding:8px 10px;background:rgba(230,126,34,0.06);border-radius:6px;color:var(--dass);">es ist schade</div><div style="padding:8px 10px;color:var(--gray);">it's a pity</div><div style="font-family:'DM Mono',monospace;padding:8px 10px;color:var(--cream);font-size:11px;">es ist schade, dass…</div>
+            </div>
+          </div>
+
+          <div class="sec-label">dass in action — opinion sentences</div>
+          <div class="clause-diagram">
+            <div class="clause-row">
+              <div class="cd-mc"><div class="cd-label">MAIN CLAUSE</div><div class="cd-text">Ich denke</div></div>
+              <div class="cd-comma">,</div>
+              <div class="cd-conj cd-dass"><div class="cd-label">REPORT</div><div class="cd-text">dass</div></div>
+              <div class="cd-sc cd-sc-dass"><div class="cd-label">SUBORDINATE CLAUSE</div><div class="cd-text">Deutsch sehr interessant <span class="cd-vend" style="color:var(--green);">ist</span></div></div>
+            </div>
+            <button class="speak-btn" onclick="speakSentence(this,'Ich denke, dass Deutsch sehr interessant ist.')">🔊 Ich denke, dass Deutsch sehr interessant ist.</button>
+          </div>
+
+          <div class="clause-diagram">
+            <div class="clause-row">
+              <div class="cd-mc"><div class="cd-label">MAIN CLAUSE</div><div class="cd-text">Kofi sagt</div></div>
+              <div class="cd-comma">,</div>
+              <div class="cd-conj cd-dass"><div class="cd-label">REPORT</div><div class="cd-text">dass</div></div>
+              <div class="cd-sc cd-sc-dass"><div class="cd-label">SUBORDINATE CLAUSE</div><div class="cd-text">er morgen <span class="cd-vend" style="color:var(--green);">kommt</span></div></div>
+            </div>
+            <button class="speak-btn" onclick="speakSentence(this,'Kofi sagt, dass er morgen kommt.')">🔊 Kofi sagt, dass er morgen kommt.</button>
+          </div>
+
+          <div class="sec-label">dass — A2 Schreiben phrases ready to use</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--dass);">OPINION</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich finde, dass Deutschland sehr interessant <strong style="color:var(--green);">ist</strong>.</div>
+                <div class="ex-en">I find that Germany is very interesting.</div>
+                <div class="ex-note">Exam-ready opinion sentence. Use this exact structure in Schreiben when asked for your opinion.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich finde, dass Deutschland sehr interessant ist.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--dass);">BELIEF</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina glaubt, dass sie die Prüfung <strong style="color:var(--green);">besteht</strong>.</div>
+                <div class="ex-en">Amina believes that she will pass the exam.</div>
+                <div class="ex-note">glauben + dass. Verb besteht goes to end of dass-clause.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina glaubt, dass sie die Prüfung besteht.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--dass);">PITY</div>
+              <div style="flex:1;">
+                <div class="ex-de">Es ist schade, dass Fatima nicht <strong style="color:var(--green);">kommen kann</strong>.</div>
+                <div class="ex-en">It is a pity that Fatima cannot come.</div>
+                <div class="ex-note">Two verbs at the end: infinitive kommen + modal kann (modal last). Very natural A2 register.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Es ist schade, dass Fatima nicht kommen kann.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--dass);">KNOWLEDGE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame weiß, dass er noch viel lernen <strong style="color:var(--green);">muss</strong>.</div>
+                <div class="ex-en">Kwame knows that he still has a lot to learn.</div>
+                <div class="ex-note">wissen + dass. Modal muss goes to end, infinitive lernen just before it.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame weiß, dass er noch viel lernen muss.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">Module 16 · Lesson 3 · Quiz</div><h2 class="lesson-h">dass — Check</h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 4: wenn ── -->
+    <div id="lesson-3" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">Module 16 · Lesson 4 of 6</div>
+          <h2 class="lesson-h"><span style="color:var(--wenn)">wenn</span> — when / if</h2>
+          <p class="body-text"><strong style="color:var(--wenn)">wenn</strong> has two uses: it can express a <strong>condition</strong> (if something is true…) or a <strong>repeated time</strong> (whenever/each time something happens…). Both use the same word order: verb goes to the end of the wenn-clause.</p>
+          <p class="body-text">There is one additional rule unique to wenn: when the wenn-clause comes <strong>first</strong> in the sentence (before the main clause), the main clause verb moves to position 1 — directly after the comma. This is called <strong style="color:var(--wenn)">inversion</strong>.</p>
+
+          <div class="info-box">
+            <strong style="color:var(--gold)">The wenn inversion rule:</strong><br><br>
+            Normal order: Ich lerne Deutsch, <strong style="color:var(--wenn)">wenn</strong> ich Zeit <strong style="color:var(--green)">habe</strong>.<br>
+            <span style="font-size:12px;color:var(--gray);">Main clause first → wenn-clause after the comma → no inversion</span><br><br>
+            Inverted: <strong style="color:var(--wenn)">Wenn</strong> ich Zeit <strong style="color:var(--green)">habe</strong>, <strong style="color:var(--gold)">lerne</strong> ich Deutsch.<br>
+            <span style="font-size:12px;color:var(--gray);">wenn-clause first → comma → main clause VERB comes FIRST (before subject)</span>
+          </div>
+
+          <div class="sec-label">The inversion — wenn-clause in position 1</div>
+          <div class="inv-box">
+            <div class="inv-title">INVERSION: WENN-CLAUSE FILLS POSITION 1 → MAIN CLAUSE VERB COMES FIRST</div>
+            <div class="inv-ex">
+              <span style="color:var(--wenn);">Wenn</span> ich Zeit <span style="color:var(--green);">habe</span>, &nbsp;<span style="color:var(--gold);">lerne</span> <span style="color:var(--cream);">ich Deutsch.</span><br>
+              <span style="font-size:11px;color:var(--gray);">[wenn-clause · verb at end] , [main verb first · then subject]</span>
+            </div>
+          </div>
+
+          <div class="clause-diagram">
+            <div class="clause-row">
+              <div class="cd-conj cd-wenn"><div class="cd-label">WENN-CLAUSE FIRST</div><div class="cd-text">Wenn ich Zeit <span class="cd-vend" style="color:var(--green);">habe</span></div></div>
+              <div class="cd-comma">,</div>
+              <div class="cd-sc cd-sc-wenn" style="border-radius:0 10px 10px 0;">
+                <div class="cd-label">MAIN CLAUSE — VERB COMES FIRST</div>
+                <div class="cd-text"><span style="color:var(--gold);">lerne</span> ich Deutsch</div>
+              </div>
+            </div>
+            <button class="speak-btn" onclick="speakSentence(this,'Wenn ich Zeit habe, lerne ich Deutsch.')">🔊 Wenn ich Zeit habe, lerne ich Deutsch.</button>
+          </div>
+
+          <div class="sec-label">wenn — condition (if)</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--wenn);">CONDITION</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina geht ins Kino, wenn sie Geld <strong style="color:var(--green);">hat</strong>.</div>
+                <div class="ex-en">Amina goes to the cinema if she has money.</div>
+                <div class="ex-note">Main clause first → wenn-clause after comma → verb hat at end. No inversion needed here.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina geht ins Kino, wenn sie Geld hat.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--wenn);">INVERTED · CONDITION</div>
+              <div style="flex:1;">
+                <div class="ex-de">Wenn Kwame krank <strong style="color:var(--green);">ist</strong>, <strong style="color:var(--gold);">bleibt</strong> er zu Hause.</div>
+                <div class="ex-en">If Kwame is sick, he stays home.</div>
+                <div class="ex-note">wenn-clause first → verb bleibt comes first in main clause, then subject er. Inversion in action.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wenn Kwame krank ist, bleibt er zu Hause.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">wenn — repeated time (when/whenever)</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--wenn);">REPEATED TIME</div>
+              <div style="flex:1;">
+                <div class="ex-de">Wenn Kofi nach Hause <strong style="color:var(--green);">kommt</strong>, <strong style="color:var(--gold);">kocht</strong> er Fufu.</div>
+                <div class="ex-en">When(ever) Kofi comes home, he cooks fufu.</div>
+                <div class="ex-note">Repeated habit. wenn-clause first → inversion: kocht er (verb before subject) in main clause.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wenn Kofi nach Hause kommt, kocht er Fufu.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--wenn);">REPEATED TIME</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima fühlt sich glücklich, wenn sie Musik <strong style="color:var(--green);">hört</strong>.</div>
+                <div class="ex-en">Fatima feels happy when(ever) she listens to music.</div>
+                <div class="ex-note">Main clause first, no inversion. Verb hört goes to end of wenn-clause.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima fühlt sich glücklich, wenn sie Musik hört.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">Module 16 · Lesson 4 · Quiz</div><h2 class="lesson-h">wenn — Check</h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 5: ob ── -->
+    <div id="lesson-4" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">Module 16 · Lesson 5 of 6</div>
+          <h2 class="lesson-h"><span style="color:var(--ob)">ob</span> — whether / if</h2>
+          <p class="body-text"><strong style="color:var(--ob)">ob</strong> turns a direct yes/no question into an indirect question embedded inside a sentence. In English: "Is he coming?" → "I don't know <strong>whether</strong> he is coming." In German: "Kommt er?" → "Ich weiß nicht, <strong style="color:var(--ob)">ob</strong> er <strong style="color:var(--green)">kommt</strong>." The same verb-to-end rule applies.</p>
+
+          <div class="info-box">
+            <strong style="color:var(--gold)">ob vs wenn:</strong><br><br>
+            <strong style="color:var(--ob)">ob</strong> = whether/if (indirect question from a YES/NO question)<br>
+            <strong style="color:var(--wenn)">wenn</strong> = when/if (condition or time — not a question)<br><br>
+            "Kommt er?" → Ich frage, ob er <strong style="color:var(--green);">kommt</strong>. (indirect ❓)<br>
+            "Er kommt." → Ich bin froh, wenn er <strong style="color:var(--green);">kommt</strong>. (condition — not a question)
+          </div>
+
+          <div class="sec-label">Common verbs that introduce ob-clauses</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--ob);">VERBS THAT TYPICALLY TAKE OB</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;">
+              <div style="font-family:'DM Mono',monospace;padding:8px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--ob);">ich weiß nicht</div><div style="padding:8px 10px;color:var(--gray);">I don't know (whether)</div>
+              <div style="font-family:'DM Mono',monospace;padding:8px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--ob);">ich frage mich</div><div style="padding:8px 10px;color:var(--gray);">I wonder (whether)</div>
+              <div style="font-family:'DM Mono',monospace;padding:8px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--ob);">er fragt</div><div style="padding:8px 10px;color:var(--gray);">he asks (whether)</div>
+              <div style="font-family:'DM Mono',monospace;padding:8px 10px;background:rgba(39,174,96,0.06);border-radius:6px;color:var(--ob);">ich bin nicht sicher</div><div style="padding:8px 10px;color:var(--gray);">I'm not sure (whether)</div>
+            </div>
+          </div>
+
+          <div class="sec-label">ob turning questions into subordinate clauses</div>
+          <div class="clause-diagram">
+            <div class="clause-row">
+              <div class="cd-mc"><div class="cd-label">MAIN CLAUSE</div><div class="cd-text">Ich weiß nicht</div></div>
+              <div class="cd-comma">,</div>
+              <div class="cd-conj cd-ob"><div class="cd-label">INDIRECT ❓</div><div class="cd-text">ob</div></div>
+              <div class="cd-sc cd-sc-ob"><div class="cd-label">SUBORDINATE CLAUSE</div><div class="cd-text">er morgen <span class="cd-vend" style="color:var(--green);">kommt</span></div></div>
+            </div>
+            <button class="speak-btn" onclick="speakSentence(this,'Ich weiß nicht, ob er morgen kommt.')">🔊 Ich weiß nicht, ob er morgen kommt.</button>
+          </div>
+
+          <div class="sec-label">Direct question → indirect question with ob</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.1);color:var(--ob);">DIRECT → OB</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kommt der Bus pünktlich? → Fatima fragt, ob der Bus pünktlich <strong style="color:var(--green);">kommt</strong>.</div>
+                <div class="ex-en">Is the bus on time? → Fatima asks whether the bus is on time.</div>
+                <div class="ex-note">Direct question has verb first. ob-clause: verb goes to end. kommt → kommt (end).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima fragt, ob der Bus pünktlich kommt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.1);color:var(--ob);">DIRECT → OB</div>
+              <div style="flex:1;">
+                <div class="ex-de">Hat Kwame Zeit? → Amina fragt, ob Kwame Zeit <strong style="color:var(--green);">hat</strong>.</div>
+                <div class="ex-en">Does Kwame have time? → Amina asks whether Kwame has time.</div>
+                <div class="ex-note">hat moves from position 1 (direct question) to end (ob-clause).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina fragt, ob Kwame Zeit hat.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.1);color:var(--ob);">OB + MODAL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi weiß nicht, ob er die Prüfung bestehen <strong style="color:var(--green);">kann</strong>.</div>
+                <div class="ex-en">Kofi doesn't know whether he can pass the exam.</div>
+                <div class="ex-note">Modal kann goes to end. Infinitive bestehen goes just before the modal.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi weiß nicht, ob er die Prüfung bestehen kann.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">Module 16 · Lesson 5 · Quiz</div><h2 class="lesson-h">ob — Check</h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 6: All Four + Mistakes ── -->
+    <div id="lesson-5" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">Module 16 · Lesson 6 of 6</div>
+          <h2 class="lesson-h">Kwame, Amina, Kofi, Fatima — all four conjunctions</h2>
+          <p class="body-text">The #1 mistake for African English speakers writing A2 Schreiben: keeping the verb in position 2 after weil. "Ich lerne Deutsch, weil ich <strong style="color:var(--red);">möchte</strong> in Deutschland arbeiten." This sounds natural in English but is penalised in every German exam. The verb must go to the END.</p>
+
+          <div class="sec-label">The 4 most common African learner mistakes</div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">MISTAKE 1 · verb in pos.2 after weil</div>
+              <div class="wr-word">..., weil ich möchte arbeiten.<br>..., weil er hat keine Zeit.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT · verb at END after weil</div>
+              <div class="wr-word">..., weil ich arbeiten möchte.<br>..., weil er keine Zeit hat.</div>
+            </div>
+          </div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">MISTAKE 2 · no comma before conjunction</div>
+              <div class="wr-word">Ich lerne Deutsch weil es wichtig ist.<br>Er sagt dass er kommt.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT · always a comma</div>
+              <div class="wr-word">Ich lerne Deutsch, weil es wichtig ist.<br>Er sagt, dass er kommt.</div>
+            </div>
+          </div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">MISTAKE 3 · no inversion after wenn-first</div>
+              <div class="wr-word">Wenn ich Zeit habe, ich lerne.<br>Wenn er kommt, wir essen.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT · inversion after wenn-first</div>
+              <div class="wr-word">Wenn ich Zeit habe, lerne ich.<br>Wenn er kommt, essen wir.</div>
+            </div>
+          </div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">MISTAKE 4 · ob used as wenn</div>
+              <div class="wr-word">Ich bin froh, ob er kommt.<br>Ich komme, ob ich Zeit habe.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT · wenn for conditions</div>
+              <div class="wr-word">Ich bin froh, wenn er kommt.<br>Ich komme, wenn ich Zeit habe.</div>
+            </div>
+          </div>
+
+          <div class="sec-label">All four conjunctions — African context paragraph</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--weil);">WEIL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame lernt jeden Tag Deutsch, weil er in Berlin studieren <strong style="color:var(--green);">möchte</strong>.</div>
+                <div class="ex-en">Kwame studies German every day because he wants to study in Berlin.</div>
+                <div class="ex-note">weil + modal möchte at end. Infinitive studieren goes just before the modal.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame lernt jeden Tag Deutsch, weil er in Berlin studieren möchte.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--dass);">DASS</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina denkt, dass die Deutschprüfung nicht so schwer <strong style="color:var(--green);">ist</strong>.</div>
+                <div class="ex-en">Amina thinks that the German exam is not so difficult.</div>
+                <div class="ex-note">denken + dass. Verb ist goes to the end of the dass-clause.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina denkt, dass die Deutschprüfung nicht so schwer ist.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--wenn);">WENN · INVERTED</div>
+              <div style="flex:1;">
+                <div class="ex-de">Wenn Kofi die Prüfung <strong style="color:var(--green);">besteht</strong>, <strong style="color:var(--gold);">feiert</strong> er mit seiner Familie.</div>
+                <div class="ex-en">When Kofi passes the exam, he will celebrate with his family.</div>
+                <div class="ex-note">wenn-clause first: besteht at end. Main clause inverted: feiert er (verb before subject).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wenn Kofi die Prüfung besteht, feiert er mit seiner Familie.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.1);color:var(--ob);">OB</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima fragt, ob der Deutschkurs teuer <strong style="color:var(--green);">ist</strong>.</div>
+                <div class="ex-en">Fatima asks whether the German course is expensive.</div>
+                <div class="ex-note">Indirect yes/no question. ob + subject + adjective + verb at end. Comma before ob.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima fragt, ob der Deutschkurs teuer ist.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="info-box"><strong style="color:var(--gold)">Exam tip — Goethe A2 Schreiben:</strong><br><br>
+          The A2 writing task often asks you to: give a reason, express an opinion, describe a condition, or report something. These map directly to the four conjunctions:<br><br>
+          ✓ Give a reason → <strong style="color:var(--weil)">weil</strong> (because)<br>
+          ✓ Express opinion → <strong style="color:var(--dass)">Ich finde/denke/glaube, dass</strong><br>
+          ✓ Describe condition → <strong style="color:var(--wenn)">wenn</strong> (if/when)<br>
+          ✓ Express uncertainty → <strong style="color:var(--ob)">Ich weiß nicht, ob</strong><br><br>
+          Each of these scores under "grammatische Strukturen". Use at least two different conjunction types in your writing task.
+          </div>
+
+          <div class="success-box">
+            <strong style="color:var(--green)">What you now know:</strong><br><br>
+            ✓ Subordinate clauses send the verb to the END — always<br>
+            ✓ Always use a comma before weil, dass, wenn, ob<br>
+            ✓ <strong style="color:var(--weil)">weil</strong> = because (reason) — most common in A2 Schreiben<br>
+            ✓ <strong style="color:var(--dass)">dass</strong> = that (opinion, belief, knowledge, reporting)<br>
+            ✓ <strong style="color:var(--wenn)">wenn</strong> = when/if (condition or repeated time) — inversion if wenn-clause comes first<br>
+            ✓ <strong style="color:var(--ob)">ob</strong> = whether (indirect yes/no questions) — not to be confused with wenn
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Start Final Quiz →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">Module 16 · Final Quiz</div><h2 class="lesson-h">Module Complete — Final Check</h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Previous</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="showOverview()"><span class="nav-icon">📚</span><span class="nav-label">Overview</span></button>
+  <button class="nav-item" onclick="resumeLesson()"><span class="nav-icon">▶️</span><span class="nav-label">Resume</span></button>
+</nav>
+
+<script>
+var synth=(typeof window!=='undefined'&&window.speechSynthesis)?window.speechSynthesis:null;
+var deVoice=null,speechUnlocked=false;
+function loadVoices(){ if(!synth)return; try{ var v=synth.getVoices(); deVoice=v.find(function(x){return x.lang==='de-DE';})||v.find(function(x){return x.lang&&x.lang.startsWith('de');})||null; }catch(e){} }
+if(synth){ try{ loadVoices(); if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadVoices; }catch(e){} }
+function unlockSpeech(){ if(speechUnlocked||!synth)return; try{ var s=new SpeechSynthesisUtterance(''); s.volume=0; synth.speak(s); speechUnlocked=true; }catch(e){} }
+document.addEventListener('touchstart',unlockSpeech,{once:true,passive:true});
+document.addEventListener('click',unlockSpeech,{once:true});
+function speakDE(t){ if(!synth)return null; try{ if(!deVoice)loadVoices(); synth.cancel(); var u=new SpeechSynthesisUtterance(t); u.lang='de-DE'; u.rate=0.85; u.pitch=1.0; u.volume=1.0; if(deVoice)u.voice=deVoice; synth.speak(u); return u; }catch(e){return null;} }
+function speakSentence(btn,text){ unlockSpeech(); document.querySelectorAll('.speak-btn').forEach(function(b){b.classList.remove('speaking');}); if(btn&&btn.classList)btn.classList.add('speaking'); var u=speakDE(text); if(u){ u.onend=function(){if(btn&&btn.classList)btn.classList.remove('speaking');}; u.onerror=function(){if(btn&&btn.classList)btn.classList.remove('speaking');}; }else{ setTimeout(function(){if(btn&&btn.classList)btn.classList.remove('speaking');},1500); } }
+
+var currentLesson=0, xp=0, TOTAL=6;
+
+var QD={
+  0:[
+    {q:'What happens to the verb in a subordinate clause after weil, dass, wenn, or ob?',
+     hint:'Think about how German word order in a subordinate clause differs from a main clause.',
+     opts:['It stays in position 2, just like in a main clause','It disappears — you only need one verb per sentence','It moves to the very END of the subordinate clause','It moves to position 1, before the subject'],
+     ans:2,
+     exp:'The verb moves to the very END of the subordinate clause. This is the single most important rule for subordinate clauses in German. Compare: "Ich lerne Deutsch." (verb lerne in position 2) vs "...weil ich Deutsch lerne." (verb lerne at the end). Every subordinating conjunction — weil, dass, wenn, ob — triggers this same movement.',
+     rule:'Subordinate clause golden rule: conjunction + subject + [middle] + VERB (end). The verb ALWAYS goes to the last position after weil/dass/wenn/ob.'}
+  ],
+  1:[
+    {q:'Amina learns German because she wants to work in Germany. Which weil sentence is correct?',
+     hint:'After weil, the verb goes to the end. With a modal (möchte), the modal goes LAST and the infinitive goes just before it.',
+     opts:['Amina lernt Deutsch, weil sie möchte in Deutschland arbeiten.','Amina lernt Deutsch, weil sie in Deutschland arbeiten möchte.','Amina lernt Deutsch weil sie in Deutschland arbeiten möchte.','Amina lernt Deutsch, weil in Deutschland arbeiten sie möchte.'],
+     ans:1,
+     exp:'"Amina lernt Deutsch, weil sie in Deutschland arbeiten möchte." — Two rules applied: (1) comma before weil, (2) modal möchte goes to the very end, infinitive arbeiten goes just before it. Option A keeps möchte in position 2 — the most common error. Option C is missing the comma. Option D has wrong word order in the subordinate clause.',
+     rule:'weil + modal: weil + subject + [middle] + INFINITIVE + MODAL(last). ...weil sie in Deutschland arbeiten möchte. Modal always last.'}
+  ],
+  2:[
+    {q:'Kofi says he is coming tomorrow. Which dass sentence is correct?',
+     hint:'dass sends the verb to the end. Remember the comma. Check: where does "kommt" go?',
+     opts:['Kofi sagt, dass er kommt morgen.','Kofi sagt dass er morgen kommt.','Kofi sagt, dass er morgen kommt.','Kofi sagt, dass morgen er kommt.'],
+     ans:2,
+     exp:'"Kofi sagt, dass er morgen kommt." — After dass, the verb kommt goes to the very end of the clause. The comma before dass is required. Option A puts kommt before morgen — wrong, the verb must be last. Option B is missing the comma before dass. Option D puts the adverb morgen before the subject — unusual and unnatural.',
+     rule:'dass + verb to end: Kofi sagt, dass er morgen kommt. Adverbs and objects stay in the middle; verb goes last.'}
+  ],
+  3:[
+    {q:'The wenn-clause comes first: "Wenn Kwame Zeit hat, ___." He learns German. Which is correct?',
+     hint:'When the wenn-clause comes first, the main clause undergoes inversion: verb comes BEFORE the subject.',
+     opts:['...lernt er Deutsch.','...er lernt Deutsch.','...Deutsch lernt er.','...er Deutsch lernt.'],
+     ans:0,
+     exp:'"Wenn Kwame Zeit hat, lernt er Deutsch." — When the wenn-clause takes position 1 in the sentence, the main clause verb must come directly after the comma (position 2), BEFORE the subject. So: lernt (verb) + er (subject) + Deutsch. Not "er lernt" — that is not inverted. This inversion rule applies whenever any subordinate clause comes first.',
+     rule:'Wenn-clause first → inversion in main clause: verb comes first, then subject. Wenn X ...-VERB, MAIN-VERB + subject + ...'}
+  ],
+  4:[
+    {q:'Fatima asks whether the bus is on time. Which sentence is correct?',
+     hint:'ob introduces an indirect yes/no question. The verb goes to the end of the ob-clause.',
+     opts:['Fatima fragt, ob ist der Bus pünktlich.','Fatima fragt, ob der Bus pünktlich ist.','Fatima fragt ob der Bus pünktlich ist.','Fatima fragt, ob der Bus ist pünktlich.'],
+     ans:1,
+     exp:'"Fatima fragt, ob der Bus pünktlich ist." — ob sends the verb ist to the end of the clause. Comma before ob is required. Option A keeps ist in position 2 (as if it were a direct question) — wrong. Option C is missing the comma. Option D places ist before pünktlich — wrong, the verb must be at the very end.',
+     rule:'ob clause: ob + subject + [middle/adjective] + VERB(end). Fatima fragt, ob der Bus pünktlich ist. Comma before ob always.'}
+  ],
+  5:[
+    {q:'Which sentence is completely correct — right comma, right word order, right conjunction?',
+     hint:'Check: comma present? Verb at end of subordinate clause? Correct conjunction (weil not wenn for a reason)?',
+     opts:['Ich lerne Deutsch, weil ich möchte in Deutschland arbeiten.','Ich lerne Deutsch, weil ich in Deutschland arbeiten möchte.','Ich lerne Deutsch weil ich in Deutschland arbeiten möchte.','Ich lerne Deutsch, wenn ich in Deutschland arbeiten möchte.'],
+     ans:1,
+     exp:'"Ich lerne Deutsch, weil ich in Deutschland arbeiten möchte." — Correct on all counts: (1) comma before weil, (2) weil is the right conjunction for giving a reason, (3) modal möchte is at the very end of the subordinate clause with infinitive arbeiten just before it. Option A keeps möchte in position 2 — the #1 weil mistake. Option C is missing the comma. Option D uses wenn (when/if) instead of weil (because) — wrong conjunction for a reason.',
+     rule:'Perfect weil sentence: MAIN CLAUSE, weil SUBJECT [middle] INFINITIVE MODAL. Ich lerne Deutsch, weil ich in Deutschland arbeiten möchte.'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">QUESTION '+(s.cur+1)+' OF '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint">'+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Next Question →':'See Results →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Correct!':'✗ Not quite'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent=q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' correct</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfect.':pct>=60?'Good work.':'Review and try again.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.12);border:1px solid var(--gold);border-radius:50px;padding:9px 22px;color:var(--gold);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Complete Module 16 →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Next Lesson →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">🔗</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Module 16 Complete!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">Subordinate clauses mastered. You can now connect ideas with weil, dass, wenn, and ob — with the verb correctly at the end every time. This structure alone will significantly improve your Goethe A2 Schreiben score.</p><div class="xp-badge">⚡ '+xp+' XP Earned</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">A2 Module 4 of 6 complete. Next: Module 17 — Comparative &amp; Superlative (größer, am größten).</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Back to Overview</button></div>'; }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function resumeLesson(){ goLesson(currentLesson); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+<script src="./ai-tutor.js" data-module="16"></script>
+</body>
+</html>
