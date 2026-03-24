@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Module 17: Comparative &amp; Superlative</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --comp:#3498db; --sup:#e67e22; --irr:#9b59b6; --uml:#27ae60;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:rgba(10,10,10,0.96); backdrop-filter:blur(20px); border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:12px 0 20px; z-index:100; }
+  .nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:8px 16px; border-radius:12px; transition:all 0.2s; border:none; background:none; color:var(--gray); }
+  .nav-item:hover, .nav-item.active { color:var(--gold); }
+  .nav-icon { font-size:20px; }
+  .nav-label { font-size:10px; letter-spacing:1px; text-transform:uppercase; font-family:'DM Mono',monospace; }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--gold); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--gold); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--gold); color:var(--black); width:100%; }
+  .btn-primary:hover { background:var(--gold-light); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(201,168,76,0.2); }
+  .speak-btn.speaking { background:var(--gold); color:var(--black); }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-en { font-size:12px; color:var(--gray); margin-bottom:6px; }
+  .ex-note { font-size:12px; color:var(--cream); line-height:1.6; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Sans',sans-serif; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--gold); background:rgba(201,168,76,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(201,168,76,0.1); border-radius:8px; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(201,168,76,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(201,168,76,0.08); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(201,168,76,0.12); border:1px solid var(--gold); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--gold); font-size:18px; margin:18px 0; }
+
+  /* WRONG/RIGHT */
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.2; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+
+  /* CONJ TABLE */
+  .conj-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; }
+  .conj-title { font-size:10px; letter-spacing:2.5px; font-family:'DM Mono',monospace; margin-bottom:12px; }
+
+  /* GRADUATION ROW — base → comparative → superlative */
+  .grad-row { display:flex; align-items:center; gap:8px; margin:12px 0; flex-wrap:wrap; }
+  .grad-cell { display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .grad-label { font-size:9px; letter-spacing:2px; font-family:'DM Mono',monospace; }
+  .grad-word { font-family:'DM Mono',monospace; font-size:16px; font-weight:700; padding:9px 14px; border-radius:10px; }
+  .grad-arrow { font-size:16px; color:var(--gold); padding-bottom:16px; }
+  .gw-base { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); color:var(--cream); }
+  .gl-base { color:var(--gray); }
+  .gw-comp { background:rgba(52,152,219,0.12); border:1px solid rgba(52,152,219,0.35); color:var(--comp); }
+  .gl-comp { color:var(--comp); }
+  .gw-sup  { background:rgba(230,126,34,0.12); border:1px solid rgba(230,126,34,0.35); color:var(--sup); }
+  .gl-sup  { color:var(--sup); }
+
+  /* FULL OVERVIEW TABLE */
+  .grad-table-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+  .grad-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .grad-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:9px 12px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.07); color:var(--gray); }
+  .grad-table td { padding:9px 12px; border-bottom:1px solid rgba(255,255,255,0.04); font-family:'DM Mono',monospace; font-size:13px; }
+  .grad-table tr:last-child td { border-bottom:none; }
+  .gt-base { color:var(--cream); }
+  .gt-comp { color:var(--comp); font-weight:700; }
+  .gt-sup  { color:var(--sup); font-weight:700; }
+  .gt-note { color:var(--gray); font-size:11px; }
+  .gt-irr  { background:rgba(155,89,182,0.05); }
+
+  /* IRREGULAR CARD GRID */
+  .irr-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0; }
+  .irr-card { background:var(--card2-bg); border:1px solid rgba(155,89,182,0.2); border-radius:12px; padding:16px; }
+  .irr-eng { font-size:10px; letter-spacing:1.5px; font-family:'DM Mono',monospace; color:var(--irr); margin-bottom:8px; }
+  .irr-base-w { font-family:'DM Mono',monospace; font-size:15px; color:var(--cream); margin-bottom:4px; }
+  .irr-comp-w { font-family:'DM Mono',monospace; font-size:15px; color:var(--comp); font-weight:700; margin-bottom:4px; }
+  .irr-sup-w  { font-family:'DM Mono',monospace; font-size:15px; color:var(--sup); font-weight:700; }
+
+  /* ALS / WIE comparison */
+  .alswie-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0; }
+  .aw-card { border-radius:12px; padding:16px; }
+  .aw-als  { background:rgba(52,152,219,0.07); border:1px solid rgba(52,152,219,0.25); }
+  .aw-wie  { background:rgba(201,168,76,0.06); border:1px solid rgba(201,168,76,0.22); }
+  .aw-word { font-family:'Playfair Display',serif; font-size:24px; font-weight:900; margin-bottom:4px; }
+  .aw-als .aw-word  { color:var(--comp); }
+  .aw-wie .aw-word  { color:var(--gold); }
+  .aw-meaning { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; margin-bottom:8px; }
+  .aw-als .aw-meaning { color:var(--comp); }
+  .aw-wie .aw-meaning { color:var(--gold); }
+  .aw-rule { font-size:12px; color:var(--cream); line-height:1.65; margin-bottom:8px; }
+  .aw-ex { font-family:'DM Mono',monospace; font-size:11px; color:var(--gray); line-height:1.75; }
+
+  /* UMLAUT HIGHLIGHT */
+  .uml-change { color:var(--uml); font-weight:900; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .lesson-h{font-size:22px;} .wr-grid{grid-template-columns:1fr;} .irr-grid{grid-template-columns:1fr;} .alswie-grid{grid-template-columns:1fr;} .grad-row{gap:5px;} .grad-word{font-size:13px;padding:7px 10px;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">MODULE 17 · A2</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">A2 · Adjectives</div>
+    <h1 class="lesson-h" style="font-size:36px;">Comparative &amp;<br><span style="color:var(--gold)">Superlative</span></h1>
+    <p class="body-text">To say "bigger", "faster", "the best" in German you don't use a separate word like English "more" or "most". Instead, you add an ending directly to the adjective: <strong style="color:var(--comp)">schnell → schneller</strong>. For the superlative: <strong style="color:var(--sup)">schnell → am schnellsten</strong>. There are also irregular forms — gut, viel, gern — that must be memorised. Both comparative and superlative appear in A2 Schreiben tasks whenever you describe preferences or make comparisons.</p>
+    <div class="info-box"><strong style="color:var(--gold)">The African learner trap:</strong> In English, you say "more fast" or "more expensive". Translating this literally into German — "mehr schnell", "mehr teuer" — is wrong. German never uses "mehr" to form comparatives of adjectives. It always adds the <strong style="color:var(--comp)">-er</strong> ending directly to the adjective.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">📈</div><div><div class="lc-title">Lesson 1 — Forming the Comparative</div><div class="lc-desc">Add -er to the adjective. Umlaut changes for a/o/u vowels. schnell → schneller.</div></div><div class="lc-tag" style="color:var(--gold);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">⚖️</div><div><div class="lc-title">Lesson 2 — als vs so...wie</div><div class="lc-desc">Berlin ist größer als Nairobi. Accra ist so groß wie Lagos.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">🏆</div><div><div class="lc-title">Lesson 3 — Forming the Superlative</div><div class="lc-desc">am + adjective + -sten. am schnellsten, am ältesten. Das beste Restaurant.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">⚠️</div><div><div class="lc-title">Lesson 4 — Irregular Forms</div><div class="lc-desc">gut → besser → am besten. viel → mehr → am meisten. gern → lieber → am liebsten.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">📝</div><div><div class="lc-title">Lesson 5 — Comparative with Adjective Endings</div><div class="lc-desc">ein schnellerer Bus, der schnellste Bus. Combining comparative with declension.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lesson 6 — Kwame, Amina, Kofi, Fatima</div><div class="lc-desc">African cities, food, and daily comparisons. Common mistakes. Exam tips.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Begin Lesson 1 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lessons</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LESSON 1: Forming the Comparative ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">Module 17 · Lesson 1 of 6</div>
+          <h2 class="lesson-h">Forming the <span style="color:var(--comp)">comparative</span></h2>
+          <p class="body-text">The comparative in German is simple: add <strong style="color:var(--comp)">-er</strong> to the adjective. That's it. Unlike English, you never use a separate word like "more". "More expensive" is not "mehr teuer" — it is <strong style="color:var(--comp)">teurer</strong>.</p>
+
+          <div class="info-box">
+            <strong style="color:var(--gold)">Comparative formula:</strong><br><br>
+            adjective + <strong style="color:var(--comp)">-er</strong><br><br>
+            schnell → schnell<strong style="color:var(--comp);">er</strong> &nbsp;·&nbsp; teuer → teur<strong style="color:var(--comp);">er</strong> &nbsp;·&nbsp; klein → klein<strong style="color:var(--comp);">er</strong>
+          </div>
+
+          <div class="sec-label">Base → comparative — the -er suffix</div>
+          <div class="grad-row">
+            <div class="grad-cell"><div class="grad-label gl-base">BASE</div><div class="grad-word gw-base">schnell</div></div>
+            <div class="grad-arrow">→</div>
+            <div class="grad-cell"><div class="grad-label gl-comp">COMPARATIVE</div><div class="grad-word gw-comp">schneller</div></div>
+          </div>
+          <div class="grad-row">
+            <div class="grad-cell"><div class="grad-label gl-base">BASE</div><div class="grad-word gw-base">klein</div></div>
+            <div class="grad-arrow">→</div>
+            <div class="grad-cell"><div class="grad-label gl-comp">COMPARATIVE</div><div class="grad-word gw-comp">kleiner</div></div>
+          </div>
+          <div class="grad-row">
+            <div class="grad-cell"><div class="grad-label gl-base">BASE</div><div class="grad-word gw-base">teuer</div></div>
+            <div class="grad-arrow">→</div>
+            <div class="grad-cell"><div class="grad-label gl-comp">COMPARATIVE</div><div class="grad-word gw-comp">teurer</div></div>
+          </div>
+
+          <div class="sec-label">Umlaut changes — a / o / u → ä / ö / ü</div>
+          <p class="body-text">Many one-syllable adjectives with the vowels <strong>a</strong>, <strong>o</strong>, or <strong>u</strong> add an umlaut in the comparative. This must be memorised — it cannot be predicted by a rule.</p>
+
+          <div class="grad-table-wrap">
+            <div class="conj-title" style="color:var(--uml);">ADJECTIVES WITH UMLAUT IN COMPARATIVE</div>
+            <table class="grad-table">
+              <thead><tr><th>BASE</th><th style="color:var(--comp);">COMPARATIVE</th><th>MEANING</th></tr></thead>
+              <tbody>
+                <tr><td class="gt-base">alt</td><td class="gt-comp"><span class="uml-change">ä</span>lter</td><td class="gt-note">old → older</td></tr>
+                <tr><td class="gt-base">jung</td><td class="gt-comp">j<span class="uml-change">ü</span>nger</td><td class="gt-note">young → younger</td></tr>
+                <tr><td class="gt-base">lang</td><td class="gt-comp">l<span class="uml-change">ä</span>nger</td><td class="gt-note">long → longer</td></tr>
+                <tr><td class="gt-base">kurz</td><td class="gt-comp">k<span class="uml-change">ü</span>rzer</td><td class="gt-note">short → shorter</td></tr>
+                <tr><td class="gt-base">warm</td><td class="gt-comp">w<span class="uml-change">ä</span>rmer</td><td class="gt-note">warm → warmer</td></tr>
+                <tr><td class="gt-base">kalt</td><td class="gt-comp">k<span class="uml-change">ä</span>lter</td><td class="gt-note">cold → colder</td></tr>
+                <tr><td class="gt-base">groß</td><td class="gt-comp">gr<span class="uml-change">ö</span>ßer</td><td class="gt-note">big → bigger</td></tr>
+                <tr><td class="gt-base">stark</td><td class="gt-comp">st<span class="uml-change">ä</span>rker</td><td class="gt-note">strong → stronger</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue);">Not all adjectives get umlaut:</strong> jung → jünger (yes) but klein → kleiner (no umlaut). The adjectives that DON'T umlaut include: klein, schön, schnell, teuer, billig, neu, interessant. When in doubt, check — but the ones in the table above are high-frequency and must be memorised.</div>
+
+          <div class="sec-label">Regular comparative — all A2 key adjectives</div>
+          <div class="grad-table-wrap">
+            <div class="conj-title" style="color:var(--comp);">REGULAR COMPARATIVE — adjective + -er</div>
+            <table class="grad-table">
+              <thead><tr><th>BASE</th><th style="color:var(--comp);">COMPARATIVE</th><th>ENGLISH</th></tr></thead>
+              <tbody>
+                <tr><td class="gt-base">schnell</td><td class="gt-comp">schneller</td><td class="gt-note">faster</td></tr>
+                <tr><td class="gt-base">neu</td><td class="gt-comp">neuer</td><td class="gt-note">newer</td></tr>
+                <tr><td class="gt-base">klein</td><td class="gt-comp">kleiner</td><td class="gt-note">smaller</td></tr>
+                <tr><td class="gt-base">billig</td><td class="gt-comp">billiger</td><td class="gt-note">cheaper</td></tr>
+                <tr><td class="gt-base">teuer</td><td class="gt-comp">teurer</td><td class="gt-note">more expensive</td></tr>
+                <tr><td class="gt-base">interessant</td><td class="gt-comp">interessanter</td><td class="gt-note">more interesting</td></tr>
+                <tr><td class="gt-base">schön</td><td class="gt-comp">schöner</td><td class="gt-note">more beautiful</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">Module 17 · Lesson 1 · Quiz</div><h2 class="lesson-h">Comparative — First Check</h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 2: als vs so...wie ── -->
+    <div id="lesson-1" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">Module 17 · Lesson 2 of 6</div>
+          <h2 class="lesson-h"><span style="color:var(--comp)">als</span> vs <span style="color:var(--gold)">so…wie</span></h2>
+          <p class="body-text">Once you have the comparative form, you need the right word to connect the two things you are comparing. German uses two different constructions for "than" and "as…as" — and they are never interchangeable.</p>
+
+          <div class="alswie-grid">
+            <div class="aw-card aw-als">
+              <div class="aw-word">als</div>
+              <div class="aw-meaning">THAN · UNEQUAL</div>
+              <div class="aw-rule">Use after the <strong>comparative</strong> form (-er). One thing is bigger/faster/better than the other.</div>
+              <div class="aw-ex">größer <strong>als</strong><br>schneller <strong>als</strong><br>besser <strong>als</strong></div>
+            </div>
+            <div class="aw-card aw-wie">
+              <div class="aw-word">so…wie</div>
+              <div class="aw-meaning">AS…AS · EQUAL</div>
+              <div class="aw-rule">Use with the <strong>base form</strong> (no -er) when two things are equal. "so" comes before the adjective.</div>
+              <div class="aw-ex"><strong>so</strong> groß <strong>wie</strong><br><strong>so</strong> schnell <strong>wie</strong><br><strong>so</strong> gut <strong>wie</strong></div>
+            </div>
+          </div>
+
+          <div class="danger-box">
+            <strong style="color:var(--red);">Never mix them:</strong><br>
+            ✗ Berlin ist größer <strong>wie</strong> Nairobi. (wrong — wie after comparative)<br>
+            ✗ Berlin ist <strong>als</strong> groß wie Nairobi. (wrong — als before base form)<br>
+            ✓ Berlin ist größer <strong style="color:var(--comp);">als</strong> Nairobi.<br>
+            ✓ Berlin ist <strong style="color:var(--gold);">so</strong> groß <strong style="color:var(--gold);">wie</strong> eine andere große Stadt.
+          </div>
+
+          <div class="sec-label">als — unequal comparisons</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--comp);">ALS · BIGGER</div>
+              <div style="flex:1;">
+                <div class="ex-de">Berlin ist gr<span class="uml-change">ö</span>ßer <strong style="color:var(--comp);">als</strong> Nairobi.</div>
+                <div class="ex-en">Berlin is bigger than Nairobi.</div>
+                <div class="ex-note">groß → größer (umlaut). Comparative + als.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Berlin ist größer als Nairobi.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--comp);">ALS · CHEAPER</div>
+              <div style="flex:1;">
+                <div class="ex-de">Der Markt in Accra ist billiger <strong style="color:var(--comp);">als</strong> der Supermarkt.</div>
+                <div class="ex-en">The market in Accra is cheaper than the supermarket.</div>
+                <div class="ex-note">billig → billiger. Regular comparative + als.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Der Markt in Accra ist billiger als der Supermarkt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--comp);">ALS · OLDER</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame ist <span class="uml-change">ä</span>lter <strong style="color:var(--comp);">als</strong> Kofi.</div>
+                <div class="ex-en">Kwame is older than Kofi.</div>
+                <div class="ex-note">alt → älter (umlaut). Comparative + als.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame ist älter als Kofi.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">so…wie — equal comparisons</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--gold);">SO…WIE · EQUAL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Accra ist <strong style="color:var(--gold);">so</strong> schön <strong style="color:var(--gold);">wie</strong> Lagos.</div>
+                <div class="ex-en">Accra is as beautiful as Lagos.</div>
+                <div class="ex-note">Equal comparison. Base form schön (no -er). so…wie brackets the adjective.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Accra ist so schön wie Lagos.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--gold);">SO…WIE · EQUAL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina spricht <strong style="color:var(--gold);">so</strong> gut Deutsch <strong style="color:var(--gold);">wie</strong> Fatima.</div>
+                <div class="ex-en">Amina speaks German as well as Fatima.</div>
+                <div class="ex-note">Equal comparison with adverb. Base form gut (no -er). so gut wie.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina spricht so gut Deutsch wie Fatima.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--gold);">NICHT SO…WIE · UNEQUAL ≠</div>
+              <div style="flex:1;">
+                <div class="ex-de">Köln ist <strong style="color:var(--gold);">nicht so</strong> groß <strong style="color:var(--gold);">wie</strong> Berlin.</div>
+                <div class="ex-en">Cologne is not as big as Berlin.</div>
+                <div class="ex-note">Add nicht before so to say "not as…as". Still uses base form. Very useful for A2 writing.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Köln ist nicht so groß wie Berlin.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">Module 17 · Lesson 2 · Quiz</div><h2 class="lesson-h">als vs so…wie — Check</h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 3: Superlative ── -->
+    <div id="lesson-2" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">Module 17 · Lesson 3 of 6</div>
+          <h2 class="lesson-h">Forming the <span style="color:var(--sup)">superlative</span></h2>
+          <p class="body-text">The superlative means "the most" or "the -est". German has two superlative forms depending on how you use the adjective in the sentence.</p>
+
+          <div class="info-box">
+            <strong style="color:var(--gold)">Two superlative forms:</strong><br><br>
+            <strong style="color:var(--sup)">1. am + adjective + -sten</strong> — used predicatively (after ist/sind/war)<br>
+            &nbsp;&nbsp;&nbsp;Der Bus ist am schnellsten. (The bus is the fastest.)<br><br>
+            <strong style="color:var(--sup)">2. definite article + adjective + -ste/-sten</strong> — used attributively (before a noun)<br>
+            &nbsp;&nbsp;&nbsp;der schnellste Bus (the fastest bus)
+          </div>
+
+          <div class="sec-label">Form 1 — am + -sten (predicative)</div>
+          <div class="grad-row">
+            <div class="grad-cell"><div class="grad-label gl-base">BASE</div><div class="grad-word gw-base">schnell</div></div>
+            <div class="grad-arrow">→</div>
+            <div class="grad-cell"><div class="grad-label gl-comp">COMPARATIVE</div><div class="grad-word gw-comp">schneller</div></div>
+            <div class="grad-arrow">→</div>
+            <div class="grad-cell"><div class="grad-label gl-sup">SUPERLATIVE</div><div class="grad-word gw-sup">am schnellsten</div></div>
+          </div>
+          <div class="grad-row">
+            <div class="grad-cell"><div class="grad-label gl-base">BASE</div><div class="grad-word gw-base">alt</div></div>
+            <div class="grad-arrow">→</div>
+            <div class="grad-cell"><div class="grad-label gl-comp">COMPARATIVE</div><div class="grad-word gw-comp">älter</div></div>
+            <div class="grad-arrow">→</div>
+            <div class="grad-cell"><div class="grad-label gl-sup">SUPERLATIVE</div><div class="grad-word gw-sup">am ältesten</div></div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue);">The -esten rule:</strong> If the adjective stem ends in <strong>-d, -t, -s, -ß, -z, -sch</strong>, add <strong>-esten</strong> (not -sten) to make it pronounceable.<br><br>alt → am ält<strong>esten</strong> &nbsp;·&nbsp; heiß → am heiß<strong>esten</strong> &nbsp;·&nbsp; kurz → am kürz<strong>esten</strong></div>
+
+          <div class="sec-label">Full base → comparative → superlative table</div>
+          <div class="grad-table-wrap">
+            <div class="conj-title" style="color:var(--sup);">BASE → COMPARATIVE → SUPERLATIVE</div>
+            <table class="grad-table">
+              <thead><tr><th>BASE</th><th style="color:var(--comp);">COMPARATIVE</th><th style="color:var(--sup);">SUPERLATIVE (am…)</th></tr></thead>
+              <tbody>
+                <tr><td class="gt-base">schnell</td><td class="gt-comp">schneller</td><td class="gt-sup">am schnellsten</td></tr>
+                <tr><td class="gt-base">klein</td><td class="gt-comp">kleiner</td><td class="gt-sup">am kleinsten</td></tr>
+                <tr><td class="gt-base">schön</td><td class="gt-comp">schöner</td><td class="gt-sup">am schönsten</td></tr>
+                <tr><td class="gt-base">billig</td><td class="gt-comp">billiger</td><td class="gt-sup">am billigsten</td></tr>
+                <tr><td class="gt-base">alt</td><td class="gt-comp">älter</td><td class="gt-sup">am <span class="uml-change">ä</span>ltesten</td></tr>
+                <tr><td class="gt-base">jung</td><td class="gt-comp">jünger</td><td class="gt-sup">am j<span class="uml-change">ü</span>ngsten</td></tr>
+                <tr><td class="gt-base">groß</td><td class="gt-comp">größer</td><td class="gt-sup">am gr<span class="uml-change">ö</span>ßten</td></tr>
+                <tr><td class="gt-base">lang</td><td class="gt-comp">länger</td><td class="gt-sup">am l<span class="uml-change">ä</span>ngsten</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="sec-label">Form 2 — superlative before a noun (attributive)</div>
+          <p class="body-text">When the superlative comes before a noun, it behaves like any adjective — it takes the regular adjective endings from Module 15. The base is the superlative stem (schnellst-, ältst-).</p>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--sup);">DER + SUP + MASC</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das ist der <strong style="color:var(--sup);">schnellste</strong> Bus in der Stadt.</div>
+                <div class="ex-en">That is the fastest bus in the city.</div>
+                <div class="ex-note">der (masc. nom.) + schnellst + e = schnellste. Superlative + definite article + adjective ending.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das ist der schnellste Bus in der Stadt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--sup);">DAS + SUP + NEUT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das ist das <strong style="color:var(--sup);">beste</strong> Restaurant in Accra.</div>
+                <div class="ex-en">That is the best restaurant in Accra.</div>
+                <div class="ex-note">gut → best- (irregular). das (neut. nom.) + best + e = beste.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das ist das beste Restaurant in Accra.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--sup);">AM -STEN · PREDICATIVE</div>
+              <div style="flex:1;">
+                <div class="ex-de">In Lagos ist es am <strong style="color:var(--sup);">heißesten</strong> im August.</div>
+                <div class="ex-en">In Lagos it is hottest in August.</div>
+                <div class="ex-note">heiß → am heißesten (-esten because stem ends in -ß). Predicative form with am.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'In Lagos ist es am heißesten im August.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">Module 17 · Lesson 3 · Quiz</div><h2 class="lesson-h">Superlative — Check</h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 4: Irregular Forms ── -->
+    <div id="lesson-3" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">Module 17 · Lesson 4 of 6</div>
+          <h2 class="lesson-h">Irregular forms — <span style="color:var(--irr)">must memorise</span></h2>
+          <p class="body-text">Six adjectives/adverbs have completely irregular comparative and superlative forms — just like English "good → better → best". These cannot be predicted from the base form. They appear in almost every A2 exam and must be learned by heart.</p>
+
+          <div class="irr-grid">
+            <div class="irr-card">
+              <div class="irr-eng">GOOD / WELL</div>
+              <div class="irr-base-w">gut</div>
+              <div class="irr-comp-w">besser</div>
+              <div class="irr-sup-w">am besten</div>
+            </div>
+            <div class="irr-card">
+              <div class="irr-eng">MUCH / MANY</div>
+              <div class="irr-base-w">viel</div>
+              <div class="irr-comp-w">mehr</div>
+              <div class="irr-sup-w">am meisten</div>
+            </div>
+            <div class="irr-card">
+              <div class="irr-eng">GLADLY / LIKE TO</div>
+              <div class="irr-base-w">gern</div>
+              <div class="irr-comp-w">lieber</div>
+              <div class="irr-sup-w">am liebsten</div>
+            </div>
+            <div class="irr-card">
+              <div class="irr-eng">BIG / LARGE</div>
+              <div class="irr-base-w">groß</div>
+              <div class="irr-comp-w">größer</div>
+              <div class="irr-sup-w">am größten</div>
+            </div>
+            <div class="irr-card">
+              <div class="irr-eng">HIGH / TALL</div>
+              <div class="irr-base-w">hoch</div>
+              <div class="irr-comp-w">höher</div>
+              <div class="irr-sup-w">am höchsten</div>
+            </div>
+            <div class="irr-card">
+              <div class="irr-eng">NEAR / CLOSE</div>
+              <div class="irr-base-w">nah</div>
+              <div class="irr-comp-w">näher</div>
+              <div class="irr-sup-w">am nächsten</div>
+            </div>
+          </div>
+
+          <div class="info-box"><strong style="color:var(--gold)">The three you MUST know for A2 Schreiben:</strong><br><br>
+          <strong style="color:var(--irr)">gut → besser → am besten</strong> — Used when comparing quality or giving recommendations.<br>
+          &nbsp;&nbsp;&nbsp;Ich finde Fufu besser als Reis. / Das Buch ist am besten.<br><br>
+          <strong style="color:var(--irr)">gern → lieber → am liebsten</strong> — Used when saying what you prefer.<br>
+          &nbsp;&nbsp;&nbsp;Ich esse gern Fufu, aber ich esse lieber Jollof. Ich mag Suya am liebsten.<br><br>
+          <strong style="color:var(--irr)">viel → mehr → am meisten</strong> — Used with quantities.<br>
+          &nbsp;&nbsp;&nbsp;Amina hat mehr Zeit als Kofi. Er arbeitet am meisten.
+          </div>
+
+          <div class="sec-label">Irregular forms in African-context sentences</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--irr);">GUT → BESSER</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame spricht <strong style="color:var(--comp);">besser</strong> Deutsch als ich.</div>
+                <div class="ex-en">Kwame speaks German better than I do.</div>
+                <div class="ex-note">gut → besser. Irregular — not "güter" or "mehr gut". Comparative + als.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame spricht besser Deutsch als ich.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--irr);">GERN → LIEBER → AM LIEBSTEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina isst gern Fufu, aber sie isst <strong style="color:var(--comp);">lieber</strong> Jollof. Am <strong style="color:var(--sup);">liebsten</strong> isst sie Suya.</div>
+                <div class="ex-en">Amina likes to eat fufu, but she prefers jollof. She likes suya best of all.</div>
+                <div class="ex-note">All three degrees of gern in one sentence: gern → lieber → am liebsten. Classic A2 Schreiben structure for expressing preferences.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina isst gern Fufu, aber sie isst lieber Jollof. Am liebsten isst sie Suya.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--irr);">VIEL → MEHR</div>
+              <div style="flex:1;">
+                <div class="ex-de">In Deutschland verdient Kofi <strong style="color:var(--comp);">mehr</strong> als in Ghana.</div>
+                <div class="ex-en">In Germany Kofi earns more than in Ghana.</div>
+                <div class="ex-note">viel → mehr. Irregular — not "vieler". mehr + als for comparison.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'In Deutschland verdient Kofi mehr als in Ghana.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--irr);">AM BESTEN · RECOMMENDATION</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das Restaurant in der Nähe des Bahnhofs ist am <strong style="color:var(--sup);">besten</strong>.</div>
+                <div class="ex-en">The restaurant near the station is the best.</div>
+                <div class="ex-note">gut → am besten. Predicative superlative. This structure is very common in A2 Schreiben recommendations.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das Restaurant in der Nähe des Bahnhofs ist am besten.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">Module 17 · Lesson 4 · Quiz</div><h2 class="lesson-h">Irregular Forms — Check</h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 5: Comparative with Adjective Endings ── -->
+    <div id="lesson-4" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">Module 17 · Lesson 5 of 6</div>
+          <h2 class="lesson-h">Comparative <span style="color:var(--gold)">before a noun</span></h2>
+          <p class="body-text">When the comparative or superlative comes directly before a noun, it behaves exactly like any attributive adjective — it takes a declension ending from Module 15. The comparative stem is adjective + -er, and you add the case ending after that.</p>
+
+          <div class="info-box">
+            <strong style="color:var(--gold)">Formula:</strong><br><br>
+            article + adjective<strong style="color:var(--comp);">-er</strong> + case ending + noun<br><br>
+            ein schnell<strong style="color:var(--comp);">er</strong> Bus (base after ein, masc.nom) → ein schneller<strong style="color:var(--gold);">er</strong> Bus (comparative after ein, masc.nom)<br><br>
+            The comparative -er and the case ending -er stack together → schnellerer (though often just schnellerer)
+          </div>
+
+          <div class="sec-label">Common comparative + noun patterns at A2</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--comp);">EIN + COMP + MASC NOM</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich brauche einen <strong style="color:var(--comp);">schnelleren</strong> Bus.</div>
+                <div class="ex-en">I need a faster bus.</div>
+                <div class="ex-note">schnell + er (comp.) + en (acc.masc. after einen) = schnelleren. The comparative -er is part of the stem.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich brauche einen schnelleren Bus.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--comp);">DER + COMP + MASC NOM</div>
+              <div style="flex:1;">
+                <div class="ex-de">Der <strong style="color:var(--comp);">ältere</strong> Mann ist Kwames Vater.</div>
+                <div class="ex-en">The older man is Kwame's father.</div>
+                <div class="ex-note">alt + er (comp.) + e (def.art. masc.nom. weak ending) = ältere.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Der ältere Mann ist Kwames Vater.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--sup);">DER + SUP + MASC NOM</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi nimmt immer den <strong style="color:var(--sup);">billigsten</strong> Flug.</div>
+                <div class="ex-en">Kofi always takes the cheapest flight.</div>
+                <div class="ex-note">billig + st (sup.) + en (acc.masc. weak ending) = billigsten. Superlative before noun with declension.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi nimmt immer den billigsten Flug.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">A2 Schreiben preference structure — gern/lieber/am liebsten</div>
+          <p class="body-text">The most tested comparative structure in A2 Schreiben is expressing preferences using gern → lieber → am liebsten. Learn this three-part pattern and use it whenever a task asks "Was magst du?" or "Was ist dein Lieblings…?"</p>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--irr);">THREE-LEVEL PREFERENCE PATTERN</div>
+            <div style="font-family:'DM Mono',monospace;font-size:13px;line-height:2.5;color:var(--cream);">
+              Ich esse <strong style="color:var(--green);">gern</strong> Reis. (I like eating rice.)<br>
+              Aber ich esse <strong style="color:var(--comp);">lieber</strong> Fufu. (But I prefer fufu.)<br>
+              Am <strong style="color:var(--sup);">liebsten</strong> esse ich Jollof. (I like jollof best of all.)
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Ich esse gern Reis. Aber ich esse lieber Fufu. Am liebsten esse ich Jollof.')">🔊 Hear all three</button>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">Module 17 · Lesson 5 · Quiz</div><h2 class="lesson-h">Comparative Before Noun — Check</h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 6: African Context + Mistakes ── -->
+    <div id="lesson-5" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">Module 17 · Lesson 6 of 6</div>
+          <h2 class="lesson-h">Kwame, Amina, Kofi, Fatima — comparing everything</h2>
+          <p class="body-text">Cities, food, transport, language, weather — the comparative and superlative appear whenever you describe preferences or make comparisons. These are the most common mistakes to avoid.</p>
+
+          <div class="sec-label">The 4 most common African learner mistakes</div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">MISTAKE 1 · "mehr" before adjective</div>
+              <div class="wr-word">mehr schnell<br>mehr teuer<br>mehr interessant</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT · adjective + -er</div>
+              <div class="wr-word">schneller<br>teurer<br>interessanter</div>
+            </div>
+          </div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">MISTAKE 2 · wie after comparative</div>
+              <div class="wr-word">größer wie Berlin<br>schneller wie der Bus<br>besser wie Fufu</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT · als after comparative</div>
+              <div class="wr-word">größer als Berlin<br>schneller als der Bus<br>besser als Fufu</div>
+            </div>
+          </div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">MISTAKE 3 · wrong irregular form</div>
+              <div class="wr-word">mehr gut<br>mehr gern<br>mehr viel</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT · irregular forms</div>
+              <div class="wr-word">besser<br>lieber<br>mehr</div>
+            </div>
+          </div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">MISTAKE 4 · wrong superlative</div>
+              <div class="wr-word">am schnellsten → am schnellst<br>am besten → am gut<br>am liebsten → am gernsten</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">CORRECT · superlative forms</div>
+              <div class="wr-word">am schnellsten<br>am besten (irregular)<br>am liebsten (irregular)</div>
+            </div>
+          </div>
+
+          <div class="sec-label">All patterns in African context</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.1);color:var(--comp);">COMPARATIVE + ALS</div>
+              <div style="flex:1;">
+                <div class="ex-de">Lagos ist größer als Accra, aber Accra ist schöner als Lagos.</div>
+                <div class="ex-en">Lagos is bigger than Accra, but Accra is more beautiful than Lagos.</div>
+                <div class="ex-note">groß → größer (umlaut + -er). schön → schöner. Both + als.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Lagos ist größer als Accra, aber Accra ist schöner als Lagos.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.1);color:var(--gold);">SO…WIE · EQUAL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima ist so fleißig wie Kofi.</div>
+                <div class="ex-en">Fatima is as hard-working as Kofi.</div>
+                <div class="ex-note">Equal comparison. Base form fleißig (no -er). so…wie brackets the adjective.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima ist so fleißig wie Kofi.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.1);color:var(--irr);">GERN → LIEBER → AM LIEBSTEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame lernt gern Deutsch, aber er lernt lieber Mathematik. Am liebsten spielt er Fußball.</div>
+                <div class="ex-en">Kwame likes studying German, but he prefers maths. He likes playing football best of all.</div>
+                <div class="ex-note">Three-level preference pattern. Classic structure for A2 Schreiben "Hobbys" or "Freizeit" task.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame lernt gern Deutsch, aber er lernt lieber Mathematik. Am liebsten spielt er Fußball.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.1);color:var(--sup);">SUPERLATIVE + NOUN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das beste Essen in Nairobi ist Nyama Choma.</div>
+                <div class="ex-en">The best food in Nairobi is nyama choma.</div>
+                <div class="ex-note">gut → best- (irregular). das + beste + Essen. Superlative before neuter noun, nominative → -e ending.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das beste Essen in Nairobi ist Nyama Choma.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="info-box"><strong style="color:var(--gold)">Exam tip — Goethe A2 Schreiben:</strong><br><br>
+          Comparative and superlative appear in A2 writing tasks about:<br><br>
+          ✓ Comparing two options (restaurants, apartments, transport)<br>
+          ✓ Stating preferences (Was möchtest du lieber?)<br>
+          ✓ Describing the best / cheapest / nearest option<br>
+          ✓ Talking about your city vs Germany<br><br>
+          Always check: use <strong style="color:var(--comp)">als</strong> after -er (comparative), and <strong style="color:var(--gold)">so…wie</strong> for equal comparisons. Use the gern/lieber/am liebsten pattern to show all three preference levels in one answer.
+          </div>
+
+          <div class="success-box">
+            <strong style="color:var(--green)">What you now know:</strong><br><br>
+            ✓ Comparative: adjective + <strong style="color:var(--comp)">-er</strong> — never "mehr + adjective"<br>
+            ✓ Umlaut changes: alt→älter, jung→jünger, groß→größer, lang→länger<br>
+            ✓ <strong style="color:var(--comp)">als</strong> = than (after comparative) &nbsp;·&nbsp; <strong style="color:var(--gold)">so…wie</strong> = as…as (equal, base form)<br>
+            ✓ Superlative: <strong style="color:var(--sup)">am + -sten</strong> predicative &nbsp;·&nbsp; definite article + -ste attributive<br>
+            ✓ -esten after stems ending in -d/-t/-s/-ß/-z<br>
+            ✓ Irregulars: gut→besser→am besten &nbsp;·&nbsp; gern→lieber→am liebsten &nbsp;·&nbsp; viel→mehr→am meisten
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Start Final Quiz →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">Module 17 · Final Quiz</div><h2 class="lesson-h">Module Complete — Final Check</h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Previous</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="showOverview()"><span class="nav-icon">📚</span><span class="nav-label">Overview</span></button>
+  <button class="nav-item" onclick="resumeLesson()"><span class="nav-icon">▶️</span><span class="nav-label">Resume</span></button>
+</nav>
+
+<script>
+var synth=(typeof window!=='undefined'&&window.speechSynthesis)?window.speechSynthesis:null;
+var deVoice=null,speechUnlocked=false;
+function loadVoices(){ if(!synth)return; try{ var v=synth.getVoices(); deVoice=v.find(function(x){return x.lang==='de-DE';})||v.find(function(x){return x.lang&&x.lang.startsWith('de');})||null; }catch(e){} }
+if(synth){ try{ loadVoices(); if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadVoices; }catch(e){} }
+function unlockSpeech(){ if(speechUnlocked||!synth)return; try{ var s=new SpeechSynthesisUtterance(''); s.volume=0; synth.speak(s); speechUnlocked=true; }catch(e){} }
+document.addEventListener('touchstart',unlockSpeech,{once:true,passive:true});
+document.addEventListener('click',unlockSpeech,{once:true});
+function speakDE(t){ if(!synth)return null; try{ if(!deVoice)loadVoices(); synth.cancel(); var u=new SpeechSynthesisUtterance(t); u.lang='de-DE'; u.rate=0.85; u.pitch=1.0; u.volume=1.0; if(deVoice)u.voice=deVoice; synth.speak(u); return u; }catch(e){return null;} }
+function speakSentence(btn,text){ unlockSpeech(); document.querySelectorAll('.speak-btn').forEach(function(b){b.classList.remove('speaking');}); if(btn&&btn.classList)btn.classList.add('speaking'); var u=speakDE(text); if(u){ u.onend=function(){if(btn&&btn.classList)btn.classList.remove('speaking');}; u.onerror=function(){if(btn&&btn.classList)btn.classList.remove('speaking');}; }else{ setTimeout(function(){if(btn&&btn.classList)btn.classList.remove('speaking');},1500); } }
+
+var currentLesson=0, xp=0, TOTAL=6;
+
+var QD={
+  0:[
+    {q:'How do you say "faster" in German? (schnell = fast)',
+     hint:'German never uses "mehr" to form comparatives. It adds a suffix directly to the adjective.',
+     opts:['mehr schnell','am schnellsten','schneller','schnellst'],
+     ans:2,
+     exp:'"schneller" — German comparative: add -er directly to the adjective. schnell + er = schneller. "mehr schnell" is the literal English translation trap — this is wrong in German. "am schnellsten" is the superlative (the fastest), not the comparative. "schnellst" is an incomplete superlative stem.',
+     rule:'Comparative formula: adjective + -er. Never use "mehr" before an adjective. schnell → schneller, teuer → teurer, interessant → interessanter.'}
+  ],
+  1:[
+    {q:'Berlin ist ___ als Nairobi. (groß — big)',
+     hint:'groß is irregular in the comparative — it adds umlaut. Comparative of groß = ?',
+     opts:['Berlin ist größer als Nairobi.','Berlin ist mehr groß als Nairobi.','Berlin ist am größten als Nairobi.','Berlin ist großer als Nairobi.'],
+     ans:0,
+     exp:'"Berlin ist größer als Nairobi." — groß adds an umlaut in the comparative: groß → größer. Use als after the comparative form to mean "than". Option B uses mehr groß — never correct. Option C uses am größten which is the superlative, not comparative. Option D has "großer" without umlaut — incorrect.',
+     rule:'groß → größer → am größten. Umlaut required. Comparative + als for unequal comparisons.'}
+  ],
+  2:[
+    {q:'Which sentence correctly says "Kofi is as tall as Kwame"? (groß = tall/big)',
+     hint:'Equal comparison uses so…wie with the BASE form of the adjective — no -er ending.',
+     opts:['Kofi ist größer als Kwame.','Kofi ist so groß wie Kwame.','Kofi ist als groß wie Kwame.','Kofi ist so großer wie Kwame.'],
+     ans:1,
+     exp:'"Kofi ist so groß wie Kwame." — Equal comparison uses so + BASE FORM + wie. No -er ending on groß because they are equal. Option A uses größer als which means "taller than" — not equal. Option C puts als before the adjective — wrong. Option D uses großer (comparative form) with so…wie — you never use the comparative form with so…wie.',
+     rule:'Equal comparison: so + adjective (BASE FORM, no -er) + wie. Kofi ist so groß wie Kwame. Unequal: adjective-er + als.'}
+  ],
+  3:[
+    {q:'What is the correct superlative of "alt" (old) in the predicative form?',
+     hint:'alt → älter. For the superlative, the stem ends in -t so you need -esten (not -sten) for pronunciation.',
+     opts:['am altest','am altsten','am ältsten','am ältesten'],
+     ans:3,
+     exp:'"am ältesten" — alt adds umlaut in comparative and superlative: alt → älter → am ältesten. Because the stem ends in -t, you add -esten (not -sten) for pronunciation. "am altest" has no umlaut. "am altsten" has no umlaut and wrong suffix. "am ältsten" has umlaut but is missing the -e- buffer.',
+     rule:'Superlative with -esten: stems ending in -d/-t/-s/-ß/-z/-sch add -esten. alt → am ältesten, heiß → am heißesten.'}
+  ],
+  4:[
+    {q:'Fatima likes fufu best of all. Which sentence uses the correct form of gern?',
+     hint:'gern is irregular: gern → lieber → am liebsten. "Best of all / most of all" = ?',
+     opts:['Fatima mag Fufu am gernsten.','Fatima mag Fufu am liebsten.','Fatima mag Fufu mehr gern.','Fatima mag Fufu am liebern.'],
+     ans:1,
+     exp:'"Fatima mag Fufu am liebsten." — gern has completely irregular forms: gern (like) → lieber (prefer) → am liebsten (like best of all). None of these can be predicted from the base form. "am gernsten" would be a regular superlative of gern — but gern is irregular. "mehr gern" applies the English pattern — wrong. "am liebern" is not a real word.',
+     rule:'Irregular: gern → lieber → am liebsten. Fatima mag Fufu am liebsten. Use for expressing what you like best.'}
+  ],
+  5:[
+    {q:'Which of these sentences is completely correct?',
+     hint:'Check: right comparative form? right word (als or wie after comparative)? right irregular form?',
+     opts:['Lagos ist mehr groß als Accra.','Lagos ist größer wie Accra.','Lagos ist größer als Accra.','Lagos ist so größer wie Accra.'],
+     ans:2,
+     exp:'"Lagos ist größer als Accra." — Two rules correct: (1) groß → größer (umlaut comparative, no "mehr"), (2) als after the comparative form for "than". Option A uses "mehr groß" — never correct, always adjective + -er. Option B uses "wie" after a comparative — always use "als" after comparative. Option D mixes so…wie (equal comparison) with größer (comparative) — the two patterns must not be mixed.',
+     rule:'Unequal comparison: adjective + -er + als. Lagos ist größer als Accra. Never "mehr groß", never "größer wie".'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">QUESTION '+(s.cur+1)+' OF '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint">'+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Next Question →':'See Results →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Correct!':'✗ Not quite'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent=q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' correct</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfect.':pct>=60?'Good work.':'Review and try again.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.12);border:1px solid var(--gold);border-radius:50px;padding:9px 22px;color:var(--gold);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Complete Module 17 →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Next Lesson →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">📈</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Module 17 Complete!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">Comparative and superlative mastered. You can now compare two things with -er + als, express equality with so…wie, form superlatives with am -sten, and use the critical irregular forms (besser, lieber, mehr). Your A2 Schreiben preference sentences are now exam-ready.</p><div class="xp-badge">⚡ '+xp+' XP Earned</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">A2 Module 5 of 6 complete. Next: Module 18 — Prepositions with Accusative &amp; Dative.</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Back to Overview</button></div>'; }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function resumeLesson(){ goLesson(currentLesson); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+<script src="./ai-tutor.js" data-module="17"></script>
+</body>
+</html>
