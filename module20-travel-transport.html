@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Module 20: Travel &amp; Transport</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --zug:#3498db; --flug:#e67e22; --mit:#9b59b6; --sta:#27ae60;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--gold); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--gold); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--gold); color:var(--black); width:100%; }
+  .btn-primary:hover { background:var(--gold-light); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(201,168,76,0.2); }
+  .speak-btn.speaking { background:var(--gold); color:var(--black); }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-en { font-size:12px; color:var(--gray); margin-bottom:6px; }
+  .ex-note { font-size:12px; color:var(--cream); line-height:1.6; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Sans',sans-serif; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--gold); background:rgba(201,168,76,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(201,168,76,0.1); border-radius:8px; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(201,168,76,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(201,168,76,0.08); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(201,168,76,0.12); border:1px solid var(--gold); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--gold); font-size:18px; margin:18px 0; }
+
+  /* WRONG/RIGHT */
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.2; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+
+  /* CONJ TABLE */
+  .conj-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; }
+  .conj-title { font-size:10px; letter-spacing:2.5px; font-family:'DM Mono',monospace; margin-bottom:12px; }
+
+  /* VEHICLE GRID */
+  .veh-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0; }
+  .veh-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:14px; display:flex; align-items:center; gap:12px; }
+  .veh-icon { font-size:26px; flex-shrink:0; }
+  .veh-art { font-family:'DM Mono',monospace; font-size:11px; margin-bottom:2px; }
+  .veh-art.m { color:var(--zug); }
+  .veh-art.f { color:var(--flug); }
+  .veh-art.n { color:var(--mit); }
+  .veh-name { font-family:'DM Mono',monospace; font-size:14px; font-weight:700; color:var(--cream); margin-bottom:2px; }
+  .veh-eng { font-size:11px; color:var(--gray); }
+
+  /* STATION VOCAB TABLE */
+  .sta-table-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; }
+  .sta-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .sta-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:9px 12px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.07); color:var(--gray); }
+  .sta-table td { padding:9px 12px; border-bottom:1px solid rgba(255,255,255,0.04); font-family:'DM Mono',monospace; font-size:13px; }
+  .sta-table tr:last-child td { border-bottom:none; }
+  .st-de { color:var(--cream); font-weight:600; }
+  .st-art { color:var(--sta); }
+  .st-en { color:var(--gray); }
+  .st-note { font-size:11px; color:rgba(201,168,76,0.7); }
+
+  /* PHRASE CARDS */
+  .phrase-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .phrase-card { background:var(--card2-bg); border:1px solid rgba(201,168,76,0.12); border-radius:12px; padding:16px; }
+  .ph-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:4px; }
+  .ph-en { font-size:12px; color:var(--gray); margin-bottom:6px; }
+  .ph-note { font-size:12px; color:var(--cream); line-height:1.6; }
+
+  /* MIT + DATIVE TABLE */
+  .mit-table-wrap { background:var(--card2-bg); border:1px solid rgba(155,89,182,0.15); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+  .mit-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .mit-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:9px 12px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.07); color:var(--gray); }
+  .mit-table td { padding:9px 12px; border-bottom:1px solid rgba(255,255,255,0.04); font-family:'DM Mono',monospace; font-size:13px; }
+  .mit-table tr:last-child td { border-bottom:none; }
+  .mt-vehicle { color:var(--cream); }
+  .mt-art { color:var(--gray); font-size:11px; }
+  .mt-mit { color:var(--mit); font-weight:700; }
+  .mt-ex { color:var(--zug); font-size:11px; }
+  .mt-zufu { color:var(--gold); font-weight:700; }
+
+  /* COMPARE GRID — Germany vs Africa transport */
+  .cmp-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0; }
+  .cmp-box { border-radius:12px; padding:16px; }
+  .cmp-de { background:rgba(52,152,219,0.07); border:1px solid rgba(52,152,219,0.22); }
+  .cmp-af { background:rgba(201,168,76,0.06); border:1px solid rgba(201,168,76,0.2); }
+  .cmp-flag { font-size:20px; margin-bottom:6px; }
+  .cmp-title { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; margin-bottom:10px; }
+  .cmp-de .cmp-title { color:var(--zug); }
+  .cmp-af .cmp-title { color:var(--gold); }
+  .cmp-item { font-family:'DM Mono',monospace; font-size:12px; color:var(--cream); line-height:2.2; }
+
+  /* TICKET VISUAL */
+  .ticket-wrap { background:rgba(201,168,76,0.05); border:2px dashed rgba(201,168,76,0.25); border-radius:14px; padding:20px; margin:14px 0; }
+  .ticket-title { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:3px; color:var(--gold); margin-bottom:14px; }
+  .ticket-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'DM Mono',monospace; font-size:13px; }
+  .ticket-row:last-child { border-bottom:none; }
+  .ticket-label { color:var(--gray); font-size:11px; }
+  .ticket-val { color:var(--cream); font-weight:700; }
+  .ticket-val.hin { color:var(--zug); }
+  .ticket-val.zuruck { color:var(--flug); }
+
+  /* HIGHLIGHTS */
+  .mh { color:var(--mit); font-weight:700; }   /* mit highlight */
+  .zh { color:var(--zug); font-weight:700; }    /* zug/transport highlight */
+  .sh { color:var(--sta); font-weight:700; }    /* station highlight */
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .lesson-h{font-size:22px;} .wr-grid{grid-template-columns:1fr;} .veh-grid{grid-template-columns:1fr 1fr;} .cmp-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">MODULE 20 · A2</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">A2 · Vocabulary</div>
+    <h1 class="lesson-h" style="font-size:36px;">Travel &amp;<br><span style="color:var(--gold)">Transport</span></h1>
+    <p class="body-text">Travel vocabulary is one of the most reliable topics in the Goethe A2 exam. Train station announcements, buying tickets, asking about platforms and departure times — these appear in every A2 Hören and Lesen section. This module gives you the words, the phrases, and the one grammar point that most African learners get wrong: <strong style="color:var(--mit)">mit</strong> always takes Dativ.</p>
+    <div class="info-box"><strong style="color:var(--gold)">The African learner trap:</strong> "mit" is a Dativ preposition — always. "Ich fahre mit <strong style="color:var(--mit)">dem</strong> Bus" — not "mit der Bus" or "mit die U-Bahn". Every transport phrase uses mit + Dativ. Get this right and you gain marks on every sentence about how you travel.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">🚌</div><div><div class="lc-title">Lesson 1 — Transport Vocabulary</div><div class="lc-desc">der Zug, das Flugzeug, die U-Bahn, das Taxi, das Fahrrad. Genders and plurals.</div></div><div class="lc-tag" style="color:var(--gold);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">🚉</div><div><div class="lc-title">Lesson 2 — At the Train Station</div><div class="lc-desc">der Bahnhof, das Gleis, die Abfahrt, die Ankunft, der Fahrplan, die Fahrkarte.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">🎫</div><div><div class="lc-title">Lesson 3 — Buying a Ticket</div><div class="lc-desc">Ich möchte eine Fahrkarte nach… Wann fährt der Zug? Auf welchem Gleis?</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">🔧</div><div><div class="lc-title">Lesson 4 — mit dem / zu Fuß</div><div class="lc-desc">mit dem Zug, mit dem Bus, mit der U-Bahn, mit dem Auto, zu Fuß. Dativ every time.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lesson 5 — Germany vs Africa</div><div class="lc-desc">Matatu, tro-tro, okada vs U-Bahn, S-Bahn, ICE. Comparing transport across continents.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">✈️</div><div><div class="lc-title">Lesson 6 — Kwame &amp; Amina Travel</div><div class="lc-desc">Full journey sentences. Common mistakes. Exam tips for Hören and Schreiben.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Begin Lesson 1 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lessons</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LESSON 1: Transport Vocabulary ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">Module 20 · Lesson 1 of 6</div>
+          <h2 class="lesson-h">Transport <span style="color:var(--zug)">vocabulary</span></h2>
+          <p class="body-text">The first step is knowing the gender of each vehicle — because you will need it immediately when you say how you travel. <em>Mit dem</em> or <em>mit der</em> depends entirely on whether the vehicle is masculine, feminine, or neuter.</p>
+
+          <div class="sec-label">The 8 essential vehicles</div>
+          <div class="veh-grid">
+            <div class="veh-card">
+              <div class="veh-icon">🚂</div>
+              <div>
+                <div class="veh-art m">MASKULIN</div>
+                <div class="veh-name">der Zug</div>
+                <div class="veh-eng">the train</div>
+              </div>
+            </div>
+            <div class="veh-card">
+              <div class="veh-icon">✈️</div>
+              <div>
+                <div class="veh-art n">NEUTRUM</div>
+                <div class="veh-name">das Flugzeug</div>
+                <div class="veh-eng">the plane</div>
+              </div>
+            </div>
+            <div class="veh-card">
+              <div class="veh-icon">🚌</div>
+              <div>
+                <div class="veh-art m">MASKULIN</div>
+                <div class="veh-name">der Bus</div>
+                <div class="veh-eng">the bus</div>
+              </div>
+            </div>
+            <div class="veh-card">
+              <div class="veh-icon">🚇</div>
+              <div>
+                <div class="veh-art f">FEMININ</div>
+                <div class="veh-name">die U-Bahn</div>
+                <div class="veh-eng">the metro / subway</div>
+              </div>
+            </div>
+            <div class="veh-card">
+              <div class="veh-icon">🚕</div>
+              <div>
+                <div class="veh-art n">NEUTRUM</div>
+                <div class="veh-name">das Taxi</div>
+                <div class="veh-eng">the taxi</div>
+              </div>
+            </div>
+            <div class="veh-card">
+              <div class="veh-icon">🚲</div>
+              <div>
+                <div class="veh-art n">NEUTRUM</div>
+                <div class="veh-name">das Fahrrad</div>
+                <div class="veh-eng">the bicycle</div>
+              </div>
+            </div>
+            <div class="veh-card">
+              <div class="veh-icon">🚗</div>
+              <div>
+                <div class="veh-art n">NEUTRUM</div>
+                <div class="veh-name">das Auto</div>
+                <div class="veh-eng">the car</div>
+              </div>
+            </div>
+            <div class="veh-card">
+              <div class="veh-icon">🚢</div>
+              <div>
+                <div class="veh-art n">NEUTRUM</div>
+                <div class="veh-name">das Schiff</div>
+                <div class="veh-eng">the ship / ferry</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-box">
+            <strong style="color:var(--gold);">Gender pattern to notice:</strong><br><br>
+            Most vehicles are <strong style="color:var(--mit);">neuter (das)</strong> — das Flugzeug, das Taxi, das Fahrrad, das Auto, das Schiff.<br>
+            Two are <strong style="color:var(--zug);">masculine (der)</strong> — der Zug, der Bus.<br>
+            One is <strong style="color:var(--flug);">feminine (die)</strong> — die U-Bahn (and die S-Bahn, die Straßenbahn, die Tram).
+          </div>
+
+          <div class="sec-label">Additional transport — German cities</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--zug);">MORE VEHICLES — COMMON IN A2 TEXTS</div>
+            <div style="font-family:'DM Mono',monospace;font-size:13px;line-height:2.6;color:var(--cream);">
+              <span style="color:var(--flug);">die</span> S-Bahn &nbsp;<span style="color:var(--gray);font-size:11px;">— suburban/city train (S-Bahn)</span><br>
+              <span style="color:var(--flug);">die</span> Straßenbahn &nbsp;<span style="color:var(--gray);font-size:11px;">— tram / streetcar</span><br>
+              <span style="color:var(--zug);">der</span> ICE &nbsp;<span style="color:var(--gray);font-size:11px;">— high-speed train (Intercity-Express)</span><br>
+              <span style="color:var(--zug);">der</span> Intercity &nbsp;<span style="color:var(--gray);font-size:11px;">— long-distance train</span><br>
+              <span style="color:var(--mit);">das</span> Motorrad &nbsp;<span style="color:var(--gray);font-size:11px;">— motorcycle</span>
+            </div>
+          </div>
+
+          <div class="sec-label">Vehicles in sentences</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--zug);">DER ZUG</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="zh">Der Zug</span> fährt um 9 Uhr ab.</div>
+                <div class="ex-en">The train departs at 9 o'clock.</div>
+                <div class="ex-note">abfahren = to depart. Separable: fährt…ab. der Zug is the subject.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Der Zug fährt um 9 Uhr ab.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--flug);">DIE U-BAHN</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span style="color:var(--flug);font-weight:700;">Die U-Bahn</span> kommt in fünf Minuten.</div>
+                <div class="ex-en">The metro arrives in five minutes.</div>
+                <div class="ex-note">die U-Bahn is feminine. Common in German city travel.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Die U-Bahn kommt in fünf Minuten.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--mit);">DAS TAXI</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span style="color:var(--mit);font-weight:700;">Das Taxi</span> wartet vor dem Bahnhof.</div>
+                <div class="ex-en">The taxi is waiting in front of the station.</div>
+                <div class="ex-note">das Taxi is neuter. vor dem Bahnhof = Module 19: two-way preposition, location → Dativ.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das Taxi wartet vor dem Bahnhof.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">Module 20 · Lesson 1 · Quiz</div><h2 class="lesson-h">Transport Vocabulary — First Check</h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 2: At the Train Station ── -->
+    <div id="lesson-1" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">Module 20 · Lesson 2 of 6</div>
+          <h2 class="lesson-h">At the <span style="color:var(--sta)">train station</span></h2>
+          <p class="body-text">Train station vocabulary appears in almost every A2 Hören task. The recording will describe departures, platforms, delays, and ticket purchases. You need to recognise these words instantly when you hear them.</p>
+
+          <div class="sta-table-wrap">
+            <div class="conj-title" style="color:var(--sta);">BAHNHOF VOCABULARY — A2 ESSENTIALS</div>
+            <table class="sta-table">
+              <thead>
+                <tr><th>DEUTSCH</th><th>ENGLISH</th><th>NOTES</th></tr>
+              </thead>
+              <tbody>
+                <tr><td class="st-de"><span class="st-art">der</span> Bahnhof</td><td class="st-en">train station</td><td class="st-note">Hauptbahnhof = main station (Hbf)</td></tr>
+                <tr><td class="st-de"><span class="st-art">das</span> Gleis</td><td class="st-en">platform / track</td><td class="st-note">Gleis 4 = Platform 4</td></tr>
+                <tr><td class="st-de"><span class="st-art">die</span> Abfahrt</td><td class="st-en">departure</td><td class="st-note">Abfahrt 10:15 Uhr</td></tr>
+                <tr><td class="st-de"><span class="st-art">die</span> Ankunft</td><td class="st-en">arrival</td><td class="st-note">Ankunft in München</td></tr>
+                <tr><td class="st-de"><span class="st-art">der</span> Fahrplan</td><td class="st-en">timetable / schedule</td><td class="st-note">im Fahrplan nachschauen</td></tr>
+                <tr><td class="st-de"><span class="st-art">die</span> Fahrkarte</td><td class="st-en">ticket</td><td class="st-note">also: das Ticket, der Fahrschein</td></tr>
+                <tr><td class="st-de"><span class="st-art">die</span> Verspätung</td><td class="st-en">delay</td><td class="st-note">Der Zug hat 10 Minuten Verspätung.</td></tr>
+                <tr><td class="st-de"><span class="st-art">der</span> Platz</td><td class="st-en">seat / place</td><td class="st-note">Ist dieser Platz frei? = Is this seat free?</td></tr>
+                <tr><td class="st-de"><span class="st-art">die</span> Verbindung</td><td class="st-en">connection</td><td class="st-note">Eine gute Verbindung = a good connection</td></tr>
+                <tr><td class="st-de"><span class="st-art">das</span> Umsteigen</td><td class="st-en">changing (trains)</td><td class="st-note">Müssen Sie umsteigen? = Do you need to change?</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="sec-label">Ticket types — essential pair</div>
+          <div class="ticket-wrap">
+            <div class="ticket-title">🎫 FAHRKARTE — TICKET TYPE</div>
+            <div class="ticket-row">
+              <span class="ticket-label">ONE WAY</span>
+              <span class="ticket-val hin">einfache Fahrt</span>
+            </div>
+            <div class="ticket-row">
+              <span class="ticket-label">RETURN</span>
+              <span class="ticket-val zuruck">hin und zurück</span>
+            </div>
+            <div class="ticket-row">
+              <span class="ticket-label">FIRST CLASS</span>
+              <span class="ticket-val" style="color:var(--gold);">erste Klasse</span>
+            </div>
+            <div class="ticket-row">
+              <span class="ticket-label">SECOND CLASS</span>
+              <span class="ticket-val" style="color:var(--gray);">zweite Klasse</span>
+            </div>
+          </div>
+
+          <div class="info-box">
+            <strong style="color:var(--gold);">Abfahrt vs Ankunft — the easy way to remember:</strong><br><br>
+            <strong style="color:var(--flug);">Ab</strong>fahrt — think "away". The train goes <strong>away</strong> from here. = Departure.<br>
+            <strong style="color:var(--sta);">An</strong>kunft — think "arriving". The train <strong>arrives</strong> here. = Arrival.<br><br>
+            ab- = away from · an- = arriving at. Both are separable verb prefixes you already know from Module 14.
+          </div>
+
+          <div class="sec-label">Train station announcements — listening practice</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--sta);">ANSAGE · ANNOUNCEMENT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Der Zug nach Hamburg fährt <span class="sh">auf Gleis 7</span> ab.</div>
+                <div class="ex-en">The train to Hamburg departs from Platform 7.</div>
+                <div class="ex-note">auf Gleis 7 — auf + Gleis (neuter) = position, Dativ: auf dem Gleis, but with numbers the article is usually dropped.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Der Zug nach Hamburg fährt auf Gleis 7 ab.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--sta);">ANSAGE · ANNOUNCEMENT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Achtung! Der ICE hat <span class="sh">20 Minuten Verspätung</span>.</div>
+                <div class="ex-en">Attention! The ICE has a 20-minute delay.</div>
+                <div class="ex-note">Verspätung haben = to be delayed. Very common in A2 Hören recordings.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Achtung! Der ICE hat 20 Minuten Verspätung.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--sta);">DIALOG</div>
+              <div style="flex:1;">
+                <div class="ex-de">— Ist <span class="sh">dieser Platz</span> frei? — Ja, bitte.</div>
+                <div class="ex-en">— Is this seat free? — Yes, please (go ahead).</div>
+                <div class="ex-note">dieser Platz = this seat. Essential phrase for train travel. frei = free/unoccupied.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ist dieser Platz frei?')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">Module 20 · Lesson 2 · Quiz</div><h2 class="lesson-h">Train Station — Check</h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 3: Buying a Ticket ── -->
+    <div id="lesson-2" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">Module 20 · Lesson 3 of 6</div>
+          <h2 class="lesson-h">Buying a <span style="color:var(--gold)">ticket</span></h2>
+          <p class="body-text">Buying a train or bus ticket is a core A2 speaking and listening scenario. These phrases appear in Sprechen Part 2 (role play at the ticket counter) and in Hören dialogues. Learn them as complete phrases — ready to use.</p>
+
+          <div class="sec-label">At the ticket counter — essential phrases</div>
+          <div class="phrase-list">
+            <div class="phrase-card">
+              <div class="ph-de">Ich möchte eine Fahrkarte nach <strong style="color:var(--gold);">Berlin</strong>, bitte.</div>
+              <div class="ph-en">I would like a ticket to Berlin, please.</div>
+              <div class="ph-note">nach + city name = to (a city or country). Ich möchte = I would like (polite form of mögen).</div>
+            </div>
+            <div class="phrase-card">
+              <div class="ph-de">Einfache Fahrt oder <strong style="color:var(--zug);">hin und zurück</strong>?</div>
+              <div class="ph-en">One way or return?</div>
+              <div class="ph-note">The ticket seller will always ask this. Know both answers: "Einfache Fahrt, bitte." / "Hin und zurück, bitte."</div>
+            </div>
+            <div class="phrase-card">
+              <div class="ph-de">Wann fährt der nächste Zug <strong style="color:var(--gold);">nach Frankfurt</strong>?</div>
+              <div class="ph-en">When does the next train to Frankfurt leave?</div>
+              <div class="ph-note">nächste = next. nach Frankfurt = to Frankfurt. Very common question in A2 Sprechen roleplay.</div>
+            </div>
+            <div class="phrase-card">
+              <div class="ph-de">Auf welchem <strong style="color:var(--sta);">Gleis</strong> fährt der Zug ab?</div>
+              <div class="ph-en">Which platform does the train depart from?</div>
+              <div class="ph-note">auf welchem Gleis = on which platform. welchem is the dative form of welch- (which). Gleis is neuter.</div>
+            </div>
+            <div class="phrase-card">
+              <div class="ph-de">Muss ich <strong style="color:var(--flug);">umsteigen</strong>?</div>
+              <div class="ph-en">Do I need to change (trains)?</div>
+              <div class="ph-note">umsteigen = to change trains/buses. A very important question for planning your journey.</div>
+            </div>
+            <div class="phrase-card">
+              <div class="ph-de">Ist <strong style="color:var(--sta);">dieser Platz</strong> frei?</div>
+              <div class="ph-en">Is this seat free?</div>
+              <div class="ph-note">frei = free/unoccupied. Use on the train when looking for a seat. Answer: Ja, bitte. / Nein, der ist besetzt.</div>
+            </div>
+          </div>
+
+          <div class="sec-label">A complete ticket-buying dialogue</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--gold);">AM SCHALTER — AT THE TICKET COUNTER</div>
+            <div style="font-family:'DM Mono',monospace;font-size:13px;line-height:2.6;color:var(--cream);">
+              <span style="color:var(--zug);">Kwame:</span> &nbsp;Guten Tag. Ich möchte eine Fahrkarte nach München.<br>
+              <span style="color:var(--gray);">Verkäufer:</span> &nbsp;Einfache Fahrt oder hin und zurück?<br>
+              <span style="color:var(--zug);">Kwame:</span> &nbsp;Hin und zurück, bitte. Zweite Klasse.<br>
+              <span style="color:var(--gray);">Verkäufer:</span> &nbsp;Das kostet 68 Euro.<br>
+              <span style="color:var(--zug);">Kwame:</span> &nbsp;Wann fährt der nächste Zug ab?<br>
+              <span style="color:var(--gray);">Verkäufer:</span> &nbsp;Um 11:42 Uhr, Gleis 5.<br>
+              <span style="color:var(--zug);">Kwame:</span> &nbsp;Muss ich umsteigen?<br>
+              <span style="color:var(--gray);">Verkäufer:</span> &nbsp;Nein, direkt nach München. Gute Reise!
+            </div>
+          </div>
+          <button class="speak-btn" style="margin-top:10px;" onclick="speakSentence(this,'Ich möchte eine Fahrkarte nach München. Hin und zurück, bitte.')">🔊 Kwame's lines</button>
+
+          <div class="warn-box"><strong style="color:var(--blue);">Exam tip — Sprechen Teil 2:</strong> The roleplay often takes place at a ticket counter or travel agency. If you use "Ich möchte eine Fahrkarte nach…" + "Hin und zurück" + "Auf welchem Gleis?" — you have covered three of the most likely examiner prompts in one prepared script.</div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">Module 20 · Lesson 3 · Quiz</div><h2 class="lesson-h">Buying a Ticket — Check</h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 4: mit dem / zu Fuß ── -->
+    <div id="lesson-3" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">Module 20 · Lesson 4 of 6</div>
+          <h2 class="lesson-h"><span style="color:var(--mit)">mit dem</span> — the transport rule</h2>
+          <p class="body-text"><strong style="color:var(--mit)">mit</strong> is a Dativ preposition — it always takes Dativ, no exceptions. When you say how you travel, you always use <em>mit</em> + the dative article of the vehicle. This is the single grammar rule that connects to every transport sentence.</p>
+
+          <div class="info-box">
+            <strong style="color:var(--gold);">mit + Dativ — article changes:</strong><br><br>
+            masculine: <strong>der</strong> → <strong style="color:var(--mit);">dem</strong> &nbsp;·&nbsp; mit <strong style="color:var(--mit);">dem</strong> Zug / Bus<br>
+            feminine: <strong>die</strong> → <strong style="color:var(--mit);">der</strong> &nbsp;·&nbsp; mit <strong style="color:var(--mit);">der</strong> U-Bahn / S-Bahn<br>
+            neuter: <strong>das</strong> → <strong style="color:var(--mit);">dem</strong> &nbsp;·&nbsp; mit <strong style="color:var(--mit);">dem</strong> Auto / Taxi / Flugzeug
+          </div>
+
+          <div class="mit-table-wrap">
+            <div class="conj-title" style="color:var(--mit);">MIT + DATIV — ALL TRANSPORT FORMS</div>
+            <table class="mit-table">
+              <thead>
+                <tr><th>VEHICLE</th><th>GENDER</th><th style="color:var(--mit);">MIT + DATIV</th><th>EXAMPLE</th></tr>
+              </thead>
+              <tbody>
+                <tr><td class="mt-vehicle">Zug</td><td class="mt-art">der (m)</td><td class="mt-mit">mit dem Zug</td><td class="mt-ex">Ich fahre mit dem Zug.</td></tr>
+                <tr><td class="mt-vehicle">Bus</td><td class="mt-art">der (m)</td><td class="mt-mit">mit dem Bus</td><td class="mt-ex">Amina fährt mit dem Bus.</td></tr>
+                <tr><td class="mt-vehicle">ICE</td><td class="mt-art">der (m)</td><td class="mt-mit">mit dem ICE</td><td class="mt-ex">Wir fahren mit dem ICE.</td></tr>
+                <tr><td class="mt-vehicle">U-Bahn</td><td class="mt-art">die (f)</td><td class="mt-mit">mit der U-Bahn</td><td class="mt-ex">Kofi fährt mit der U-Bahn.</td></tr>
+                <tr><td class="mt-vehicle">S-Bahn</td><td class="mt-art">die (f)</td><td class="mt-mit">mit der S-Bahn</td><td class="mt-ex">Fatima fährt mit der S-Bahn.</td></tr>
+                <tr><td class="mt-vehicle">Straßenbahn</td><td class="mt-art">die (f)</td><td class="mt-mit">mit der Straßenbahn</td><td class="mt-ex">mit der Straßenbahn fahren</td></tr>
+                <tr><td class="mt-vehicle">Auto</td><td class="mt-art">das (n)</td><td class="mt-mit">mit dem Auto</td><td class="mt-ex">Er kommt mit dem Auto.</td></tr>
+                <tr><td class="mt-vehicle">Flugzeug</td><td class="mt-art">das (n)</td><td class="mt-mit">mit dem Flugzeug</td><td class="mt-ex">Ich fliege mit dem Flugzeug.</td></tr>
+                <tr><td class="mt-vehicle">Taxi</td><td class="mt-art">das (n)</td><td class="mt-mit">mit dem Taxi</td><td class="mt-ex">Kwame kommt mit dem Taxi.</td></tr>
+                <tr><td class="mt-vehicle">Fahrrad</td><td class="mt-art">das (n)</td><td class="mt-mit">mit dem Fahrrad</td><td class="mt-ex">Sie fährt mit dem Fahrrad.</td></tr>
+                <tr><td colspan="4" style="padding:10px 12px;"><span class="mt-zufu">zu Fuß</span> &nbsp;<span class="mt-art">— no article needed · on foot</span> &nbsp;&nbsp;<span class="mt-ex">Ich gehe zu Fuß. — NOT "mit dem Fuß"</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="danger-box">
+            <strong style="color:var(--red);">The most important exception:</strong><br>
+            "On foot" is <strong style="color:var(--gold);">zu Fuß</strong> — not "mit dem Fuß".<br>
+            Fuß (foot) is masculine, but you don't use mit here. zu Fuß is a fixed expression. Ich gehe <strong style="color:var(--gold);">zu Fuß</strong> zum Bahnhof.
+          </div>
+
+          <div class="sec-label">mit dem in full sentences</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--mit);">MIT DEM · MASC</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame fährt jeden Tag <span class="mh">mit dem</span> Bus zur Arbeit.</div>
+                <div class="ex-en">Kwame travels to work by bus every day.</div>
+                <div class="ex-note">der Bus → mit dem Bus. Dativ masculine.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame fährt jeden Tag mit dem Bus zur Arbeit.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--mit);">MIT DER · FEM</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina fährt <span class="mh">mit der</span> U-Bahn ins Zentrum.</div>
+                <div class="ex-en">Amina takes the metro to the city centre.</div>
+                <div class="ex-note">die U-Bahn → mit der U-Bahn. Dativ feminine.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina fährt mit der U-Bahn ins Zentrum.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--mit);">MIT DEM · NEUT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi reist <span class="mh">mit dem</span> Flugzeug nach Berlin.</div>
+                <div class="ex-en">Kofi travels to Berlin by plane.</div>
+                <div class="ex-note">das Flugzeug → mit dem Flugzeug. Dativ neuter.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi reist mit dem Flugzeug nach Berlin.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.12);color:var(--gold);">ZU FUSS</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima geht <span style="color:var(--gold);font-weight:700;">zu Fuß</span> zur Schule.</div>
+                <div class="ex-en">Fatima walks to school.</div>
+                <div class="ex-note">zu Fuß — fixed expression, no article. Use gehen (not fahren) with zu Fuß.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima geht zu Fuß zur Schule.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">Module 20 · Lesson 4 · Quiz</div><h2 class="lesson-h">mit dem / zu Fuß — Check</h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 5: Germany vs Africa Transport ── -->
+    <div id="lesson-4" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">Module 20 · Lesson 5 of 6</div>
+          <h2 class="lesson-h">Germany vs <span style="color:var(--gold)">Africa</span> — transport</h2>
+          <p class="body-text">Understanding German transport culture helps you understand the listening texts. Germany has one of the most extensive public transport networks in the world. Many A2 Hören texts and reading passages compare daily life — including how people travel.</p>
+
+          <div class="cmp-grid">
+            <div class="cmp-box cmp-de">
+              <div class="cmp-flag">🇩🇪</div>
+              <div class="cmp-title">IN DEUTSCHLAND</div>
+              <div class="cmp-item">
+                🚂 der ICE / Intercity<br>
+                🚇 die U-Bahn<br>
+                🚈 die S-Bahn<br>
+                🚊 die Straßenbahn<br>
+                🚌 der Bus<br>
+                🚲 das Fahrrad<br>
+                🚗 das Auto<br>
+              </div>
+            </div>
+            <div class="cmp-box cmp-af">
+              <div class="cmp-flag">🌍</div>
+              <div class="cmp-title">IN AFRICA</div>
+              <div class="cmp-item">
+                🚐 matatu (Kenya)<br>
+                🚐 tro-tro (Ghana)<br>
+                🛵 okada / boda-boda<br>
+                🚌 Luxusbus (Nigeria)<br>
+                🚕 das Taxi<br>
+                🚂 der Zug (selten)<br>
+                🛥️ das Schiff (Seen)
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">Comparison sentences — A2 writing topic</div>
+          <p class="body-text">A2 Schreiben tasks sometimes ask you to compare your home country with Germany. These sentences use <em>In [country] nimmt man…</em> which is a very useful structure.</p>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--zug);">VERGLEICH · COMPARE</div>
+              <div style="flex:1;">
+                <div class="ex-de">In Nairobi nimmt man oft <span class="zh">das Matatu</span> zur Arbeit.</div>
+                <div class="ex-en">In Nairobi people often take the matatu to work.</div>
+                <div class="ex-note">man = one / people (impersonal). nimmt = takes (nehmen). Very useful structure for Schreiben.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'In Nairobi nimmt man oft das Matatu zur Arbeit.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--zug);">VERGLEICH · COMPARE</div>
+              <div style="flex:1;">
+                <div class="ex-de">In Deutschland fährt man meistens <span class="mh">mit der</span> U-Bahn oder <span class="mh">mit dem</span> Bus.</div>
+                <div class="ex-en">In Germany people mostly travel by metro or by bus.</div>
+                <div class="ex-note">meistens = mostly. Two mit-phrases in one sentence — both correct Dativ forms.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'In Deutschland fährt man meistens mit der U-Bahn oder mit dem Bus.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.12);color:var(--gold);">KWAME · ACCRA → BERLIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame kommt aus Accra. Er ist <span class="mh">mit dem</span> Flugzeug nach Berlin geflogen.</div>
+                <div class="ex-en">Kwame comes from Accra. He flew to Berlin by plane.</div>
+                <div class="ex-note">Perfekt with sein: ist geflogen. mit dem Flugzeug = by plane.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame kommt aus Accra. Er ist mit dem Flugzeug nach Berlin geflogen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.12);color:var(--gold);">AMINA · DAKAR → FRANKFURT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina wohnt jetzt in Frankfurt und fährt jeden Tag <span class="mh">mit der</span> S-Bahn zur Universität.</div>
+                <div class="ex-en">Amina now lives in Frankfurt and travels to university by S-Bahn every day.</div>
+                <div class="ex-note">mit der S-Bahn — feminine. Daily routine sentence, typical in A2 Schreiben.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina wohnt jetzt in Frankfurt und fährt jeden Tag mit der S-Bahn zur Universität.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="info-box">
+            <strong style="color:var(--gold);">Useful comparison phrase for Schreiben:</strong><br><br>
+            In [Land] fährt man meistens mit dem/der/dem [Verkehrsmittel].<br>
+            In Deutschland ist der öffentliche Nahverkehr sehr gut.<br>
+            In Ghana / Nigeria / Kenia benutzt man oft [Verkehrsmittel].<br><br>
+            <em>der öffentliche Nahverkehr</em> = public transport. A high-level phrase that earns marks.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">Module 20 · Lesson 5 · Quiz</div><h2 class="lesson-h">Germany vs Africa — Check</h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 6: Kwame & Amina Travel + Mistakes ── -->
+    <div id="lesson-5" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">Module 20 · Lesson 6 of 6</div>
+          <h2 class="lesson-h">Kwame &amp; Amina — <span style="color:var(--gold)">full journey</span></h2>
+          <p class="body-text">Here is a complete A2-level travel narrative combining all the vocabulary from this module. This is the kind of text that appears in A2 Lesen (reading comprehension) — and the kind you should be able to write in Schreiben.</p>
+
+          <div class="sec-label">Kwame's journey from Accra to Berlin</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--gold);">KWAMES REISE</div>
+            <div style="font-family:'DM Mono',monospace;font-size:13px;line-height:2.6;color:var(--cream);">
+              Kwame wohnt in Accra, Ghana.<br>
+              Er fliegt <span class="mh">mit dem Flugzeug</span> nach Frankfurt.<br>
+              <span style="color:var(--gray);font-size:11px;">He flies to Frankfurt by plane.</span><br>
+              Am Frankfurter Flughafen kauft er eine Fahrkarte.<br>
+              <span style="color:var(--gray);font-size:11px;">At Frankfurt airport he buys a ticket.</span><br>
+              Er fährt <span class="mh">mit dem</span> ICE <span class="mh">nach Berlin</span>.<br>
+              <span style="color:var(--gray);font-size:11px;">He travels to Berlin by ICE.</span><br>
+              Der Zug fährt auf <span class="sh">Gleis 3</span> ab.<br>
+              <span style="color:var(--gray);font-size:11px;">The train departs from Platform 3.</span><br>
+              In Berlin fährt er <span class="mh">mit der</span> U-Bahn ins Hostel.<br>
+              <span style="color:var(--gray);font-size:11px;">In Berlin he takes the metro to the hostel.</span>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Kwame wohnt in Accra. Er fliegt mit dem Flugzeug nach Frankfurt. Er fährt mit dem ICE nach Berlin.')">🔊 Kwame's journey</button>
+
+          <div class="sec-label">African learner mistakes — wrong and right</div>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Ich fahre mit der Bus.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Ich fahre mit dem Bus.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">der Bus is masculine. mit = Dativ preposition → der → dem. "mit der" is Dativ feminine — only correct for die U-Bahn, die S-Bahn, die Straßenbahn.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Ich fahre mit die U-Bahn.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Ich fahre mit der U-Bahn.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">die U-Bahn is feminine. mit = Dativ → die → der. Using the nominative "die" after mit is the most common error — mit always takes Dativ, never nominative.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Ich gehe mit dem Fuß.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Ich gehe zu Fuß.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">"On foot" is always zu Fuß — a fixed phrase. Do not use mit here. And use gehen, not fahren, when walking.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Wann kommt das Zug an?</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Wann kommt der Zug an?</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">der Zug is masculine — not neuter. A common gender error. Also note: ankommen is separable → kommt…an.</p>
+
+          <div class="success-box">
+            <strong style="color:var(--green);">Exam summary — five things to know:</strong><br><br>
+            1. <strong style="color:var(--zug);">der</strong> Zug / Bus &nbsp;·&nbsp; <strong style="color:var(--flug);">die</strong> U-Bahn / S-Bahn &nbsp;·&nbsp; <strong style="color:var(--mit);">das</strong> Auto / Flugzeug / Taxi<br>
+            2. <strong style="color:var(--mit);">mit</strong> always takes Dativ: mit <strong>dem</strong> Zug/Bus/Auto · mit <strong>der</strong> U-Bahn<br>
+            3. "On foot" = <strong style="color:var(--gold);">zu Fuß</strong> (not mit dem Fuß)<br>
+            4. Station key words: Abfahrt · Ankunft · Gleis · Verspätung · Fahrkarte<br>
+            5. Ticket phrases: <em>Ich möchte eine Fahrkarte nach…</em> · <em>hin und zurück</em> · <em>einfache Fahrt</em>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">Module 20 · Lesson 6 · Quiz</div><h2 class="lesson-h">Travel &amp; Transport — Final Check</h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Previous</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var TOTAL=6, currentLesson=0, xp=0;
+var synth=window.speechSynthesis, voices=[], deVoice=null;
+function loadVoices(){ voices=synth.getVoices(); deVoice=voices.find(function(v){return v.lang==='de-DE';})||voices.find(function(v){return v.lang.startsWith('de');})||null; }
+if(synth.onvoiceschanged!==undefined){synth.onvoiceschanged=loadVoices;}
+function speakDE(text){ if(!synth)return; synth.cancel(); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; synth.speak(u); }
+function speakSentence(btn,text){ if(!synth)return; synth.cancel(); document.querySelectorAll('.speak-btn.speaking').forEach(function(b){b.classList.remove('speaking');}); btn.classList.add('speaking'); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; u.onend=function(){btn.classList.remove('speaking');}; synth.speak(u); }
+
+var QD={
+  0:[
+    {q:'Which article is correct for "Zug" (train)?',
+     hint:'Think about the gender of Zug. Is it masculine, feminine, or neuter? Remember: die U-Bahn is the one feminine vehicle.',
+     opts:['die Zug','das Zug','der Zug','den Zug'],
+     ans:2,
+     exp:'"der Zug" — Zug is masculine (der). The only clearly feminine transport word in this module is die U-Bahn (and die S-Bahn, die Straßenbahn — all "-Bahn" words are feminine). Most other vehicles are neuter: das Auto, das Flugzeug, das Taxi, das Fahrrad, das Schiff. der Zug and der Bus are the two masculine ones. "den Zug" is the accusative form of der Zug — correct as an object but not as the standalone article.',
+     rule:'der Zug · der Bus (masculine). die U-Bahn / S-Bahn (feminine). das Auto / Flugzeug / Taxi / Fahrrad / Schiff (neuter).'}
+  ],
+  1:[
+    {q:'Was bedeutet "die Abfahrt"? (What does "die Abfahrt" mean?)',
+     hint:'Think of the prefix ab-. It means "away from". When does a train go away from a platform?',
+     opts:['arrival','platform / track','departure','timetable'],
+     ans:2,
+     exp:'"departure" — die Abfahrt comes from the verb abfahren (to depart, to drive away). The prefix ab- = away from. So Abfahrt = the moment of going away = departure. die Ankunft = arrival (from ankommen, to arrive). das Gleis = platform/track. der Fahrplan = timetable (Fahr = travel, Plan = plan/schedule).',
+     rule:'Abfahrt = departure (ab- = away). Ankunft = arrival (an- = arriving). Gleis = platform. Fahrplan = timetable.'}
+  ],
+  2:[
+    {q:'Kwame wants a one-way ticket to Hamburg. Which sentence does he use at the counter?',
+     hint:'One way = only going, not coming back. What is the German phrase for a one-way journey?',
+     opts:['Ich möchte eine Fahrkarte hin und zurück nach Hamburg.','Ich möchte eine einfache Fahrt nach Hamburg, bitte.','Auf welchem Gleis fährt der Zug nach Hamburg ab?','Muss ich nach Hamburg umsteigen?'],
+     ans:1,
+     exp:'"Ich möchte eine einfache Fahrt nach Hamburg, bitte." — einfache Fahrt = one way / single journey (literally "simple journey"). hin und zurück = return ticket (there and back). Option A asks for a return — wrong if Kwame only wants one way. Option C asks which platform the train departs from — a useful question but not for buying a ticket. Option D asks if he needs to change trains.',
+     rule:'einfache Fahrt = one way. hin und zurück = return. Ich möchte eine Fahrkarte nach [city] = I would like a ticket to [city].'}
+  ],
+  3:[
+    {q:'Amina fährt ___ Bus zur Arbeit. Which is correct?',
+     hint:'mit is a Dativ preposition — always. der Bus is masculine. What does masculine become in Dativ?',
+     opts:['mit die Bus','mit das Bus','mit dem Bus','mit der Bus'],
+     ans:2,
+     exp:'"mit dem Bus" — mit always takes Dativ. der Bus is masculine. In Dativ, masculine der → dem. So: mit + dem = mit dem Bus. "mit der Bus" would be Dativ feminine — correct for die U-Bahn but not for der Bus. "mit die Bus" uses the nominative feminine article — always wrong after mit. "mit das Bus" uses nominative neuter — also wrong.',
+     rule:'mit + Dativ always. der Bus (m) → mit dem Bus. die U-Bahn (f) → mit der U-Bahn. das Auto (n) → mit dem Auto.'}
+  ],
+  4:[
+    {q:'How do you say "I go on foot" in German?',
+     hint:'This is a fixed expression — it does NOT use mit. Think of the phrase that means "on foot" as an idiom.',
+     opts:['Ich fahre mit dem Fuß.','Ich gehe zu Fuß.','Ich gehe mit dem Fuß.','Ich fahre zu Fuß.'],
+     ans:1,
+     exp:'"Ich gehe zu Fuß." — zu Fuß is the fixed German expression for "on foot". It does not use mit. Also important: use gehen (not fahren) when walking — fahren implies using a vehicle. "mit dem Fuß" is not how German expresses walking — even though Fuß is masculine and dem would be the correct Dativ form, the whole phrase is wrong. "Ich fahre zu Fuß" uses fahren — wrong verb for walking.',
+     rule:'zu Fuß = on foot (fixed expression, no mit). Use gehen, not fahren: Ich gehe zu Fuß. Never "mit dem Fuß".'}
+  ],
+  5:[
+    {q:'Which sentence is completely correct?',
+     hint:'Check the mit phrase: is the article the correct Dativ form for that vehicle\'s gender?',
+     opts:['Kofi fährt mit die U-Bahn.','Ich möchte eine Fahrkarte nach München, bitte.','Der Zug hat Verspätung auf Gleis das 5.','Fatima geht mit dem Fuß zur Schule.'],
+     ans:1,
+     exp:'"Ich möchte eine Fahrkarte nach München, bitte." — Correct and natural. Ich möchte = I would like (polite). eine Fahrkarte = a ticket. nach München = to Munich. Option A: mit die U-Bahn — wrong, die is nominative; Dativ feminine is der → mit der U-Bahn. Option C: "auf Gleis das 5" is wrong word order and wrong use of the article — say "auf Gleis 5" (no article with numbered platforms). Option D: "mit dem Fuß" — wrong; the correct expression is zu Fuß.',
+     rule:'Correct ticket phrase: Ich möchte eine Fahrkarte nach [city], bitte. mit always takes Dativ. On foot = zu Fuß (never mit dem Fuß).'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">QUESTION '+(s.cur+1)+' OF '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint">'+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Next Question →':'See Results →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Correct!':'✗ Not quite'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent=q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' correct</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfect.':pct>=60?'Good work.':'Review and try again.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.12);border:1px solid var(--gold);border-radius:50px;padding:9px 22px;color:var(--gold);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Complete Module 20 →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Next Lesson →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">✈️</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Module 20 Complete!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">Travel and transport mastered. You know the genders of all 8 vehicles, the full Bahnhof vocabulary, how to buy a ticket in German, and — most importantly — that mit always takes Dativ. You will never write "mit der Bus" again. Your A2 Hören and Schreiben travel tasks are ready.</p><div class="xp-badge">⚡ '+xp+' XP Earned</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">A2 Module 8 of 8 complete. A2 section done! Next: Review all A2 modules and prepare for your Goethe exam.</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Back to Overview</button></div>'; }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function resumeLesson(){ goLesson(currentLesson); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+<script src="./ai-tutor.js" data-module="20"></script>
+</body>
+</html>
