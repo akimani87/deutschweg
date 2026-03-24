@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Module 22: Work &amp; Professions</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --prof:#3498db; --role:#e67e22; --work:#9b59b6; --app:#27ae60;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--gold); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--gold); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--gold); color:var(--black); width:100%; }
+  .btn-primary:hover { background:var(--gold-light); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(201,168,76,0.2); }
+  .speak-btn.speaking { background:var(--gold); color:var(--black); }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-en { font-size:12px; color:var(--gray); margin-bottom:6px; }
+  .ex-note { font-size:12px; color:var(--cream); line-height:1.6; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Sans',sans-serif; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--gold); background:rgba(201,168,76,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(201,168,76,0.1); border-radius:8px; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(201,168,76,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(201,168,76,0.08); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(201,168,76,0.12); border:1px solid var(--gold); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--gold); font-size:18px; margin:18px 0; }
+
+  /* WRONG/RIGHT */
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.2; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+
+  /* CONJ TABLE */
+  .conj-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; }
+  .conj-title { font-size:10px; letter-spacing:2.5px; font-family:'DM Mono',monospace; margin-bottom:12px; }
+
+  /* PROFESSIONS GRID */
+  .pf-grid { display:flex; flex-direction:column; gap:8px; margin:14px 0; }
+  .pf-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:14px 16px; display:flex; align-items:center; gap:14px; }
+  .pf-icon { font-size:22px; width:34px; text-align:center; flex-shrink:0; }
+  .pf-forms { flex:1; display:flex; gap:18px; align-items:center; }
+  .pf-side { flex:1; }
+  .pf-art { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; margin-bottom:2px; }
+  .pf-art.m { color:var(--prof); }
+  .pf-art.f { color:var(--role); }
+  .pf-name { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; color:var(--cream); }
+  .pf-en { font-size:11px; color:var(--gray); margin-top:3px; }
+  .pf-divider { width:1px; align-self:stretch; background:rgba(255,255,255,0.07); flex-shrink:0; }
+
+  /* NO ARTICLE RULE CARD */
+  .rule-card { background:var(--card2-bg); border:2px solid rgba(201,168,76,0.3); border-radius:14px; padding:20px; margin:14px 0; text-align:center; }
+  .rule-main { font-family:'Playfair Display',serif; font-size:22px; color:var(--gold); margin-bottom:8px; }
+  .rule-sub { font-size:13px; color:var(--gray); }
+  .rule-contrast { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:16px 0 0; }
+  .rc-box { border-radius:10px; padding:14px 16px; }
+  .rc-box.eng { background:rgba(52,152,219,0.06); border:1px solid rgba(52,152,219,0.2); }
+  .rc-box.ger { background:rgba(201,168,76,0.06); border:1px solid rgba(201,168,76,0.25); }
+  .rc-lang { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; margin-bottom:8px; text-align:left; }
+  .rc-box.eng .rc-lang { color:var(--prof); }
+  .rc-box.ger .rc-lang { color:var(--gold); }
+  .rc-text { font-family:'DM Mono',monospace; font-size:13px; line-height:2.0; color:var(--cream); text-align:left; }
+  .rc-strike { text-decoration:line-through; color:var(--red); opacity:0.7; }
+
+  /* WORK VOCAB TABLE */
+  .wv-table-wrap { background:var(--card2-bg); border:1px solid rgba(155,89,182,0.12); border-radius:14px; padding:18px; margin:14px 0; }
+  .wv-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .wv-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:9px 12px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.07); color:var(--gray); }
+  .wv-table td { padding:9px 12px; border-bottom:1px solid rgba(255,255,255,0.04); font-family:'DM Mono',monospace; font-size:13px; }
+  .wv-table tr:last-child td { border-bottom:none; }
+  .wt-de { color:var(--work); font-weight:600; }
+  .wt-en { color:var(--gray); }
+  .wt-ex { font-size:11px; color:rgba(201,168,76,0.7); }
+
+  /* PHRASE CARDS */
+  .ph-card-list { display:flex; flex-direction:column; gap:8px; margin:14px 0; }
+  .ph-card2 { background:var(--card2-bg); border:1px solid rgba(39,174,96,0.12); border-radius:10px; padding:14px 16px; }
+  .phc-de { font-family:'DM Mono',monospace; font-size:14px; font-weight:700; color:var(--cream); margin-bottom:3px; }
+  .phc-en { font-size:12px; color:var(--gray); margin-bottom:5px; }
+  .phc-note { font-size:12px; color:var(--cream); line-height:1.6; }
+
+  /* PROCESS STEPS */
+  .proc-list { display:flex; flex-direction:column; gap:0; margin:14px 0; }
+  .proc-step { display:flex; gap:14px; align-items:flex-start; padding:14px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+  .proc-step:last-child { border-bottom:none; }
+  .proc-num { width:28px; height:28px; border-radius:50%; background:rgba(155,89,182,0.15); border:1px solid rgba(155,89,182,0.3); display:flex; align-items:center; justify-content:center; font-family:'DM Mono',monospace; font-size:12px; color:var(--work); flex-shrink:0; margin-top:1px; }
+  .proc-de { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; color:var(--cream); margin-bottom:3px; }
+  .proc-en { font-size:12px; color:var(--gray); margin-bottom:4px; }
+  .proc-note { font-size:12px; color:var(--cream); line-height:1.6; }
+
+  /* HIGHLIGHTS */
+  .pfh { color:var(--prof); font-weight:700; }
+  .roh { color:var(--role); font-weight:700; }
+  .wkh { color:var(--work); font-weight:700; }
+  .aph { color:var(--app); font-weight:700; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .lesson-h{font-size:22px;} .wr-grid{grid-template-columns:1fr;} .pf-forms{flex-direction:column;gap:8px;} .pf-divider{display:none;} .rule-contrast{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">MODULE 22 · A2</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">A2 · Vocabulary &amp; Grammar</div>
+    <h1 class="lesson-h" style="font-size:36px;">Work &amp;<br><span style="color:var(--gold)">Professions</span></h1>
+    <p class="body-text">For many African learners, German is not just an academic goal — it is a professional one. Whether you are studying for a work visa, sitting for a Goethe exam required by your employer, or learning to communicate in a German workplace, this module covers what you actually need: the names of professions, the grammar rule that trips up almost every English speaker, and the vocabulary used in job applications and the workplace.</p>
+    <div class="info-box"><strong style="color:var(--gold)">The African learner trap:</strong> In English you say "I am A doctor" — with the article "a". In German, no article is used with professions after <em>sein</em>: <strong style="color:var(--role)">Ich bin Arzt.</strong> NOT "Ich bin <span style="color:var(--red)">ein</span> Arzt." This is the single most common mistake made by English-speaking African learners at A2 level.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">💼</div><div><div class="lc-title">Lesson 1 — Professions Vocabulary</div><div class="lc-desc">der Arzt/die Ärztin, der Lehrer/die Lehrerin, der Koch/die Köchin and 6 more. Masculine and feminine forms.</div></div><div class="lc-tag" style="color:var(--gold);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">🚫</div><div><div class="lc-title">Lesson 2 — No Article with Professions</div><div class="lc-desc">Ich bin Arzt. NOT Ich bin ein Arzt. The most important grammar rule in this module.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">🏢</div><div><div class="lc-title">Lesson 3 — Work Vocabulary</div><div class="lc-desc">die Stelle, das Gehalt, die Überstunden, kündigen, entlassen werden, der Urlaub and more.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">🗣️</div><div><div class="lc-title">Lesson 4 — Workplace Phrases</div><div class="lc-desc">Ich arbeite als… / Ich bin zuständig für… / Vollzeit / Teilzeit. Kwame and Amina at work.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">📋</div><div><div class="lc-title">Lesson 5 — Job Applications &amp; Interviews</div><div class="lc-desc">die Bewerbung, das Vorstellungsgespräch. Kofi's interview. Exam tip for Schreiben.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lesson 6 — Africans at Work in Germany</div><div class="lc-desc">Cultural context. Wrong/right grids. Kwame, Amina, Kofi, Fatima in their professions. Exam tips.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Begin Lesson 1 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lessons</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LESSON 1: Professions Vocabulary ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">Module 22 · Lesson 1 of 6</div>
+          <h2 class="lesson-h">Professions <span style="color:var(--prof)">vocabulary</span></h2>
+          <p class="body-text">German professions come in two forms: masculine and feminine. You must learn both. The masculine form uses <strong style="color:var(--prof);">der</strong>, the feminine adds <strong style="color:var(--role);">-in</strong> (sometimes with an umlaut). In forms and documents, you must write the correct gender form for yourself.</p>
+
+          <div class="info-box">
+            <strong style="color:var(--gold);">Feminine suffix pattern:</strong><br><br>
+            Most professions ending in <strong style="color:var(--prof);">-er</strong> add <strong style="color:var(--role);">-in</strong> for feminine: Lehrer → Lehr<strong style="color:var(--role);">erin</strong><br>
+            Some add an umlaut too: Arzt → Ärzt<strong style="color:var(--role);">in</strong> · Koch → K<strong style="color:var(--role);">ö</strong>ch<strong style="color:var(--role);">in</strong><br>
+            Bürokaufmann → Bürokaufrau — completely different root (Mann → Frau)
+          </div>
+
+          <div class="sec-label">Nine core A2 professions</div>
+          <div class="pf-grid">
+            <div class="pf-card">
+              <div class="pf-icon">👨‍⚕️</div>
+              <div class="pf-forms">
+                <div class="pf-side">
+                  <div class="pf-art m">MASKULIN</div>
+                  <div class="pf-name">der Arzt</div>
+                  <div class="pf-en">doctor (m)</div>
+                </div>
+                <div class="pf-divider"></div>
+                <div class="pf-side">
+                  <div class="pf-art f">FEMININ</div>
+                  <div class="pf-name">die Ärztin</div>
+                  <div class="pf-en">doctor (f) · umlaut!</div>
+                </div>
+              </div>
+            </div>
+            <div class="pf-card">
+              <div class="pf-icon">👨‍🏫</div>
+              <div class="pf-forms">
+                <div class="pf-side">
+                  <div class="pf-art m">MASKULIN</div>
+                  <div class="pf-name">der Lehrer</div>
+                  <div class="pf-en">teacher (m)</div>
+                </div>
+                <div class="pf-divider"></div>
+                <div class="pf-side">
+                  <div class="pf-art f">FEMININ</div>
+                  <div class="pf-name">die Lehrerin</div>
+                  <div class="pf-en">teacher (f) · +in</div>
+                </div>
+              </div>
+            </div>
+            <div class="pf-card">
+              <div class="pf-icon">👷</div>
+              <div class="pf-forms">
+                <div class="pf-side">
+                  <div class="pf-art m">MASKULIN</div>
+                  <div class="pf-name">der Ingenieur</div>
+                  <div class="pf-en">engineer (m)</div>
+                </div>
+                <div class="pf-divider"></div>
+                <div class="pf-side">
+                  <div class="pf-art f">FEMININ</div>
+                  <div class="pf-name">die Ingenieurin</div>
+                  <div class="pf-en">engineer (f) · +in</div>
+                </div>
+              </div>
+            </div>
+            <div class="pf-card">
+              <div class="pf-icon">🏥</div>
+              <div class="pf-forms">
+                <div class="pf-side">
+                  <div class="pf-art m">MASKULIN</div>
+                  <div class="pf-name">der Krankenpfleger</div>
+                  <div class="pf-en">nurse (m)</div>
+                </div>
+                <div class="pf-divider"></div>
+                <div class="pf-side">
+                  <div class="pf-art f">FEMININ</div>
+                  <div class="pf-name">die Krankenpflegerin</div>
+                  <div class="pf-en">nurse (f) · +in</div>
+                </div>
+              </div>
+            </div>
+            <div class="pf-card">
+              <div class="pf-icon">🛒</div>
+              <div class="pf-forms">
+                <div class="pf-side">
+                  <div class="pf-art m">MASKULIN</div>
+                  <div class="pf-name">der Verkäufer</div>
+                  <div class="pf-en">salesperson (m)</div>
+                </div>
+                <div class="pf-divider"></div>
+                <div class="pf-side">
+                  <div class="pf-art f">FEMININ</div>
+                  <div class="pf-name">die Verkäuferin</div>
+                  <div class="pf-en">salesperson (f) · +in</div>
+                </div>
+              </div>
+            </div>
+            <div class="pf-card">
+              <div class="pf-icon">👨‍🍳</div>
+              <div class="pf-forms">
+                <div class="pf-side">
+                  <div class="pf-art m">MASKULIN</div>
+                  <div class="pf-name">der Koch</div>
+                  <div class="pf-en">cook / chef (m)</div>
+                </div>
+                <div class="pf-divider"></div>
+                <div class="pf-side">
+                  <div class="pf-art f">FEMININ</div>
+                  <div class="pf-name">die Köchin</div>
+                  <div class="pf-en">cook (f) · umlaut + in</div>
+                </div>
+              </div>
+            </div>
+            <div class="pf-card">
+              <div class="pf-icon">🚗</div>
+              <div class="pf-forms">
+                <div class="pf-side">
+                  <div class="pf-art m">MASKULIN</div>
+                  <div class="pf-name">der Fahrer</div>
+                  <div class="pf-en">driver (m)</div>
+                </div>
+                <div class="pf-divider"></div>
+                <div class="pf-side">
+                  <div class="pf-art f">FEMININ</div>
+                  <div class="pf-name">die Fahrerin</div>
+                  <div class="pf-en">driver (f) · +in</div>
+                </div>
+              </div>
+            </div>
+            <div class="pf-card">
+              <div class="pf-icon">💻</div>
+              <div class="pf-forms">
+                <div class="pf-side">
+                  <div class="pf-art m">MASKULIN</div>
+                  <div class="pf-name">der Programmierer</div>
+                  <div class="pf-en">programmer (m)</div>
+                </div>
+                <div class="pf-divider"></div>
+                <div class="pf-side">
+                  <div class="pf-art f">FEMININ</div>
+                  <div class="pf-name">die Programmiererin</div>
+                  <div class="pf-en">programmer (f) · +in</div>
+                </div>
+              </div>
+            </div>
+            <div class="pf-card">
+              <div class="pf-icon">📂</div>
+              <div class="pf-forms">
+                <div class="pf-side">
+                  <div class="pf-art m">MASKULIN</div>
+                  <div class="pf-name">der Bürokaufmann</div>
+                  <div class="pf-en">office clerk (m)</div>
+                </div>
+                <div class="pf-divider"></div>
+                <div class="pf-side">
+                  <div class="pf-art f">FEMININ</div>
+                  <div class="pf-name">die Bürokauffrau</div>
+                  <div class="pf-en">office clerk (f) · Mann→Frau</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">Professions in sentences</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--prof);">KWAME</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame ist <span class="pfh">Programmierer</span>.</div>
+                <div class="ex-en">Kwame is a programmer.</div>
+                <div class="ex-note">No article! Not "ein Programmierer" — this rule is covered in depth in Lesson 2.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame ist Programmierer.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--role);">AMINA</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina ist <span class="roh">Ärztin</span>.</div>
+                <div class="ex-en">Amina is a doctor.</div>
+                <div class="ex-note">Feminine form: Ärztin (not Arzt). Always use the form that matches your gender.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina ist Ärztin.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--work);">KOFI</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi ist <span class="wkh">Fahrer</span>. Er arbeitet als <span class="wkh">Taxifahrer</span> in München.</div>
+                <div class="ex-en">Kofi is a driver. He works as a taxi driver in Munich.</div>
+                <div class="ex-note">Taxifahrer = taxi driver (Taxi + Fahrer). Compound nouns are very common for job titles in German.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi ist Fahrer. Er arbeitet als Taxifahrer in München.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--app);">FATIMA</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima ist <span class="aph">Köchin</span>. Sie arbeitet in einem Restaurant in Hamburg.</div>
+                <div class="ex-en">Fatima is a cook. She works in a restaurant in Hamburg.</div>
+                <div class="ex-note">Köchin is the irregular feminine of Koch. In einem Restaurant = in a restaurant (Dativ with in + location).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima ist Köchin. Sie arbeitet in einem Restaurant in Hamburg.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">Module 22 · Lesson 1 · Quiz</div><h2 class="lesson-h">Professions — First Check</h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 2: No Article with Professions ── -->
+    <div id="lesson-1" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">Module 22 · Lesson 2 of 6</div>
+          <h2 class="lesson-h">No article with <span style="color:var(--role)">professions</span></h2>
+          <p class="body-text">This is the most important grammar rule in this module — and the most commonly broken. When you use <em>sein</em> (to be), <em>werden</em> (to become), or <em>bleiben</em> (to remain) with a profession, German does <strong>not</strong> use an article. Not <em>ein</em>, not <em>eine</em>, not <em>der</em>, not <em>die</em>. Nothing.</p>
+
+          <div class="rule-card">
+            <div class="rule-main">sein + Beruf = kein Artikel</div>
+            <div class="rule-sub">no article after sein / werden / bleiben / als with professions</div>
+            <div class="rule-contrast">
+              <div class="rc-box eng">
+                <div class="rc-lang">ENGLISH</div>
+                <div class="rc-text">
+                  I am <strong style="color:var(--prof);">a</strong> doctor.<br>
+                  She is <strong style="color:var(--prof);">a</strong> teacher.<br>
+                  He is <strong style="color:var(--prof);">an</strong> engineer.
+                </div>
+              </div>
+              <div class="rc-box ger">
+                <div class="rc-lang">DEUTSCH</div>
+                <div class="rc-text">
+                  Ich bin Arzt.<br>
+                  Sie ist Lehrerin.<br>
+                  Er ist Ingenieur.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">The rule applies after four verbs</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--prof);">SEIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <span class="pfh">bin</span> Ingenieur.</div>
+                <div class="ex-en">I am an engineer.</div>
+                <div class="ex-note">sein (to be) — the most common. No article after bin/ist/sind/seid/bist.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich bin Ingenieur.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--role);">WERDEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich möchte <span class="roh">Ärztin werden</span>.</div>
+                <div class="ex-en">I want to become a doctor.</div>
+                <div class="ex-note">werden (to become) — very common in A2 for talking about career goals. No article.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich möchte Ärztin werden.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--work);">ALS</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich arbeite <span class="wkh">als Fahrer</span>.</div>
+                <div class="ex-en">I work as a driver.</div>
+                <div class="ex-note">als (as) — also no article. "Ich arbeite als ein Fahrer" is wrong.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich arbeite als Fahrer.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--app);">BLEIBEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Er <span class="aph">bleibt Lehrer</span>.</div>
+                <div class="ex-en">He remains/stays a teacher.</div>
+                <div class="ex-note">bleiben (to stay/remain) — less common at A2 but good to know. No article.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Er bleibt Lehrer.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="warn-box">
+            <strong style="color:var(--prof);">Exception — adjective brings the article back:</strong><br><br>
+            Without adjective: <strong style="color:var(--app);">Er ist Arzt.</strong> (no article)<br>
+            With adjective: <strong style="color:var(--role);">Er ist ein guter Arzt.</strong> (article ein returns)<br><br>
+            As soon as an adjective is placed before the profession, you need the article again. At A2 level, most sentences are simple (no adjective), so the rule is: no article.
+          </div>
+
+          <div class="sec-label">Wrong and right — four common errors</div>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Ich bin ein Arzt.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Ich bin Arzt.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">The article "ein" is translated directly from English "a doctor" — this is the most common error. Drop the article entirely after sein.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Amina ist eine Ärztin.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Amina ist Ärztin.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">"eine" is the feminine article — also wrong here. Same rule applies to feminine professions: no article.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Er wird ein Ingenieur.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Er wird Ingenieur.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">The rule extends to werden (to become). Kofi möchte Ingenieur werden. (Kofi wants to become an engineer.)</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Ich arbeite als ein Koch.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Ich arbeite als Koch.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">No article after "als" with a profession either. Ich arbeite als Fahrerin / als Lehrerin / als Programmiererin.</p>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">Module 22 · Lesson 2 · Quiz</div><h2 class="lesson-h">No Article — Check</h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 3: Work Vocabulary ── -->
+    <div id="lesson-2" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">Module 22 · Lesson 3 of 6</div>
+          <h2 class="lesson-h">Work <span style="color:var(--work)">vocabulary</span></h2>
+          <p class="body-text">The workplace has its own vocabulary in German. These words appear in A2 reading texts (job ads, contracts, messages) and in writing tasks (filling in forms, describing your job situation). Learn the article with each noun — it matters.</p>
+
+          <div class="sec-label">Core work vocabulary</div>
+          <div class="wv-table-wrap">
+            <div class="conj-title" style="color:var(--work);">ARBEIT UND BERUF — KEY VOCABULARY</div>
+            <table class="wv-table">
+              <thead><tr><th>DEUTSCH</th><th>ENGLISH</th><th>EXAMPLE</th></tr></thead>
+              <tbody>
+                <tr><td class="wt-de">die Stelle (−n)</td><td class="wt-en">job position / post</td><td class="wt-ex">Ich suche eine Stelle als Fahrer.</td></tr>
+                <tr><td class="wt-de">die Bewerbung (−en)</td><td class="wt-en">job application</td><td class="wt-ex">Ich schreibe eine Bewerbung.</td></tr>
+                <tr><td class="wt-de">das Vorstellungsgespräch (−e)</td><td class="wt-en">job interview</td><td class="wt-ex">Das Vorstellungsgespräch ist morgen.</td></tr>
+                <tr><td class="wt-de">der Arbeitsvertrag (⸚e)</td><td class="wt-en">work contract</td><td class="wt-ex">Ich unterschreibe den Arbeitsvertrag.</td></tr>
+                <tr><td class="wt-de">das Gehalt (⸚er)</td><td class="wt-en">salary / wage</td><td class="wt-ex">Das Gehalt ist gut.</td></tr>
+                <tr><td class="wt-de">die Arbeitszeit (−en)</td><td class="wt-en">working hours</td><td class="wt-ex">Die Arbeitszeit ist 40 Stunden pro Woche.</td></tr>
+                <tr><td class="wt-de">der Urlaub (−e)</td><td class="wt-en">holiday / vacation</td><td class="wt-ex">Ich habe drei Wochen Urlaub.</td></tr>
+                <tr><td class="wt-de">die Überstunden (pl.)</td><td class="wt-en">overtime</td><td class="wt-ex">Ich mache oft Überstunden.</td></tr>
+                <tr><td class="wt-de">kündigen</td><td class="wt-en">to quit / resign</td><td class="wt-ex">Er hat gekündigt.</td></tr>
+                <tr><td class="wt-de">entlassen werden</td><td class="wt-en">to be fired / dismissed</td><td class="wt-ex">Sie wurde entlassen.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="info-box">
+            <strong style="color:var(--gold);">kündigen vs entlassen werden:</strong><br><br>
+            <strong style="color:var(--app);">kündigen</strong> = you quit yourself (active): Ich habe gekündigt. (I resigned.)<br>
+            <strong style="color:var(--role);">entlassen werden</strong> = the employer fires you (passive): Ich wurde entlassen. (I was fired.)<br><br>
+            In German, these are two completely different situations — the difference matters legally and in conversation.
+          </div>
+
+          <div class="sec-label">Vocabulary in context</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--prof);">KWAME</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame hat ein gutes <span class="pfh">Gehalt</span>. Er hat auch vier Wochen <span class="pfh">Urlaub</span> pro Jahr.</div>
+                <div class="ex-en">Kwame has a good salary. He also has four weeks of vacation per year.</div>
+                <div class="ex-note">pro Jahr = per year. Four weeks of Urlaub is typical in Germany — more generous than many countries.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame hat ein gutes Gehalt. Er hat auch vier Wochen Urlaub pro Jahr.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--role);">AMINA</div>
+              <div style="flex:1;">
+                <div class="ex-de">Aminas <span class="roh">Arbeitszeit</span> ist lang. Sie macht viele <span class="roh">Überstunden</span> im Krankenhaus.</div>
+                <div class="ex-en">Amina's working hours are long. She works a lot of overtime at the hospital.</div>
+                <div class="ex-note">Überstunden is always plural. machen Überstunden = to work overtime (literally: make overtime).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Aminas Arbeitszeit ist lang. Sie macht viele Überstunden im Krankenhaus.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--work);">KOFI</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi sucht eine neue <span class="wkh">Stelle</span>. Er schreibt eine <span class="wkh">Bewerbung</span> und wartet auf das <span class="wkh">Vorstellungsgespräch</span>.</div>
+                <div class="ex-en">Kofi is looking for a new position. He writes an application and waits for the interview.</div>
+                <div class="ex-note">wartet auf = waits for (auf + Akkusativ). auf das Vorstellungsgespräch (neuter, Akkusativ).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi sucht eine neue Stelle. Er schreibt eine Bewerbung und wartet auf das Vorstellungsgespräch.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="danger-box">
+            <strong style="color:var(--red);">A2 learner mistake — confusing Arbeitszeit and Überstunden:</strong><br><br>
+            <strong style="color:var(--role);">die Arbeitszeit</strong> = the regular working hours agreed in your contract (e.g. 38 hours/week)<br>
+            <strong style="color:var(--work);">die Überstunden</strong> = extra hours worked ABOVE the contract (overtime) — always plural<br><br>
+            "Meine Arbeitszeit ist 40 Stunden." (My working hours are 40 hours.) ✓<br>
+            "Ich mache jeden Abend Überstunden." (I work overtime every evening.) ✓
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">Module 22 · Lesson 3 · Quiz</div><h2 class="lesson-h">Work Vocabulary — Check</h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 4: Workplace Phrases ── -->
+    <div id="lesson-3" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">Module 22 · Lesson 4 of 6</div>
+          <h2 class="lesson-h">Workplace <span style="color:var(--app)">phrases</span></h2>
+          <p class="body-text">In A2 speaking and writing, you need to be able to introduce yourself professionally, describe your work situation, and talk about your role. These four phrases cover the most tested areas.</p>
+
+          <div class="sec-label">Four key workplace phrases</div>
+          <div class="ph-card-list">
+            <div class="ph-card2">
+              <div class="phc-de" style="color:var(--prof);">Ich arbeite als <span style="color:var(--gold);">[Beruf]</span>.</div>
+              <div class="phc-en">I work as a [profession].</div>
+              <div class="phc-note">No article after als. Ich arbeite als Programmierer. / Ich arbeite als Lehrerin. Use this when stating your professional role.</div>
+            </div>
+            <div class="ph-card2">
+              <div class="phc-de" style="color:var(--role);">Ich bin zuständig für <span style="color:var(--gold);">[Bereich]</span>.</div>
+              <div class="phc-en">I am responsible for [area].</div>
+              <div class="phc-note">zuständig = responsible/in charge. für + Akkusativ. Ich bin zuständig für die Qualitätskontrolle. (I am responsible for quality control.)</div>
+            </div>
+            <div class="ph-card2">
+              <div class="phc-de" style="color:var(--work);">Ich arbeite in <span style="color:var(--gold);">Vollzeit / Teilzeit</span>.</div>
+              <div class="phc-en">I work full-time / part-time.</div>
+              <div class="phc-note">Vollzeit = full-time (typically 35–40 hrs/week in Germany). Teilzeit = part-time. No article needed: "in Vollzeit" not "in der Vollzeit".</div>
+            </div>
+            <div class="ph-card2">
+              <div class="phc-de" style="color:var(--app);">Mein Arbeitgeber heißt <span style="color:var(--gold);">[Firma]</span>.</div>
+              <div class="phc-en">My employer is called [company].</div>
+              <div class="phc-note">Arbeitgeber = employer (Arbeit + geben). Arbeitnehmer = employee (Arbeit + nehmen). Both are important vocabulary for forms and interviews.</div>
+            </div>
+          </div>
+
+          <div class="sec-label">Kwame at work — dialogue</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--prof);">KWAME STELLT SICH VOR — KWAME INTRODUCES HIMSELF</div>
+            <div style="font-family:'DM Mono',monospace;font-size:13px;line-height:2.6;color:var(--cream);">
+              <span style="color:var(--gray);">Kollegin:</span> &nbsp;Hallo! Was machst du beruflich?<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Hi! What do you do for work?</span><br>
+              <span style="color:var(--prof);">Kwame:</span> &nbsp;&nbsp;&nbsp;Ich bin Programmierer. Ich arbeite als Softwareentwickler bei einer IT-Firma in Berlin.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I am a programmer. I work as a software developer at an IT company in Berlin.</span><br>
+              <span style="color:var(--gray);">Kollegin:</span> &nbsp;Arbeitest du in Vollzeit?<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Do you work full-time?</span><br>
+              <span style="color:var(--prof);">Kwame:</span> &nbsp;&nbsp;&nbsp;Ja, in Vollzeit. Mein Arbeitgeber heißt TechMind GmbH. Ich bin zuständig für die Qualitätssicherung.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Yes, full-time. My employer is called TechMind GmbH. I am responsible for quality assurance.</span>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Ich bin Programmierer. Ich arbeite als Softwareentwickler bei einer IT-Firma in Berlin. Ja, in Vollzeit.')">🔊 Kwame's lines</button>
+
+          <div class="sec-label">Amina at the hospital — dialogue</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--role);">AMINA ÜBER IHRE ARBEIT — AMINA ABOUT HER WORK</div>
+            <div style="font-family:'DM Mono',monospace;font-size:13px;line-height:2.6;color:var(--cream);">
+              <span style="color:var(--gray);">Interviewer:</span> &nbsp;Amina, wo arbeiten Sie?<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Amina, where do you work?</span><br>
+              <span style="color:var(--role);">Amina:</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ich bin Ärztin. Ich arbeite als Ärztin im Universitätskrankenhaus Frankfurt. Ich bin zuständig für die Notaufnahme.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I am a doctor. I work as a doctor at Frankfurt University Hospital. I am responsible for the emergency department.</span><br>
+              <span style="color:var(--gray);">Interviewer:</span> &nbsp;Wie viele Stunden arbeiten Sie pro Woche?<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;How many hours do you work per week?</span><br>
+              <span style="color:var(--role);">Amina:</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ich arbeite in Vollzeit — das sind 40 Stunden. Aber ich mache oft Überstunden.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I work full-time — that is 40 hours. But I often work overtime.</span>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Ich bin Ärztin. Ich arbeite als Ärztin im Universitätskrankenhaus Frankfurt. Ich bin zuständig für die Notaufnahme.')">🔊 Amina's lines</button>
+
+          <div class="info-box">
+            <strong style="color:var(--gold);">Useful additions at A2:</strong><br><br>
+            <strong style="color:var(--prof);">bei + Dativ</strong> = at / for [company]: Ich arbeite <strong>bei Siemens</strong> / bei einer Firma / bei einem Krankenhaus.<br>
+            <strong style="color:var(--role);">im / in einem</strong> = in [place]: Ich arbeite <strong>im Büro</strong> / in einem Restaurant / in einem Krankenhaus.<br>
+            <strong style="color:var(--work);">seit + Dativ</strong> = since/for [time]: Ich arbeite dort <strong>seit zwei Jahren</strong>. (I have been working there for two years.)
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">Module 22 · Lesson 4 · Quiz</div><h2 class="lesson-h">Workplace Phrases — Check</h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 5: Job Applications & Interviews ── -->
+    <div id="lesson-4" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">Module 22 · Lesson 5 of 6</div>
+          <h2 class="lesson-h">Applications &amp; <span style="color:var(--work)">interviews</span></h2>
+          <p class="body-text">In A2 Schreiben, you may need to fill in a form with your occupation or write a short message about a job. In A2 Lesen, you may read a job advertisement. Knowing the application process vocabulary — and the set phrases used in interviews — will help you in both the exam and real life.</p>
+
+          <div class="sec-label">The application process — step by step</div>
+          <div class="proc-list">
+            <div class="proc-step">
+              <div class="proc-num">1</div>
+              <div>
+                <div class="proc-de">Die Stellenanzeige lesen</div>
+                <div class="proc-en">Read the job advertisement</div>
+                <div class="proc-note">die Stellenanzeige = job ad (Stelle + Anzeige). In A2 Lesen, you may read a Stellenanzeige and answer questions about salary, location, or requirements.</div>
+              </div>
+            </div>
+            <div class="proc-step">
+              <div class="proc-num">2</div>
+              <div>
+                <div class="proc-de">Die Bewerbung schreiben</div>
+                <div class="proc-en">Write the application</div>
+                <div class="proc-note">die Bewerbung includes: das Anschreiben (cover letter) + der Lebenslauf (CV/résumé). In Germany, a Foto (photo) is often attached to the CV — this is not usual in English-speaking Africa.</div>
+              </div>
+            </div>
+            <div class="proc-step">
+              <div class="proc-num">3</div>
+              <div>
+                <div class="proc-de">Das Vorstellungsgespräch</div>
+                <div class="proc-en">The job interview</div>
+                <div class="proc-note">Vorstellen = to introduce yourself. Gespräch = conversation. So: a conversation where you present yourself. This is the word for job interview — not "Interview" (which exists but is used more for journalism).</div>
+              </div>
+            </div>
+            <div class="proc-step">
+              <div class="proc-num">4</div>
+              <div>
+                <div class="proc-de">Den Arbeitsvertrag unterschreiben</div>
+                <div class="proc-en">Sign the work contract</div>
+                <div class="proc-note">unterschreiben = to sign (unter = under, schreiben = write). Der Arbeitsvertrag legt Gehalt, Arbeitszeit und Urlaub fest. (The contract sets salary, hours, and vacation.)</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">Interview phrases — Kofi's Vorstellungsgespräch</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--work);">KOFI IM VORSTELLUNGSGESPRÄCH</div>
+            <div style="font-family:'DM Mono',monospace;font-size:13px;line-height:2.6;color:var(--cream);">
+              <span style="color:var(--gray);">Chef:</span> &nbsp;&nbsp;&nbsp;Warum möchten Sie bei uns arbeiten?<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Why do you want to work here?</span><br>
+              <span style="color:var(--work);">Kofi:</span> &nbsp;&nbsp;&nbsp;Ich interessiere mich sehr für diese Stelle. Ich habe drei Jahre Erfahrung als Ingenieur in Ghana.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I am very interested in this position. I have three years of experience as an engineer in Ghana.</span><br>
+              <span style="color:var(--gray);">Chef:</span> &nbsp;&nbsp;&nbsp;Was sind Ihre Stärken?<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;What are your strengths?</span><br>
+              <span style="color:var(--work);">Kofi:</span> &nbsp;&nbsp;&nbsp;Ich bin sehr zuverlässig und teamfähig. Ich lerne auch schnell.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I am very reliable and a team player. I also learn quickly.</span><br>
+              <span style="color:var(--gray);">Chef:</span> &nbsp;&nbsp;&nbsp;Wann können Sie anfangen?<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When can you start?</span><br>
+              <span style="color:var(--work);">Kofi:</span> &nbsp;&nbsp;&nbsp;Ich kann sofort anfangen.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I can start immediately.</span>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Ich interessiere mich sehr für diese Stelle. Ich habe drei Jahre Erfahrung als Ingenieur in Ghana. Ich bin sehr zuverlässig und teamfähig.')">🔊 Kofi's lines</button>
+
+          <div class="sec-label">Key interview phrases to learn</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--work);">INTERESSE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <span class="wkh">interessiere mich für</span> diese Stelle.</div>
+                <div class="ex-en">I am interested in this position.</div>
+                <div class="ex-note">sich interessieren für = to be interested in (reflexive verb + für + Akkusativ). This is the standard opening phrase.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich interessiere mich sehr für diese Stelle.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--app);">ERFAHRUNG</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich habe <span class="aph">X Jahre Erfahrung</span> als Programmierer.</div>
+                <div class="ex-en">I have X years of experience as a programmer.</div>
+                <div class="ex-note">die Erfahrung = experience. Jahre = years (plural, no article needed). als + profession (no article).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich habe drei Jahre Erfahrung als Programmierer.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--prof);">STÄRKEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich bin <span class="pfh">zuverlässig</span> und <span class="pfh">teamfähig</span>.</div>
+                <div class="ex-en">I am reliable and a team player.</div>
+                <div class="ex-note">zuverlässig = reliable. teamfähig = able to work in a team (team-capable). These two adjectives appear in almost every German job interview.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich bin zuverlässig und teamfähig.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="success-box">
+            <strong style="color:var(--green);">Exam tip — A2 Schreiben:</strong><br><br>
+            In A2 Schreiben Teil 1, you may fill in a form asking for your personal details. Know these form fields:<br><br>
+            <strong style="color:var(--work);">Beruf / Berufsbezeichnung</strong> = occupation (write your profession — no article!)<br>
+            <strong style="color:var(--work);">Arbeitgeber</strong> = employer (write the company name)<br>
+            <strong style="color:var(--work);">Arbeitszeit</strong> = working hours (e.g. Vollzeit / 40 Std. pro Woche)<br>
+            <strong style="color:var(--work);">Beschäftigung</strong> = employment status<br><br>
+            In Teil 2, you may write a short message about your job situation. Use: Ich bin [Beruf]. Ich arbeite als [Beruf] bei [Firma]. Ich arbeite in Vollzeit.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">Module 22 · Lesson 5 · Quiz</div><h2 class="lesson-h">Applications &amp; Interviews — Check</h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 6: African Context ── -->
+    <div id="lesson-5" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">Module 22 · Lesson 6 of 6</div>
+          <h2 class="lesson-h">Africans at work <span style="color:var(--gold)">in Germany</span></h2>
+          <p class="body-text">Germany has one of the largest African diaspora communities in Europe. Many come to work in healthcare, engineering, IT, logistics, hospitality, and education. For these learners, the German language is not just exam preparation — it is a professional survival tool. This lesson brings together everything in this module through the lens of real African working life in Germany.</p>
+
+          <div class="info-box">
+            <strong style="color:var(--gold);">Who are we talking about?</strong><br><br>
+            Nurses and doctors from Nigeria, Ghana, Senegal, and Kenya who pass German B2 exams to work in German hospitals. Engineers from Ghana and Cameroon applying for work at German firms. IT professionals from Ethiopia and South Africa working in Berlin's tech scene. Taxi and delivery drivers saving money while studying. Cooks and restaurant workers in cities like Hamburg, Frankfurt, and Munich.
+          </div>
+
+          <div class="sec-label">Our four learners — their professions</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--prof);">KWAME · GHANA</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich bin <span class="pfh">Programmierer</span>. Ich arbeite als <span class="pfh">Softwareentwickler</span> bei einer IT-Firma in Berlin. Ich arbeite dort seit einem Jahr.</div>
+                <div class="ex-en">I am a programmer. I work as a software developer at an IT company in Berlin. I have been working there for one year.</div>
+                <div class="ex-note">seit einem Jahr = for one year (seit + Dativ: einem Jahr). No article after bin or als.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich bin Programmierer. Ich arbeite als Softwareentwickler bei einer IT-Firma in Berlin.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--role);">AMINA · NIGERIA</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich bin <span class="roh">Ärztin</span>. Ich arbeite als <span class="roh">Ärztin</span> im Universitätskrankenhaus Frankfurt. Ich bin zuständig für die Notaufnahme.</div>
+                <div class="ex-en">I am a doctor. I work as a doctor at Frankfurt University Hospital. I am responsible for the emergency department.</div>
+                <div class="ex-note">Ärztin = feminine form of Arzt. No article. im = in dem (Dativ: das Krankenhaus → im Krankenhaus).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich bin Ärztin. Ich arbeite als Ärztin im Universitätskrankenhaus Frankfurt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--work);">KOFI · GHANA</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich bin <span class="wkh">Ingenieur</span>. Ich suche gerade eine neue <span class="wkh">Stelle</span> als Maschinenbauingenieur in München. Das <span class="wkh">Vorstellungsgespräch</span> ist nächste Woche.</div>
+                <div class="ex-en">I am an engineer. I am currently looking for a new position as a mechanical engineer in Munich. The job interview is next week.</div>
+                <div class="ex-note">gerade = currently/at the moment. Maschinenbauingenieur = mechanical engineer (compound noun). nächste Woche = next week.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich bin Ingenieur. Ich suche gerade eine neue Stelle als Maschinenbauingenieur in München.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--app);">FATIMA · SENEGAL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich bin <span class="aph">Lehrerin</span>. Ich arbeite als <span class="aph">Deutschlehrerin</span> an einer Schule in Hamburg. Mein <span class="aph">Gehalt</span> ist gut, aber ich mache manchmal <span class="aph">Überstunden</span>.</div>
+                <div class="ex-en">I am a teacher. I work as a German teacher at a school in Hamburg. My salary is good, but I sometimes work overtime.</div>
+                <div class="ex-note">Deutschlehrerin = German language teacher (female). an einer Schule = at a school (Dativ feminine). manchmal = sometimes.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich bin Lehrerin. Ich arbeite als Deutschlehrerin an einer Schule in Hamburg.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">African learner mistakes — wrong and right</div>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Ich bin ein Ingenieur.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Ich bin Ingenieur.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">The number one error: translating "a" from English. After sein with a profession, no article — full stop.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Sie ist eine Programmierer.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Sie ist Programmiererin.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Two errors: (1) article used, (2) masculine form used for a female person. Always use the feminine form (-in suffix) when referring to a woman.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Ich arbeite als ein Fahrer.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Ich arbeite als Fahrer.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">No article after "als" with professions. Ich arbeite als Fahrer / als Köchin / als Krankenpflegerin — never als ein/eine.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Er wird ein Lehrer.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Er wird Lehrer.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">The no-article rule extends to werden (to become). Kofi möchte Ingenieur werden. Fatima ist Lehrerin geworden.</p>
+
+          <div class="success-box">
+            <strong style="color:var(--green);">Final exam summary — Module 22:</strong><br><br>
+            1. <strong style="color:var(--prof);">Professions:</strong> Learn both forms — masculine (der Arzt) and feminine (die Ärztin). Irregular: Koch→Köchin, Bürokaufmann→Bürokauffrau.<br>
+            2. <strong style="color:var(--role);">No article:</strong> After sein/werden/bleiben/als + profession = NO article. Exception: adjective brings article back (ein guter Arzt).<br>
+            3. <strong style="color:var(--work);">Work vocab:</strong> die Stelle · die Bewerbung · das Vorstellungsgespräch · der Arbeitsvertrag · das Gehalt · die Arbeitszeit · der Urlaub · die Überstunden · kündigen · entlassen werden.<br>
+            4. <strong style="color:var(--app);">Key phrases:</strong> Ich arbeite als… · Ich bin zuständig für… · Ich arbeite in Vollzeit/Teilzeit · Mein Arbeitgeber heißt…<br>
+            5. <strong style="color:var(--gold);">Exam Lesen:</strong> Job ads test vocabulary — Stelle, Gehalt, Arbeitszeit, Bewerbung, Anforderungen (requirements).<br>
+            6. <strong style="color:var(--gold);">Exam Schreiben:</strong> Forms ask for Beruf (no article!) · Arbeitgeber · beschäftigt seit (employed since).
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">Module 22 · Lesson 6 · Quiz</div><h2 class="lesson-h">Work &amp; Professions — Final Check</h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Previous</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var TOTAL=6, currentLesson=0, xp=0;
+var synth=window.speechSynthesis, voices=[], deVoice=null;
+function loadVoices(){ voices=synth.getVoices(); deVoice=voices.find(function(v){return v.lang==='de-DE';})||voices.find(function(v){return v.lang.startsWith('de');})||null; }
+if(synth.onvoiceschanged!==undefined){synth.onvoiceschanged=loadVoices;}
+function speakDE(text){ if(!synth)return; synth.cancel(); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; synth.speak(u); }
+function speakSentence(btn,text){ if(!synth)return; synth.cancel(); document.querySelectorAll('.speak-btn.speaking').forEach(function(b){b.classList.remove('speaking');}); btn.classList.add('speaking'); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; u.onend=function(){btn.classList.remove('speaking');}; synth.speak(u); }
+
+var QD={
+  0:[
+    {q:'What is the correct feminine form of "der Koch" (cook)?',
+     hint:'This is one of the irregular feminine forms. The vowel "o" changes to an umlaut, then -in is added. Think about other words that follow this pattern.',
+     opts:['die Kocherin','die Köchin','die Kochfrau','die Kochen'],
+     ans:1,
+     exp:'"die Köchin" — Koch is an irregular feminine form. The vowel "o" gets an umlaut to become "ö", then "-in" is added: Koch → Köch → Köchin. This is the same umlaut pattern as Arzt → Ärztin. Compare with the regular pattern where you just add -in: Lehrer → Lehrerin, Fahrer → Fahrerin, Programmierer → Programmiererin. "die Kocherin" does not exist — you cannot just add -erin to a word that does not end in -er. "die Kochfrau" — Mann→Frau substitution only works for Bürokaufmann→Bürokauffrau, not for Koch.',
+     rule:'Regular feminine: add -in (Lehrer→Lehrerin). Umlaut + -in: Arzt→Ärztin, Koch→Köchin. Completely different root: Bürokaufmann→Bürokauffrau.'}
+  ],
+  1:[
+    {q:'Kwame is a doctor. Which sentence is correct?',
+     hint:'After the verb "sein" (to be) with a profession, does German use an article or not? Think about what makes German different from English here.',
+     opts:['Kwame ist ein Arzt.','Kwame ist Arzt.','Kwame ist der Arzt.','Kwame hat Arzt.'],
+     ans:1,
+     exp:'"Kwame ist Arzt." — After sein (to be) with a profession, German uses NO article. This is the most important rule in this module. English says "He is A doctor" with the article "a" — German drops it completely: Ich bin Arzt / Er ist Lehrer / Sie ist Ingenieurin. "Kwame ist ein Arzt" is the most common learner error — the English "a" gets directly translated. "Kwame ist der Arzt" would mean he is THE specific doctor (a known one), not that doctor is his profession. "Kwame hat Arzt" — haben (to have) cannot be used to express profession; use sein.',
+     rule:'sein + profession = NO article. Ich bin Arzt. Sie ist Lehrerin. Er ist Koch. Never ein/eine/der/die after sein with professions. Exception: with adjective, article returns — Er ist ein guter Arzt.'}
+  ],
+  2:[
+    {q:'What does "die Überstunden" mean?',
+     hint:'Think about the two parts of this compound word: "über" means over/above, and "Stunden" means hours. What kind of hours go above the normal?',
+     opts:['working hours','vacation days','overtime','sick leave'],
+     ans:2,
+     exp:'"die Überstunden" means overtime — the extra hours worked above your contracted working hours. Über = above/over, Stunden = hours → hours above the norm. Always plural: die Überstunden. Compare with die Arbeitszeit = working hours (the regular schedule agreed in your contract). Usage: Ich mache Überstunden = I work overtime. Ich mache viele Überstunden = I work a lot of overtime. "Vacation days" = Urlaubstage / der Urlaub. "Sick leave" = der Krankentag / krankgeschrieben sein.',
+     rule:'die Überstunden = overtime (always plural). Ich mache Überstunden. Different from die Arbeitszeit = working hours (regular contracted hours). der Urlaub = vacation.'}
+  ],
+  3:[
+    {q:'How do you correctly say "I work as a cook" in German?',
+     hint:'You need two things: the correct verb phrase and the correct article rule. Which preposition connects "arbeite" to the profession? And does a profession after this take an article?',
+     opts:['Ich arbeite ein Koch.','Ich arbeite als Koch.','Ich bin als Koch.','Ich habe als Koch gearbeitet.'],
+     ans:1,
+     exp:'"Ich arbeite als Koch." — "als" (as) connects arbeiten to the profession. Importantly, als + profession also takes NO article, just like sein. So: Ich arbeite als Koch (not als ein Koch). The structure is: Ich arbeite als [profession without article]. "Ich arbeite ein Koch" — no als, and random insertion of a profession noun as direct object is grammatically broken. "Ich bin als Koch" — bin with als is unnatural; you would say Ich bin Koch (no als) or Ich arbeite als Koch (with als). "Ich habe als Koch gearbeitet" is grammatically possible (past tense: I worked as a cook) but not what was asked — and it is correct German, unlike option A or C.',
+     rule:'Ich arbeite als [Beruf] — no article after als. Also: Ich bin zuständig für... / Ich arbeite in Vollzeit / bei + Dativ for employer.'}
+  ],
+  4:[
+    {q:'What is a "Vorstellungsgespräch"?',
+     hint:'Break this word into parts: vorstellen = to introduce/present yourself. Gespräch = a conversation or talk. What kind of professional event involves presenting yourself in a conversation?',
+     opts:['a work contract','a job application letter','a job interview','a reference letter'],
+     ans:2,
+     exp:'"Vorstellungsgespräch" = job interview. Vorstellen = to introduce/present yourself + Gespräch = conversation/discussion. So literally: a conversation in which you present yourself. In Germany, this is the standard word for a job interview (not "Interview", which is used more for journalism/media). Compare: die Bewerbung = the job application (the document you send), der Arbeitsvertrag = work contract (what you sign after being hired), das Zeugnis = reference letter or school certificate. In A2 Lesen, you might read a text about someone going to a Vorstellungsgespräch.',
+     rule:'das Vorstellungsgespräch = job interview. die Bewerbung = job application. der Arbeitsvertrag = work contract. das Gehalt = salary. die Stelle = job position.'}
+  ],
+  5:[
+    {q:'Which sentence about professions is completely correct?',
+     hint:'Look carefully at each sentence. Check: is the correct article rule applied? Is the correct gender form used? Is the correct verb used?',
+     opts:['Amina ist eine Ärztin.','Kofi ist Fahrer.','Fatima arbeitet ein Koch.','Kwame ist ein guter ein Programmierer.'],
+     ans:1,
+     exp:'"Kofi ist Fahrer." — No article after sein with a profession. Correct masculine form. Correct verb. This is perfect. Option A: "Amina ist eine Ärztin" — article eine is used, which is wrong after sein with a profession (no adjective present). Option C: "Fatima arbeitet ein Koch" — two errors: (1) needs "als" before the profession (arbeitet als), (2) even with als, no article. Correct: Fatima arbeitet als Köchin (also using the feminine form). Option D: "Kwame ist ein guter ein Programmierer" — the article appears twice, which is impossible in German. If you want to use an adjective, the correct form is: Kwame ist ein guter Programmierer (one article, then adjective, then noun).',
+     rule:'sein + profession = no article. Ich bin Arzt / Sie ist Lehrerin / Er ist Fahrer. Correct gender form always. arbeiten als = also no article.'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">QUESTION '+(s.cur+1)+' OF '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint">'+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Next Question →':'See Results →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Correct!':'✗ Not quite'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent=q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' correct</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfect.':pct>=60?'Good work.':'Review and try again.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.12);border:1px solid var(--gold);border-radius:50px;padding:9px 22px;color:var(--gold);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Complete Module 22 →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Next Lesson →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">💼</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Module 22 Complete!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">Work and professions mastered. You know nine core A2 professions with their masculine and feminine forms, the most important grammar rule (no article after sein with professions), ten work vocabulary words, four key workplace phrases, and the Bewerbung process including Vorstellungsgespräch. You can now introduce yourself professionally in German, describe your job, and handle the work-related questions in A2 Lesen and Schreiben.</p><div class="xp-badge">⚡ '+xp+' XP Earned</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Module 22 complete. Next: Module 23 — Food and Shopping (Essen und Einkaufen).</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Back to Overview</button></div>'; }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function resumeLesson(){ goLesson(currentLesson); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+<script src="./ai-tutor.js" data-module="22"></script>
+</body>
+</html>
