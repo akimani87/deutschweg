@@ -193,6 +193,44 @@
   .mp-title{font-size:13px;color:var(--cream);font-weight:500;margin-bottom:3px;line-height:1.3;}
   .mp-tag{font-size:11px;color:var(--gray);}
 
+  /* ── LEVEL CARDS ── */
+  .level-cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:48px;}
+  .lc-card{
+    background:var(--card-bg);border:1px solid rgba(255,255,255,0.08);
+    border-radius:20px;padding:32px 24px;text-align:center;
+    transition:border-color 0.2s, transform 0.2s;cursor:pointer;
+    text-decoration:none;display:flex;flex-direction:column;align-items:center;
+  }
+  .lc-card:hover{transform:translateY(-3px);}
+  .lc-card.lc-a1{border-color:rgba(201,168,76,0.25);}
+  .lc-card.lc-a1:hover{border-color:var(--gold);}
+  .lc-card.lc-a2{border-color:rgba(155,89,182,0.25);}
+  .lc-card.lc-a2:hover{border-color:#9b59b6;}
+  .lc-card.lc-b1{border-color:rgba(52,152,219,0.2);}
+  .lc-card.lc-b1:hover{border-color:var(--blue);}
+  .lc-badge{
+    font-family:'DM Mono',monospace;font-size:10px;font-weight:700;
+    letter-spacing:2px;padding:4px 14px;border-radius:20px;margin-bottom:16px;
+  }
+  .lc-a1 .lc-badge{background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);color:var(--gold);}
+  .lc-a2 .lc-badge{background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);color:#9b59b6;}
+  .lc-b1 .lc-badge{background:rgba(52,152,219,0.1);border:1px solid rgba(52,152,219,0.25);color:var(--blue);}
+  .lc-icon{font-size:36px;margin-bottom:14px;}
+  .lc-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;margin-bottom:6px;}
+  .lc-sub{font-size:13px;color:var(--gray);line-height:1.6;margin-bottom:20px;flex:1;}
+  .lc-count{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;color:var(--gray);margin-bottom:20px;}
+  .lc-btn{
+    padding:10px 22px;border-radius:50px;font-family:'DM Sans',sans-serif;
+    font-size:13px;font-weight:600;border:1px solid;transition:all 0.2s;
+    text-decoration:none;display:inline-block;
+  }
+  .lc-a1 .lc-btn{border-color:var(--gold);color:var(--gold);}
+  .lc-a1 .lc-btn:hover{background:var(--gold);color:var(--black);}
+  .lc-a2 .lc-btn{border-color:#9b59b6;color:#9b59b6;}
+  .lc-a2 .lc-btn:hover{background:#9b59b6;color:var(--white);}
+  .lc-b1 .lc-btn{border-color:rgba(52,152,219,0.4);color:var(--blue);cursor:default;}
+  @media(max-width:768px){.level-cards-grid{grid-template-columns:1fr;}}
+
   /* ── PRICING ── */
   .pricing-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:52px;}
   .p-card{
@@ -539,6 +577,46 @@
   </div>
 </section>
 
+<!-- ═══════════════════ LEVELS ═══════════════════ -->
+<section id="levels">
+  <div class="wrap">
+    <div class="eyebrow" style="color:var(--gold)">CHOOSE YOUR LEVEL</div>
+    <h2 class="section-h">Where do you start?</h2>
+    <p class="section-sub">Whether you've never said "Hallo" or you can hold a conversation — there's a DeutschWeg course built for exactly where you are right now.</p>
+
+    <div class="level-cards-grid">
+
+      <a class="lc-card lc-a1" href="signup.html">
+        <span class="lc-badge">A1 · BEGINNER</span>
+        <div class="lc-icon">🌱</div>
+        <div class="lc-title">Start from Zero</div>
+        <div class="lc-sub">No German background needed. You'll learn the alphabet, numbers, greetings, grammar, and everything the Goethe A1 exam tests — in clear African English.</div>
+        <div class="lc-count">13 MODULES · 78 LESSONS</div>
+        <span class="lc-btn">Start A1 →</span>
+      </a>
+
+      <a class="lc-card lc-a2" href="signup.html">
+        <span class="lc-badge">A2 · ELEMENTARY</span>
+        <div class="lc-icon">📈</div>
+        <div class="lc-title">Build on the Basics</div>
+        <div class="lc-sub">Already have A1? A2 takes you further — Perfekt tense, adjective endings, subordinate clauses, real-life vocabulary like housing, health, and work.</div>
+        <div class="lc-count">12 MODULES · 72 LESSONS + MOCK EXAM</div>
+        <span class="lc-btn">Start A2 →</span>
+      </a>
+
+      <div class="lc-card lc-b1">
+        <span class="lc-badge">B1 · INTERMEDIATE</span>
+        <div class="lc-icon">🎓</div>
+        <div class="lc-title">Exam Ready</div>
+        <div class="lc-sub">The Goethe B1 is the most in-demand German certificate in Africa. B1 modules are in development — complete A2 to join the early access list.</div>
+        <div class="lc-count">COMING SOON · 2025</div>
+        <span class="lc-btn">Notify Me</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
 <!-- ═══════════════════ PRICING ═══════════════════ -->
 <section id="pricing">
   <div class="wrap">
@@ -670,6 +748,7 @@
         <div class="footer-col-h">COURSE</div>
         <div class="footer-links">
           <a href="#modules">All 13 Modules</a>
+          <a href="#levels">Choose Your Level</a>
           <a href="#pricing">Pricing</a>
           <a href="#">A1 Exam Guide</a>
           <a href="#">Free Resources</a>
