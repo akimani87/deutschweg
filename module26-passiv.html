@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — B1 Modul 2: Passiv</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --pres:#3498db; --perf:#e67e22; --agent:#9b59b6; --use:#27ae60;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--blue); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--blue); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--blue); color:var(--white); width:100%; }
+  .btn-primary:hover { background:#2980b9; transform:translateY(-2px); box-shadow:0 8px 24px rgba(52,152,219,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--blue); color:var(--blue); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(52,152,219,0.2); }
+  .speak-btn.speaking { background:var(--blue); color:var(--white); }
+
+  /* ENGLISH HELP TOGGLE */
+  .en-help { background:rgba(52,152,219,0.05); border:1px dashed rgba(52,152,219,0.25); border-radius:10px; margin:12px 0; }
+  .en-help summary { padding:10px 16px; cursor:pointer; font-size:13px; color:var(--blue); font-family:'DM Mono',monospace; letter-spacing:.03em; list-style:none; display:flex; align-items:center; gap:8px; }
+  .en-help summary::-webkit-details-marker { display:none; }
+  .en-help[open] summary { border-bottom:1px dashed rgba(52,152,219,0.2); }
+  .en-help-body { padding:12px 16px; font-size:13px; color:rgba(245,240,232,.7); line-height:1.8; }
+  .en-help-body p { margin-bottom:8px; }
+  .en-help-body p:last-child { margin-bottom:0; }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-note { font-size:12px; color:var(--gray); line-height:1.6; }
+
+  /* FORMULA BOX */
+  .formula-box { background:var(--card2-bg); border:1px solid rgba(52,152,219,0.2); border-radius:14px; padding:20px 22px; margin:14px 0; text-align:center; }
+  .formula-title { font-size:10px; letter-spacing:3px; font-family:'DM Mono',monospace; color:var(--blue); margin-bottom:14px; }
+  .formula-main { font-family:'DM Mono',monospace; font-size:18px; font-weight:700; color:var(--white); line-height:2; }
+  .formula-part { display:inline-block; }
+  .formula-plus { color:var(--gray); margin:0 8px; }
+  .fp-w { color:var(--pres); }
+  .fp-p { color:var(--perf); }
+  .fp-s { color:var(--agent); }
+  .fp-wo { color:var(--use); }
+
+  /* COMPARISON TABLE */
+  .comp-table { width:100%; border-collapse:collapse; font-size:13px; margin:14px 0; }
+  .comp-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:10px 14px; text-align:left; border-bottom:2px solid rgba(255,255,255,0.1); }
+  .comp-table td { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'DM Mono',monospace; font-size:13px; vertical-align:top; }
+  .comp-table tr:last-child td { border-bottom:none; }
+  .comp-table tr:hover td { background:rgba(255,255,255,0.02); }
+  .ct-aktiv { color:var(--gold); }
+  .ct-passiv { color:var(--pres); }
+  .comp-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+
+  /* SENTENCE BREAKDOWN */
+  .sent-breakdown { background:var(--card2-bg); border:1px solid rgba(52,152,219,0.15); border-radius:12px; padding:18px 20px; margin:12px 0; }
+  .sb-sentence { font-family:'DM Mono',monospace; font-size:16px; line-height:2.2; margin-bottom:14px; }
+  .sb-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .sb-part { background:rgba(255,255,255,0.04); border-radius:8px; padding:10px 12px; }
+  .sb-label { font-size:10px; letter-spacing:1.5px; font-family:'DM Mono',monospace; margin-bottom:4px; }
+  .sb-word { font-family:'DM Mono',monospace; font-size:14px; font-weight:700; }
+
+  /* WRONG/RIGHT */
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.0; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+
+  /* USE CASE CARDS */
+  .use-grid { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .use-card { background:var(--card2-bg); border-radius:12px; padding:16px 18px; display:flex; gap:14px; align-items:flex-start; }
+  .use-icon { font-size:22px; flex-shrink:0; width:32px; text-align:center; margin-top:2px; }
+  .use-title { font-size:13px; font-weight:700; color:var(--cream); margin-bottom:4px; }
+  .use-desc { font-size:13px; color:var(--gray); line-height:1.65; margin-bottom:6px; }
+  .use-ex { font-family:'DM Mono',monospace; font-size:12px; color:var(--blue); }
+  .use-card.u-formal { border:1px solid rgba(52,152,219,0.2); }
+  .use-card.u-anon   { border:1px solid rgba(155,89,182,0.2); }
+  .use-card.u-sci    { border:1px solid rgba(201,168,76,0.15); }
+  .use-card.u-news   { border:1px solid rgba(39,174,96,0.15); }
+
+  /* HIGHLIGHTS */
+  .ph { color:var(--pres); font-weight:700; }
+  .fh { color:var(--perf); font-weight:700; }
+  .ah { color:var(--agent); font-weight:700; }
+  .uh { color:var(--use); font-weight:700; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Mono',monospace; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--blue); background:rgba(52,152,219,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(52,152,219,0.1); border-radius:8px; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(52,152,219,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.2); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(52,152,219,0.12); border:1px solid var(--blue); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--blue); font-size:18px; margin:18px 0; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .lesson-h{font-size:22px;} .wr-grid{grid-template-columns:1fr;} .sb-grid{grid-template-columns:1fr 1fr;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">B1 · MODUL 2</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">B1 · Grammatik</div>
+    <h1 class="lesson-h" style="font-size:36px;">Das <span style="color:var(--blue)">Passiv</span></h1>
+    <p class="body-text">Das Passiv ist eine der wichtigsten Konstruktionen auf B1-Niveau. Es erscheint in formellen Texten, Berichten, Zeitungsartikeln und in der Wissenschaftssprache. Wenn du Passiv erkennst und bildest, kannst du komplexe Sätze lesen und schreiben — und du zeigst dem Prüfer, dass dein Deutsch wirklich B1 ist.</p>
+
+    <details class="en-help">
+      <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+      <div class="en-help-body">
+        <p>The passive voice is one of the most important structures at B1 level. It appears in formal texts, reports, newspaper articles, and scientific language. When you can recognise and form the passive, you can read and write complex sentences — and you show the examiner that your German is genuinely B1.</p>
+      </div>
+    </details>
+
+    <div class="info-box"><strong style="color:var(--gold);">Lernziele dieses Moduls:</strong><br><br>
+      ✦ Du kannst Passivsätze im Präsens bilden (werden + Partizip II)<br>
+      ✦ Du kannst Passivsätze im Perfekt bilden (sein + worden + Partizip II)<br>
+      ✦ Du kannst das Agens mit von + Dativ angeben<br>
+      ✦ Du weißt, wann und warum man Passiv benutzt<br>
+      ✦ Du erkennst typische Fehler und vermeidest sie
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">🔄</div><div><div class="lc-title">Lektion 1 — Passiv Präsens</div><div class="lc-desc">werden + Partizip II. Das Buch wird gelesen. Die Tür wird geöffnet. Struktur und Beispiele.</div></div><div class="lc-tag" style="color:var(--blue);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">⏮️</div><div><div class="lc-title">Lektion 2 — Passiv Perfekt</div><div class="lc-desc">sein + worden + Partizip II. Das Buch ist gelesen worden. Die Tür ist geöffnet worden.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">👤</div><div><div class="lc-title">Lektion 3 — Von + Dativ (das Agens)</div><div class="lc-desc">Das Buch wird von Amina gelesen. Der Brief wurde von Kwame geschrieben. Wer handelt?</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">📋</div><div><div class="lc-title">Lektion 4 — Wann benutzt man Passiv?</div><div class="lc-desc">Formelle Texte, Berichte, Wissenschaftssprache. Die Handlung ist wichtiger als die Person.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">⚠️</div><div><div class="lc-title">Lektion 5 — Häufige Fehler &amp; Wortstellung</div><div class="lc-desc">„Das Buch wird gelesen von mir" → falsch! Wortstellung beachten. Passiv ≠ Zustandspassiv.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lektion 6 — Kwame &amp; Amina im Büro</div><div class="lc-desc">Passiv in Berufssituationen. Prüfungstipps für Lesen und Schreiben. African context.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lektionen</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--blue);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LEKTION 1: Passiv Präsens ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 2 · Lektion 1 von 6</div>
+          <h2 class="lesson-h">Passiv <span style="color:var(--pres)">Präsens</span></h2>
+          <p class="body-text">Im Aktiv steht die handelnde Person (das Subjekt) im Mittelpunkt. Im Passiv steht die <strong style="color:var(--pres);">Handlung</strong> im Mittelpunkt — wer die Handlung ausführt, ist unwichtig oder unbekannt.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>In an active sentence, the person doing the action is the subject. In a passive sentence, the action itself is the focus — the person doing it is either unimportant or unknown. English: "The book is read." German uses <em>werden</em> + Partizip II to form the passive.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Die Formel — Passiv Präsens</div>
+          <div class="formula-box">
+            <div class="formula-title">PASSIV PRÄSENS</div>
+            <div class="formula-main">
+              <span class="formula-part fp-w">werden</span>
+              <span class="formula-plus">+</span>
+              <span class="formula-part fp-p">Partizip II</span>
+            </div>
+            <div style="font-size:12px;color:var(--gray);margin-top:8px;">werden wird konjugiert · Partizip II steht am Satzende</div>
+          </div>
+
+          <div class="sec-label">werden — Konjugation (Präsens)</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Person</th><th style="color:var(--pres)">werden</th><th>Beispiel</th></tr>
+              <tr><td>ich</td><td class="ct-passiv">werde</td><td>Ich werde gefragt.</td></tr>
+              <tr><td>du</td><td class="ct-passiv">wirst</td><td>Du wirst eingeladen.</td></tr>
+              <tr><td>er/sie/es</td><td class="ct-passiv">wird</td><td>Das Buch wird gelesen.</td></tr>
+              <tr><td>wir</td><td class="ct-passiv">werden</td><td>Wir werden informiert.</td></tr>
+              <tr><td>ihr</td><td class="ct-passiv">werdet</td><td>Ihr werdet benachrichtigt.</td></tr>
+              <tr><td>sie/Sie</td><td class="ct-passiv">werden</td><td>Die Briefe werden geschickt.</td></tr>
+            </table>
+          </div>
+
+          <div class="sec-label">Aktiv → Passiv: Schritt für Schritt</div>
+          <div class="sent-breakdown">
+            <div style="font-size:11px;letter-spacing:2px;font-family:'DM Mono',monospace;color:var(--gold);margin-bottom:10px;">AKTIV</div>
+            <div class="sb-sentence"><span style="color:var(--gold)">Amina</span> <span class="ph">liest</span> das Buch.</div>
+            <div style="font-size:11px;letter-spacing:2px;font-family:'DM Mono',monospace;color:var(--pres);margin:12px 0 10px;">PASSIV</div>
+            <div class="sb-sentence">Das Buch <span class="ph">wird</span> <span class="fh">gelesen</span>.</div>
+            <div class="sb-grid" style="margin-top:10px;">
+              <div class="sb-part"><div class="sb-label" style="color:var(--pres)">SUBJEKT</div><div class="sb-word" style="color:var(--pres)">Das Buch</div></div>
+              <div class="sb-part"><div class="sb-label" style="color:var(--pres)">WERDEN</div><div class="sb-word" style="color:var(--pres)">wird</div></div>
+              <div class="sb-part"><div class="sb-label" style="color:var(--perf)">PARTIZIP II</div><div class="sb-word" style="color:var(--perf)">gelesen</div></div>
+            </div>
+          </div>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>Active: "Amina reads the book." → Passive: "The book is read." The object of the active sentence (das Buch) becomes the subject of the passive sentence. The verb becomes <em>wird</em> (3rd person singular of werden) + the past participle <em>gelesen</em> at the end.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Beispiele mit werden + Partizip II</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--pres);">PRÄSENS</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das Buch <span class="ph">wird</span> <span class="fh">gelesen</span>.</div>
+                <div class="ex-note">lesen → gelesen (Partizip II mit ge-...en)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das Buch wird gelesen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--pres);">PRÄSENS</div>
+              <div style="flex:1;">
+                <div class="ex-de">Die Tür <span class="ph">wird</span> <span class="fh">geöffnet</span>.</div>
+                <div class="ex-note">öffnen → geöffnet (reguläres Verb, ge-...t)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Die Tür wird geöffnet.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--pres);">PRÄSENS</div>
+              <div style="flex:1;">
+                <div class="ex-de">Die E-Mail <span class="ph">wird</span> <span class="fh">geschrieben</span>.</div>
+                <div class="ex-note">schreiben → geschrieben (starkes Verb)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Die E-Mail wird geschrieben.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--pres);">PRÄSENS</div>
+              <div style="flex:1;">
+                <div class="ex-de">Die Berichte <span class="ph">werden</span> <span class="fh">kontrolliert</span>.</div>
+                <div class="ex-note">Plural-Subjekt → werden (Plural)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Die Berichte werden kontrolliert.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--pres);">Wichtig:</strong> Das Partizip II steht immer am <strong style="color:var(--pres);">Satzende</strong>. Nicht: <em style="color:var(--red)">Das Buch wird gelesen von Amina.</em> → Richtig: <strong style="color:var(--green)">Das Buch wird von Amina gelesen.</strong></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 2 · Lektion 1 · Übung</div><h2 class="lesson-h">Passiv Präsens — <span style="color:var(--pres)">Übung</span></h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-0 -->
+
+    <!-- ── LEKTION 2: Passiv Perfekt ── -->
+    <div id="lesson-1" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 2 · Lektion 2 von 6</div>
+          <h2 class="lesson-h">Passiv <span style="color:var(--perf)">Perfekt</span></h2>
+          <p class="body-text">Das Passiv Perfekt beschreibt eine Handlung, die abgeschlossen ist. Man verwendet es, wenn man über etwas berichten will, das bereits passiert ist — und die Person, die es getan hat, ist unwichtig.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>The passive perfect describes a completed action. Use it when reporting something that has already happened, and the person who did it is unimportant. English equivalent: "The book has been read." Note the special form: <em>worden</em> (not <em>geworden</em>) is used in passive perfect.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Die Formel — Passiv Perfekt</div>
+          <div class="formula-box">
+            <div class="formula-title">PASSIV PERFEKT</div>
+            <div class="formula-main">
+              <span class="formula-part fp-s">sein</span>
+              <span class="formula-plus">+</span>
+              <span class="formula-part fp-p">Partizip II</span>
+              <span class="formula-plus">+</span>
+              <span class="formula-part fp-wo">worden</span>
+            </div>
+            <div style="font-size:12px;color:var(--gray);margin-top:8px;">sein wird konjugiert · worden steht immer am Ende · NICHT geworden</div>
+          </div>
+
+          <div class="warn-box">
+            <strong style="color:var(--red);">Achtung — kritischer Fehler:</strong><br>
+            Im Passiv Perfekt sagt man <strong style="color:var(--green)">worden</strong>, NICHT <strong style="color:var(--red)">geworden</strong>.<br>
+            <em style="color:var(--red);">✗ Das Buch ist gelesen geworden.</em><br>
+            <em style="color:var(--green);">✓ Das Buch ist gelesen worden.</em>
+          </div>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>This is a common mistake even for advanced learners. In German passive perfect, the word is <strong>worden</strong> (without "ge-"), not "geworden". Think of it as a special passive form. "geworden" is only used in the active perfect of "werden" meaning "to become".</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Aktiv Perfekt → Passiv Perfekt</div>
+          <div class="sent-breakdown">
+            <div style="font-size:11px;letter-spacing:2px;font-family:'DM Mono',monospace;color:var(--gold);margin-bottom:10px;">AKTIV PERFEKT</div>
+            <div class="sb-sentence"><span style="color:var(--gold)">Kwame</span> hat das Buch <span class="fh">gelesen</span>.</div>
+            <div style="font-size:11px;letter-spacing:2px;font-family:'DM Mono',monospace;color:var(--perf);margin:12px 0 10px;">PASSIV PERFEKT</div>
+            <div class="sb-sentence">Das Buch <span class="ah">ist</span> <span class="fh">gelesen</span> <span class="uh">worden</span>.</div>
+            <div class="sb-grid" style="margin-top:10px;">
+              <div class="sb-part"><div class="sb-label" style="color:var(--agent)">SEIN</div><div class="sb-word" style="color:var(--agent)">ist</div></div>
+              <div class="sb-part"><div class="sb-label" style="color:var(--perf)">PARTIZIP II</div><div class="sb-word" style="color:var(--perf)">gelesen</div></div>
+              <div class="sb-part"><div class="sb-label" style="color:var(--use)">WORDEN</div><div class="sb-word" style="color:var(--use)">worden</div></div>
+            </div>
+          </div>
+
+          <div class="sec-label">Vergleich: Präsens vs. Perfekt</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th style="color:var(--pres)">Passiv Präsens</th><th style="color:var(--perf)">Passiv Perfekt</th></tr>
+              <tr><td class="ct-passiv">Das Buch <strong>wird</strong> gelesen.</td><td class="ct-aktiv">Das Buch <strong>ist</strong> gelesen <strong>worden</strong>.</td></tr>
+              <tr><td class="ct-passiv">Die Tür <strong>wird</strong> geöffnet.</td><td class="ct-aktiv">Die Tür <strong>ist</strong> geöffnet <strong>worden</strong>.</td></tr>
+              <tr><td class="ct-passiv">Der Brief <strong>wird</strong> geschickt.</td><td class="ct-aktiv">Der Brief <strong>ist</strong> geschickt <strong>worden</strong>.</td></tr>
+              <tr><td class="ct-passiv">Die Berichte <strong>werden</strong> geprüft.</td><td class="ct-aktiv">Die Berichte <strong>sind</strong> geprüft <strong>worden</strong>.</td></tr>
+            </table>
+          </div>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--perf);">PERFEKT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das Buch <span class="ah">ist</span> <span class="fh">gelesen</span> <span class="uh">worden</span>.</div>
+                <div class="ex-note">The book has been read. (Abgeschlossene Handlung)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das Buch ist gelesen worden.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--perf);">PERFEKT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Die Tür <span class="ah">ist</span> <span class="fh">geöffnet</span> <span class="uh">worden</span>.</div>
+                <div class="ex-note">The door has been opened.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Die Tür ist geöffnet worden.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--perf);">PERFEKT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima <span class="ah">ist</span> <span class="fh">eingeladen</span> <span class="uh">worden</span>.</div>
+                <div class="ex-note">Fatima has been invited. (einladen → eingeladen)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima ist eingeladen worden.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 2 · Lektion 2 · Übung</div><h2 class="lesson-h">Passiv Perfekt — <span style="color:var(--perf)">Übung</span></h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-1 -->
+
+    <!-- ── LEKTION 3: Von + Dativ ── -->
+    <div id="lesson-2" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 2 · Lektion 3 von 6</div>
+          <h2 class="lesson-h"><span style="color:var(--agent)">Von + Dativ</span> — das Agens</h2>
+          <p class="body-text">Manchmal will man im Passivsatz doch sagen, wer die Handlung ausgeführt hat. Diese Person nennt man das <strong style="color:var(--agent);">Agens</strong>. Man verwendet <strong style="color:var(--agent);">von + Dativ</strong>.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>Sometimes you want to say who performed the action in a passive sentence. This is called the "agent". In German, use <em>von + Dative</em>. English: "The book is read <strong>by Amina</strong>." German: "Das Buch wird <strong>von Amina</strong> gelesen." Note the word order: von + agent comes before the Partizip II.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Formel mit Agens</div>
+          <div class="formula-box">
+            <div class="formula-title">PASSIV MIT AGENS</div>
+            <div class="formula-main" style="font-size:15px;">
+              <span class="fp-w">werden</span>
+              <span class="formula-plus">+</span>
+              <span style="color:var(--agent)">von + Dativ</span>
+              <span class="formula-plus">+</span>
+              <span class="fp-p">Partizip II</span>
+            </div>
+            <div style="font-size:12px;color:var(--gray);margin-top:8px;">von kommt vor dem Partizip II · nicht nach</div>
+          </div>
+
+          <div class="sec-label">Beispiele — von + Dativ</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--agent);">VON + DAT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das Buch <span class="ph">wird</span> <span class="ah">von Amina</span> <span class="fh">gelesen</span>.</div>
+                <div class="ex-note">The book is read by Amina. → Amina = Dativ (kein Artikel bei Namen)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das Buch wird von Amina gelesen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--agent);">VON + DAT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Der Brief <span class="ph">wurde</span> <span class="ah">von Kwame</span> <span class="fh">geschrieben</span>.</div>
+                <div class="ex-note">The letter was written by Kwame. (wurde = Präteritum von werden)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Der Brief wurde von Kwame geschrieben.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--agent);">VON + DAT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Die Aufgabe <span class="ph">wird</span> <span class="ah">von dem</span> <span class="ah">Team</span> <span class="fh">erledigt</span>.</div>
+                <div class="ex-note">von dem = vom (kontrahierbar). The task is handled by the team.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Die Aufgabe wird von dem Team erledigt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--agent);">PERFEKT + VON</div>
+              <div style="flex:1;">
+                <div class="ex-de">Die E-Mail <span class="ah">ist</span> <span class="ah">von Fatima</span> <span class="fh">geschrieben</span> <span class="uh">worden</span>.</div>
+                <div class="ex-note">Passiv Perfekt mit Agens. The email was written by Fatima.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Die E-Mail ist von Fatima geschrieben worden.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Dativ nach von — Überblick</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Artikel</th><th>Nominativ</th><th style="color:var(--agent)">nach „von" (Dativ)</th></tr>
+              <tr><td>maskulin</td><td>der Chef</td><td class="ct-passiv">von dem Chef / vom Chef</td></tr>
+              <tr><td>feminin</td><td>die Lehrerin</td><td class="ct-passiv">von der Lehrerin</td></tr>
+              <tr><td>neutral</td><td>das Team</td><td class="ct-passiv">von dem Team / vom Team</td></tr>
+              <tr><td>Plural</td><td>die Kollegen</td><td class="ct-passiv">von den Kollegen</td></tr>
+              <tr><td>Namen</td><td>Kofi</td><td class="ct-passiv">von Kofi</td></tr>
+            </table>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 2 · Lektion 3 · Übung</div><h2 class="lesson-h">Von + Dativ — <span style="color:var(--agent)">Übung</span></h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-2 -->
+
+    <!-- ── LEKTION 4: Warum Passiv? ── -->
+    <div id="lesson-3" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 2 · Lektion 4 von 6</div>
+          <h2 class="lesson-h">Wann benutzt man <span style="color:var(--use)">Passiv?</span></h2>
+          <p class="body-text">Passiv ist kein Fehler oder keine komplizierte Ausnahme. Es ist ein normales Werkzeug der deutschen Sprache — besonders in formellen und schriftlichen Kontexten. Als B1-Lernender musst du es nicht nur bilden, sondern auch <strong style="color:var(--use);">erkennen und verstehen</strong>, wann und warum es eingesetzt wird.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>Passive is not a complicated exception — it is a standard tool of German, especially in formal and written contexts. At B1 level, you need to both form it and understand why it is used. The key reason: the action is more important than the person doing it.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">4 Hauptgründe für das Passiv</div>
+          <div class="use-grid">
+            <div class="use-card u-formal">
+              <div class="use-icon">📄</div>
+              <div>
+                <div class="use-title">Die Handlung ist wichtiger als die Person</div>
+                <div class="use-desc">Man will betonen, was passiert — nicht, wer es tut. Typisch in Berichten und Protokollen.</div>
+                <div class="use-ex">Die Ergebnisse werden ausgewertet.</div>
+              </div>
+            </div>
+            <div class="use-card u-anon">
+              <div class="use-icon">👤</div>
+              <div>
+                <div class="use-title">Die handelnde Person ist unbekannt oder unwichtig</div>
+                <div class="use-desc">Man weiß nicht, wer es getan hat — oder es spielt keine Rolle.</div>
+                <div class="use-ex">Mein Fahrrad ist gestohlen worden.</div>
+              </div>
+            </div>
+            <div class="use-card u-sci">
+              <div class="use-icon">🔬</div>
+              <div>
+                <div class="use-title">Wissenschaftliche und offizielle Sprache</div>
+                <div class="use-desc">In Wissenschafts- und Behördensprache wird fast immer Passiv verwendet.</div>
+                <div class="use-ex">Die Daten werden analysiert und dokumentiert.</div>
+              </div>
+            </div>
+            <div class="use-card u-news">
+              <div class="use-icon">📰</div>
+              <div>
+                <div class="use-title">Formelle Texte: Zeitungen, E-Mails, Anzeigen</div>
+                <div class="use-desc">Nachrichtenartikel und formelle Mitteilungen benutzen Passiv häufig.</div>
+                <div class="use-ex">Die Konferenz wird auf den Mai verschoben.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">Aktiv vs. Passiv — dieselbe Information, anderer Fokus</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th style="color:var(--gold)">Aktiv — Fokus auf Person</th><th style="color:var(--pres)">Passiv — Fokus auf Handlung</th></tr>
+              <tr><td class="ct-aktiv">Kwame schreibt den Bericht.</td><td class="ct-passiv">Der Bericht wird geschrieben.</td></tr>
+              <tr><td class="ct-aktiv">Die Firma produziert Autos.</td><td class="ct-passiv">Autos werden produziert.</td></tr>
+              <tr><td class="ct-aktiv">Der Arzt untersucht den Patienten.</td><td class="ct-passiv">Der Patient wird untersucht.</td></tr>
+              <tr><td class="ct-aktiv">Jemand hat die Tür repariert.</td><td class="ct-passiv">Die Tür ist repariert worden.</td></tr>
+            </table>
+          </div>
+
+          <div class="info-box"><strong style="color:var(--gold);">Prüfungstipp — Lesen:</strong> Im B1 Leseverstehen findest du Passivkonstruktionen sehr häufig. Erkenne sie am Muster: <strong style="color:var(--pres)">werden + Partizip II</strong> (Präsens) oder <strong style="color:var(--perf)">sein + Partizip II + worden</strong> (Perfekt). Wenn du Passiv erkennst, kannst du den Text besser verstehen.</div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 2 · Lektion 4 · Übung</div><h2 class="lesson-h">Passiv-Verwendung — <span style="color:var(--use)">Übung</span></h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-3 -->
+
+    <!-- ── LEKTION 5: Häufige Fehler ── -->
+    <div id="lesson-4" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 2 · Lektion 5 von 6</div>
+          <h2 class="lesson-h">Häufige <span style="color:var(--red)">Fehler</span> &amp; Wortstellung</h2>
+          <p class="body-text">Afrikanische Deutschlernende machen beim Passiv oft denselben Wortstellungsfehler — das von-Agens kommt ans falsche Ende des Satzes. Das liegt daran, dass Englisch diese Konstruktion anders anordnet als Deutsch.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>The most common mistake: putting the agent (von + person) at the very end of the sentence, after the Partizip II — which is how English works ("The book is read <em>by me</em>"). In German, the agent must come BEFORE the Partizip II. The Partizip II always stays at the end.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Fehler 1 — Falsche Wortstellung mit von</div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Das Buch wird gelesen von mir.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Das Buch wird von mir gelesen.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 16px;line-height:1.65;">Das Partizip II kommt immer ans Satzende. Von + Dativ steht davor. Auf Englisch steht "by me" am Ende — auf Deutsch nicht.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Der Brief wurde geschrieben von Kwame.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Der Brief wurde von Kwame geschrieben.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 16px;line-height:1.65;">Dieselbe Regel: von Kwame kommt VOR geschrieben, nie dahinter.</p>
+
+          <div class="sec-label">Fehler 2 — geworden statt worden</div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Das Buch ist gelesen geworden.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Das Buch ist gelesen worden.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 16px;line-height:1.65;">Im Passiv Perfekt: immer <strong>worden</strong>, nie <strong>geworden</strong>. „geworden" = aktives Perfekt von werden (ich bin müde geworden).</p>
+
+          <div class="sec-label">Fehler 3 — Passiv vs. Zustandspassiv (Stativ)</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th></th><th style="color:var(--pres)">Vorgangspassiv</th><th style="color:var(--gold)">Zustandspassiv</th></tr>
+              <tr><td style="color:var(--gray);font-size:12px;">Hilfsverb</td><td class="ct-passiv">werden + P.II</td><td class="ct-aktiv">sein + P.II</td></tr>
+              <tr><td style="color:var(--gray);font-size:12px;">Bedeutung</td><td class="ct-passiv">Handlung läuft ab</td><td class="ct-aktiv">Ergebnis / Zustand</td></tr>
+              <tr><td style="color:var(--gray);font-size:12px;">Beispiel</td><td class="ct-passiv">Die Tür wird geöffnet.</td><td class="ct-aktiv">Die Tür ist geöffnet.</td></tr>
+              <tr><td style="color:var(--gray);font-size:12px;">Bedeutung</td><td class="ct-passiv">(someone is opening it now)</td><td class="ct-aktiv">(it is open — result)</td></tr>
+            </table>
+          </div>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p><strong>Vorgangspassiv</strong> (process passive) uses <em>werden</em>: "Die Tür wird geöffnet" = The door is being opened (the action is happening).<br><strong>Zustandspassiv</strong> (state passive) uses <em>sein</em>: "Die Tür ist geöffnet" = The door is open (describing the resulting state). At B1, you mainly need to know the Vorgangspassiv — but recognise the Zustandspassiv when you see it.</p>
+            </div>
+          </details>
+
+          <div class="danger-box"><strong style="color:var(--red);">Wortstellungsregel — merke dir:</strong><br><br>
+            Im Hauptsatz: <strong style="color:var(--pres)">werden</strong> steht an Position 2 · <strong style="color:var(--perf)">Partizip II</strong> steht am Ende.<br>
+            Im Nebensatz: <strong style="color:var(--pres)">werden</strong> + <strong style="color:var(--perf)">Partizip II</strong> stehen beide am Ende.<br><br>
+            Hauptsatz: Das Buch <strong style="color:var(--pres)">wird</strong> von Amina <strong style="color:var(--perf)">gelesen</strong>.<br>
+            Nebensatz: …weil das Buch von Amina <strong style="color:var(--perf)">gelesen</strong> <strong style="color:var(--pres)">wird</strong>.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 2 · Lektion 5 · Übung</div><h2 class="lesson-h">Fehler &amp; Wortstellung — <span style="color:var(--red)">Übung</span></h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-4 -->
+
+    <!-- ── LEKTION 6: Kwame & Amina im Büro ── -->
+    <div id="lesson-5" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 2 · Lektion 6 von 6</div>
+          <h2 class="lesson-h">Kwame &amp; Amina — <span style="color:var(--use)">Passiv im Alltag</span></h2>
+          <p class="body-text">Kwame arbeitet seit sechs Monaten in einem deutschen Büro in Berlin. Amina hat gerade eine Stelle als Projektassistentin begonnen. Beide müssen Passivkonstruktionen in Berichten, E-Mails und Besprechungen verstehen und benutzen.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>Kwame has been working in a German office for six months. Amina has just started a job as a project assistant. Both need to understand and use passive voice in reports, emails, and meetings. This lesson shows passive in real workplace situations — exactly the contexts tested in B1 Schreiben and Lesen.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Bürosituation — Ein Bericht wird geschrieben</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.12);color:var(--gold);">KWAME · GHANA → BERLIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame schreibt einen Bericht. Er verwendet Passiv, weil es formeller klingt.</div>
+                <div class="ex-note">In business German, passive sounds more professional and formal.</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--pres);">KWAMES E-MAIL</div>
+              <div style="flex:1;">
+                <div class="ex-de">„Die Ergebnisse <span class="ph">wurden</span> <span class="ah">von unserem Team</span> <span class="fh">analysiert</span>. Die Daten <span class="ph">werden</span> nächste Woche <span class="fh">präsentiert</span>."</div>
+                <div class="ex-note">Passiv Präteritum (wurden) + Passiv Präsens (werden). Professional tone.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Die Ergebnisse wurden von unserem Team analysiert. Die Daten werden nächste Woche präsentiert.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.12);color:var(--gold);">AMINA · SENEGAL → HAMBURG</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina liest die Firmenregeln: „Alle Verträge <span class="ph">werden</span> <span class="ah">vom Chef</span> <span class="fh">unterschrieben</span>. Neue Mitarbeiter <span class="ph">werden</span> in der ersten Woche <span class="fh">eingeführt</span>."</div>
+                <div class="ex-note">Company rules often use passive. vom Chef = von dem Chef (contraction).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Alle Verträge werden vom Chef unterschrieben. Neue Mitarbeiter werden in der ersten Woche eingeführt.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Häufige Fehler afrikanischer Lernender</div>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Das Buch wird gelesen von mir.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Das Buch wird von mir gelesen.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Wortstellung: von + Dativ kommt vor dem Partizip II — nicht danach. Das Partizip II gehört ans Satzende.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Der Bericht ist geschrieben geworden.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Der Bericht ist geschrieben worden.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Im Passiv Perfekt: worden (ohne ge-), nie geworden.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Die Daten werden analysiert von dem Labor.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Die Daten werden vom Labor analysiert.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">von dem = vom (Kontraktion möglich und natürlich). Agens vor Partizip II.</p>
+
+          <div class="success-box">
+            <strong style="color:var(--green);">Zusammenfassung — Passiv auf einen Blick:</strong><br><br>
+            1. <strong style="color:var(--pres);">Passiv Präsens:</strong> werden + Partizip II<br>
+            &nbsp;&nbsp;&nbsp;→ Das Buch <em>wird</em> gelesen.<br><br>
+            2. <strong style="color:var(--perf);">Passiv Perfekt:</strong> sein + Partizip II + worden<br>
+            &nbsp;&nbsp;&nbsp;→ Das Buch <em>ist</em> gelesen <em>worden</em>. (NICHT geworden!)<br><br>
+            3. <strong style="color:var(--agent);">Von + Dativ:</strong> steht VOR dem Partizip II<br>
+            &nbsp;&nbsp;&nbsp;→ Das Buch wird <em>von Amina</em> gelesen.<br><br>
+            4. <strong style="color:var(--use);">Verwendung:</strong> Handlung wichtiger als Person · Formelle Texte · Unbekannter Handelnder<br><br>
+            5. <strong style="color:var(--red);">Wortstellung im Nebensatz:</strong> …weil das Buch von Amina gelesen <em>wird</em>.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 2 · Lektion 6 · Übung</div><h2 class="lesson-h">Passiv — <span style="color:var(--use)">Abschlusskontrolle</span></h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-5 -->
+
+  </div>
+</div>
+
+<script>
+var TOTAL=6, currentLesson=0, xp=0;
+var synth=window.speechSynthesis, voices=[], deVoice=null;
+function loadVoices(){ voices=synth.getVoices(); deVoice=voices.find(function(v){return v.lang==='de-DE';})||voices.find(function(v){return v.lang.startsWith('de');})||null; }
+if(synth.onvoiceschanged!==undefined){synth.onvoiceschanged=loadVoices;}
+function speakDE(text){ if(!synth)return; synth.cancel(); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; synth.speak(u); }
+function speakSentence(btn,text){ if(!synth)return; synth.cancel(); document.querySelectorAll('.speak-btn.speaking').forEach(function(b){b.classList.remove('speaking');}); btn.classList.add('speaking'); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; u.onend=function(){btn.classList.remove('speaking');}; synth.speak(u); }
+
+var QD={
+  0:[
+    {q:'Welcher Satz ist korrekt im Passiv Präsens?',
+     hint:'Suche das Muster: werden (konjugiert) + Partizip II am Satzende.',
+     opts:['Das Buch liest wird.','Das Buch wird gelesen.','Das Buch ist gelesen.','Das Buch gelesen wird.'],
+     ans:1,
+     exp:'„Das Buch wird gelesen." ist korrekt. Die Formel ist: werden (konjugiert) + Partizip II am Satzende. Option A stellt werden an das Ende — falsch. Option C verwendet sein + Partizip II — das ist das Zustandspassiv, nicht das Vorgangspassiv. Option D stellt den Partizip II an die falsche Position.',
+     rule:'Passiv Präsens = werden + Partizip II. werden steht an Position 2, Partizip II am Satzende.'}
+  ],
+  1:[
+    {q:'Wie bildet man Passiv Perfekt? Wähle die richtige Antwort.',
+     hint:'Passiv Perfekt braucht drei Elemente. Achte auf die richtige Form am Ende — worden oder geworden?',
+     opts:['Das Buch hat gelesen worden.','Das Buch ist gelesen worden.','Das Buch ist gelesen geworden.','Das Buch wird gelesen geworden.'],
+     ans:1,
+     exp:'„Das Buch ist gelesen worden." ist korrekt. Formel: sein + Partizip II + worden. Option A verwendet haben — im Passiv Perfekt verwendet man immer sein, nie haben. Option C verwendet geworden statt worden — das ist der häufigste Fehler! worden (ohne ge-) ist die spezielle Passivform. Option D mischt werden und geworden falsch.',
+     rule:'Passiv Perfekt = sein + Partizip II + worden. NICHT geworden. worden ist die Passivform, geworden ist das aktive Perfekt von „werden" (= to become).'}
+  ],
+  2:[
+    {q:'Kwame hat den Bericht geschrieben. Wie lautet der korrekte Passivsatz?',
+     hint:'Das Objekt des Aktivsatzes (den Bericht) wird zum Subjekt des Passivsatzes. Von + Kwame gibt das Agens an.',
+     opts:['Der Bericht wird von Kwame geschrieben.','Der Bericht wird geschrieben von Kwame.','Den Bericht wird von Kwame geschrieben.','Der Bericht von Kwame wird geschrieben.'],
+     ans:0,
+     exp:'„Der Bericht wird von Kwame geschrieben." ist korrekt. Das Objekt „den Bericht" wird zum Subjekt „der Bericht" (Nominativ). von Kwame (Agens) steht VOR dem Partizip II, nicht danach. Option B stellt von Kwame falsch ans Ende — typischer Fehler. Option C behält den Akkusativ „den" — falsch, es muss Nominativ sein. Option D trennt von Kwame vom Partizip II falsch.',
+     rule:'Von + Dativ steht immer VOR dem Partizip II. Das Objekt des Aktivsatzes (Akkusativ) wird zum Subjekt des Passivsatzes (Nominativ).'}
+  ],
+  3:[
+    {q:'In welchem Text würde man normalerweise Passiv verwenden?',
+     hint:'Denk daran: Passiv wird in formellen, schriftlichen Kontexten verwendet. Wo ist die Handlung wichtiger als die Person?',
+     opts:['In einem Gespräch mit Freunden über das Wochenende','In einem wissenschaftlichen Bericht über Forschungsergebnisse','Beim Bestellen von Essen im Restaurant','In einer SMS an die Mutter'],
+     ans:1,
+     exp:'In wissenschaftlichen Berichten wird Passiv sehr häufig verwendet. Warum? Weil die Handlung (die Ergebnisse, die Methoden) wichtiger ist als die Person. Typische Formulierungen: „Die Daten wurden analysiert.", „Es wurde festgestellt, dass…". Gespräche mit Freunden, Restaurantbestellungen und SMS sind informell — da benutzt man meistens Aktivkonstruktionen.',
+     rule:'Passiv ist typisch in: wissenschaftlichen Texten, Berichten, Protokollen, Zeitungsartikeln, formellen E-Mails und Behördensprache.'}
+  ],
+  4:[
+    {q:'Welcher Satz hat die richtige Wortstellung?',
+     hint:'Achte auf die Position von „von Amina" und dem Partizip II. Was kommt zuerst?',
+     opts:['Das Formular wird ausgefüllt von Amina.','Das Formular wird von Amina ausgefüllt.','Das Formular von Amina wird ausgefüllt.','Von Amina das Formular wird ausgefüllt.'],
+     ans:1,
+     exp:'„Das Formular wird von Amina ausgefüllt." ist korrekt. von Amina (das Agens) steht VOR dem Partizip II „ausgefüllt". Option A ist der klassische afrikanische Fehler: von Amina wird ans Ende gestellt — wie im Englischen „by Amina" am Ende. Auf Deutsch muss das Agens vor dem Partizip II stehen. Option C stellt das Agens direkt hinter das Subjekt — unnatürlich. Option D hat falsche Grundwortstellung.',
+     rule:'Wortstellungsregel: Subjekt + werden + von + Dativ + Partizip II. Das Partizip II steht IMMER am Satzende.'}
+  ],
+  5:[
+    {q:'Amina liest: „Die Bewerbung ist bearbeitet worden." Was bedeutet dieser Satz?',
+     hint:'sein + Partizip II + worden = Passiv Perfekt. Was ist passiert? Wann?',
+     opts:['Die Bewerbung wird gerade bearbeitet.','Die Bewerbung wurde bereits bearbeitet (abgeschlossen).','Die Bewerbung wird morgen bearbeitet.','Amina hat die Bewerbung bearbeitet.'],
+     ans:1,
+     exp:'„Die Bewerbung ist bearbeitet worden." ist Passiv Perfekt — es beschreibt eine abgeschlossene Handlung in der Vergangenheit. „Die Bewerbung wurde bereits bearbeitet" ist die richtige Interpretation. Option A beschreibt eine laufende Handlung (Präsens) — das wäre „wird bearbeitet". Option C wäre „wird bearbeitet werden" (Futur Passiv). Option D wäre aktiv: „Amina hat die Bewerbung bearbeitet."',
+     rule:'Passiv Perfekt (sein + P.II + worden) = die Handlung ist abgeschlossen. Passiv Präsens (wird + P.II) = die Handlung läuft gerade ab.'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">FRAGE '+(s.cur+1)+' VON '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint" style="font-family:\'DM Mono\',monospace;">💡 '+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Nächste Frage →':'Ergebnis anzeigen →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Richtig!':'✗ Nicht ganz'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent='📌 Regel: '+q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' richtig</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfekt!':pct>=60?'Gut gemacht!':'Noch einmal versuchen.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(52,152,219,0.12);border:1px solid var(--blue);border-radius:50px;padding:9px 22px;color:var(--blue);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Modul 2 abschließen →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Zur nächsten Lektion →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">📋</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Modul 2 abgeschlossen!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">Du kannst jetzt Passivsätze im Präsens und Perfekt bilden, das Agens mit von + Dativ angeben, Passiv in formellen Texten erkennen und die Wortstellungsregeln korrekt anwenden. Das Passiv erscheint in jedem B1-Lesen- und Schreiben-Teil — du bist vorbereitet.</p><div class="xp-badge">⚡ '+xp+' XP verdient</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Modul 2 abgeschlossen. Weiter zu Modul 3 — Relativsätze.</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Zur Übersicht</button></div>'; localStorage.setItem('dw_mod_26_done','1'); var saved=parseInt(localStorage.getItem('dw_xp')||'0'); localStorage.setItem('dw_xp',saved+xp); }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+<script src="./ai-tutor.js" data-module="26"></script>
+</body>
+</html>
