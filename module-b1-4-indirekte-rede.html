@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — B1 Modul 4: Indirekte Rede</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --dir:#c9a84c; --ind:#3498db; --ki:#e67e22; --kii:#9b59b6;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--blue); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--blue); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--blue); color:var(--white); width:100%; }
+  .btn-primary:hover { background:#2980b9; transform:translateY(-2px); box-shadow:0 8px 24px rgba(52,152,219,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--blue); color:var(--blue); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(52,152,219,0.2); }
+  .speak-btn.speaking { background:var(--blue); color:var(--white); }
+
+  /* ENGLISH HELP TOGGLE */
+  .en-help { background:rgba(52,152,219,0.05); border:1px dashed rgba(52,152,219,0.25); border-radius:10px; margin:12px 0; }
+  .en-help summary { padding:10px 16px; cursor:pointer; font-size:13px; color:var(--blue); font-family:'DM Mono',monospace; letter-spacing:.03em; list-style:none; display:flex; align-items:center; gap:8px; }
+  .en-help summary::-webkit-details-marker { display:none; }
+  .en-help[open] summary { border-bottom:1px dashed rgba(52,152,219,0.2); }
+  .en-help-body { padding:12px 16px; font-size:13px; color:rgba(245,240,232,.7); line-height:1.8; }
+  .en-help-body p { margin-bottom:8px; }
+  .en-help-body p:last-child { margin-bottom:0; }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-note { font-size:12px; color:var(--gray); line-height:1.6; }
+
+  /* FORMULA BOX */
+  .formula-box { background:var(--card2-bg); border:1px solid rgba(52,152,219,0.2); border-radius:14px; padding:20px 22px; margin:14px 0; text-align:center; }
+  .formula-title { font-size:10px; letter-spacing:3px; font-family:'DM Mono',monospace; color:var(--blue); margin-bottom:14px; }
+  .formula-main { font-family:'DM Mono',monospace; font-size:18px; font-weight:700; color:var(--white); line-height:2; }
+  .formula-part { display:inline-block; }
+  .formula-plus { color:var(--gray); margin:0 8px; }
+  .fp-d { color:var(--dir); }
+  .fp-i { color:var(--ind); }
+  .fp-k { color:var(--ki); }
+  .fp-f { color:var(--kii); }
+
+  /* TRANSFORM ARROW */
+  .transform-box { background:var(--card2-bg); border:1px solid rgba(52,152,219,0.15); border-radius:14px; padding:18px 20px; margin:12px 0; }
+  .trn-row { display:flex; align-items:flex-start; gap:12px; margin-bottom:10px; }
+  .trn-row:last-child { margin-bottom:0; }
+  .trn-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; flex-shrink:0; width:56px; padding-top:2px; }
+  .trn-text { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); line-height:1.7; }
+  .trn-arrow { text-align:center; color:var(--blue); font-size:18px; margin:4px 0; padding-left:68px; }
+
+  /* COMPARISON TABLE */
+  .comp-table { width:100%; border-collapse:collapse; font-size:13px; margin:14px 0; }
+  .comp-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:10px 14px; text-align:left; border-bottom:2px solid rgba(255,255,255,0.1); }
+  .comp-table td { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'DM Mono',monospace; font-size:13px; vertical-align:top; }
+  .comp-table tr:last-child td { border-bottom:none; }
+  .comp-table tr:hover td { background:rgba(255,255,255,0.02); }
+  .ct-dir { color:var(--dir); }
+  .ct-ki  { color:var(--ki); }
+  .ct-kii { color:var(--kii); }
+  .comp-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+
+  /* CONTEXT CARDS (Einleitungsverben) */
+  .ctx-grid { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ctx-card { background:var(--card2-bg); border-radius:12px; padding:16px 18px; display:flex; gap:14px; align-items:flex-start; }
+  .ctx-icon { font-size:22px; flex-shrink:0; width:32px; text-align:center; margin-top:2px; }
+  .ctx-title { font-size:13px; font-weight:700; color:var(--cream); margin-bottom:4px; }
+  .ctx-desc { font-size:13px; color:var(--gray); line-height:1.65; margin-bottom:6px; }
+  .ctx-ex { font-family:'DM Mono',monospace; font-size:12px; color:var(--blue); }
+  .ctx-card.c-neutral  { border:1px solid rgba(52,152,219,0.2); }
+  .ctx-card.c-formal   { border:1px solid rgba(201,168,76,0.15); }
+  .ctx-card.c-assert   { border:1px solid rgba(230,126,34,0.2); }
+  .ctx-card.c-narrate  { border:1px solid rgba(155,89,182,0.2); }
+
+  /* WRONG/RIGHT */
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.0; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+
+  /* HIGHLIGHTS */
+  .dh { color:var(--dir); font-weight:700; }
+  .ih { color:var(--ind); font-weight:700; }
+  .kh { color:var(--ki); font-weight:700; }
+  .fh { color:var(--kii); font-weight:700; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Mono',monospace; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--blue); background:rgba(52,152,219,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(52,152,219,0.1); border-radius:8px; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(52,152,219,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.2); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(52,152,219,0.12); border:1px solid var(--blue); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--blue); font-size:18px; margin:18px 0; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .lesson-h{font-size:22px;} .wr-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">B1 · MODUL 4</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">B1 · Grammatik</div>
+    <h1 class="lesson-h" style="font-size:36px;">Indirekte <span style="color:var(--blue)">Rede</span></h1>
+    <p class="body-text">Indirekte Rede ist die Technik, das Gesagte oder Gedachte einer anderen Person wiederzugeben — ohne direkt zu zitieren. Im B1-Lesen-Teil erscheint sie ständig in Zeitungsartikeln, Berichten und Interviews. Wer indirekte Rede erkennt und bildet, versteht authentische deutsche Texte.</p>
+
+    <details class="en-help">
+      <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+      <div class="en-help-body">
+        <p>Indirect speech (indirekte Rede) is used to report what someone said without quoting them directly. English: He said he <em>was</em> tired. German uses a special verb form called Konjunktiv I to show that you are reporting someone else's words, not your own. It appears constantly in newspaper articles and official reports — key for the B1 reading section.</p>
+      </div>
+    </details>
+
+    <div class="info-box"><strong style="color:var(--gold);">Lernziele dieses Moduls:</strong><br><br>
+      ✦ Du kannst direkte Rede in indirekte Rede umwandeln<br>
+      ✦ Du kennst die Konjunktiv-I-Formen der wichtigsten Verben<br>
+      ✦ Du weißt, wann man stattdessen Konjunktiv II benutzt<br>
+      ✦ Du kannst Einleitungsverben (sagen, berichten, erklären…) richtig einsetzen<br>
+      ✦ Du erkennst indirekte Rede in B1-Zeitungsartikeln und Berichten
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">💬</div><div><div class="lc-title">Lektion 1 — Was ist indirekte Rede?</div><div class="lc-desc">Direkte vs. indirekte Rede. Das Grundprinzip. Er sagt: „Ich bin müde." → Er sagt, er sei müde.</div></div><div class="lc-tag" style="color:var(--blue);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">📐</div><div><div class="lc-title">Lektion 2 — Konjunktiv I Formen</div><div class="lc-desc">sein → sei, haben → habe, kommen → komme. Die wichtigsten Formen systematisch.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">🔀</div><div><div class="lc-title">Lektion 3 — Wenn KI = Indikativ → KII</div><div class="lc-desc">Sie sagen, sie kämen morgen. Wenn Konjunktiv I nicht erkennbar ist, Konjunktiv II benutzen.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">🗣️</div><div><div class="lc-title">Lektion 4 — Einleitungsverben</div><div class="lc-desc">sagen, berichten, erklären, behaupten, meinen, erzählen. Nuancen und Prüfungsbeispiele.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">⏱️</div><div><div class="lc-title">Lektion 5 — Zeitformen in der indirekten Rede</div><div class="lc-desc">Gegenwart, Vergangenheit, Zukunft. Er sagt, er lerne / er habe gelernt / er werde lernen.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lektion 6 — Kwame &amp; Amina: Nachrichten &amp; Prüfung</div><div class="lc-desc">Indirekte Rede in echten B1-Texten. Häufige Fehler, Prüfungstipps, Zeitungskontext.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lektionen</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--blue);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LEKTION 1: Was ist indirekte Rede? ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 4 · Lektion 1 von 6</div>
+          <h2 class="lesson-h">Was ist <span style="color:var(--ind)">indirekte Rede</span>?</h2>
+          <p class="body-text">Bei der <span class="dh">direkten Rede</span> gibt man die genauen Worte einer Person wieder — mit Anführungszeichen. Bei der <span class="ih">indirekten Rede</span> berichtet man, was jemand gesagt hat — ohne Anführungszeichen, mit dem <span class="kh">Konjunktiv I</span>.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p><strong>Direct speech:</strong> He says: "I am tired." — you quote the exact words.</p>
+              <p><strong>Indirect speech:</strong> He says he is tired. — you report the content, not the exact words.</p>
+              <p>In German, indirect speech uses Konjunktiv I (a special verb form) to signal "I am reporting what someone else said — this is not my own statement." This is especially important in journalism and official reporting.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Direkte → Indirekte Rede: Das Grundprinzip</div>
+          <div class="transform-box">
+            <div class="trn-row"><div class="trn-label" style="color:var(--dir);">DIREKT</div><div class="trn-text">Kwame sagt: „<span class="dh">Ich bin</span> müde."</div></div>
+            <div class="trn-arrow">↓ ich bin → er <span style="color:var(--ki)">sei</span></div>
+            <div class="trn-row"><div class="trn-label" style="color:var(--ind);">INDIREKT</div><div class="trn-text">Kwame sagt, er <span class="kh">sei</span> müde.</div></div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-4px 0 14px;line-height:1.7;">Das Pronomen ändert sich (ich → er). Das Verb wechselt in den <span style="color:var(--ki)">Konjunktiv I</span> (bin → sei). Die Anführungszeichen fallen weg.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>Three things change when you convert direct to indirect speech:</p>
+              <p>1. <strong>Pronouns shift:</strong> "ich" → er/sie/es (depending on who is speaking)</p>
+              <p>2. <strong>Verb → Konjunktiv I:</strong> bin → sei, hat → habe, kommt → komme</p>
+              <p>3. <strong>Quotation marks disappear</strong> (and often a comma + "dass" is added, though "dass" is optional)</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Mit und ohne „dass"</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--ind);">OHNE DASS</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina sagt, sie <span class="kh">lerne</span> jeden Tag Deutsch.</div>
+                <div class="ex-note">Ohne „dass" — Verb steht an Position 2. Üblicher in Berichten und Nachrichten.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina sagt, sie lerne jeden Tag Deutsch.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--ind);">MIT DASS</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina sagt, dass sie jeden Tag Deutsch <span class="kh">lerne</span>.</div>
+                <div class="ex-note">Mit „dass" — Verb geht ans Ende (Nebensatz). Beide Formen sind korrekt.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina sagt, dass sie jeden Tag Deutsch lerne.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Weitere Beispiele</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.12);color:var(--dir);">DIREKT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi sagt: „<span class="dh">Ich habe</span> die Prüfung bestanden."</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--ind);">INDIREKT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi sagt, er <span class="kh">habe</span> die Prüfung bestanden.</div>
+                <div class="ex-note">hat → habe (Konjunktiv I von haben).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi sagt, er habe die Prüfung bestanden.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue);">📌 Wozu Konjunktiv I?</strong><br><br>
+            Der Konjunktiv I zeigt: <em>Das ist nicht meine eigene Aussage — ich berichte, was jemand anderes gesagt hat.</em> In Zeitungsartikeln, Nachrichtensendungen und offiziellen Berichten ist das entscheidend. Der Konjunktiv I signalisiert Distanz zur Aussage.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 4 · Lektion 1 · Übung</div><h2 class="lesson-h">Indirekte Rede — <span style="color:var(--ind)">Grundprinzip</span></h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-0 -->
+
+    <!-- ── LEKTION 2: Konjunktiv I Formen ── -->
+    <div id="lesson-1" class="lesson-pane">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 4 · Lektion 2 von 6</div>
+          <h2 class="lesson-h">Konjunktiv I — <span style="color:var(--ki)">Formen</span></h2>
+          <p class="body-text">Der Konjunktiv I wird vom <strong style="color:var(--ki);">Infinitivstamm</strong> gebildet. Man nimmt den Infinitiv, entfernt das -en und fügt die Konjunktiv-I-Endungen an. Die wichtigste Form ist die <strong>3. Person Singular (er/sie/es)</strong> — sie erscheint am häufigsten in Berichten.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>Konjunktiv I is formed from the infinitive stem: take the infinitive, remove -en, add Konjunktiv I endings: -e, -est, -e, -en, -et, -en.</p>
+              <p>The 3rd person singular (er/sie/es) is the most important form — it almost always differs from the indicative and is used in most reported speech contexts.</p>
+              <p>Irregular: <em>sein</em> → <em>sei</em> (not "seiе" — this is irregular and must be memorised).</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Konjunktiv I — Bildung</div>
+          <div class="formula-box">
+            <div class="formula-title">KONJUNKTIV I</div>
+            <div class="formula-main">
+              <span class="formula-part" style="color:var(--cream);">Infinitivstamm</span>
+              <span class="formula-plus">+</span>
+              <span class="formula-part fp-k">-e / -est / -e / -en / -et / -en</span>
+            </div>
+            <div style="font-size:12px;color:var(--gray);margin-top:8px;">lern- + e → lerne &nbsp;·&nbsp; komm- + e → komme &nbsp;·&nbsp; hab- + e → habe</div>
+          </div>
+
+          <div class="sec-label">Die wichtigsten Formen</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Infinitiv</th><th>Indikativ (er/sie)</th><th style="color:var(--ki);">Konjunktiv I (er/sie)</th></tr>
+              <tr><td>sein</td><td>ist</td><td class="ct-ki">sei ⭐</td></tr>
+              <tr><td>haben</td><td>hat</td><td class="ct-ki">habe</td></tr>
+              <tr><td>werden</td><td>wird</td><td class="ct-ki">werde</td></tr>
+              <tr><td>kommen</td><td>kommt</td><td class="ct-ki">komme</td></tr>
+              <tr><td>lernen</td><td>lernt</td><td class="ct-ki">lerne</td></tr>
+              <tr><td>arbeiten</td><td>arbeitet</td><td class="ct-ki">arbeite</td></tr>
+              <tr><td>können</td><td>kann</td><td class="ct-ki">könne</td></tr>
+              <tr><td>müssen</td><td>muss</td><td class="ct-ki">müsse</td></tr>
+              <tr><td>wollen</td><td>will</td><td class="ct-ki">wolle</td></tr>
+            </table>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-4px 0 14px;line-height:1.7;">⭐ sei ist unregelmäßig und muss auswendig gelernt werden. Alle anderen folgen dem Muster Stamm + -e.</p>
+
+          <div class="sec-label">Alle Personen am Beispiel „sein"</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Person</th><th>Indikativ</th><th style="color:var(--ki);">Konjunktiv I</th><th>Beispiel</th></tr>
+              <tr><td>ich</td><td>bin</td><td class="ct-ki">sei</td><td>Er sagt, ich sei pünktlich.</td></tr>
+              <tr><td>du</td><td>bist</td><td class="ct-ki">sei(e)st</td><td>Er sagt, du seist bereit.</td></tr>
+              <tr><td>er/sie/es</td><td>ist</td><td class="ct-ki">sei</td><td>Er sagt, er sei müde.</td></tr>
+              <tr><td>wir</td><td>sind</td><td class="ct-ki">seien</td><td>Er sagt, wir seien fertig.</td></tr>
+              <tr><td>sie/Sie</td><td>sind</td><td class="ct-ki">seien</td><td>Er sagt, sie seien gekommen.</td></tr>
+            </table>
+          </div>
+
+          <div class="sec-label">Beispiele im Kontext</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--ki);">SEIN → SEI</div>
+              <div style="flex:1;">
+                <div class="ex-de">Der Arzt sagt, Kwame <span class="kh">sei</span> gesund.</div>
+                <div class="ex-note">Direkt: „Kwame ist gesund." → indirekt: sei (KI von sein).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Der Arzt sagt, Kwame sei gesund.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--ki);">HABEN → HABE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina berichtet, sie <span class="kh">habe</span> die Stelle bekommen.</div>
+                <div class="ex-note">Direkt: „Ich habe die Stelle bekommen." → sie habe.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina berichtet, sie habe die Stelle bekommen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--ki);">KÖNNEN → KÖNNE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Der Chef erklärt, er <span class="kh">könne</span> das Problem lösen.</div>
+                <div class="ex-note">können → könne (Infinitivstamm könn- + e).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Der Chef erklärt, er könne das Problem lösen.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 4 · Lektion 2 · Übung</div><h2 class="lesson-h">Konjunktiv I — <span style="color:var(--ki)">Formen</span></h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-1 -->
+
+    <!-- ── LEKTION 3: Wenn KI = Indikativ → KII ── -->
+    <div id="lesson-2" class="lesson-pane">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 4 · Lektion 3 von 6</div>
+          <h2 class="lesson-h">Wenn KI = Indikativ → <span style="color:var(--kii)">Konjunktiv II</span></h2>
+          <p class="body-text">Das Problem: Bei manchen Formen sieht der Konjunktiv I genauso aus wie der Indikativ — besonders bei <strong>wir</strong> und <strong>sie/Sie</strong>. In diesen Fällen ist der Konjunktiv I nicht erkennbar. Lösung: Man benutzt stattdessen den <span class="fh">Konjunktiv II</span>.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>The purpose of Konjunktiv I is to signal "I am reporting speech, not stating my own opinion." But if the Konjunktiv I form looks identical to the indicative, the signal is lost. In that case, German uses Konjunktiv II instead — because Konjunktiv II always looks different from the indicative.</p>
+              <p>Most common problem: the verb "lernen" — "sie lernen" (indicative) = "sie lernen" (Konjunktiv I). So you use Konjunktiv II: "sie lernten" or "sie würden lernen".</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Das Problem — ein Beispiel</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Person</th><th>Indikativ</th><th style="color:var(--ki);">Konj. I</th><th>Gleich?</th><th style="color:var(--kii);">→ Konj. II</th></tr>
+              <tr><td>er/sie</td><td>lernt</td><td class="ct-ki">lerne</td><td style="color:var(--green);">✓ anders</td><td class="ct-kii">—</td></tr>
+              <tr><td>wir</td><td>lernen</td><td class="ct-ki">lernen</td><td style="color:var(--red);">✗ gleich!</td><td class="ct-kii">lernten</td></tr>
+              <tr><td>sie/Sie</td><td>lernen</td><td class="ct-ki">lernen</td><td style="color:var(--red);">✗ gleich!</td><td class="ct-kii">lernten</td></tr>
+            </table>
+          </div>
+
+          <div class="sec-label">Kommen — häufiges Beispiel</div>
+          <div class="transform-box">
+            <div class="trn-row"><div class="trn-label" style="color:var(--dir);">DIREKT</div><div class="trn-text">Sie sagen: „<span class="dh">Wir kommen</span> morgen."</div></div>
+            <div class="trn-arrow">↓ kommen (KI) = kommen (Indikativ) → Konjunktiv II verwenden</div>
+            <div class="trn-row"><div class="trn-label" style="color:var(--kii);">KII</div><div class="trn-text">Sie sagen, sie <span class="fh">kämen</span> morgen.</div></div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-4px 0 14px;line-height:1.7;">kämen = Konjunktiv II von kommen (kam → käme → kämen). Jetzt ist die Form eindeutig als indirekte Rede erkennbar.</p>
+
+          <div class="sec-label">Die Regel: Erkennbarkeit entscheidet</div>
+          <div class="warn-box">
+            <strong style="color:var(--blue);">Schritt-für-Schritt:</strong><br><br>
+            1. Bilde den Konjunktiv I (Infinitivstamm + -e usw.)<br>
+            2. Ist die Form <strong>anders</strong> als der Indikativ? → <span style="color:var(--ki)">Konjunktiv I</span> benutzen ✓<br>
+            3. Ist die Form <strong>gleich</strong> wie der Indikativ? → <span style="color:var(--kii)">Konjunktiv II</span> benutzen ✓
+          </div>
+
+          <div class="sec-label">Weitere Beispiele</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--kii);">KII NÖTIG</div>
+              <div style="flex:1;">
+                <div class="ex-de">Die Studenten sagen, sie <span class="fh">hätten</span> keine Zeit.</div>
+                <div class="ex-note">sie haben (Ind.) = sie haben (KI) → KII: hätten. Eindeutig als indirekte Rede markiert.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Die Studenten sagen, sie hätten keine Zeit.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--ki);">KI MÖGLICH</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi sagt, er <span class="kh">habe</span> keine Zeit.</div>
+                <div class="ex-note">er hat (Ind.) ≠ er habe (KI) → KI ist erkennbar → KI benutzen.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi sagt, er habe keine Zeit.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--kii);">KII NÖTIG</div>
+              <div style="flex:1;">
+                <div class="ex-de">Die Kollegen berichten, sie <span class="fh">würden</span> das Projekt abschließen.</div>
+                <div class="ex-note">sie werden (Ind.) = sie werden (KI) → würde-Form (KII) als Ausweichform.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Die Kollegen berichten, sie würden das Projekt abschließen.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 4 · Lektion 3 · Übung</div><h2 class="lesson-h">KI oder KII? — <span style="color:var(--kii)">Übung</span></h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-2 -->
+
+    <!-- ── LEKTION 4: Einleitungsverben ── -->
+    <div id="lesson-3" class="lesson-pane">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 4 · Lektion 4 von 6</div>
+          <h2 class="lesson-h"><span style="color:var(--ind)">Einleitungsverben</span></h2>
+          <p class="body-text">Das Einleitungsverb leitet die indirekte Rede ein und gibt an, <em>wie</em> etwas gesagt wurde. Im B1-Lesen-Teil wechseln die Texte zwischen verschiedenen Einleitungsverben — jedes hat eine eigene Nuance. Das Verb steht immer im Indikativ, die indirekte Rede selbst im Konjunktiv I (oder II).</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>The reporting verb (sagen, berichten, erklären, etc.) introduces indirect speech. Each verb has a nuance: <em>sagen</em> is neutral, <em>behaupten</em> implies the speaker doubts the claim, <em>erklären</em> means to explain something in detail, <em>berichten</em> is used in journalism.</p>
+              <p>The reporting verb itself is in the indicative (normal form). Only the reported content uses Konjunktiv I.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Die wichtigsten Einleitungsverben</div>
+          <div class="ctx-grid">
+            <div class="ctx-card c-neutral">
+              <div class="ctx-icon">💬</div>
+              <div>
+                <div class="ctx-title">sagen — neutral berichten</div>
+                <div class="ctx-desc">Das allgemeinste Einleitungsverb. Neutral, keine besondere Bewertung.</div>
+                <div class="ctx-ex">Amina sagt, sie lerne jeden Tag.</div>
+              </div>
+            </div>
+            <div class="ctx-card c-formal">
+              <div class="ctx-icon">📰</div>
+              <div>
+                <div class="ctx-title">berichten — journalistisch</div>
+                <div class="ctx-desc">Typisch in Zeitungsartikeln und offiziellen Nachrichten.</div>
+                <div class="ctx-ex">Der Minister berichtet, die Lage sei stabil.</div>
+              </div>
+            </div>
+            <div class="ctx-card c-assert">
+              <div class="ctx-icon">⚠️</div>
+              <div>
+                <div class="ctx-title">behaupten — mit Skepsis</div>
+                <div class="ctx-desc">Der Sprecher zweifelt an der Wahrheit der Aussage oder hebt sie hervor.</div>
+                <div class="ctx-ex">Kofi behauptet, er habe die Aufgabe gemacht.</div>
+              </div>
+            </div>
+            <div class="ctx-card c-neutral">
+              <div class="ctx-icon">📋</div>
+              <div>
+                <div class="ctx-title">erklären — detailliert</div>
+                <div class="ctx-desc">Jemand erklärt etwas ausführlicher — gibt Begründungen oder Hintergründe.</div>
+                <div class="ctx-ex">Die Lehrerin erklärt, die Prüfung sei nächste Woche.</div>
+              </div>
+            </div>
+            <div class="ctx-card c-narrate">
+              <div class="ctx-icon">💭</div>
+              <div>
+                <div class="ctx-title">meinen — persönliche Meinung</div>
+                <div class="ctx-desc">Jemand äußert eine persönliche Einschätzung oder Meinung.</div>
+                <div class="ctx-ex">Fatima meint, Deutsch sei nicht so schwer.</div>
+              </div>
+            </div>
+            <div class="ctx-card c-narrate">
+              <div class="ctx-icon">📖</div>
+              <div>
+                <div class="ctx-title">erzählen — narrativ</div>
+                <div class="ctx-desc">Jemand erzählt eine Geschichte oder berichtet von Erlebnissen.</div>
+                <div class="ctx-ex">Kwame erzählt, er sei früher in Accra gewesen.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">Einleitungsverben im Kontext</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.12);color:var(--dir);">ZEITUNG</div>
+              <div style="flex:1;">
+                <div class="ex-de">Der Sprecher <span class="ih">berichtet</span>, die Verhandlungen <span class="kh">seien</span> erfolgreich gewesen.</div>
+                <div class="ex-note">Typischer Nachrichtenstil: berichten + Konjunktiv I.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Der Sprecher berichtet, die Verhandlungen seien erfolgreich gewesen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--ki);">SKEPSIS</div>
+              <div style="flex:1;">
+                <div class="ex-de">Er <span class="ih">behauptet</span>, er <span class="kh">habe</span> alles allein gemacht.</div>
+                <div class="ex-note">behaupten impliziert: der Sprecher glaubt das vielleicht nicht ganz.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Er behauptet, er habe alles allein gemacht.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 4 · Lektion 4 · Übung</div><h2 class="lesson-h">Einleitungsverben — <span style="color:var(--ind)">Übung</span></h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-3 -->
+
+    <!-- ── LEKTION 5: Zeitformen ── -->
+    <div id="lesson-4" class="lesson-pane">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 4 · Lektion 5 von 6</div>
+          <h2 class="lesson-h">Zeitformen in der <span style="color:var(--ki)">indirekten Rede</span></h2>
+          <p class="body-text">Die indirekte Rede hat drei Zeitformen: <strong style="color:var(--ki);">Gegenwart</strong> (er lerne), <strong style="color:var(--kii);">Vergangenheit</strong> (er habe gelernt) und <strong style="color:var(--ind);">Zukunft</strong> (er werde lernen). Die Zeitform der direkten Rede bestimmt, welche Form man in der indirekten Rede wählt.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p><strong>Present → KI present:</strong> "I learn" → er lerne</p>
+              <p><strong>Past (Perfekt/Präteritum) → KI Perfekt:</strong> "I have learned / I learned" → er habe gelernt (habe/sei + past participle)</p>
+              <p><strong>Future → KI future:</strong> "I will learn" → er werde lernen (werde + infinitive)</p>
+              <p>Note: German indirect speech simplifies all past tenses (Perfekt, Präteritum, Plusquamperfekt) into a single form: KI Perfekt (habe/sei + participle).</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Die drei Zeitformen im Überblick</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Zeitform</th><th>Direkte Rede</th><th style="color:var(--ki);">Indirekte Rede (KI)</th></tr>
+              <tr>
+                <td><span style="color:var(--ki);font-weight:700;">Gegenwart</span></td>
+                <td class="ct-dir">„Ich lerne Deutsch."</td>
+                <td class="ct-ki">…er <strong>lerne</strong> Deutsch.</td>
+              </tr>
+              <tr>
+                <td><span style="color:var(--kii);font-weight:700;">Vergangenheit</span></td>
+                <td class="ct-dir">„Ich habe gelernt."</td>
+                <td class="ct-ki">…er <strong>habe</strong> gelernt.</td>
+              </tr>
+              <tr>
+                <td><span style="color:var(--ind);font-weight:700;">Zukunft</span></td>
+                <td class="ct-dir">„Ich werde lernen."</td>
+                <td class="ct-ki">…er <strong>werde</strong> lernen.</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="sec-label">Gegenwart — er/sie lerne</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--ki);">PRÄSENS</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina sagt, sie <span class="kh">lerne</span> täglich zwei Stunden.</div>
+                <div class="ex-note">Direkt: „Ich lerne täglich zwei Stunden." → lerne (KI Präsens).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina sagt, sie lerne täglich zwei Stunden.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Vergangenheit — er/sie habe gelernt / sei gegangen</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--kii);">PERFEKT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame berichtet, er <span class="kh">habe</span> die Prüfung <span class="kh">bestanden</span>.</div>
+                <div class="ex-note">Direkt: „Ich habe die Prüfung bestanden." → habe + Partizip II (KI Perfekt).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame berichtet, er habe die Prüfung bestanden.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--kii);">PERFEKT MIT SEIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi sagt, er <span class="kh">sei</span> nach Berlin <span class="kh">gefahren</span>.</div>
+                <div class="ex-note">Direkt: „Ich bin nach Berlin gefahren." → sei + Partizip II (fahren = Bewegungsverb → sein).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi sagt, er sei nach Berlin gefahren.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Zukunft — er/sie werde lernen</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--ind);">FUTUR</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima erklärt, sie <span class="kh">werde</span> nächstes Jahr nach Deutschland <span class="kh">reisen</span>.</div>
+                <div class="ex-note">Direkt: „Ich werde nächstes Jahr reisen." → werde + Infinitiv (KI Futur).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima erklärt, sie werde nächstes Jahr nach Deutschland reisen.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="info-box"><strong style="color:var(--gold);">Vereinfachung — Vergangenheit:</strong><br><br>
+            Egal ob die direkte Rede im Präteritum, Perfekt oder Plusquamperfekt steht — in der indirekten Rede gibt es nur eine Vergangenheitsform: <strong style="color:var(--ki);">habe/sei + Partizip II</strong>.<br><br>
+            „Er sagte: ‚Ich arbeitete.'" → Er sagte, er <span class="kh">habe</span> gearbeitet.<br>
+            „Er sagte: ‚Ich hatte gearbeitet.'" → Er sagte, er <span class="kh">habe</span> gearbeitet.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 4 · Lektion 5 · Übung</div><h2 class="lesson-h">Zeitformen — <span style="color:var(--ki)">Übung</span></h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-4 -->
+
+    <!-- ── LEKTION 6: Nachrichten & Prüfung ── -->
+    <div id="lesson-5" class="lesson-pane">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 4 · Lektion 6 von 6</div>
+          <h2 class="lesson-h">Kwame &amp; Amina — <span style="color:var(--blue)">Nachrichten &amp; Prüfung</span></h2>
+          <p class="body-text">Lies einen kurzen Nachrichtenartikel und Aminas Notizen. Erkenne alle indirekten Redemittel — Konjunktiv I, Einleitungsverben und Zeitformen. So sieht indirekte Rede in echten B1-Texten aus.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>This lesson puts everything together in realistic B1 exam-style texts. The B1 Lesen section often features newspaper articles that report what officials, researchers, or people have said — entirely in indirect speech with Konjunktiv I. Recognising these forms is key to understanding the text correctly.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Situation 1 — Kurzer Nachrichtenartikel</div>
+          <div class="comp-wrap">
+            <p style="font-family:'DM Mono',monospace;font-size:13px;color:var(--cream);line-height:2.1;">
+              <span style="color:var(--gray);font-size:11px;letter-spacing:2px;">DEUTSCHWEG NACHRICHTEN</span><br><br>
+              Der Bürgermeister <span class="ih">erklärte</span> gestern, die neue Sprachschule <span class="kh">sei</span> ein wichtiger Schritt für die Integration. Er <span class="ih">berichtete</span>, über 200 Kurse <span class="kh">seien</span> bereits geplant. Außerdem <span class="ih">sagte</span> er, die Kurse <span class="fh">würden</span> kostenlos angeboten.<br><br>
+              Eine Sprecherin <span class="ih">meinte</span>, das Programm <span class="kh">habe</span> bereits großes Interesse geweckt. Sie <span class="ih">erklärte</span>, man <span class="fh">werde</span> im nächsten Jahr weitere Schulen eröffnen.
+            </p>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:6px 0 14px;line-height:1.7;"><span style="color:var(--ki)">sei, seien, habe</span> = Konjunktiv I &nbsp;·&nbsp; <span style="color:var(--kii)">würden, werde</span> = Konjunktiv II (weil KI = Indikativ bei 3. Person Plural / sie/Sie)</p>
+
+          <div class="sec-label">Situation 2 — Kwame erzählt Amina</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--ind);">KWAME</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame erzählt Amina, sein Chef <span class="kh">habe</span> gesagt, der Kurs <span class="kh">sei</span> genehmigt worden.</div>
+                <div class="ex-note">Verschachtelte indirekte Rede: Kwame berichtet, was sein Chef gesagt hat.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame erzählt Amina, sein Chef habe gesagt, der Kurs sei genehmigt worden.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--kii);">AMINA</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina sagt, ihre Kollegen <span class="fh">hätten</span> ebenfalls Interesse.</div>
+                <div class="ex-note">Plural → KII (hätten) weil sie haben (KI) = sie haben (Indikativ).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina sagt, ihre Kollegen hätten ebenfalls Interesse.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Häufige Fehler afrikanischer Lernender</div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Er sagt, dass er ist müde.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Er sagt, er sei müde.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Indirekte Rede braucht Konjunktiv I (sei), nicht Indikativ (ist). Mit „dass" geht das Verb ans Ende, aber man darf das „dass" auch weglassen.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Amina sagt, sie lernen viel.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Amina sagt, sie lerne viel.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Kein Indikativ in der indirekten Rede! sie lernen = Indikativ. Konjunktiv I: sie lerne (3. Person Singular, er/sie/es-Form).</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Die Leute sagen, sie lernten → sie lernen.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Die Leute sagen, sie lernten. (KII ✓)</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Plural: sie lernen (KI) = sie lernen (Indikativ) → Konjunktiv II (lernten) verwenden, damit die indirekte Rede erkennbar bleibt.</p>
+
+          <div class="success-box">
+            <strong style="color:var(--green);">Zusammenfassung — Indirekte Rede auf einen Blick:</strong><br><br>
+            1. <strong style="color:var(--ki);">Konjunktiv I</strong> = Standardform der indirekten Rede<br>
+            &nbsp;&nbsp;&nbsp;→ sein → sei · haben → habe · kommen → komme<br><br>
+            2. <strong style="color:var(--kii);">Konjunktiv II</strong> = wenn KI = Indikativ (nicht erkennbar)<br>
+            &nbsp;&nbsp;&nbsp;→ sie kämen (statt sie kommen) · sie hätten (statt sie haben)<br><br>
+            3. <strong style="color:var(--ind);">Zeitformen:</strong><br>
+            &nbsp;&nbsp;&nbsp;Gegenwart: er lerne · Vergangenheit: er habe gelernt / sei gegangen · Zukunft: er werde lernen<br><br>
+            4. <strong style="color:var(--dir);">Einleitungsverben:</strong> sagen (neutral) · berichten (Zeitung) · behaupten (Skepsis) · erklären (Detail) · meinen (Meinung)<br><br>
+            5. <strong style="color:var(--gold);">Nie Indikativ</strong> in der indirekten Rede! &nbsp;·&nbsp; Komma vor dem Nebensatz!
+          </div>
+
+          <div class="warn-box" style="margin-top:14px;"><strong style="color:var(--blue);">📌 Prüfungstipp — Lesen B1:</strong><br><br>
+            Im B1-Lesen-Teil liest du Zeitungsartikel und Berichte. Erkenne indirekte Rede an: <strong>Konjunktiv I-Formen</strong> (sei, habe, lerne, komme…) und <strong>Einleitungsverben</strong> (berichtet, erklärt, sagte…). Diese Signale zeigen dir, wessen Meinung oder Aussage gerade wiedergegeben wird — das hilft bei Zuordnungsaufgaben.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 4 · Lektion 6 · Übung</div><h2 class="lesson-h">Indirekte Rede — <span style="color:var(--blue)">Abschlusskontrolle</span></h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-5 -->
+
+  </div>
+</div>
+
+<script>
+var TOTAL=6, currentLesson=0, xp=0;
+var synth=window.speechSynthesis, voices=[], deVoice=null;
+function loadVoices(){ voices=synth.getVoices(); deVoice=voices.find(function(v){return v.lang==='de-DE';})||voices.find(function(v){return v.lang.startsWith('de');})||null; }
+if(synth.onvoiceschanged!==undefined){synth.onvoiceschanged=loadVoices;}
+function speakSentence(btn,text){ if(!synth)return; synth.cancel(); document.querySelectorAll('.speak-btn.speaking').forEach(function(b){b.classList.remove('speaking');}); btn.classList.add('speaking'); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; u.onend=function(){btn.classList.remove('speaking');}; synth.speak(u); }
+
+var QD={
+  0:[
+    {q:'Welcher Satz ist korrekte indirekte Rede?',
+     hint:'Indirekte Rede benutzt Konjunktiv I, keinen Indikativ. Das Verb verändert sich.',
+     opts:['Kwame sagt, dass er ist müde.','Kwame sagt, er sei müde.','Kwame sagt, er ist müde.','Kwame sagt, er wäre müde.'],
+     ans:1,
+     exp:'„Kwame sagt, er sei müde." ist korrekt. sei ist der Konjunktiv I von sein — das ist die Standardform der indirekten Rede. Option A benutzt Indikativ (ist) hinter „dass" — falsch, es braucht Konjunktiv I. Option C benutzt ebenfalls Indikativ — auch falsch. Option D benutzt Konjunktiv II (wäre) — man nimmt KII nur, wenn KI = Indikativ, was bei er/sie/es von sein nicht der Fall ist: ist ≠ sei.',
+     rule:'Indirekte Rede = Konjunktiv I. sein → sei (er/sie/es). Nie Indikativ in der indirekten Rede. KII (wäre) nur wenn KI nicht erkennbar wäre.'}
+  ],
+  1:[
+    {q:'Was ist der Konjunktiv I von „haben" (3. Person Singular)?',
+     hint:'Konjunktiv I = Infinitivstamm + -e. haben → hab- + e = ?',
+     opts:['hätte','hatte','habe','hat'],
+     ans:2,
+     exp:'„habe" ist der Konjunktiv I von haben (3. Person Singular). Bildung: Infinitivstamm hab- + Endung -e = habe. Option A (hätte) ist Konjunktiv II von haben — das ist die Ausweichform, wenn KI = Indikativ, aber bei er/sie hat ≠ habe, also ist KI hier erkennbar. Option B (hatte) ist Präteritum Indikativ. Option D (hat) ist Indikativ Präsens.',
+     rule:'Konjunktiv I Bildung: Infinitivstamm + -e (für er/sie/es). haben → hab- → habe. sein ist unregelmäßig: sei (nicht seie).'}
+  ],
+  2:[
+    {q:'„Die Schüler sagen, sie ___ fleißig." Welche Form ist korrekt für indirekte Rede?',
+     hint:'KI von lernen (sie/Plural): sie lernen. Ist das erkennbar als KI? Vergleiche mit dem Indikativ.',
+     opts:['lernen','lernten','lerne','würden lernen'],
+     ans:1,
+     exp:'„lernten" (Konjunktiv II) ist korrekt. Warum? Konjunktiv I Plural: sie lernen — aber Indikativ Plural: sie lernen — beide Formen sind identisch! Wenn KI = Indikativ, verliert die Form ihre Signalfunktion. Deshalb benutzt man Konjunktiv II: lernten (oder würden lernen). Option A (lernen) ist Indikativ — falsch für indirekte Rede. Option C (lerne) ist KI 3. Person Singular — passt nicht zu Plural (sie). Option D (würden lernen) wäre auch akzeptabel als KII-Ausweichform.',
+     rule:'Regel: Ist KI (Plural: -en) = Indikativ (Plural: -en)? → Konjunktiv II benutzen (lernten / würden lernen). Bei er/sie/es ist KI fast immer erkennbar (lernt ≠ lerne).'}
+  ],
+  3:[
+    {q:'Welches Einleitungsverb passt am besten in einem Zeitungsartikel?',
+     hint:'Zeitungsartikel benutzen ein bestimmtes, journalistisches Verb für indirekte Rede.',
+     opts:['erzählen','behaupten','berichten','meinen'],
+     ans:2,
+     exp:'„berichten" ist das typische journalistische Einleitungsverb für Zeitungsartikel und Nachrichtentexte. Es ist neutral und sachlich. Option A (erzählen) ist eher narrativ/persönlich — für Geschichten und persönliche Erlebnisse. Option B (behaupten) impliziert Skepsis oder Zweifel an der Aussage — unpassend für sachliche Berichterstattung. Option D (meinen) drückt eine persönliche Meinung aus — zu subjektiv für offizielle Nachrichten.',
+     rule:'Einleitungsverben und ihre Nuancen: berichten = journalistisch/sachlich · sagen = neutral · behaupten = mit Skepsis · meinen = persönliche Meinung · erzählen = narrativ/persönlich.'}
+  ],
+  4:[
+    {q:'Kofi sagt: „Ich habe die Aufgabe abgegeben." Wie lautet die korrekte indirekte Rede?',
+     hint:'Das ist eine Vergangenheitsaussage (Perfekt). Welche Form benutzt man in der indirekten Rede für die Vergangenheit?',
+     opts:['Kofi sagt, er hatte die Aufgabe abgegeben.','Kofi sagt, er habe die Aufgabe abgegeben.','Kofi sagt, er hat die Aufgabe abgegeben.','Kofi sagt, er hätte die Aufgabe abgegeben.'],
+     ans:1,
+     exp:'„er habe die Aufgabe abgegeben" ist korrekt — das ist KI Perfekt: habe (KI von haben) + Partizip II (abgegeben). Option A (hatte) ist Plusquamperfekt Indikativ — falsch, kein Konjunktiv. Option C (hat) ist Indikativ Perfekt — nie Indikativ in indirekter Rede. Option D (hätte) ist KII Perfekt — man benutzt KII nur, wenn KI = Indikativ. Bei er/sie: hat ≠ habe, also ist KI erkennbar → KI benutzen.',
+     rule:'Vergangenheit in indirekter Rede = KI Perfekt: habe/sei + Partizip II. habe gelernt · sei gegangen · habe geschrieben. Alle Vergangenheitszeiten der direkten Rede werden zu diesem einen KI-Perfekt.'}
+  ],
+  5:[
+    {q:'Amina liest: „Der Forscher berichtete, das Projekt sei ein Erfolg gewesen." Was bedeutet das?',
+     hint:'sei … gewesen = KI Perfekt von sein. Wessen Aussage ist das? Ist es die Meinung des Journalisten?',
+     opts:['Der Journalist meint, das Projekt war erfolgreich.','Der Forscher hat gesagt, das Projekt war erfolgreich — der Journalist berichtet das.','Das Projekt ist jetzt gerade erfolgreich.','Es ist unbekannt, ob das Projekt erfolgreich ist.'],
+     ans:1,
+     exp:'Option B ist korrekt. „berichtete" ist das Einleitungsverb — der Journalist berichtet, was der Forscher gesagt hat. „sei … gewesen" ist KI Perfekt von sein — das ist die indirekte Wiedergabe der Vergangenheitsaussage des Forschers. Option A ist falsch — es ist nicht die Meinung des Journalisten (meinen würde das signalisieren). Option C ist falsch — es handelt sich um eine vergangene Aussage (sei gewesen = Vergangenheit). Option D ist falsch — der Konjunktiv I zeigt nicht Ungewissheit, sondern Berichterstattung.',
+     rule:'Konjunktiv I in Zeitungstexten = indirekte Rede. Das Einleitungsverb (berichtete, sagte, erklärte) zeigt, von wem die Aussage stammt. KI signalisiert: das ist nicht meine Aussage — ich berichte, was jemand anderes gesagt hat.'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">FRAGE '+(s.cur+1)+' VON '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint" style="font-family:\'DM Mono\',monospace;">💡 '+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Nächste Frage →':'Ergebnis anzeigen →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Richtig!':'✗ Nicht ganz'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent='📌 Regel: '+q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' richtig</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfekt!':pct>=60?'Gut gemacht!':'Noch einmal versuchen.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(52,152,219,0.12);border:1px solid var(--blue);border-radius:50px;padding:9px 22px;color:var(--blue);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Modul 4 abschließen →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Zur nächsten Lektion →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">💬</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Modul 4 abgeschlossen!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">Du kannst jetzt direkte in indirekte Rede umwandeln, Konjunktiv I korrekt bilden und einsetzen, Konjunktiv II als Ausweichform verwenden und indirekte Rede in B1-Zeitungsartikeln erkennen und verstehen.</p><div class="xp-badge">⚡ '+xp+' XP verdient</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Modul 4 abgeschlossen. Weiter zu Modul 5 — Wortstellung im Nebensatz.</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Zur Übersicht</button></div>'; localStorage.setItem('dw_mod_b1_4_done','1'); var saved=parseInt(localStorage.getItem('dw_xp')||'0'); localStorage.setItem('dw_xp',saved+xp); }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+<script src="./ai-tutor.js" data-module="b1-4"></script>
+</body>
+</html>
