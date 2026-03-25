@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — B1 Modul 6: Genitiv</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --masc:#3498db; --fem:#e67e22; --prep:#9b59b6; --inf:#27ae60;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--blue); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--blue); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--blue); color:var(--white); width:100%; }
+  .btn-primary:hover { background:#2980b9; transform:translateY(-2px); box-shadow:0 8px 24px rgba(52,152,219,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--blue); color:var(--blue); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(52,152,219,0.2); }
+  .speak-btn.speaking { background:var(--blue); color:var(--white); }
+
+  /* ENGLISH HELP TOGGLE */
+  .en-help { background:rgba(52,152,219,0.05); border:1px dashed rgba(52,152,219,0.25); border-radius:10px; margin:12px 0; }
+  .en-help summary { padding:10px 16px; cursor:pointer; font-size:13px; color:var(--blue); font-family:'DM Mono',monospace; letter-spacing:.03em; list-style:none; display:flex; align-items:center; gap:8px; }
+  .en-help summary::-webkit-details-marker { display:none; }
+  .en-help[open] summary { border-bottom:1px dashed rgba(52,152,219,0.2); }
+  .en-help-body { padding:12px 16px; font-size:13px; color:rgba(245,240,232,.7); line-height:1.8; }
+  .en-help-body p { margin-bottom:8px; }
+  .en-help-body p:last-child { margin-bottom:0; }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-note { font-size:12px; color:var(--gray); line-height:1.6; }
+
+  /* FORMULA BOX */
+  .formula-box { background:var(--card2-bg); border:1px solid rgba(52,152,219,0.2); border-radius:14px; padding:20px 22px; margin:14px 0; text-align:center; }
+  .formula-title { font-size:10px; letter-spacing:3px; font-family:'DM Mono',monospace; color:var(--blue); margin-bottom:14px; }
+  .formula-main { font-family:'DM Mono',monospace; font-size:17px; font-weight:700; color:var(--white); line-height:2.2; }
+  .fp-m { color:var(--masc); }
+  .fp-f { color:var(--fem); }
+  .fp-p { color:var(--prep); }
+  .fp-i { color:var(--inf); }
+
+  /* DECLENSION TABLE */
+  .comp-table { width:100%; border-collapse:collapse; font-size:13px; margin:14px 0; }
+  .comp-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:10px 14px; text-align:left; border-bottom:2px solid rgba(255,255,255,0.1); }
+  .comp-table td { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'DM Mono',monospace; font-size:13px; vertical-align:top; text-align:left; }
+  .comp-table tr:last-child td { border-bottom:none; }
+  .comp-table tr:hover td { background:rgba(255,255,255,0.02); }
+  .ct-m { color:var(--masc); font-weight:700; }
+  .ct-f { color:var(--fem); font-weight:700; }
+  .ct-p { color:var(--prep); font-weight:700; }
+  .comp-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+
+  /* PREP CARDS */
+  .ctx-grid { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ctx-card { background:var(--card2-bg); border-radius:12px; padding:16px 18px; display:flex; gap:14px; align-items:flex-start; }
+  .ctx-icon { font-size:22px; flex-shrink:0; width:32px; text-align:center; margin-top:2px; }
+  .ctx-title { font-size:13px; font-weight:700; color:var(--cream); margin-bottom:4px; }
+  .ctx-desc { font-size:13px; color:var(--gray); line-height:1.65; margin-bottom:6px; }
+  .ctx-ex { font-family:'DM Mono',monospace; font-size:12px; color:var(--blue); }
+  .ctx-card.c-wegen   { border:1px solid rgba(155,89,182,0.25); }
+  .ctx-card.c-trotz   { border:1px solid rgba(52,152,219,0.25); }
+  .ctx-card.c-waehr   { border:1px solid rgba(230,126,34,0.25); }
+  .ctx-card.c-auss    { border:1px solid rgba(39,174,96,0.25); }
+  .ctx-card.c-inn     { border:1px solid rgba(201,168,76,0.2); }
+
+  /* WRONG/RIGHT */
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.0; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+
+  /* HIGHLIGHTS */
+  .mh { color:var(--masc); font-weight:700; }
+  .fh { color:var(--fem); font-weight:700; }
+  .ph { color:var(--prep); font-weight:700; }
+  .ih { color:var(--inf); font-weight:700; }
+  .sh { color:var(--gold); font-weight:700; } /* -s/-es suffix */
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Mono',monospace; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--blue); background:rgba(52,152,219,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(52,152,219,0.1); border-radius:8px; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(52,152,219,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.2); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(52,152,219,0.12); border:1px solid var(--blue); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--blue); font-size:18px; margin:18px 0; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .lesson-h{font-size:22px;} .wr-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">B1 · MODUL 6</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">B1 · Grammatik</div>
+    <h1 class="lesson-h" style="font-size:36px;">Der <span style="color:var(--blue)">Genitiv</span></h1>
+    <p class="body-text">Der Genitiv ist der vierte Fall im Deutschen. Er zeigt Besitz oder Zugehörigkeit — wem etwas gehört oder zu wem etwas gehört. Besonders wichtig auf B1-Niveau sind die <strong style="color:var(--prep)">Genitivpräpositionen</strong> wie <em>wegen</em>, <em>trotz</em> und <em>während</em> — sie erscheinen in jedem B1-Lesen- und Schreiben-Teil.</p>
+
+    <details class="en-help">
+      <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+      <div class="en-help-body">
+        <p>The genitive case in German shows possession or belonging — like the English possessive 's or "of". "Das Auto meines Vaters" = "my father's car" / "the car of my father".</p>
+        <p>There are also important prepositions that take the genitive case: wegen (because of), trotz (despite), während (during), außerhalb (outside of), innerhalb (within). These are essential for B1 reading and writing.</p>
+      </div>
+    </details>
+
+    <div class="info-box"><strong style="color:var(--gold);">Lernziele dieses Moduls:</strong><br><br>
+      ✦ Du verstehst, wann und warum man den Genitiv benutzt<br>
+      ✦ Du kennst die Genitivartikel für Maskulin und Neutrum (des/eines + -s/-es)<br>
+      ✦ Du kennst die Genitivartikel für Feminin und Plural (der/einer)<br>
+      ✦ Du beherrschst die fünf wichtigsten Genitivpräpositionen<br>
+      ✦ Du weißt, wann Genitiv oder von + Dativ akzeptabel ist
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">🏷️</div><div><div class="lc-title">Lektion 1 — Was ist der Genitiv?</div><div class="lc-desc">Besitz und Zugehörigkeit. Das Auto des Vaters. Die Tasche der Frau. Grundprinzip.</div></div><div class="lc-tag" style="color:var(--blue);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">🔵</div><div><div class="lc-title">Lektion 2 — Maskulin &amp; Neutrum: des/eines + -s/-es</div><div class="lc-desc">der Mann → des Mannes. das Kind → des Kindes. Die -s/-es Endung am Nomen.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">🟠</div><div><div class="lc-title">Lektion 3 — Feminin &amp; Plural: der/einer</div><div class="lc-desc">die Frau → der Frau. die Studenten → der Studenten. Kein -s/-es am Nomen!</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">📌</div><div><div class="lc-title">Lektion 4 — Genitivpräpositionen I: wegen, trotz, während</div><div class="lc-desc">Wegen des Wetters. Trotz des Regens. Während des Unterrichts. Immer Genitiv!</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">🗺️</div><div><div class="lc-title">Lektion 5 — Präpositionen II &amp; Genitiv vs. von+Dativ</div><div class="lc-desc">außerhalb, innerhalb. Formal: des Vaters. Informell: von meinem Vater. B1: beide ok!</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lektion 6 — Kwame &amp; Amina: Prüfungsvorbereitung</div><div class="lc-desc">Genitiv in echten B1-Texten. Häufige Fehler, Prüfungstipps, formelle E-Mails.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lektionen</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--blue);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LEKTION 1: Was ist der Genitiv? ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 6 · Lektion 1 von 6</div>
+          <h2 class="lesson-h">Was ist der <span style="color:var(--masc)">Genitiv</span>?</h2>
+          <p class="body-text">Der Genitiv ist der vierte Fall und zeigt <strong style="color:var(--masc)">Besitz</strong> oder <strong style="color:var(--masc)">Zugehörigkeit</strong>. Er beantwortet die Frage <em style="color:var(--gold)">„Wessen?"</em> — wem gehört etwas? Zu wem gehört etwas?</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>The genitive answers the question "Whose?" — it shows that something belongs to someone or is associated with someone.</p>
+              <p>English uses "'s" or "of": "Kwame's book" = "das Buch Kwames" or "das Buch von Kwame". German formal writing prefers the genitive article structure: "das Buch des Studenten".</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Die Frage: Wessen?</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--masc);">MASKULIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das ist das Auto <span class="mh">des Vaters</span>.</div>
+                <div class="ex-note">Wessen Auto? — des Vaters. der Vater (maskulin) → des Vaters im Genitiv.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das ist das Auto des Vaters.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--fem);">FEMININ</div>
+              <div style="flex:1;">
+                <div class="ex-de">Die Tasche <span class="fh">der Frau</span> ist rot.</div>
+                <div class="ex-note">Wessen Tasche? — der Frau. die Frau (feminin) → der Frau im Genitiv.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Die Tasche der Frau ist rot.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--masc);">NEUTRUM</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das Zimmer <span class="mh">des Kindes</span> ist groß.</div>
+                <div class="ex-note">Wessen Zimmer? — des Kindes. das Kind (Neutrum) → des Kindes im Genitiv.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das Zimmer des Kindes ist groß.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--prep);">PLURAL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Die Bücher <span class="ph">der Studenten</span> sind neu.</div>
+                <div class="ex-note">Wessen Bücher? — der Studenten. Plural → der (gleich wie Feminin Genitiv!).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Die Bücher der Studenten sind neu.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Die vier Fälle im Überblick</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Fall</th><th>Frage</th><th>Funktion</th><th>Beispiel</th></tr>
+              <tr><td>Nominativ</td><td>Wer?</td><td>Subjekt</td><td>Der Mann kommt.</td></tr>
+              <tr><td>Akkusativ</td><td>Wen/Was?</td><td>Objekt</td><td>Ich sehe den Mann.</td></tr>
+              <tr><td>Dativ</td><td>Wem?</td><td>Indir. Objekt</td><td>Ich helfe dem Mann.</td></tr>
+              <tr><td style="color:var(--masc);font-weight:700;">Genitiv</td><td style="color:var(--masc);">Wessen?</td><td style="color:var(--masc);">Besitz</td><td style="color:var(--masc);">Das Auto <strong>des Mannes</strong>.</td></tr>
+            </table>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue);">📌 Genitiv im B1-Alltag:</strong><br><br>
+            Der Genitiv erscheint in formellen Texten, Berichten und Zeitungsartikeln. Besonders wichtig sind die <strong style="color:var(--prep)">Genitivpräpositionen</strong> wie <em>wegen</em>, <em>trotz</em> und <em>während</em> — sie kommen in jedem B1-Text vor und erscheinen auch in Lücken-Aufgaben.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 6 · Lektion 1 · Übung</div><h2 class="lesson-h">Genitiv — <span style="color:var(--masc)">Grundprinzip</span></h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-0 -->
+
+    <!-- ── LEKTION 2: Maskulin & Neutrum ── -->
+    <div id="lesson-1" class="lesson-pane">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 6 · Lektion 2 von 6</div>
+          <h2 class="lesson-h">Maskulin &amp; Neutrum — <span style="color:var(--masc)">des / eines</span></h2>
+          <p class="body-text">Bei <strong style="color:var(--masc)">maskulinen</strong> und <strong style="color:var(--masc)">neutralen</strong> Nomen ändert sich im Genitiv sowohl der Artikel als auch das Nomen selbst: Der Artikel wird zu <span class="mh">des/eines</span>, und das Nomen bekommt die Endung <span class="sh">-s</span> (meistens) oder <span class="sh">-es</span> (bei kurzen Wörtern und Zischlauten).</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>For masculine and neuter nouns in the genitive: the definite article changes to <em>des</em>, the indefinite article to <em>eines</em>. AND the noun itself gets an -s or -es ending.</p>
+              <p>Rule for -s vs -es: Most nouns take -s (des Mannes, des Vaters). Nouns ending in -s, -ss, -ß, -z, -tz, -x take -es (des Kindes, des Platzes). One-syllable nouns often prefer -es too.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Die Artikel im Genitiv — Maskulin &amp; Neutrum</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Genus</th><th>Nominativ</th><th style="color:var(--masc);">Genitiv (best. Artikel)</th><th style="color:var(--masc);">Genitiv (unbest. Artikel)</th></tr>
+              <tr><td>Maskulin</td><td>der Mann</td><td class="ct-m">des Mann<span class="sh">es</span></td><td class="ct-m">eines Mann<span class="sh">es</span></td></tr>
+              <tr><td>Maskulin</td><td>der Vater</td><td class="ct-m">des Vater<span class="sh">s</span></td><td class="ct-m">eines Vater<span class="sh">s</span></td></tr>
+              <tr><td>Neutrum</td><td>das Kind</td><td class="ct-m">des Kind<span class="sh">es</span></td><td class="ct-m">eines Kind<span class="sh">es</span></td></tr>
+              <tr><td>Neutrum</td><td>das Buch</td><td class="ct-m">des Buch<span class="sh">es</span></td><td class="ct-m">eines Buch<span class="sh">es</span></td></tr>
+              <tr><td>Neutrum</td><td>das Auto</td><td class="ct-m">des Auto<span class="sh">s</span></td><td class="ct-m">eines Auto<span class="sh">s</span></td></tr>
+            </table>
+          </div>
+
+          <div class="sec-label">-s oder -es? Die Regel</div>
+          <div class="formula-box">
+            <div class="formula-title">ENDUNGSREGEL</div>
+            <div class="formula-main" style="font-size:14px;line-height:2.5;">
+              Kurze Wörter / -s/-ss/-ß/-z/-tz/-x → <span class="fp-m">-es</span><br>
+              Alle anderen → <span class="fp-m">-s</span>
+            </div>
+          </div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Wort</th><th>Endung</th><th>Genitiv</th><th>Warum</th></tr>
+              <tr><td>der Mann</td><td class="ct-m">-es</td><td class="ct-m">des Mannes</td><td>einsilbig</td></tr>
+              <tr><td>der Vater</td><td class="ct-m">-s</td><td class="ct-m">des Vaters</td><td>mehrsilbig</td></tr>
+              <tr><td>das Kind</td><td class="ct-m">-es</td><td class="ct-m">des Kindes</td><td>einsilbig</td></tr>
+              <tr><td>der Platz</td><td class="ct-m">-es</td><td class="ct-m">des Platzes</td><td>endet auf -tz</td></tr>
+              <tr><td>der Kurs</td><td class="ct-m">-es</td><td class="ct-m">des Kurses</td><td>endet auf -s</td></tr>
+              <tr><td>das Auto</td><td class="ct-m">-s</td><td class="ct-m">des Autos</td><td>mehrsilbig, kein Zischlaut</td></tr>
+            </table>
+          </div>
+
+          <div class="sec-label">Beispiele mit Kwame &amp; Kofi</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--masc);">MASKULIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das ist der Name <span class="mh">des Lehrers</span>.</div>
+                <div class="ex-note">der Lehrer → des Lehrers (-s, weil mehrsilbig). Wessen Name?</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das ist der Name des Lehrers.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--masc);">MASKULIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame liest das Buch <span class="mh">eines Freundes</span>.</div>
+                <div class="ex-note">ein Freund → eines Freundes (-es, einsilbig). Wessen Buch?</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame liest das Buch eines Freundes.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--masc);">NEUTRUM</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das ist das Spielzeug <span class="mh">des Kindes</span>.</div>
+                <div class="ex-note">das Kind → des Kindes (-es, einsilbig). Wessen Spielzeug?</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das ist das Spielzeug des Kindes.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 6 · Lektion 2 · Übung</div><h2 class="lesson-h">Maskulin &amp; Neutrum — <span style="color:var(--masc)">Übung</span></h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-1 -->
+
+    <!-- ── LEKTION 3: Feminin & Plural ── -->
+    <div id="lesson-2" class="lesson-pane">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 6 · Lektion 3 von 6</div>
+          <h2 class="lesson-h">Feminin &amp; Plural — <span style="color:var(--fem)">der / einer</span></h2>
+          <p class="body-text">Bei <strong style="color:var(--fem)">femininen</strong> Nomen und bei <strong style="color:var(--prep)">Pluralformen</strong> ist der Genitiv einfacher: Der Artikel ändert sich zu <span class="fh">der</span> (bestimmt) oder <span class="fh">einer</span> (unbestimmt) — aber das Nomen selbst bekommt <strong>keine zusätzliche Endung</strong>.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>Good news: feminine and plural nouns in the genitive are simpler. Only the article changes — the noun itself stays unchanged.</p>
+              <p>Feminine: die Frau → der Frau (no -s added to the noun)</p>
+              <p>Plural: die Studenten → der Studenten (no change to the noun)</p>
+              <p>Note: feminine genitive "der" looks identical to masculine nominative "der" — context determines which case it is.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Die Artikel im Genitiv — Feminin &amp; Plural</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Genus</th><th>Nominativ</th><th style="color:var(--fem);">Genitiv (best. Artikel)</th><th style="color:var(--fem);">Genitiv (unbest. Artikel)</th></tr>
+              <tr><td>Feminin</td><td>die Frau</td><td class="ct-f">der Frau</td><td class="ct-f">einer Frau</td></tr>
+              <tr><td>Feminin</td><td>die Stadt</td><td class="ct-f">der Stadt</td><td class="ct-f">einer Stadt</td></tr>
+              <tr><td>Feminin</td><td>die Schule</td><td class="ct-f">der Schule</td><td class="ct-f">einer Schule</td></tr>
+              <tr><td>Plural</td><td>die Männer</td><td class="ct-p">der Männer</td><td class="ct-p">—</td></tr>
+              <tr><td>Plural</td><td>die Studenten</td><td class="ct-p">der Studenten</td><td class="ct-p">—</td></tr>
+            </table>
+          </div>
+
+          <div class="sec-label">Vollständige Genitivtabelle — alle Genera</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Genus</th><th>Nominativ</th><th style="color:var(--gold);">Genitiv (des/der)</th><th>Nomen-Endung</th></tr>
+              <tr><td>Maskulin</td><td>der Mann</td><td class="ct-m">des Mannes</td><td><span class="sh">-s / -es</span> ✓</td></tr>
+              <tr><td>Neutrum</td><td>das Kind</td><td class="ct-m">des Kindes</td><td><span class="sh">-s / -es</span> ✓</td></tr>
+              <tr><td>Feminin</td><td>die Frau</td><td class="ct-f">der Frau</td><td>keine Endung —</td></tr>
+              <tr><td>Plural</td><td>die Bücher</td><td class="ct-p">der Bücher</td><td>keine Endung —</td></tr>
+            </table>
+          </div>
+
+          <div class="sec-label">Beispiele mit Amina &amp; Fatima</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--fem);">FEMININ</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das ist die Tasche <span class="fh">der Lehrerin</span>.</div>
+                <div class="ex-note">die Lehrerin → der Lehrerin (kein -s am Nomen!). Wessen Tasche?</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das ist die Tasche der Lehrerin.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--fem);">FEMININ</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina kennt die Geschichte <span class="fh">einer Stadt</span>.</div>
+                <div class="ex-note">eine Stadt → einer Stadt (unbestimmter Artikel, kein -s am Nomen).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina kennt die Geschichte einer Stadt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--prep);">PLURAL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das sind die Namen <span class="ph">der Studenten</span>.</div>
+                <div class="ex-note">die Studenten → der Studenten (Plural, kein -s am Nomen).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das sind die Namen der Studenten.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--prep);">PLURAL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Fatima liest die Bücher <span class="ph">der Autoren</span>.</div>
+                <div class="ex-note">die Autoren → der Autoren. Plural Genitiv = der (wie Feminin).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima liest die Bücher der Autoren.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 6 · Lektion 3 · Übung</div><h2 class="lesson-h">Feminin &amp; Plural — <span style="color:var(--fem)">Übung</span></h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-2 -->
+
+    <!-- ── LEKTION 4: Genitivpräpositionen I ── -->
+    <div id="lesson-3" class="lesson-pane">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 6 · Lektion 4 von 6</div>
+          <h2 class="lesson-h">Genitivpräpositionen I — <span style="color:var(--prep)">wegen, trotz, während</span></h2>
+          <p class="body-text">Bestimmte Präpositionen verlangen immer den Genitiv. Die drei wichtigsten für B1 sind <span class="ph">wegen</span> (wegen des Wetters), <span class="ph">trotz</span> (trotz des Regens) und <span class="ph">während</span> (während des Unterrichts). Sie erscheinen in Lücken-Aufgaben, Lesetexten und Schreiben-Aufgaben.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p><strong>wegen</strong> = because of (reason/cause). "Wegen des Wetters" = because of the weather.</p>
+              <p><strong>trotz</strong> = despite, in spite of. "Trotz des Regens" = despite the rain.</p>
+              <p><strong>während</strong> = during (a period of time). "Während des Unterrichts" = during the lesson.</p>
+              <p>All three take the genitive. In spoken German, you might hear "wegen dem Wetter" (with dative) — but in formal writing and the B1 exam, use the genitive.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Die drei Präpositionen im Detail</div>
+          <div class="ctx-grid">
+            <div class="ctx-card c-wegen">
+              <div class="ctx-icon">🌧️</div>
+              <div style="flex:1;">
+                <div class="ctx-title">wegen + Genitiv — wegen</div>
+                <div class="ctx-desc">Gibt den Grund oder die Ursache an. Entspricht „because of" auf Englisch.</div>
+                <div class="ctx-ex">Wegen <span class="ph">des Wetters</span> bleibe ich zu Hause.<br>Wegen <span class="ph">der Prüfung</span> lernt Amina viel.<br>Wegen <span class="ph">eines Fehlers</span> muss Kofi den Brief neu schreiben.</div>
+              </div>
+            </div>
+            <div class="ctx-card c-trotz">
+              <div class="ctx-icon">💪</div>
+              <div style="flex:1;">
+                <div class="ctx-title">trotz + Genitiv — despite</div>
+                <div class="ctx-desc">Zeigt einen Gegensatz: obwohl etwas hindert, passiert es trotzdem.</div>
+                <div class="ctx-ex">Trotz <span class="ph">des Regens</span> geht Kwame spazieren.<br>Trotz <span class="ph">der Müdigkeit</span> lernt sie weiter.<br>Trotz <span class="ph">eines Problems</span> findet er eine Lösung.</div>
+              </div>
+            </div>
+            <div class="ctx-card c-waehr">
+              <div class="ctx-icon">⏱️</div>
+              <div style="flex:1;">
+                <div class="ctx-title">während + Genitiv — during</div>
+                <div class="ctx-desc">Gibt an, dass etwas innerhalb eines Zeitraums oder Ereignisses stattfindet.</div>
+                <div class="ctx-ex">Während <span class="ph">des Unterrichts</span> macht Amina Notizen.<br>Während <span class="ph">der Prüfung</span> ist es still.<br>Während <span class="ph">des Abendessens</span> spricht die Familie.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">Alle drei zusammen — Genitivform</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Präposition</th><th>Maskulin/Neutrum</th><th>Feminin</th><th>Plural</th></tr>
+              <tr>
+                <td class="ct-p">wegen</td>
+                <td>wegen <span class="mh">des</span> Wet<span class="sh">ter</span><span class="mh">s</span></td>
+                <td>wegen <span class="fh">der</span> Kälte</td>
+                <td>wegen <span class="ct-p">der</span> Probleme</td>
+              </tr>
+              <tr>
+                <td class="ct-p">trotz</td>
+                <td>trotz <span class="mh">des</span> Regen<span class="mh">s</span></td>
+                <td>trotz <span class="fh">der</span> Müdigkeit</td>
+                <td>trotz <span class="ct-p">der</span> Schwierigkeiten</td>
+              </tr>
+              <tr>
+                <td class="ct-p">während</td>
+                <td>während <span class="mh">des</span> Unterricht<span class="mh">s</span></td>
+                <td>während <span class="fh">der</span> Pause</td>
+                <td>während <span class="ct-p">der</span> Ferien</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="sec-label">Beispiele</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--prep);">WEGEN</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="ph">Wegen</span> <span class="fh">der Krankheit</span> kann Amina heute nicht kommen.</div>
+                <div class="ex-note">wegen + Genitiv Feminin: der Krankheit (die Krankheit → der Krankheit).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wegen der Krankheit kann Amina heute nicht kommen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--masc);">TROTZ</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="ph">Trotz</span> <span class="mh">des schwierigen Tests</span> besteht Kwame.</div>
+                <div class="ex-note">trotz + Genitiv Maskulin: des schwierigen Tests (der Test → des Tests).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Trotz des schwierigen Tests besteht Kwame.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--fem);">WÄHREND</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="ph">Während</span> <span class="fh">der Pause</span> sprechen Kofi und Fatima Deutsch.</div>
+                <div class="ex-note">während + Genitiv Feminin: der Pause (die Pause → der Pause).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Während der Pause sprechen Kofi und Fatima Deutsch.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 6 · Lektion 4 · Übung</div><h2 class="lesson-h">wegen, trotz, während — <span style="color:var(--prep)">Übung</span></h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-3 -->
+
+    <!-- ── LEKTION 5: Präpositionen II & Genitiv vs von+Dativ ── -->
+    <div id="lesson-4" class="lesson-pane">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 6 · Lektion 5 von 6</div>
+          <h2 class="lesson-h">außerhalb, innerhalb &amp; <span style="color:var(--inf)">von + Dativ</span></h2>
+          <p class="body-text">Zwei weitere wichtige Genitivpräpositionen: <span class="ph">außerhalb</span> (außerhalb der Stadt) und <span class="ph">innerhalb</span> (innerhalb einer Woche). Außerdem lernst du heute den Unterschied zwischen dem formellen <strong style="color:var(--masc)">Genitiv</strong> und der informellen Alternative mit <strong style="color:var(--inf)">von + Dativ</strong>.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p><strong>außerhalb</strong> = outside of. "außerhalb der Stadt" = outside the city.</p>
+              <p><strong>innerhalb</strong> = within, inside of. "innerhalb einer Woche" = within a week.</p>
+              <p><strong>Genitiv vs. von + Dativ:</strong> In formal German, genitive is preferred: "das Auto des Vaters". In spoken/informal German, "von + Dativ" is common: "das Auto von meinem Vater". Both are acceptable in the B1 exam — but genitive in formal writing earns you more style points.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">außerhalb &amp; innerhalb</div>
+          <div class="ctx-grid">
+            <div class="ctx-card c-auss">
+              <div class="ctx-icon">🗺️</div>
+              <div style="flex:1;">
+                <div class="ctx-title">außerhalb + Genitiv — outside of</div>
+                <div class="ctx-desc">Räumlich: außerhalb eines Bereichs. Auch zeitlich oder übertragen möglich.</div>
+                <div class="ctx-ex">Er wohnt <span class="ph">außerhalb</span> <span class="fh">der Stadt</span>.<br>Das liegt <span class="ph">außerhalb</span> <span class="mh">meines Zuständigkeitsbereichs</span>.</div>
+              </div>
+            </div>
+            <div class="ctx-card c-inn">
+              <div class="ctx-icon">📅</div>
+              <div style="flex:1;">
+                <div class="ctx-title">innerhalb + Genitiv — within</div>
+                <div class="ctx-desc">Räumlich oder zeitlich: innerhalb eines Bereichs oder Zeitraums.</div>
+                <div class="ctx-ex">Amina lernt das <span class="ph">innerhalb</span> <span class="fh">einer Woche</span>.<br>Das Paket kommt <span class="ph">innerhalb</span> <span class="mh">eines Tages</span> an.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">Genitiv vs. von + Dativ</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Stil</th><th>Struktur</th><th>Beispiel</th><th>Kontext</th></tr>
+              <tr>
+                <td style="color:var(--masc);font-weight:700;">Formal</td>
+                <td>Genitiv (des/der)</td>
+                <td class="ct-m">das Auto des Vaters</td>
+                <td>Schreiben, Berichte, B1-Prüfung</td>
+              </tr>
+              <tr>
+                <td style="color:var(--inf);font-weight:700;">Informell</td>
+                <td>von + Dativ</td>
+                <td class="ct-p" style="color:var(--inf);">das Auto von meinem Vater</td>
+                <td>Gespräche, SMS, Alltag</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--masc);">FORMAL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das ist das Büro <span class="mh">des Direktors</span>.</div>
+                <div class="ex-note">Genitiv Maskulin — formell, in Berichten und offiziellen Texten bevorzugt.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das ist das Büro des Direktors.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--inf);">INFORMELL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das ist das Büro <span class="ih">von dem Direktor</span>.</div>
+                <div class="ex-note">von + Dativ — informell, in der gesprochenen Sprache häufig. Auch: „vom Direktor".</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das ist das Büro von dem Direktor.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--prep);">AUSSERHALB</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame wohnt <span class="ph">außerhalb</span> <span class="fh">der Stadt</span>.</div>
+                <div class="ex-note">außerhalb + Genitiv Feminin: der Stadt (die Stadt → der Stadt).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame wohnt außerhalb der Stadt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--prep);">INNERHALB</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina lernt das <span class="ph">innerhalb</span> <span class="mh">eines Monats</span>.</div>
+                <div class="ex-note">innerhalb + Genitiv Maskulin: eines Monats (ein Monat → eines Monats).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina lernt das innerhalb eines Monats.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue);">📌 B1-Prüfungstipp:</strong><br><br>
+            In der B1-Prüfung sind beide Formen akzeptabel. In einer formellen E-Mail oder einem Bericht (Schreiben-Teil) gibt der Genitiv (des Vaters) mehr Punkte für Sprachkompetenz als von + Dativ. In der Lücken-Aufgabe (Lesen) erscheint fast immer die Genitivform — lerne die Artikel des/der auswendig.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 6 · Lektion 5 · Übung</div><h2 class="lesson-h">außerhalb, innerhalb &amp; von+Dativ — <span style="color:var(--prep)">Übung</span></h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-4 -->
+
+    <!-- ── LEKTION 6: Prüfungsvorbereitung ── -->
+    <div id="lesson-5" class="lesson-pane">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 6 · Lektion 6 von 6</div>
+          <h2 class="lesson-h">Kwame &amp; Amina — <span style="color:var(--blue)">Prüfungsvorbereitung</span></h2>
+          <p class="body-text">Kwame und Amina bereiten sich auf den B1-Schreiben-Teil vor. Lies ihre Texte — erkenne alle Genitivformen und Genitivpräpositionen. Dann lerne die häufigsten Fehler, damit du sie in der Prüfung vermeidest.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>In the B1 exam, the genitive appears in: reading texts (newspaper-style articles use genitive frequently), grammar tasks (filling in the correct article form), and writing (using wegen/trotz/während in formal emails and reports shows B1-level language).</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Situation 1 — Kwames formeller Bericht</div>
+          <div class="comp-wrap">
+            <p style="font-family:'DM Mono',monospace;font-size:13px;color:var(--cream);line-height:2.1;">
+              <span style="color:var(--gray);font-size:11px;letter-spacing:2px;">B1 SCHREIBEN — KURZER BERICHT</span><br><br>
+              <span class="ph">Wegen</span> <span class="fh">der schlechten Wetterlage</span> musste die Veranstaltung abgesagt werden. <span class="ph">Trotz</span> <span class="mh">des großen Interesses</span> der Teilnehmer war eine Verschiebung notwendig.<br><br>
+              Das Büro <span class="mh">des Organisators</span> hat alle Teilnehmer informiert. <span class="ph">Während</span> <span class="fh">der Wartezeit</span> wurden die Unterlagen vorbereitet.<br><br>
+              Der neue Termin liegt <span class="ph">innerhalb</span> <span class="fh">der nächsten Woche</span>.
+            </p>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:6px 0 14px;line-height:1.7;">Kwame benutzt 5 Genitivkonstruktionen in einem kurzen Bericht — wegen, trotz, während, Genitiv des Substantivs und innerhalb.</p>
+
+          <div class="sec-label">Situation 2 — Aminas formelle E-Mail</div>
+          <div class="comp-wrap">
+            <p style="font-family:'DM Mono',monospace;font-size:13px;color:var(--cream);line-height:2.1;">
+              Sehr geehrte Damen und Herren,<br><br>
+              <span class="ph">wegen</span> <span class="fh">einer dringenden Angelegenheit</span> muss ich meinen Termin verschieben. <span class="ph">Trotz</span> <span class="mh">meines Bedauerns</span> ist dies leider nicht zu vermeiden.<br><br>
+              Ich wäre dankbar, wenn wir <span class="ph">innerhalb</span> <span class="fh">der nächsten zwei Wochen</span> einen neuen Termin finden könnten.<br><br>
+              Mit freundlichen Grüßen,<br>Amina Diallo
+            </p>
+          </div>
+
+          <div class="sec-label">Häufige Fehler afrikanischer Lernender</div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH (informell)</div>
+              <div class="wr-word">wegen dem Wetter</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG (formell/B1)</div>
+              <div class="wr-word">wegen des Wetters</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">wegen dem Wetter ist umgangssprachlich verbreitet, aber in der B1-Prüfung (formelles Schreiben) erwartet man den Genitiv: wegen des Wetters.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">das Auto des Manns</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">das Auto des Mannes</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Einsilbige Maskulin/Neutrum-Nomen nehmen -es, nicht nur -s: des Mannes, des Kindes, des Hauses.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">die Tasche der Fraus</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">die Tasche der Frau</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Feminin und Plural bekommen kein -s am Nomen! Nur der Artikel ändert sich: die → der.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">trotz dem Regen</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">trotz des Regens</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">trotz, wegen, während, außerhalb, innerhalb — alle verlangen Genitiv, nicht Dativ.</p>
+
+          <div class="success-box">
+            <strong style="color:var(--green);">Zusammenfassung — Genitiv auf einen Blick:</strong><br><br>
+            <strong style="color:var(--masc);">Maskulin/Neutrum:</strong> des/eines + Nomen<span class="sh">-s/-es</span><br>
+            &nbsp;&nbsp;→ des Mannes · des Kindes · des Vaters · eines Kurses<br><br>
+            <strong style="color:var(--fem);">Feminin/Plural:</strong> der/einer + Nomen (unverändert)<br>
+            &nbsp;&nbsp;→ der Frau · der Stadt · der Studenten<br><br>
+            <strong style="color:var(--prep);">Genitivpräpositionen:</strong><br>
+            &nbsp;&nbsp;wegen + Gen. · trotz + Gen. · während + Gen.<br>
+            &nbsp;&nbsp;außerhalb + Gen. · innerhalb + Gen.<br><br>
+            <strong style="color:var(--inf);">Genitiv vs. von+Dativ:</strong> des Vaters (formal) · von meinem Vater (informell)<br>
+            Beide akzeptabel in B1 — Genitiv in formellen Texten bevorzugt!
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 6 · Lektion 6 · Übung</div><h2 class="lesson-h">Genitiv — <span style="color:var(--blue)">Abschlusskontrolle</span></h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-5 -->
+
+  </div>
+</div>
+
+<script>
+var TOTAL=6, currentLesson=0, xp=0;
+var synth=window.speechSynthesis, voices=[], deVoice=null;
+function loadVoices(){ voices=synth.getVoices(); deVoice=voices.find(function(v){return v.lang==='de-DE';})||voices.find(function(v){return v.lang.startsWith('de');})||null; }
+if(synth.onvoiceschanged!==undefined){synth.onvoiceschanged=loadVoices;}
+function speakSentence(btn,text){ if(!synth)return; synth.cancel(); document.querySelectorAll('.speak-btn.speaking').forEach(function(b){b.classList.remove('speaking');}); btn.classList.add('speaking'); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; u.onend=function(){btn.classList.remove('speaking');}; synth.speak(u); }
+
+var QD={
+  0:[
+    {q:'Welche Frage beantwortet der Genitiv?',
+     hint:'Genitiv zeigt Besitz oder Zugehörigkeit. Welche Fragewort passt zu „Das Auto des Mannes"?',
+     opts:['Wen?','Wem?','Wessen?','Wer?'],
+     ans:2,
+     exp:'„Wessen?" ist die Genitivfrage — sie fragt nach Besitz oder Zugehörigkeit. Das Auto des Mannes → Wessen Auto? → des Mannes. Option A (Wen?) ist Akkusativ. Option B (Wem?) ist Dativ. Option D (Wer?) ist Nominativ. Merke die vier Fragen: Wer (Nom) · Wen/Was (Akk) · Wem (Dat) · Wessen (Gen).',
+     rule:'Genitiv = Wessen? Er zeigt Besitz oder Zugehörigkeit. Nominativ: Wer? · Akkusativ: Wen/Was? · Dativ: Wem? · Genitiv: Wessen?'}
+  ],
+  1:[
+    {q:'„Das ist das Buch ___ Lehrers." — Welche Genitivform ist korrekt?',
+     hint:'Lehrer ist maskulin (der Lehrer). Genitiv Maskulin = des + Nomen-s/-es. Mehrsilbig → -s.',
+     opts:['der Lehrers','des Lehrers','dem Lehrer','den Lehrers'],
+     ans:1,
+     exp:'„des Lehrers" ist korrekt — Genitiv Maskulin. der Lehrer (maskulin) → des (Genitivartikel) + Lehrers (-s, weil mehrsilbig). Option A (der Lehrers) ist falsch — der ist Nominativ oder Feminin/Plural Genitiv, nicht Maskulin Genitiv. Option C (dem Lehrer) ist Dativ. Option D (den Lehrers) ist Akkusativ-Form mit falschem -s.',
+     rule:'Maskulin Genitiv: des + Nomen + -s (mehrsilbig) oder -es (einsilbig/Zischlaut). des Lehrers · des Mannes · des Kindes.'}
+  ],
+  2:[
+    {q:'„Die Namen ___ Studentinnen stehen auf der Liste." — Genitiv Plural. Welche Form ist richtig?',
+     hint:'Plural Genitiv: der Artikel ändert sich, das Nomen bleibt unverändert (kein -s!).',
+     opts:['des Studentinnen','der Studentinnen','den Studentinnen','die Studentinnen'],
+     ans:1,
+     exp:'„der Studentinnen" ist korrekt — Genitiv Plural. Plural Genitiv: der + Nomen unverändert. Kein -s oder -es am Nomen bei Plural (und Feminin)! Option A (des Studentinnen) ist Maskulin/Neutrum-Artikel — falsch für Plural. Option C (den Studentinnen) ist Dativ Plural. Option D (die Studentinnen) ist Nominativ/Akkusativ Plural.',
+     rule:'Plural/Feminin Genitiv: Artikel wird zu der, Nomen bleibt unverändert. Die Studentinnen → der Studentinnen. KEIN -s am Nomen!'}
+  ],
+  3:[
+    {q:'„___ des Regens geht Kwame spazieren." — Welche Präposition drückt „despite" aus?',
+     hint:'Kwame geht spazieren, obwohl es regnet — Gegensatz/Einräumung. Welche Genitivpräposition bedeutet „despite"?',
+     opts:['Wegen','Während','Trotz','Innerhalb'],
+     ans:2,
+     exp:'„Trotz" ist korrekt — trotz + Genitiv bedeutet „despite" (obwohl etwas hindert). Trotz des Regens geht Kwame spazieren = Despite the rain, Kwame goes for a walk. Option A (Wegen) bedeutet „because of" — Ursache/Grund, nicht Gegensatz. Option B (Während) bedeutet „during" — zeitlich. Option D (Innerhalb) bedeutet „within" — räumlich oder zeitlich.',
+     rule:'trotz + Genitiv = despite. wegen + Genitiv = because of. während + Genitiv = during. außerhalb + Genitiv = outside of. innerhalb + Genitiv = within.'}
+  ],
+  4:[
+    {q:'Was ist die formell korrekte Form für die B1-Prüfung?',
+     hint:'In formellen Texten und der B1-Prüfung bevorzugt man Genitiv gegenüber von + Dativ.',
+     opts:['Das Auto von meinem Vater ist neu.','Das Auto meines Vaters ist neu.','Das Auto von dem Vater ist neu.','Das Auto dem Vater ist neu.'],
+     ans:1,
+     exp:'„Das Auto meines Vaters ist neu." ist die formell korrekte Genitivform — bevorzugt in schriftlichen B1-Texten, Berichten und formellen E-Mails. Option A (von meinem Vater) ist informell/umgangssprachlich — grammatisch korrekt, aber weniger formell. Option C (von dem Vater) ist ebenfalls informell/Dativ-Konstruktion. Option D (dem Vater) ist Dativ ohne Präposition — falsch in diesem Kontext.',
+     rule:'Formal/B1-Schreiben: Genitiv (des Vaters / meines Vaters) bevorzugt. Informell/gesprochen: von + Dativ (von meinem Vater) akzeptabel. Beide sind in der B1-Prüfung korrekt, Genitiv zeigt höheres Sprachniveau.'}
+  ],
+  5:[
+    {q:'„___ des Unterrichts dürfen die Schüler nicht sprechen." — Welche Präposition passt?',
+     hint:'Die Schüler dürfen während eines bestimmten Zeitraums (des Unterrichts) nicht sprechen. Temporal!',
+     opts:['Wegen','Trotz','Außerhalb','Während'],
+     ans:3,
+     exp:'„Während" ist korrekt — während + Genitiv gibt an, dass etwas innerhalb eines Zeitraums stattfindet (während des Unterrichts = during the lesson). Option A (Wegen) wäre: „Wegen des Unterrichts dürfen sie nicht sprechen" — das würde bedeuten, sie dürfen WEIL der Unterricht stattfindet nicht sprechen (Grund). Option B (Trotz) würde bedeuten: trotz des Unterrichts (despite the lesson) — unlogisch. Option C (Außerhalb) würde bedeuten: außerhalb des Unterrichts (outside the lesson) — das Gegenteil.',
+     rule:'während + Genitiv = during (temporal). Vergleiche: wegen (because of/reason) · trotz (despite/concession) · während (during/temporal) · außerhalb (outside of) · innerhalb (within).'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">FRAGE '+(s.cur+1)+' VON '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint" style="font-family:\'DM Mono\',monospace;">💡 '+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Nächste Frage →':'Ergebnis anzeigen →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Richtig!':'✗ Nicht ganz'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent='📌 Regel: '+q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' richtig</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfekt!':pct>=60?'Gut gemacht!':'Noch einmal versuchen.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(52,152,219,0.12);border:1px solid var(--blue);border-radius:50px;padding:9px 22px;color:var(--blue);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Modul 6 abschließen →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Zur nächsten Lektion →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">🏷️</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Modul 6 abgeschlossen!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">Du kannst jetzt Genitivartikel für alle vier Genera korrekt bilden, die fünf wichtigsten Genitivpräpositionen sicher einsetzen und zwischen formellem Genitiv und informellem von+Dativ unterscheiden. Der Genitiv macht deine B1-Texte professionell und prüfungsreif.</p><div class="xp-badge">⚡ '+xp+' XP verdient</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Modul 6 abgeschlossen. Weiter zu Modul 7 — Wechselpräpositionen.</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Zur Übersicht</button></div>'; localStorage.setItem('dw_mod_b1_6_done','1'); var saved=parseInt(localStorage.getItem('dw_xp')||'0'); localStorage.setItem('dw_xp',saved+xp); }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+<script src="./ai-tutor.js" data-module="b1-6"></script>
+</body>
+</html>
