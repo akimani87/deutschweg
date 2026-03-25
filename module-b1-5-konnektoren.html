@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — B1 Modul 5: Zweiteilige Konnektoren</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --add:#3498db; --neg:#e67e22; --alt:#9b59b6; --jd:#27ae60;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--blue); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--blue); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--blue); color:var(--white); width:100%; }
+  .btn-primary:hover { background:#2980b9; transform:translateY(-2px); box-shadow:0 8px 24px rgba(52,152,219,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--blue); color:var(--blue); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(52,152,219,0.2); }
+  .speak-btn.speaking { background:var(--blue); color:var(--white); }
+
+  /* ENGLISH HELP TOGGLE */
+  .en-help { background:rgba(52,152,219,0.05); border:1px dashed rgba(52,152,219,0.25); border-radius:10px; margin:12px 0; }
+  .en-help summary { padding:10px 16px; cursor:pointer; font-size:13px; color:var(--blue); font-family:'DM Mono',monospace; letter-spacing:.03em; list-style:none; display:flex; align-items:center; gap:8px; }
+  .en-help summary::-webkit-details-marker { display:none; }
+  .en-help[open] summary { border-bottom:1px dashed rgba(52,152,219,0.2); }
+  .en-help-body { padding:12px 16px; font-size:13px; color:rgba(245,240,232,.7); line-height:1.8; }
+  .en-help-body p { margin-bottom:8px; }
+  .en-help-body p:last-child { margin-bottom:0; }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-note { font-size:12px; color:var(--gray); line-height:1.6; }
+
+  /* FORMULA / CONNECTOR BOX */
+  .formula-box { background:var(--card2-bg); border:1px solid rgba(52,152,219,0.2); border-radius:14px; padding:20px 22px; margin:14px 0; text-align:center; }
+  .formula-title { font-size:10px; letter-spacing:3px; font-family:'DM Mono',monospace; color:var(--blue); margin-bottom:14px; }
+  .formula-main { font-family:'DM Mono',monospace; font-size:17px; font-weight:700; color:var(--white); line-height:2.2; }
+  .formula-part { display:inline-block; }
+  .formula-plus { color:var(--gray); margin:0 8px; }
+  .fp-1 { color:var(--add); }
+  .fp-2 { color:var(--neg); }
+  .fp-3 { color:var(--alt); }
+  .fp-4 { color:var(--jd); }
+
+  /* CONNECTOR PAIR CARDS */
+  .con-grid { display:flex; flex-direction:column; gap:12px; margin:14px 0; }
+  .con-card { background:var(--card2-bg); border-radius:14px; padding:18px 20px; }
+  .con-pair { font-family:'DM Mono',monospace; font-size:16px; font-weight:700; margin-bottom:8px; }
+  .con-en { font-size:11px; letter-spacing:2px; font-family:'DM Mono',monospace; color:var(--gray); margin-bottom:10px; }
+  .con-ex { font-family:'DM Mono',monospace; font-size:13px; color:var(--cream); line-height:1.8; }
+  .con-note { font-size:12px; color:var(--gray); line-height:1.6; margin-top:6px; }
+  .con-card.c-add { border:1px solid rgba(52,152,219,0.25); }
+  .con-card.c-neg { border:1px solid rgba(230,126,34,0.25); }
+  .con-card.c-alt { border:1px solid rgba(155,89,182,0.25); }
+  .con-card.c-jd  { border:1px solid rgba(39,174,96,0.25); }
+
+  /* COMPARISON TABLE */
+  .comp-table { width:100%; border-collapse:collapse; font-size:13px; margin:14px 0; }
+  .comp-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:10px 14px; text-align:left; border-bottom:2px solid rgba(255,255,255,0.1); }
+  .comp-table td { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'DM Mono',monospace; font-size:13px; vertical-align:top; }
+  .comp-table tr:last-child td { border-bottom:none; }
+  .comp-table tr:hover td { background:rgba(255,255,255,0.02); }
+  .comp-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+
+  /* WRONG/RIGHT */
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.0; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+
+  /* HIGHLIGHTS */
+  .ah { color:var(--add); font-weight:700; }
+  .nh { color:var(--neg); font-weight:700; }
+  .lh { color:var(--alt); font-weight:700; }
+  .jh { color:var(--jd); font-weight:700; }
+  .vh { color:var(--gold); font-weight:700; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Mono',monospace; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--blue); background:rgba(52,152,219,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(52,152,219,0.1); border-radius:8px; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(52,152,219,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.2); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(52,152,219,0.12); border:1px solid var(--blue); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--blue); font-size:18px; margin:18px 0; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .lesson-h{font-size:22px;} .wr-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">B1 · MODUL 5</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">B1 · Grammatik &amp; Stil</div>
+    <h1 class="lesson-h" style="font-size:36px;">Zweiteilige <span style="color:var(--blue)">Konnektoren</span></h1>
+    <p class="body-text">Zweiteilige Konnektoren verbinden zwei Gedanken mit nur einem eleganten Ausdruck. Sie sind ein sicheres Zeichen für B1-Niveau — und im Schreiben-Teil gibt dir jeder korrekte Konnektor sofort Punkte beim Prüfer. Sechs Paare, sechs Prüfungswerkzeuge.</p>
+
+    <details class="en-help">
+      <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+      <div class="en-help-body">
+        <p>Two-part connectors (zweiteilige Konnektoren) are paired linking words that work together to connect ideas. Each part of the pair goes in a different position in the sentence. Examples: "both…and", "neither…nor", "either…or", "not only…but also", "although…but", "the more…the more". Using these correctly in writing shows the examiner B1-level language command.</p>
+      </div>
+    </details>
+
+    <div class="info-box"><strong style="color:var(--gold);">Lernziele dieses Moduls:</strong><br><br>
+      ✦ Du kennst sowohl…als auch, weder…noch und entweder…oder<br>
+      ✦ Du kannst nicht nur…sondern auch korrekt einsetzen<br>
+      ✦ Du beherrschst zwar…aber für Einschränkungen<br>
+      ✦ Du kannst je…desto mit korrekter Wortstellung bilden<br>
+      ✦ Du setzt alle Konnektoren gezielt im Schreiben-Teil ein
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">🔗</div><div><div class="lc-title">Lektion 1 — Was sind zweiteilige Konnektoren?</div><div class="lc-desc">Zwei Teile, ein Gedanke. Übersicht aller 6 Paare und warum sie B1-Niveau signalisieren.</div></div><div class="lc-tag" style="color:var(--blue);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">➕</div><div><div class="lc-title">Lektion 2 — sowohl…als auch &amp; weder…noch</div><div class="lc-desc">Additiv und negativ-additiv. Sowohl Kwame als auch Amina. Weder er noch sie.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">↔️</div><div><div class="lc-title">Lektion 3 — entweder…oder &amp; nicht nur…sondern auch</div><div class="lc-desc">Alternativ und erweiternd. Entweder…oder mit Inversion. Nicht nur…sondern auch.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">⚖️</div><div><div class="lc-title">Lektion 4 — zwar…aber</div><div class="lc-desc">Einschränkend. Das Buch ist zwar teuer, aber gut. Konzessiv ohne obwohl.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">📈</div><div><div class="lc-title">Lektion 5 — je…desto</div><div class="lc-desc">Steigerung und Proportion. Je mehr du übst, desto besser wird dein Deutsch. Wortstellung!</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lektion 6 — Kwame &amp; Amina: Schreiben-Prüfung</div><div class="lc-desc">Alle Konnektoren in echten Prüfungssätzen. Häufige Fehler und Exam-Strategie.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lektionen</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--blue);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LEKTION 1: Überblick ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 5 · Lektion 1 von 6</div>
+          <h2 class="lesson-h">Was sind zweiteilige <span style="color:var(--add)">Konnektoren</span>?</h2>
+          <p class="body-text">Zweiteilige Konnektoren bestehen aus <strong style="color:var(--add)">zwei Teilen</strong>, die zusammengehören. Teil 1 steht im ersten Satz oder Satzteil, Teil 2 im zweiten. Zusammen drücken sie eine logische Verbindung aus — additiv, negativ, alternativ, einschränkend oder steigernd.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>Two-part connectors always appear as a pair. You cannot use one part without the other. The first part signals "something is coming", and the second part delivers it. Think of them as frames around two ideas you want to connect.</p>
+              <p>Key pairs to learn: sowohl…als auch (both…and) · weder…noch (neither…nor) · entweder…oder (either…or) · nicht nur…sondern auch (not only…but also) · zwar…aber (admittedly…but) · je…desto (the more…the more)</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Alle 6 Paare auf einen Blick</div>
+          <div class="con-grid">
+            <div class="con-card c-add">
+              <div class="con-pair"><span class="ah">sowohl</span> … <span class="ah">als auch</span></div>
+              <div class="con-en">BOTH … AND · additiv (hinzufügend)</div>
+              <div class="con-ex">Sowohl Kwame <span class="ah">als auch</span> Amina lernen Deutsch.</div>
+            </div>
+            <div class="con-card c-neg">
+              <div class="con-pair"><span class="nh">weder</span> … <span class="nh">noch</span></div>
+              <div class="con-en">NEITHER … NOR · negativ-additiv</div>
+              <div class="con-ex">Er spricht <span class="nh">weder</span> Französisch <span class="nh">noch</span> Spanisch.</div>
+            </div>
+            <div class="con-card c-alt">
+              <div class="con-pair"><span class="lh">entweder</span> … <span class="lh">oder</span></div>
+              <div class="con-en">EITHER … OR · alternativ (eine von zwei Möglichkeiten)</div>
+              <div class="con-ex"><span class="lh">Entweder</span> lernst du jetzt <span class="lh">oder</span> du lernst morgen.</div>
+            </div>
+            <div class="con-card c-add">
+              <div class="con-pair"><span class="ah">nicht nur</span> … <span class="ah">sondern auch</span></div>
+              <div class="con-en">NOT ONLY … BUT ALSO · erweiternd</div>
+              <div class="con-ex">Sie spricht <span class="ah">nicht nur</span> Englisch, <span class="ah">sondern auch</span> Deutsch.</div>
+            </div>
+            <div class="con-card c-neg">
+              <div class="con-pair"><span class="nh">zwar</span> … <span class="nh">aber</span></div>
+              <div class="con-en">ADMITTEDLY … BUT · konzessiv (einschränkend)</div>
+              <div class="con-ex">Das Buch ist <span class="nh">zwar</span> teuer, <span class="nh">aber</span> sehr gut.</div>
+            </div>
+            <div class="con-card c-jd">
+              <div class="con-pair"><span class="jh">je</span> … <span class="jh">desto</span></div>
+              <div class="con-en">THE MORE … THE MORE · proportional-steigernd</div>
+              <div class="con-ex"><span class="jh">Je</span> mehr du übst, <span class="jh">desto</span> besser wird dein Deutsch.</div>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue);">📌 Warum B1-Niveau?</strong><br><br>
+            Einfache Verbindungen wie „und", „aber" oder „weil" zeigen A1/A2-Niveau. Zweiteilige Konnektoren zeigen Sprachbewusstsein und Stilkompetenz — sie signalisieren dem Prüfer, dass du komplexe Satzstrukturen beherrschst. Im Schreiben-Teil (formelle E-Mail, Bericht, Stellungnahme) geben sie automatisch Punkte in der Kategorie „Grammatische Vielfalt".
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 5 · Lektion 1 · Übung</div><h2 class="lesson-h">Konnektoren — <span style="color:var(--add)">Überblick</span></h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-0 -->
+
+    <!-- ── LEKTION 2: sowohl…als auch & weder…noch ── -->
+    <div id="lesson-1" class="lesson-pane">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 5 · Lektion 2 von 6</div>
+          <h2 class="lesson-h"><span style="color:var(--add)">sowohl…als auch</span> &amp; <span style="color:var(--neg)">weder…noch</span></h2>
+          <p class="body-text"><span class="ah">Sowohl…als auch</span> verbindet zwei positive Aussagen — beide treffen zu. <span class="nh">Weder…noch</span> ist das genaue Gegenteil — beide treffen <em>nicht</em> zu. Beide Konnektoren können Nomen, Verben oder ganze Satzteile verbinden.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p><strong>sowohl…als auch</strong> = "both…and". It emphasises that TWO things are true. The verb agrees with the subject in number — if two singular subjects are connected, the verb is usually plural.</p>
+              <p><strong>weder…noch</strong> = "neither…nor". Both options are negated. Important: do NOT add "nicht" or "kein" — weder…noch already contains the negation.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">sowohl … als auch</div>
+          <div class="formula-box">
+            <div class="formula-title">SOWOHL … ALS AUCH</div>
+            <div class="formula-main">
+              <span class="fp-1">sowohl</span> [A] <span class="fp-1">als auch</span> [B]
+            </div>
+            <div style="font-size:12px;color:var(--gray);margin-top:8px;">Beide treffen zu. Verb meist Plural wenn zwei Subjekte.</div>
+          </div>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--add);">SUBJEKTE</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="ah">Sowohl</span> Kwame <span class="ah">als auch</span> Amina lernen Deutsch.</div>
+                <div class="ex-note">Zwei Subjekte → Verb im Plural (lernen). Sowohl steht direkt vor dem ersten Subjekt.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Sowohl Kwame als auch Amina lernen Deutsch.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--add);">OBJEKTE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi spricht <span class="ah">sowohl</span> Englisch <span class="ah">als auch</span> Deutsch.</div>
+                <div class="ex-note">Zwei Objekte verbunden — Subjekt und Verb bleiben unverändert.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi spricht sowohl Englisch als auch Deutsch.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--add);">ADJEKTIVE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Der Kurs ist <span class="ah">sowohl</span> interessant <span class="ah">als auch</span> praktisch.</div>
+                <div class="ex-note">Zwei Eigenschaften — elegant und präzise. Typisch für B1-Schreiben.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Der Kurs ist sowohl interessant als auch praktisch.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">weder … noch</div>
+          <div class="formula-box">
+            <div class="formula-title">WEDER … NOCH</div>
+            <div class="formula-main">
+              <span class="fp-2">weder</span> [A] <span class="fp-2">noch</span> [B]
+            </div>
+            <div style="font-size:12px;color:var(--gray);margin-top:8px;">Beide treffen NICHT zu. Kein zusätzliches nicht/kein nötig!</div>
+          </div>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--neg);">NEGATION</div>
+              <div style="flex:1;">
+                <div class="ex-de">Er spricht <span class="nh">weder</span> Französisch <span class="nh">noch</span> Spanisch.</div>
+                <div class="ex-note">Beide Sprachen → nein. KEIN zusätzliches „nicht" — weder…noch ist schon negativ.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Er spricht weder Französisch noch Spanisch.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--neg);">SUBJEKTE</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="nh">Weder</span> Kwame <span class="nh">noch</span> Amina kennt die Antwort.</div>
+                <div class="ex-note">Bei Subjekten: Verb stimmt mit dem näher stehenden Subjekt überein (Amina → kennt, Singular).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Weder Kwame noch Amina kennt die Antwort.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Er spricht weder nicht Englisch noch Deutsch.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Er spricht weder Englisch noch Deutsch.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">weder…noch enthält die Negation bereits — nie zusätzlich nicht oder kein verwenden.</p>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 5 · Lektion 2 · Übung</div><h2 class="lesson-h">sowohl…als auch &amp; weder…noch — <span style="color:var(--add)">Übung</span></h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-1 -->
+
+    <!-- ── LEKTION 3: entweder…oder & nicht nur…sondern auch ── -->
+    <div id="lesson-2" class="lesson-pane">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 5 · Lektion 3 von 6</div>
+          <h2 class="lesson-h"><span style="color:var(--alt)">entweder…oder</span> &amp; <span style="color:var(--add)">nicht nur…sondern auch</span></h2>
+          <p class="body-text"><span class="lh">Entweder…oder</span> präsentiert zwei Alternativen — eine von beiden trifft zu. <span class="ah">Nicht nur…sondern auch</span> erweitert eine Aussage — es gilt mehr als zunächst genannt. Beide sind Prüfungsfavoriten im Schreiben-Teil.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p><strong>entweder…oder</strong> = "either…or". Presents two alternatives. When "entweder" starts the sentence, the verb comes immediately after it (position 2 = verb) — causing inversion of subject and verb.</p>
+              <p><strong>nicht nur…sondern auch</strong> = "not only…but also". Adds something extra and unexpected. After "sondern auch", the verb goes back to position 2 (normal main clause word order).</p>
+            </div>
+          </details>
+
+          <div class="sec-label">entweder … oder</div>
+          <div class="formula-box">
+            <div class="formula-title">ENTWEDER … ODER</div>
+            <div class="formula-main">
+              <span class="fp-3">Entweder</span> + Verb + Subj. … , <span class="fp-3">oder</span> …
+            </div>
+            <div style="font-size:12px;color:var(--gray);margin-top:8px;">entweder am Satzanfang → Inversion (Verb vor Subjekt)!</div>
+          </div>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--alt);">MIT INVERSION</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="lh">Entweder</span> lernst du jetzt, <span class="lh">oder</span> du lernst morgen.</div>
+                <div class="ex-note">entweder am Anfang → Verb (lernst) vor Subjekt (du). Komma vor oder.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Entweder lernst du jetzt, oder du lernst morgen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--alt);">OHNE INVERSION</div>
+              <div style="flex:1;">
+                <div class="ex-de">Du kannst <span class="lh">entweder</span> Deutsch <span class="lh">oder</span> Englisch sprechen.</div>
+                <div class="ex-note">entweder in der Satzmitte → keine Inversion nötig. Zwei Objekte werden verbunden.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Du kannst entweder Deutsch oder Englisch sprechen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--alt);">PRÜFUNG</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="lh">Entweder</span> nimmt man an dem Kurs teil, <span class="lh">oder</span> man verliert den Platz.</div>
+                <div class="ex-note">Formell — typisch für Schreiben-Aufgaben (Regeln erklären, Alternativen darstellen).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Entweder nimmt man an dem Kurs teil, oder man verliert den Platz.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">nicht nur … sondern auch</div>
+          <div class="formula-box">
+            <div class="formula-title">NICHT NUR … SONDERN AUCH</div>
+            <div class="formula-main">
+              <span class="fp-1">nicht nur</span> [A] , <span class="fp-1">sondern auch</span> [B]
+            </div>
+            <div style="font-size:12px;color:var(--gray);margin-top:8px;">Nach „sondern auch" — normaler Hauptsatz (Verb an Position 2)</div>
+          </div>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--add);">ERWEITERUNG</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina spricht <span class="ah">nicht nur</span> Englisch, <span class="ah">sondern auch</span> Deutsch und Französisch.</div>
+                <div class="ex-note">nicht nur…sondern auch verbindet zwei Teile innerhalb eines Satzes.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina spricht nicht nur Englisch, sondern auch Deutsch und Französisch.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--add);">ZWEI SÄTZE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame lernt <span class="ah">nicht nur</span> Grammatik, <span class="ah">sondern</span> er übt <span class="ah">auch</span> jeden Tag Sprechen.</div>
+                <div class="ex-note">Zwei vollständige Sätze: nach sondern kommt Subjekt + Verb (Hauptsatzstruktur).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame lernt nicht nur Grammatik, sondern er übt auch jeden Tag Sprechen.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Entweder du lernst jetzt, oder du lernst morgen.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Entweder lernst du jetzt, oder du lernst morgen.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">entweder am Satzanfang → Inversion: Verb (lernst) kommt vor Subjekt (du).</p>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 5 · Lektion 3 · Übung</div><h2 class="lesson-h">entweder…oder &amp; nicht nur…sondern auch — <span style="color:var(--alt)">Übung</span></h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-2 -->
+
+    <!-- ── LEKTION 4: zwar…aber ── -->
+    <div id="lesson-3" class="lesson-pane">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 5 · Lektion 4 von 6</div>
+          <h2 class="lesson-h"><span style="color:var(--neg)">zwar … aber</span></h2>
+          <p class="body-text"><span class="nh">Zwar…aber</span> ist das konzessive Konnektorpaar — es räumt etwas ein (zwar) und schränkt es sofort ein (aber). Es ist die elegantere Alternative zu „obwohl" und besonders nützlich, wenn man in der Prüfung Vor- und Nachteile oder Einschränkungen darstellen soll.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p><strong>zwar…aber</strong> = "admittedly…but" / "it's true that…but". The first part (zwar) concedes something, the second part (aber) introduces a limitation or contrast.</p>
+              <p>Compare: "Obwohl das Buch teuer ist, ist es gut." (obwohl = subordinating conjunction, verb at end) vs. "Das Buch ist zwar teuer, aber es ist gut." (zwar…aber = two main clauses, verb at position 2 in both).</p>
+              <p>zwar…aber is preferred in formal writing because it keeps both clauses as main clauses — a stylistically stronger construction.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Die Struktur</div>
+          <div class="formula-box">
+            <div class="formula-title">ZWAR … ABER</div>
+            <div class="formula-main">
+              … <span class="fp-2">zwar</span> [Einräumung] , <span class="fp-2">aber</span> [Einschränkung]
+            </div>
+            <div style="font-size:12px;color:var(--gray);margin-top:8px;">zwar steht im ersten Satz · aber leitet den zweiten Hauptsatz ein</div>
+          </div>
+
+          <div class="sec-label">Beispiele</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--neg);">EINSCHRÄNKUNG</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das Buch ist <span class="nh">zwar</span> teuer, <span class="nh">aber</span> sehr hilfreich.</div>
+                <div class="ex-note">zwar räumt ein (teuer — ja, stimmt), aber schränkt ein (trotzdem hilfreich).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das Buch ist zwar teuer, aber sehr hilfreich.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--neg);">PRÜFUNG</div>
+              <div style="flex:1;">
+                <div class="ex-de">Die Prüfung ist <span class="nh">zwar</span> schwierig, <span class="nh">aber</span> mit guter Vorbereitung schaffbar.</div>
+                <div class="ex-note">Typisch für B1-Schreiben: Pros und Cons, Vor- und Nachteile abwägen.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Die Prüfung ist zwar schwierig, aber mit guter Vorbereitung schaffbar.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--neg);">ZWEI SÄTZE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi hat <span class="nh">zwar</span> wenig Zeit, <span class="nh">aber</span> er lernt jeden Abend.</div>
+                <div class="ex-note">Zwei vollständige Hauptsätze. Nach aber: Subjekt + Verb (normale Hauptsatzstruktur).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi hat zwar wenig Zeit, aber er lernt jeden Abend.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--neg);">FORMELL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Der Kurs ist <span class="nh">zwar</span> auf Englisch, <span class="nh">aber</span> die Materialien sind auch auf Deutsch verfügbar.</div>
+                <div class="ex-note">Amina schreibt eine formelle E-Mail — zwar…aber klingt professionell.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Der Kurs ist zwar auf Englisch, aber die Materialien sind auch auf Deutsch verfügbar.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">zwar…aber vs. obwohl — der Unterschied</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Konnektor</th><th>Struktur</th><th>Beispiel</th></tr>
+              <tr>
+                <td style="color:var(--neg);font-weight:700;">zwar…aber</td>
+                <td>Hauptsatz + Hauptsatz</td>
+                <td>Es ist <span class="nh">zwar</span> kalt, <span class="nh">aber</span> ich gehe.</td>
+              </tr>
+              <tr>
+                <td style="color:var(--gold);">obwohl</td>
+                <td>Hauptsatz + Nebensatz (Verb am Ende)</td>
+                <td><span style="color:var(--gold)">Obwohl</span> es kalt ist, gehe ich.</td>
+              </tr>
+            </table>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-4px 0 14px;line-height:1.7;">zwar…aber — beide Sätze sind Hauptsätze. Nach aber: Verb an Position 2. Nach obwohl: Verb ans Ende. Im B1-Schreiben ist zwar…aber die stilistisch stärkere Variante.</p>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 5 · Lektion 4 · Übung</div><h2 class="lesson-h">zwar…aber — <span style="color:var(--neg)">Übung</span></h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-3 -->
+
+    <!-- ── LEKTION 5: je…desto ── -->
+    <div id="lesson-4" class="lesson-pane">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 5 · Lektion 5 von 6</div>
+          <h2 class="lesson-h"><span style="color:var(--jd)">je … desto</span></h2>
+          <p class="body-text"><span class="jh">Je…desto</span> drückt eine proportionale Steigerung aus — wenn A zunimmt, nimmt B ebenfalls zu (oder ab). Es ist strukturell das anspruchsvollste der sechs Paare, weil es eine besondere Wortstellung verlangt. Wer je…desto korrekt anwendet, beeindruckt den Prüfer.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p><strong>je…desto</strong> = "the more…the more" (or "the more…the less", etc.). It expresses a proportional relationship.</p>
+              <p>Word order rule — this is critical:</p>
+              <p>je-clause: "Je" + comparative adjective + subject + verb (verb goes to the END — it is a subordinate clause)</p>
+              <p>desto-clause: "desto" + comparative adjective + VERB + subject (verb comes immediately after the adjective — inversion!)</p>
+              <p>Example: "Je mehr du übst [verb at end], desto besser wird [verb] dein Deutsch [subject]."</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Die Wortstellung — Schritt für Schritt</div>
+          <div class="formula-box">
+            <div class="formula-title">JE … DESTO — WORTSTELLUNG</div>
+            <div class="formula-main" style="font-size:14px;line-height:2.8;">
+              <span class="fp-4">Je</span> + Komparativ + Subjekt + … + <span style="color:var(--gold);">Verb(Ende)</span><br>
+              <span class="fp-4">desto</span> + Komparativ + <span style="color:var(--gold);">Verb</span> + Subjekt
+            </div>
+          </div>
+
+          <div class="sec-label">Das wichtigste Beispiel — analysiert</div>
+          <div class="ex-card" style="background:var(--card2-bg);border:1px solid rgba(39,174,96,0.2);border-radius:12px;padding:20px;margin-bottom:14px;display:block;">
+            <div style="font-family:'DM Mono',monospace;font-size:16px;color:var(--cream);line-height:2.5;margin-bottom:12px;">
+              <span class="jh">Je</span> mehr du <span style="color:var(--gold)">übst</span>, <span class="jh">desto</span> besser <span style="color:var(--gold)">wird</span> dein Deutsch.
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div style="background:rgba(39,174,96,0.06);border-radius:8px;padding:10px 12px;">
+                <div style="font-size:10px;letter-spacing:2px;font-family:'DM Mono',monospace;color:var(--jd);margin-bottom:4px;">JE-SATZ (Nebensatz)</div>
+                <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--cream);">Je <span style="color:var(--jd)">mehr</span> du <span style="color:var(--gold)">übst</span></div>
+                <div style="font-size:11px;color:var(--gray);margin-top:4px;">mehr = Komparativ · übst = Verb am Ende</div>
+              </div>
+              <div style="background:rgba(39,174,96,0.06);border-radius:8px;padding:10px 12px;">
+                <div style="font-size:10px;letter-spacing:2px;font-family:'DM Mono',monospace;color:var(--jd);margin-bottom:4px;">DESTO-SATZ (Hauptsatz)</div>
+                <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--cream);">desto <span style="color:var(--jd)">besser</span> <span style="color:var(--gold)">wird</span> dein Deutsch</div>
+                <div style="font-size:11px;color:var(--gray);margin-top:4px;">besser = Komparativ · wird = Verb sofort danach</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">Weitere Beispiele</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--jd);">STEIGERUNG</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="jh">Je</span> früher du anfängst, <span class="jh">desto</span> mehr Zeit hast du.</div>
+                <div class="ex-note">Je-Satz: früher + Verb ans Ende (anfängst). Desto-Satz: mehr + Verb sofort (hast).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Je früher du anfängst, desto mehr Zeit hast du.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--jd);">LERNEN</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="jh">Je</span> fleißiger Amina lernt, <span class="jh">desto</span> besser wird ihr Deutsch.</div>
+                <div class="ex-note">Je-Satz: fleißiger + lernt am Ende. Desto-Satz: besser + wird sofort danach.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Je fleißiger Amina lernt, desto besser wird ihr Deutsch.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--jd);">ABNAHME</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="jh">Je</span> länger man wartet, <span class="jh">desto</span> schwieriger wird die Prüfung.</div>
+                <div class="ex-note">Je…desto kann auch eine negative Proportionalität ausdrücken.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Je länger man wartet, desto schwieriger wird die Prüfung.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Je mehr du übst, desto dein Deutsch wird besser.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Je mehr du übst, desto besser wird dein Deutsch.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Nach desto: erst der Komparativ (besser), dann sofort das Verb (wird), dann das Subjekt. Nie: desto + Subjekt + Verb.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Je mehr du übst, desto gut wird dein Deutsch.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Je mehr du übst, desto besser wird dein Deutsch.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Nach desto muss ein Komparativ stehen — gut ist Positiv, besser ist der Komparativ. Je…desto verlangt immer den Komparativ!</p>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 5 · Lektion 5 · Übung</div><h2 class="lesson-h">je…desto — <span style="color:var(--jd)">Übung</span></h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-4 -->
+
+    <!-- ── LEKTION 6: Prüfungsvorbereitung ── -->
+    <div id="lesson-5" class="lesson-pane">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 5 · Lektion 6 von 6</div>
+          <h2 class="lesson-h">Kwame &amp; Amina — <span style="color:var(--blue)">Schreiben-Prüfung</span></h2>
+          <p class="body-text">Amina schreibt eine formelle Stellungnahme für die B1-Prüfung. Kwame schreibt eine E-Mail. Lies ihre Texte — erkenne alle sechs Konnektoren im Einsatz. So sehen B1-Schreibtexte aus, die volle Punkte für grammatische Vielfalt bekommen.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>In the B1 Schreiben exam, you are assessed on grammatical variety (grammatische Vielfalt). Using two-part connectors — especially "nicht nur…sondern auch", "sowohl…als auch" and "je…desto" — immediately signals B1-level complexity. Try to include at least one or two in every exam answer.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Situation 1 — Aminas Stellungnahme (Schreiben)</div>
+          <div class="comp-wrap">
+            <p style="font-family:'DM Mono',monospace;font-size:13px;color:var(--cream);line-height:2.1;">
+              Das Lernen einer Fremdsprache bietet viele Vorteile. <span class="ah">Nicht nur</span> verbessert man seine Kommunikationsfähigkeiten, <span class="ah">sondern</span> man öffnet <span class="ah">auch</span> neue berufliche Türen. <span class="ah">Sowohl</span> im Privatleben <span class="ah">als auch</span> im Beruf ist Mehrsprachigkeit ein großer Vorteil.<br><br>
+              Das Lernen ist <span class="nh">zwar</span> manchmal schwierig, <span class="nh">aber</span> mit der richtigen Methode macht es Spaß. <span class="jh">Je</span> regelmäßiger man übt, <span class="jh">desto</span> schneller macht man Fortschritte. Man sollte <span class="lh">entweder</span> täglich eine Stunde lernen <span class="lh">oder</span> zumindest dreimal pro Woche.
+            </p>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:6px 0 14px;line-height:1.7;">Amina benutzt 5 von 6 Konnektoren in einem kurzen Text — das ist maximale grammatische Vielfalt.</p>
+
+          <div class="sec-label">Situation 2 — Kwames E-Mail (formell)</div>
+          <div class="comp-wrap">
+            <p style="font-family:'DM Mono',monospace;font-size:13px;color:var(--cream);line-height:2.1;">
+              Sehr geehrte Damen und Herren,<br><br>
+              ich interessiere mich für Ihren Deutschkurs. Der Kurs ist <span class="nh">zwar</span> intensiv, <span class="nh">aber</span> ich bin motiviert und lernbereit. Ich lerne <span class="ah">nicht nur</span> für die Prüfung, <span class="ah">sondern auch</span> für meinen Beruf.<br><br>
+              Ich möchte <span class="lh">entweder</span> am Morgen- <span class="lh">oder</span> am Abendkurs teilnehmen. <span class="ah">Sowohl</span> der Montag <span class="ah">als auch</span> der Mittwoch passen mir gut.<br><br>
+              Mit freundlichen Grüßen,<br>Kwame Asante
+            </p>
+          </div>
+
+          <div class="sec-label">Häufige Fehler — alle Konnektoren</div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Sowohl Kwame und Amina lernen.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Sowohl Kwame als auch Amina lernen.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">sowohl…und ist falsch — das zweite Glied heißt immer als auch.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Je mehr du übst, desto dein Deutsch wird besser.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Je mehr du übst, desto besser wird dein Deutsch.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Nach desto: Komparativ + Verb + Subjekt. Nie Subjekt direkt nach desto.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Er spricht weder nicht Englisch noch Deutsch.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Er spricht weder Englisch noch Deutsch.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">weder…noch enthält die Negation — kein zusätzliches nicht oder kein.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Entweder du gehst jetzt oder du bleibst.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Entweder gehst du jetzt, oder du bleibst.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">entweder am Satzanfang → Inversion: Verb vor Subjekt. Komma vor oder.</p>
+
+          <div class="success-box">
+            <strong style="color:var(--green);">Zusammenfassung — Alle 6 Konnektoren:</strong><br><br>
+            <span style="color:var(--add)">sowohl…als auch</span> — beide positiv (not: sowohl…und!)<br>
+            <span style="color:var(--neg)">weder…noch</span> — beide negativ (kein zusätzliches nicht!)<br>
+            <span style="color:var(--alt)">entweder…oder</span> — eine Alternative (Inversion nach entweder am Anfang!)<br>
+            <span style="color:var(--add)">nicht nur…sondern auch</span> — Erweiterung (nach sondern: Hauptsatzstruktur)<br>
+            <span style="color:var(--neg)">zwar…aber</span> — Einräumung + Einschränkung (beide Hauptsätze)<br>
+            <span style="color:var(--jd)">je…desto</span> — Proportion (je: Verb am Ende · desto: Komparativ + Verb + Subjekt!)<br><br>
+            <strong style="color:var(--gold);">Prüfungsstrategie:</strong> Baue 1–2 Konnektoren in jede Schreiben-Aufgabe ein. nicht nur…sondern auch und je…desto geben die meisten Punkte.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 5 · Lektion 6 · Übung</div><h2 class="lesson-h">Konnektoren — <span style="color:var(--blue)">Abschlusskontrolle</span></h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-5 -->
+
+  </div>
+</div>
+
+<script>
+var TOTAL=6, currentLesson=0, xp=0;
+var synth=window.speechSynthesis, voices=[], deVoice=null;
+function loadVoices(){ voices=synth.getVoices(); deVoice=voices.find(function(v){return v.lang==='de-DE';})||voices.find(function(v){return v.lang.startsWith('de');})||null; }
+if(synth.onvoiceschanged!==undefined){synth.onvoiceschanged=loadVoices;}
+function speakSentence(btn,text){ if(!synth)return; synth.cancel(); document.querySelectorAll('.speak-btn.speaking').forEach(function(b){b.classList.remove('speaking');}); btn.classList.add('speaking'); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; u.onend=function(){btn.classList.remove('speaking');}; synth.speak(u); }
+
+var QD={
+  0:[
+    {q:'Welcher Konnektor drückt aus, dass BEIDE Aussagen zutreffen?',
+     hint:'Denk an "both...and" auf Englisch. Welches Paar verbindet zwei positive Aussagen additiv?',
+     opts:['weder…noch','entweder…oder','sowohl…als auch','zwar…aber'],
+     ans:2,
+     exp:'„sowohl…als auch" verbindet zwei positive Aussagen — beide treffen zu. Beispiel: Sowohl Kwame als auch Amina lernen Deutsch (beide lernen). Option A (weder…noch) ist das Gegenteil — beide treffen NICHT zu. Option B (entweder…oder) präsentiert eine Alternative — nur eine von beiden trifft zu. Option D (zwar…aber) räumt etwas ein und schränkt es ein — kein rein additiver Konnektor.',
+     rule:'sowohl…als auch = beide positiv (both…and). weder…noch = beide negativ (neither…nor). Diese beiden sind Gegensätze voneinander.'}
+  ],
+  1:[
+    {q:'„Er spricht ___ Französisch ___ Spanisch." — Welches Paar passt für eine Verneinung beider Aussagen?',
+     hint:'Beide Sprachen soll er NICHT sprechen. Welches Paar drückt doppelte Verneinung aus?',
+     opts:['sowohl…als auch','weder…noch','nicht nur…sondern auch','entweder…oder'],
+     ans:1,
+     exp:'„weder…noch" ist korrekt — es verneint beide Möglichkeiten: Er spricht weder Französisch noch Spanisch (= nicht Französisch und nicht Spanisch). Wichtig: kein zusätzliches „nicht" nötig — weder…noch enthält die Negation bereits. Option A (sowohl…als auch) würde bedeuten, er spricht beide — positiv, nicht negativ. Option C (nicht nur…sondern auch) erweitert positiv. Option D (entweder…oder) bietet eine Alternative.',
+     rule:'weder…noch = neither…nor. Immer ohne zusätzliches nicht/kein — die Negation steckt bereits im Konnektor. Er spricht weder Englisch noch Deutsch (NICHT: weder nicht Englisch noch Deutsch).'}
+  ],
+  2:[
+    {q:'„___ lernst du heute, ___ du lernst morgen." — Welches Paar passt?',
+     hint:'Eine von zwei Möglichkeiten. Und: Das erste Wort steht am Satzanfang → Inversion!',
+     opts:['Sowohl…als auch','Weder…noch','Entweder…oder','Nicht nur…sondern auch'],
+     ans:2,
+     exp:'„Entweder…oder" ist korrekt — es präsentiert zwei Alternativen. Entweder lernst du heute, oder du lernst morgen. Wichtig: entweder steht am Satzanfang → Inversion: lernst (Verb) vor du (Subjekt). Option A (sowohl…als auch) bedeutet beide → kein Entweder-Oder. Option B (weder…noch) verneint beide — weder heute noch morgen würde bedeuten, er lernt gar nicht. Option D (nicht nur…sondern auch) erweitert, präsentiert keine Alternativen.',
+     rule:'entweder…oder = either…or. Am Satzanfang → Inversion (Verb vor Subjekt). Komma vor oder.'}
+  ],
+  3:[
+    {q:'„Das Buch ist ___ teuer, ___ sehr interessant." — Welches Paar drückt eine Einräumung mit Einschränkung aus?',
+     hint:'Das Buch ist teuer (ja, stimmt) ABER trotzdem interessant. Einräumung + Einschränkung.',
+     opts:['nicht nur…sondern auch','sowohl…als auch','entweder…oder','zwar…aber'],
+     ans:3,
+     exp:'„zwar…aber" ist korrekt — zwar räumt ein (ja, es ist teuer), aber schränkt ein (trotzdem interessant). Das Buch ist zwar teuer, aber sehr interessant. Option A (nicht nur…sondern auch) würde bedeuten: nicht nur teuer, sondern auch interessant — das klingt merkwürdig, als ob teuer eine positive Eigenschaft wäre. Option B (sowohl…als auch) verbindet beide positiv — Das Buch ist sowohl teuer als auch interessant (möglich, aber keine konzessive Struktur). Option C (entweder…oder) bietet Alternativen — passt nicht.',
+     rule:'zwar…aber = admittedly…but (konzessiv). zwar räumt etwas ein, aber schränkt es ein. Vergleichbar mit obwohl, aber beide Sätze bleiben Hauptsätze.'}
+  ],
+  4:[
+    {q:'Welcher Satz mit je…desto ist grammatisch korrekt?',
+     hint:'Nach desto: erst der Komparativ, dann sofort das Verb, dann das Subjekt.',
+     opts:['Je mehr du lernst, desto dein Deutsch wird besser.','Je mehr du lernst, desto gut wird dein Deutsch.','Je mehr du lernst, desto besser wird dein Deutsch.','Je mehr du lernst, desto besser dein Deutsch wird.'],
+     ans:2,
+     exp:'„Je mehr du lernst, desto besser wird dein Deutsch." ist korrekt. Struktur im desto-Satz: desto + Komparativ (besser) + Verb (wird) + Subjekt (dein Deutsch). Option A stellt das Subjekt (dein Deutsch) direkt nach desto — falsch. Option B benutzt den Positiv (gut) statt Komparativ (besser) — nach desto muss immer der Komparativ stehen. Option D stellt das Verb ans Ende (dein Deutsch wird) — das wäre Nebensatzstruktur, aber der desto-Satz ist ein Hauptsatz mit Inversion.',
+     rule:'je…desto Wortstellung: je-Satz = Nebensatz (Verb am Ende). desto-Satz = Hauptsatz mit Inversion: desto + Komparativ + Verb + Subjekt. Immer Komparativ nach desto — nie Positiv!'}
+  ],
+  5:[
+    {q:'Amina schreibt: „Ich lerne ___ für die Prüfung, ___ für meinen Beruf." — Welches Paar passt am besten für eine Erweiterung?',
+     hint:'Sie lernt für beides — und das zweite Ziel kommt als Erweiterung dazu, nicht als Alternative.',
+     opts:['entweder…oder','weder…noch','nicht nur…sondern auch','zwar…aber'],
+     ans:2,
+     exp:'„nicht nur…sondern auch" ist korrekt — es erweitert: nicht nur für die Prüfung, sondern auch für den Beruf (beides ist positiv, das zweite kommt als zusätzliche Information). Ich lerne nicht nur für die Prüfung, sondern auch für meinen Beruf. Option A (entweder…oder) würde bedeuten, sie lernt für eines von beiden — aber sie lernt für beides. Option B (weder…noch) würde beide verneinen — sie lernt nicht für die Prüfung und nicht für den Beruf. Option D (zwar…aber) würde Prüfung einräumen und mit Beruf einschränken — unlogisch in diesem Kontext.',
+     rule:'nicht nur…sondern auch = not only…but also. Erweitert positiv. Ideal im Schreiben-Teil: zeigt Sprachvielfalt und gibt Punkte für grammatische Komplexität.'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">FRAGE '+(s.cur+1)+' VON '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint" style="font-family:\'DM Mono\',monospace;">💡 '+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Nächste Frage →':'Ergebnis anzeigen →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Richtig!':'✗ Nicht ganz'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent='📌 Regel: '+q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' richtig</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfekt!':pct>=60?'Gut gemacht!':'Noch einmal versuchen.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(52,152,219,0.12);border:1px solid var(--blue);border-radius:50px;padding:9px 22px;color:var(--blue);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Modul 5 abschließen →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Zur nächsten Lektion →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">🔗</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Modul 5 abgeschlossen!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">Du kennst jetzt alle sechs zweiteiligen Konnektoren und kannst sie korrekt einsetzen — sowohl…als auch, weder…noch, entweder…oder, nicht nur…sondern auch, zwar…aber und je…desto. Im Schreiben-Teil der B1-Prüfung hast du damit ein starkes Werkzeug für grammatische Vielfalt.</p><div class="xp-badge">⚡ '+xp+' XP verdient</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Modul 5 abgeschlossen. Weiter zu Modul 6 — Adjektivdeklination.</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Zur Übersicht</button></div>'; localStorage.setItem('dw_mod_b1_5_done','1'); var saved=parseInt(localStorage.getItem('dw_xp')||'0'); localStorage.setItem('dw_xp',saved+xp); }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+<script src="./ai-tutor.js" data-module="b1-5"></script>
+</body>
+</html>
