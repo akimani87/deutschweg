@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Module 23: Housing &amp; Living</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --flat:#3498db; --room:#e67e22; --rent:#9b59b6; --furn:#27ae60;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--gold); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--gold); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--gold); color:var(--black); width:100%; }
+  .btn-primary:hover { background:var(--gold-light); transform:translateY(-2px); box-shadow:0 8px 24px rgba(201,168,76,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(201,168,76,0.2); }
+  .speak-btn.speaking { background:var(--gold); color:var(--black); }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-en { font-size:12px; color:var(--gray); margin-bottom:6px; }
+  .ex-note { font-size:12px; color:var(--cream); line-height:1.6; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Sans',sans-serif; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--gold); background:rgba(201,168,76,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(201,168,76,0.1); border-radius:8px; font-size:12px; color:var(--gold); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(201,168,76,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(201,168,76,0.08); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(201,168,76,0.12); border:1px solid var(--gold); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--gold); font-size:18px; margin:18px 0; }
+
+  /* WRONG/RIGHT */
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.2; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+
+  /* CONJ TABLE */
+  .conj-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; }
+  .conj-title { font-size:10px; letter-spacing:2.5px; font-family:'DM Mono',monospace; margin-bottom:12px; }
+
+  /* HOUSING TYPE GRID */
+  .ht-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .ht-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:14px; }
+  .ht-icon { font-size:28px; margin-bottom:8px; }
+  .ht-art { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; margin-bottom:2px; }
+  .ht-art.m { color:var(--flat); }
+  .ht-art.f { color:var(--room); }
+  .ht-art.n { color:var(--rent); }
+  .ht-de { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; color:var(--cream); margin-bottom:3px; }
+  .ht-en { font-size:11px; color:var(--gray); margin-bottom:5px; }
+  .ht-note { font-size:11px; color:var(--cream); line-height:1.55; }
+
+  /* ROOM GRID */
+  .rm-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .rm-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:12px 14px; display:flex; align-items:center; gap:10px; }
+  .rm-icon { font-size:20px; flex-shrink:0; width:30px; text-align:center; }
+  .rm-art { font-family:'DM Mono',monospace; font-size:10px; margin-bottom:2px; }
+  .rm-art.m { color:var(--flat); }
+  .rm-art.f { color:var(--room); }
+  .rm-art.n { color:var(--rent); }
+  .rm-de { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; color:var(--cream); }
+  .rm-en { font-size:11px; color:var(--gray); }
+
+  /* RENT TABLE */
+  .rent-table-wrap { background:var(--card2-bg); border:1px solid rgba(155,89,182,0.12); border-radius:14px; padding:18px; margin:14px 0; }
+  .rent-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .rent-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:9px 12px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.07); color:var(--gray); }
+  .rent-table td { padding:9px 12px; border-bottom:1px solid rgba(255,255,255,0.04); font-family:'DM Mono',monospace; font-size:13px; }
+  .rent-table tr:last-child td { border-bottom:none; }
+  .rt-de { color:var(--rent); font-weight:600; }
+  .rt-en { color:var(--gray); }
+  .rt-ex { font-size:11px; color:rgba(201,168,76,0.7); }
+
+  /* FURNITURE GRID */
+  .furn-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .furn-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:12px 14px; display:flex; align-items:center; gap:10px; }
+  .furn-icon { font-size:20px; flex-shrink:0; width:30px; text-align:center; }
+  .furn-art { font-family:'DM Mono',monospace; font-size:10px; margin-bottom:2px; }
+  .furn-art.m { color:var(--flat); }
+  .furn-art.f { color:var(--room); }
+  .furn-art.n { color:var(--rent); }
+  .furn-de { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; color:var(--cream); }
+  .furn-en { font-size:11px; color:var(--gray); }
+
+  /* HOUSING AD */
+  .ad-card { background:var(--card2-bg); border:1px solid rgba(201,168,76,0.2); border-radius:14px; padding:20px; margin:14px 0; }
+  .ad-header { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; color:var(--gold); margin-bottom:10px; }
+  .ad-title { font-family:'Playfair Display',serif; font-size:18px; color:var(--cream); margin-bottom:12px; }
+  .ad-details { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0; }
+  .ad-row { background:rgba(255,255,255,0.03); border-radius:8px; padding:8px 12px; }
+  .ad-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; color:var(--gray); margin-bottom:3px; }
+  .ad-val { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; color:var(--cream); }
+  .ad-val.highlight { color:var(--gold); }
+  .ad-desc { font-size:13px; color:var(--cream); line-height:1.75; margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.05); }
+
+  /* ABBREV TABLE */
+  .abbr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .abbr-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:10px 14px; display:flex; align-items:center; gap:12px; }
+  .abbr-short { font-family:'DM Mono',monospace; font-size:14px; font-weight:700; color:var(--gold); min-width:40px; flex-shrink:0; }
+  .abbr-long { font-size:12px; color:var(--cream); line-height:1.5; }
+
+  /* HIGHLIGHTS */
+  .flh { color:var(--flat); font-weight:700; }
+  .rmh { color:var(--room); font-weight:700; }
+  .rth { color:var(--rent); font-weight:700; }
+  .frh { color:var(--furn); font-weight:700; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .lesson-h{font-size:22px;} .wr-grid{grid-template-columns:1fr;} .ht-grid{grid-template-columns:1fr;} .ad-details{grid-template-columns:1fr 1fr;} .abbr-grid{grid-template-columns:1fr 1fr;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">MODULE 23 · A2</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">A2 · Vocabulary</div>
+    <h1 class="lesson-h" style="font-size:36px;">Housing &amp;<br><span style="color:var(--gold)">Living</span></h1>
+    <p class="body-text">Housing is one of the biggest practical challenges for African immigrants arriving in Germany — and one of the most tested topics in the A2 exam. Finding a Wohnung in Berlin, signing a Mietvertrag, understanding what Nebenkosten means, and describing where you live are all real-life skills that also appear directly in A2 Schreiben and Lesen tasks.</p>
+    <div class="info-box"><strong style="color:var(--gold)">The African learner trap:</strong> In English, "room" and "flat" are clearly different. In German, many learners confuse <strong style="color:var(--room)">das Zimmer</strong> (a single room, e.g. in a shared flat) with <strong style="color:var(--flat)">die Wohnung</strong> (an entire apartment). Saying "Ich habe ein Zimmer in Berlin" when you mean you have an apartment is a common misstatement — learn the distinction early.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">🏠</div><div><div class="lc-title">Lesson 1 — Types of Housing</div><div class="lc-desc">die Wohnung, das Haus, das Zimmer, die WG, das Studentenwohnheim, die Einzimmerwohnung.</div></div><div class="lc-tag" style="color:var(--gold);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">🛋️</div><div><div class="lc-title">Lesson 2 — Rooms in a House</div><div class="lc-desc">das Wohnzimmer, das Schlafzimmer, die Küche, das Bad, der Balkon and more — with genders.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">🔑</div><div><div class="lc-title">Lesson 3 — Renting Vocabulary</div><div class="lc-desc">die Miete, die Kaution, die Nebenkosten, der Mietvertrag, kalt vs warm mieten.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">🪑</div><div><div class="lc-title">Lesson 4 — Furniture Vocabulary</div><div class="lc-desc">das Sofa, das Bett, der Schrank, der Kühlschrank, die Waschmaschine and more.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">📰</div><div><div class="lc-title">Lesson 5 — Reading a Housing Ad</div><div class="lc-desc">Wohnungsanzeige vocabulary: qm, kalt/warm, NK, EG/OG/DG. Exam tip for Lesen.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lesson 6 — Kwame &amp; Amina Flat-hunting</div><div class="lc-desc">African learner mistakes. Zimmer vs Wohnung. Kwame and Amina searching for flats in Germany.</div></div><div class="lc-tag" style="color:var(--gray);">LESSON 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Begin Lesson 1 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lessons</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--gold);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LESSON 1: Types of Housing ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">Module 23 · Lesson 1 of 6</div>
+          <h2 class="lesson-h">Types of <span style="color:var(--flat)">housing</span></h2>
+          <p class="body-text">Germany has a renter culture: around 55% of Germans rent rather than own — the highest proportion in Europe. For African immigrants, it is nearly always rental accommodation from the start. Knowing the different types of housing and their correct articles is the foundation of this topic.</p>
+
+          <div class="info-box">
+            <strong style="color:var(--gold);">Gender tip for housing:</strong><br><br>
+            <strong style="color:var(--room);">die</strong> Wohnung · die WG · die Einzimmerwohnung · die Wohngemeinschaft<br>
+            <strong style="color:var(--rent);">das</strong> Haus · das Zimmer · das Studentenwohnheim<br><br>
+            The article matters most in practice: <em>Ich suche <strong>eine</strong> Wohnung</em> (feminine accusative) vs <em>Ich suche <strong>ein</strong> Zimmer</em> (neuter accusative).
+          </div>
+
+          <div class="sec-label">Six housing types</div>
+          <div class="ht-grid">
+            <div class="ht-card">
+              <div class="ht-icon">🏢</div>
+              <div class="ht-art f">FEMININ</div>
+              <div class="ht-de">die Wohnung</div>
+              <div class="ht-en">apartment / flat</div>
+              <div class="ht-note">The most common rental unit in Germany. Can be 1-room (Einzimmer) to 5+ rooms (Mehrzimmer).</div>
+            </div>
+            <div class="ht-card">
+              <div class="ht-icon">🏡</div>
+              <div class="ht-art n">NEUTRUM</div>
+              <div class="ht-de">das Haus</div>
+              <div class="ht-en">house</div>
+              <div class="ht-note">Usually in suburbs or rural areas. More expensive to rent than an apartment. Plural: die Häuser.</div>
+            </div>
+            <div class="ht-card">
+              <div class="ht-icon">🚪</div>
+              <div class="ht-art n">NEUTRUM</div>
+              <div class="ht-de">das Zimmer</div>
+              <div class="ht-en">room (one room)</div>
+              <div class="ht-note">A single room — in a shared flat (WG), a dorm, or a family home. NOT the same as a full apartment.</div>
+            </div>
+            <div class="ht-card">
+              <div class="ht-icon">👥</div>
+              <div class="ht-art f">FEMININ</div>
+              <div class="ht-de">die WG</div>
+              <div class="ht-en">shared flat</div>
+              <div class="ht-note">WG = Wohngemeinschaft. Multiple tenants share kitchen and bathroom. Very common for students and newcomers.</div>
+            </div>
+            <div class="ht-card">
+              <div class="ht-icon">🏫</div>
+              <div class="ht-art n">NEUTRUM</div>
+              <div class="ht-de">das Studentenwohnheim</div>
+              <div class="ht-en">student dormitory</div>
+              <div class="ht-note">University-run housing, subsidised. Apply through the Studentenwerk (student services office).</div>
+            </div>
+            <div class="ht-card">
+              <div class="ht-icon">🏠</div>
+              <div class="ht-art f">FEMININ</div>
+              <div class="ht-de">die Einzimmerwohnung</div>
+              <div class="ht-en">studio flat / one-room flat</div>
+              <div class="ht-note">Also called: 1-Zimmer-Wohnung. Living area + kitchen + bathroom — all in one small apartment.</div>
+            </div>
+          </div>
+
+          <div class="sec-label">Housing types in sentences</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--flat);">KWAME</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame sucht eine <span class="flh">Wohnung</span> in Berlin. Er möchte keine <span class="flh">WG</span> mehr.</div>
+                <div class="ex-en">Kwame is looking for an apartment in Berlin. He no longer wants a shared flat.</div>
+                <div class="ex-note">keine WG mehr = no shared flat anymore. mehr in negation = anymore. eine Wohnung (fem. accusative, article eine).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame sucht eine Wohnung in Berlin. Er möchte keine WG mehr.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--room);">AMINA</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina wohnt in einer <span class="rmh">WG</span> in Frankfurt. Sie teilt das <span class="rmh">Bad</span> und die <span class="rmh">Küche</span> mit zwei Mitbewohnern.</div>
+                <div class="ex-en">Amina lives in a shared flat in Frankfurt. She shares the bathroom and kitchen with two flatmates.</div>
+                <div class="ex-note">teilen = to share. Mitbewohner = flatmate (mit + Bewohner = with + resident). in einer WG (Dativ: feminine).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina wohnt in einer WG in Frankfurt. Sie teilt das Bad und die Küche mit zwei Mitbewohnern.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--rent);">KOFI</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi wohnt im <span class="rth">Studentenwohnheim</span>. Das <span class="rth">Zimmer</span> ist klein, aber günstig.</div>
+                <div class="ex-en">Kofi lives in the student dormitory. The room is small but affordable.</div>
+                <div class="ex-note">im = in dem (Dativ: das Studentenwohnheim). günstig = affordable / cheap (positive sense).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi wohnt im Studentenwohnheim. Das Zimmer ist klein, aber günstig.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">Module 23 · Lesson 1 · Quiz</div><h2 class="lesson-h">Housing Types — First Check</h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 2: Rooms in a House ── -->
+    <div id="lesson-1" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">Module 23 · Lesson 2 of 6</div>
+          <h2 class="lesson-h">Rooms in <span style="color:var(--room)">a house</span></h2>
+          <p class="body-text">Describing your living situation — "I have a one-room flat with a balcony" or "my flat has a living room and kitchen but no garden" — is a classic A2 exam writing task. Learn the gender of each room alongside its name.</p>
+
+          <div class="info-box">
+            <strong style="color:var(--gold);">The -zimmer pattern:</strong><br><br>
+            Almost every compound word ending in <strong style="color:var(--rent);">-zimmer</strong> is <strong style="color:var(--rent);">neuter (das)</strong>:<br>
+            das Wohnzimmer · das Schlafzimmer · das Badezimmer · das Arbeitszimmer · das Esszimmer · das Kinderzimmer<br><br>
+            Exceptions use different endings: <strong style="color:var(--room);">die Küche</strong> (feminine) · <strong style="color:var(--flat);">der Balkon</strong> (masculine) · <strong style="color:var(--flat);">der Garten</strong> (masculine) · <strong style="color:var(--flat);">der Keller</strong> (masculine).
+          </div>
+
+          <div class="sec-label">Main living areas</div>
+          <div class="rm-grid">
+            <div class="rm-card"><div class="rm-icon">🛋️</div><div><div class="rm-art n">NEUTRUM</div><div class="rm-de">das Wohnzimmer</div><div class="rm-en">living room</div></div></div>
+            <div class="rm-card"><div class="rm-icon">🛏️</div><div><div class="rm-art n">NEUTRUM</div><div class="rm-de">das Schlafzimmer</div><div class="rm-en">bedroom</div></div></div>
+            <div class="rm-card"><div class="rm-icon">🍳</div><div><div class="rm-art f">FEMININ</div><div class="rm-de">die Küche</div><div class="rm-en">kitchen</div></div></div>
+            <div class="rm-card"><div class="rm-icon">🚿</div><div><div class="rm-art n">NEUTRUM</div><div class="rm-de">das Badezimmer</div><div class="rm-en">bathroom (full name)</div></div></div>
+            <div class="rm-card"><div class="rm-icon">🛁</div><div><div class="rm-art n">NEUTRUM</div><div class="rm-de">das Bad</div><div class="rm-en">bathroom (short form)</div></div></div>
+            <div class="rm-card"><div class="rm-icon">🍽️</div><div><div class="rm-art n">NEUTRUM</div><div class="rm-de">das Esszimmer</div><div class="rm-en">dining room</div></div></div>
+            <div class="rm-card"><div class="rm-icon">💻</div><div><div class="rm-art n">NEUTRUM</div><div class="rm-de">das Arbeitszimmer</div><div class="rm-en">study / home office</div></div></div>
+            <div class="rm-card"><div class="rm-icon">🧒</div><div><div class="rm-art n">NEUTRUM</div><div class="rm-de">das Kinderzimmer</div><div class="rm-en">children's room</div></div></div>
+          </div>
+
+          <div class="sec-label">Outdoor and extra spaces</div>
+          <div class="rm-grid">
+            <div class="rm-card"><div class="rm-icon">🌿</div><div><div class="rm-art m">MASKULIN</div><div class="rm-de">der Balkon</div><div class="rm-en">balcony</div></div></div>
+            <div class="rm-card"><div class="rm-icon">🌳</div><div><div class="rm-art m">MASKULIN</div><div class="rm-de">der Garten</div><div class="rm-en">garden</div></div></div>
+            <div class="rm-card"><div class="rm-icon">🏚️</div><div><div class="rm-art m">MASKULIN</div><div class="rm-de">der Keller</div><div class="rm-en">basement / cellar</div></div></div>
+            <div class="rm-card"><div class="rm-icon">🚗</div><div><div class="rm-art f">FEMININ</div><div class="rm-de">die Garage</div><div class="rm-en">garage</div></div></div>
+          </div>
+
+          <div class="sec-label">Describing your flat — key sentences</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--flat);">MEINE WOHNUNG</div>
+              <div style="flex:1;">
+                <div class="ex-de">Meine Wohnung hat ein <span class="rth">Wohnzimmer</span>, ein <span class="rth">Schlafzimmer</span>, eine <span class="rmh">Küche</span> und ein <span class="rth">Bad</span>.</div>
+                <div class="ex-en">My apartment has a living room, a bedroom, a kitchen and a bathroom.</div>
+                <div class="ex-note">Article after haben: neuter → ein Wohnzimmer; feminine → eine Küche. All -zimmer rooms take ein (neuter accusative).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Meine Wohnung hat ein Wohnzimmer, ein Schlafzimmer, eine Küche und ein Bad.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--room);">AMINA</div>
+              <div style="flex:1;">
+                <div class="ex-de">Die Wohnung ist schön. Sie hat auch einen <span class="flh">Balkon</span> mit Blick auf den Park.</div>
+                <div class="ex-en">The apartment is nice. It also has a balcony with a view of the park.</div>
+                <div class="ex-note">einen Balkon (masculine accusative: der → einen). Blick auf den Park = view of the park.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Die Wohnung ist schön. Sie hat auch einen Balkon mit Blick auf den Park.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--furn);">FATIMA</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das Haus hat fünf Zimmer, einen <span class="flh">Garten</span> und einen <span class="flh">Keller</span>. Es gibt auch eine <span class="rmh">Garage</span>.</div>
+                <div class="ex-en">The house has five rooms, a garden and a basement. There is also a garage.</div>
+                <div class="ex-note">Es gibt = there is/are (very useful phrase). einen Garten/Keller (masc. accusative). eine Garage (fem. accusative).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das Haus hat fünf Zimmer, einen Garten und einen Keller. Es gibt auch eine Garage.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">Module 23 · Lesson 2 · Quiz</div><h2 class="lesson-h">Rooms — Check</h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 3: Renting Vocabulary ── -->
+    <div id="lesson-2" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">Module 23 · Lesson 3 of 6</div>
+          <h2 class="lesson-h">Renting <span style="color:var(--rent)">vocabulary</span></h2>
+          <p class="body-text">The German rental market has its own precise vocabulary — and understanding it is essential both in real life and in the A2 exam. A misunderstanding of Kaution, Nebenkosten, or the difference between kalt and warm can cost real money.</p>
+
+          <div class="sec-label">Core renting vocabulary</div>
+          <div class="rent-table-wrap">
+            <div class="conj-title" style="color:var(--rent);">MIETE UND WOHNEN — KEY VOCABULARY</div>
+            <table class="rent-table">
+              <thead><tr><th>DEUTSCH</th><th>ENGLISH</th><th>EXAMPLE / NOTE</th></tr></thead>
+              <tbody>
+                <tr><td class="rt-de">die Miete (−n)</td><td class="rt-en">rent</td><td class="rt-ex">Die Miete beträgt 750 Euro.</td></tr>
+                <tr><td class="rt-de">der Vermieter / die Vermieterin</td><td class="rt-en">landlord / landlady</td><td class="rt-ex">Mein Vermieter heißt Herr Schmidt.</td></tr>
+                <tr><td class="rt-de">der Mieter / die Mieterin</td><td class="rt-en">tenant (m/f)</td><td class="rt-ex">Ich bin Mieter in dieser Wohnung.</td></tr>
+                <tr><td class="rt-de">der Mietvertrag (⸚e)</td><td class="rt-en">rental contract / lease</td><td class="rt-ex">Ich unterschreibe den Mietvertrag.</td></tr>
+                <tr><td class="rt-de">die Kaution (−en)</td><td class="rt-en">security deposit</td><td class="rt-ex">Die Kaution beträgt 3 Monatsmieten.</td></tr>
+                <tr><td class="rt-de">die Nebenkosten (pl.)</td><td class="rt-en">utility/additional costs</td><td class="rt-ex">Nebenkosten sind ca. 150 Euro.</td></tr>
+                <tr><td class="rt-de">die Kündigung (−en)</td><td class="rt-en">notice to leave / termination</td><td class="rt-ex">Ich gebe dem Vermieter die Kündigung.</td></tr>
+                <tr><td class="rt-de">die Wohnungsanzeige (−n)</td><td class="rt-en">housing advertisement</td><td class="rt-ex">Ich habe eine Wohnungsanzeige online gefunden.</td></tr>
+                <tr><td class="rt-de">kalt (Kaltmiete)</td><td class="rt-en">cold rent (without utilities)</td><td class="rt-ex">800 Euro kalt = 800 without extra costs.</td></tr>
+                <tr><td class="rt-de">warm (Warmmiete)</td><td class="rt-en">warm rent (with utilities)</td><td class="rt-ex">950 Euro warm = 950 all costs included.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="info-box">
+            <strong style="color:var(--gold);">kalt vs warm — the most important distinction in German rent:</strong><br><br>
+            <strong style="color:var(--flat);">Kaltmiete</strong> = the base rent only. Does NOT include Nebenkosten (heating, water, maintenance fees). This is what the landlord gets.<br><br>
+            <strong style="color:var(--furn);">Warmmiete</strong> = Kaltmiete + Nebenkosten. This is the total amount you actually pay each month.<br><br>
+            Example: 800 Euro kalt + 150 Euro Nebenkosten = <strong style="color:var(--gold);">950 Euro warm</strong><br><br>
+            When a housing ad says just "Euro" with no kalt/warm, always ask: "Ist das kalt oder warm?" (Is that without or with utilities?)
+          </div>
+
+          <div class="sec-label">Renting vocabulary in context</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--flat);">KWAME</div>
+              <div style="flex:1;">
+                <div class="ex-de">Die <span class="flh">Miete</span> beträgt 800 Euro <span class="flh">kalt</span>. Die <span class="flh">Nebenkosten</span> kommen noch dazu — circa 150 Euro im Monat.</div>
+                <div class="ex-en">The rent is 800 euros cold (without utilities). The utility costs come on top — approximately 150 euros per month.</div>
+                <div class="ex-note">beträgt = amounts to (from betragen). noch dazu kommen = come on top / are added. im Monat = per month.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Die Miete beträgt 800 Euro kalt. Die Nebenkosten kommen noch dazu — circa 150 Euro im Monat.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--room);">AMINA</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina muss eine <span class="rth">Kaution</span> von zwei Monatsmieten zahlen. Sie unterschreibt den <span class="rth">Mietvertrag</span> nächste Woche.</div>
+                <div class="ex-en">Amina must pay a security deposit of two months' rent. She signs the rental contract next week.</div>
+                <div class="ex-note">muss…zahlen = must pay. von zwei Monatsmieten = of two months' rent (Genitive construction). nächste Woche = next week.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina muss eine Kaution von zwei Monatsmieten zahlen. Sie unterschreibt den Mietvertrag nächste Woche.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--rent);">KOFI</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi gibt dem <span class="rth">Vermieter</span> die <span class="rth">Kündigung</span>. Er muss drei Monate vorher kündigen.</div>
+                <div class="ex-en">Kofi gives his landlord notice to leave. He must give notice three months in advance.</div>
+                <div class="ex-note">vorher = in advance / beforehand. Three months' notice (Kündigungsfrist) is the standard in Germany for tenants.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi gibt dem Vermieter die Kündigung. Er muss drei Monate vorher kündigen.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">Module 23 · Lesson 3 · Quiz</div><h2 class="lesson-h">Renting Vocabulary — Check</h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 4: Furniture Vocabulary ── -->
+    <div id="lesson-3" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">Module 23 · Lesson 4 of 6</div>
+          <h2 class="lesson-h">Furniture <span style="color:var(--furn)">vocabulary</span></h2>
+          <p class="body-text">In A2 writing, you may describe what furniture you have or need. Furniture words also appear in reading tasks — classified ads, letters, and messages about apartments. Learn the article with each piece of furniture: it will determine how you say "I need a sofa" or "I bought a wardrobe".</p>
+
+          <div class="sec-label">Living room and bedroom furniture</div>
+          <div class="furn-grid">
+            <div class="furn-card"><div class="furn-icon">🛋️</div><div><div class="furn-art n">NEUTRUM</div><div class="furn-de">das Sofa</div><div class="furn-en">sofa / couch</div></div></div>
+            <div class="furn-card"><div class="furn-icon">🪑</div><div><div class="furn-art m">MASKULIN</div><div class="furn-de">der Stuhl</div><div class="furn-en">chair</div></div></div>
+            <div class="furn-card"><div class="furn-icon">🪵</div><div><div class="furn-art m">MASKULIN</div><div class="furn-de">der Tisch</div><div class="furn-en">table</div></div></div>
+            <div class="furn-card"><div class="furn-icon">🛏️</div><div><div class="furn-art n">NEUTRUM</div><div class="furn-de">das Bett</div><div class="furn-en">bed</div></div></div>
+            <div class="furn-card"><div class="furn-icon">🚪</div><div><div class="furn-art m">MASKULIN</div><div class="furn-de">der Schrank</div><div class="furn-en">wardrobe / cupboard</div></div></div>
+            <div class="furn-card"><div class="furn-icon">🖥️</div><div><div class="furn-art m">MASKULIN</div><div class="furn-de">der Schreibtisch</div><div class="furn-en">desk</div></div></div>
+            <div class="furn-card"><div class="furn-icon">📚</div><div><div class="furn-art n">NEUTRUM</div><div class="furn-de">das Regal</div><div class="furn-en">shelf / bookshelf</div></div></div>
+            <div class="furn-card"><div class="furn-icon">💡</div><div><div class="furn-art f">FEMININ</div><div class="furn-de">die Lampe</div><div class="furn-en">lamp / light</div></div></div>
+          </div>
+
+          <div class="sec-label">Kitchen and utility appliances</div>
+          <div class="furn-grid">
+            <div class="furn-card"><div class="furn-icon">🧊</div><div><div class="furn-art m">MASKULIN</div><div class="furn-de">der Kühlschrank</div><div class="furn-en">refrigerator / fridge</div></div></div>
+            <div class="furn-card"><div class="furn-icon">🔥</div><div><div class="furn-art m">MASKULIN</div><div class="furn-de">der Herd</div><div class="furn-en">cooker / stove</div></div></div>
+            <div class="furn-card"><div class="furn-icon">🫧</div><div><div class="furn-art f">FEMININ</div><div class="furn-de">die Waschmaschine</div><div class="furn-en">washing machine</div></div></div>
+            <div class="furn-card"><div class="furn-icon">🍽️</div><div><div class="furn-art f">FEMININ</div><div class="furn-de">die Spülmaschine</div><div class="furn-en">dishwasher</div></div></div>
+          </div>
+
+          <div class="warn-box">
+            <strong style="color:var(--flat);">möbliert vs unmöbliert:</strong><br><br>
+            <strong style="color:var(--furn);">möbliert</strong> = furnished (furniture included in the rental). More expensive but convenient for newcomers.<br>
+            <strong style="color:var(--rent);">unmöbliert</strong> = unfurnished (empty flat, no furniture). Standard in Germany — you bring or buy your own furniture.<br><br>
+            Most German flats are rented unmöbliert. Even the kitchen may be empty — Germans often take their Einbauküche (built-in kitchen) with them when they move!
+          </div>
+
+          <div class="sec-label">Kwame furnishes his new apartment</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--furn);">KWAME RICHTET SEINE WOHNUNG EIN — KWAME FURNISHES HIS FLAT</div>
+            <div style="font-family:'DM Mono',monospace;font-size:13px;line-height:2.6;color:var(--cream);">
+              <span style="color:var(--gray);">Amina:</span> &nbsp;Hast du schon Möbel für die neue Wohnung?<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Do you already have furniture for the new flat?</span><br>
+              <span style="color:var(--furn);">Kwame:</span> &nbsp;Ich habe ein <span style="color:var(--furn);">Sofa</span> und ein <span style="color:var(--furn);">Bett</span>, aber ich brauche noch einen <span style="color:var(--flat);">Schrank</span> und einen <span style="color:var(--flat);">Kühlschrank</span>.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I have a sofa and a bed, but I still need a wardrobe and a fridge.</span><br>
+              <span style="color:var(--gray);">Amina:</span> &nbsp;Gibt es eine Waschmaschine in der Wohnung?<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Is there a washing machine in the flat?</span><br>
+              <span style="color:var(--furn);">Kwame:</span> &nbsp;Nein. Die Wohnung ist unmöbliert. Ich muss alles kaufen.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No. The flat is unfurnished. I have to buy everything.</span>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Ich habe ein Sofa und ein Bett, aber ich brauche noch einen Schrank und einen Kühlschrank.')">🔊 Kwame's lines</button>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--furn);">IN DER KÜCHE</div>
+              <div style="flex:1;">
+                <div class="ex-de">In der <span class="frh">Küche</span> gibt es einen <span class="flh">Herd</span>, einen <span class="flh">Kühlschrank</span> und eine <span class="rmh">Spülmaschine</span>.</div>
+                <div class="ex-en">In the kitchen there is a cooker, a fridge and a dishwasher.</div>
+                <div class="ex-note">es gibt + accusative: einen Herd (m), einen Kühlschrank (m), eine Spülmaschine (f). In der Küche = Dativ feminine.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'In der Küche gibt es einen Herd, einen Kühlschrank und eine Spülmaschine.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">Module 23 · Lesson 4 · Quiz</div><h2 class="lesson-h">Furniture — Check</h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 5: Reading a Housing Ad ── -->
+    <div id="lesson-4" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">Module 23 · Lesson 5 of 6</div>
+          <h2 class="lesson-h">Reading a <span style="color:var(--rent)">housing ad</span></h2>
+          <p class="body-text">In A2 Lesen (reading), you may be asked to read a Wohnungsanzeige (housing advertisement) and answer questions about the flat. German housing ads use a lot of abbreviations and specific terms. Knowing what qm, NK, KM, EG, and kalt/warm mean will let you read any German housing ad fluently.</p>
+
+          <div class="sec-label">Sample Wohnungsanzeige</div>
+          <div class="ad-card">
+            <div class="ad-header">WOHNUNGSANZEIGE · BERLIN-KREUZBERG</div>
+            <div class="ad-title">Schöne 2-Zimmer-Wohnung mit Balkon zu vermieten</div>
+            <div class="ad-details">
+              <div class="ad-row">
+                <div class="ad-label">GRÖSSE</div>
+                <div class="ad-val">58 qm</div>
+              </div>
+              <div class="ad-row">
+                <div class="ad-label">ZIMMER</div>
+                <div class="ad-val">2 Zimmer</div>
+              </div>
+              <div class="ad-row">
+                <div class="ad-label">KALTMIETE</div>
+                <div class="ad-val highlight">850 Euro</div>
+              </div>
+              <div class="ad-row">
+                <div class="ad-label">NEBENKOSTEN</div>
+                <div class="ad-val">150 Euro</div>
+              </div>
+              <div class="ad-row">
+                <div class="ad-label">WARMMIETE</div>
+                <div class="ad-val highlight">1.000 Euro</div>
+              </div>
+              <div class="ad-row">
+                <div class="ad-label">KAUTION</div>
+                <div class="ad-val">2 Monatsmieten</div>
+              </div>
+              <div class="ad-row">
+                <div class="ad-label">ETAGE</div>
+                <div class="ad-val">3. OG</div>
+              </div>
+              <div class="ad-row">
+                <div class="ad-label">VERFÜGBAR</div>
+                <div class="ad-val">Ab sofort</div>
+              </div>
+            </div>
+            <div class="ad-desc">Die Wohnung befindet sich im 3. Obergeschoss. Sie hat ein Wohnzimmer, ein Schlafzimmer, eine moderne Küche und ein Badezimmer. Der Balkon hat Blick auf den Innenhof. Keine Haustiere. Nichtraucher bevorzugt. Kontakt: Vermieter Herr Neumann, Tel. 030-12345678.</div>
+          </div>
+
+          <div class="sec-label">Housing ad abbreviations</div>
+          <div class="abbr-grid">
+            <div class="abbr-card"><div class="abbr-short">qm</div><div class="abbr-long">Quadratmeter — square metres (size)</div></div>
+            <div class="abbr-card"><div class="abbr-short">NK</div><div class="abbr-long">Nebenkosten — utility/extra costs</div></div>
+            <div class="abbr-card"><div class="abbr-short">KM</div><div class="abbr-long">Kaltmiete — rent without utilities</div></div>
+            <div class="abbr-card"><div class="abbr-short">WM</div><div class="abbr-long">Warmmiete — rent with utilities</div></div>
+            <div class="abbr-card"><div class="abbr-short">EG</div><div class="abbr-long">Erdgeschoss — ground floor</div></div>
+            <div class="abbr-card"><div class="abbr-short">OG</div><div class="abbr-long">Obergeschoss — upper floor(s)</div></div>
+            <div class="abbr-card"><div class="abbr-short">DG</div><div class="abbr-long">Dachgeschoss — attic / top floor</div></div>
+            <div class="abbr-card"><div class="abbr-short">WG</div><div class="abbr-long">Wohngemeinschaft — shared flat</div></div>
+            <div class="abbr-card"><div class="abbr-short">Zim.</div><div class="abbr-long">Zimmer — rooms</div></div>
+            <div class="abbr-card"><div class="abbr-short">AB SOF.</div><div class="abbr-long">Ab sofort — available immediately</div></div>
+          </div>
+
+          <div class="sec-label">Useful phrases for apartment enquiries</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--flat);">ANFRAGE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich interessiere mich für die <span class="flh">Wohnung</span>. Ist die <span class="flh">Miete</span> kalt oder warm?</div>
+                <div class="ex-en">I am interested in the apartment. Is the rent without or with utilities?</div>
+                <div class="ex-note">Ich interessiere mich für = I am interested in (reflexive verb). Always ask kalt or warm to know your true monthly cost.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich interessiere mich für die Wohnung. Ist die Miete kalt oder warm?')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--room);">BESICHTIGUNG</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kann ich die Wohnung <span class="rmh">besichtigen</span>? Wann ist ein <span class="rmh">Termin</span> möglich?</div>
+                <div class="ex-en">Can I view the apartment? When is an appointment possible?</div>
+                <div class="ex-note">besichtigen = to view / inspect. die Besichtigung = the viewing appointment. Wann ist möglich? = when is possible?</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kann ich die Wohnung besichtigen? Wann ist ein Termin möglich?')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--rent);">WOHNEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich wohne in einer <span class="rth">2-Zimmer-Wohnung</span> im <span class="rth">dritten Obergeschoss</span>. Die <span class="rth">Warmmiete</span> beträgt 950 Euro.</div>
+                <div class="ex-en">I live in a two-room apartment on the third floor. The warm rent is 950 euros.</div>
+                <div class="ex-note">im dritten Obergeschoss = on the third floor (lit: in the third upper storey). beträgt = amounts to.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich wohne in einer 2-Zimmer-Wohnung im dritten Obergeschoss. Die Warmmiete beträgt 950 Euro.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="success-box">
+            <strong style="color:var(--green);">Exam tip — A2 Lesen and Schreiben:</strong><br><br>
+            <strong style="color:var(--rent);">A2 Lesen:</strong> You may read a Wohnungsanzeige and answer questions like: Wie viele Zimmer hat die Wohnung? (How many rooms?) / Wie hoch ist die Kaltmiete? (How high is the cold rent?) / In welchem Stockwerk ist die Wohnung? (Which floor?)<br><br>
+            <strong style="color:var(--furn);">A2 Schreiben:</strong> You may write about where you live. Key sentences: Ich wohne in einer [X]-Zimmer-Wohnung in [Stadt]. Die Wohnung hat [rooms]. Die Miete beträgt [X] Euro warm. Ich mag meine Wohnung, weil sie [adjective] ist.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">Module 23 · Lesson 5 · Quiz</div><h2 class="lesson-h">Housing Ad — Check</h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Previous</button></div>
+      </div>
+    </div>
+
+    <!-- ── LESSON 6: African Context ── -->
+    <div id="lesson-5" class="lesson-pane" style="display:none;">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">Module 23 · Lesson 6 of 6</div>
+          <h2 class="lesson-h">Kwame &amp; Amina <span style="color:var(--gold)">flat-hunting</span></h2>
+          <p class="body-text">Finding housing in Germany is one of the hardest challenges for African immigrants. Major cities like Berlin, Frankfurt, Munich, and Hamburg have very competitive housing markets — many people apply for one flat. For this reason, writing a good Bewerbungsschreiben (application letter) for a flat, understanding the ad correctly, and communicating clearly with the Vermieter are critical skills.</p>
+
+          <div class="info-box">
+            <strong style="color:var(--gold);">The reality of German housing for African immigrants:</strong><br><br>
+            Most newcomers start in a WG or Studentenwohnheim. When searching for your own Wohnung, you typically need: a Schufa (credit report), proof of income (Gehaltsnachweis), a copy of your ID, and sometimes a personal letter (Selbstauskunft). Discrimination in housing exists — but knowing the language well gives you a major advantage in presenting yourself professionally.
+          </div>
+
+          <div class="sec-label">Kwame searches for an apartment in Berlin</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--flat);">KWAME SUCHT EINE WOHNUNG</div>
+            <div style="font-family:'DM Mono',monospace;font-size:13px;line-height:2.6;color:var(--cream);">
+              <span style="color:var(--flat);">Kwame:</span> &nbsp;Ich suche eine 2-Zimmer-Wohnung in Berlin-Mitte oder Prenzlauer Berg.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I am looking for a two-room apartment in Berlin-Mitte or Prenzlauer Berg.</span><br>
+              <span style="color:var(--flat);">Kwame:</span> &nbsp;Die Miete soll nicht mehr als 1.000 Euro warm kosten.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The rent should not be more than 1,000 euros warm.</span><br>
+              <span style="color:var(--flat);">Kwame:</span> &nbsp;Ich habe eine Wohnungsanzeige online gefunden. Die Wohnung hat 55 qm und kostet 850 Euro kalt.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I found a housing ad online. The apartment has 55 sqm and costs 850 euros cold.</span><br>
+              <span style="color:var(--flat);">Kwame:</span> &nbsp;Ich schreibe dem Vermieter eine E-Mail. Ich möchte die Wohnung besichtigen.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I write the landlord an email. I would like to view the flat.</span>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Ich suche eine 2-Zimmer-Wohnung in Berlin. Die Miete soll nicht mehr als 1000 Euro warm kosten.')">🔊 Kwame's search</button>
+
+          <div class="sec-label">Amina's flat situation</div>
+          <div class="conj-wrap">
+            <div class="conj-title" style="color:var(--room);">AMINA BESCHREIBT IHRE WOHNSITUATION</div>
+            <div style="font-family:'DM Mono',monospace;font-size:13px;line-height:2.6;color:var(--cream);">
+              <span style="color:var(--room);">Amina:</span> &nbsp;Ich wohne in Frankfurt in einer WG. Wir sind drei Personen — ich und zwei Deutsche.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I live in a shared flat in Frankfurt. There are three of us — me and two Germans.</span><br>
+              <span style="color:var(--room);">Amina:</span> &nbsp;Ich habe ein Zimmer mit 18 qm. Die Gesamtmiete für die Wohnung ist 1.200 Euro warm.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I have a room of 18 sqm. The total rent for the flat is 1,200 euros warm.</span><br>
+              <span style="color:var(--room);">Amina:</span> &nbsp;Jeder zahlt 400 Euro im Monat. Das ist günstig für Frankfurt.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Each person pays 400 euros per month. That is affordable for Frankfurt.</span><br>
+              <span style="color:var(--room);">Amina:</span> &nbsp;Aber ich möchte bald eine eigene Wohnung finden.<br>
+              <span style="color:var(--gray);font-size:11px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;But I would like to find my own apartment soon.</span>
+            </div>
+          </div>
+          <button class="speak-btn" onclick="speakSentence(this,'Ich wohne in Frankfurt in einer WG. Ich habe ein Zimmer mit 18 Quadratmetern. Das ist günstig für Frankfurt.')">🔊 Amina's situation</button>
+
+          <div class="sec-label">African learner mistakes — wrong and right</div>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Ich suche ein Wohnung.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Ich suche eine Wohnung.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">die Wohnung is feminine. In accusative (after suchen), feminine article is <strong style="color:var(--green);">eine</strong> — not ein (which is for masculine and neuter).</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Die Miete sind 800 Euro.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Die Miete beträgt 800 Euro.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">die Miete is singular — use singular verb: beträgt (amounts to) or ist (is). "sind" is plural and would be used for "die Nebenkosten sind 150 Euro" (plural). Also correct: Die Miete kostet 800 Euro.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Ich habe eine Zimmer in Berlin.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Ich habe ein Zimmer in Berlin.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">das Zimmer is neuter. Neuter accusative article is <strong style="color:var(--green);">ein</strong> — not eine (which is feminine). Also note: Zimmer = a room (in a shared flat etc.), not a whole apartment.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ WRONG</div>
+              <div class="wr-word">Die Wohnung hat drei Zimmern.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ CORRECT</div>
+              <div class="wr-word">Die Wohnung hat drei Zimmer.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Zimmer is one of the few German nouns with the same form in singular and plural: das Zimmer → die Zimmer (no -n or -e added). "drei Zimmern" would be the dative plural form, which is wrong after haben.</p>
+
+          <div class="success-box">
+            <strong style="color:var(--green);">Final exam summary — Module 23:</strong><br><br>
+            1. <strong style="color:var(--flat);">Housing types:</strong> die Wohnung · das Haus · das Zimmer · die WG · das Studentenwohnheim · die Einzimmerwohnung.<br>
+            2. <strong style="color:var(--room);">Rooms:</strong> -zimmer words are neuter (das). Exceptions: die Küche · der Balkon · der Garten · der Keller.<br>
+            3. <strong style="color:var(--rent);">Renting:</strong> die Miete · die Kaution · die Nebenkosten · kalt vs warm · der Mietvertrag · kündigen.<br>
+            4. <strong style="color:var(--furn);">Furniture:</strong> das Sofa · das Bett · der Schrank · der Tisch · der Kühlschrank · die Waschmaschine. möbliert vs unmöbliert.<br>
+            5. <strong style="color:var(--gold);">Housing ads:</strong> qm · NK · KM/WM · EG/OG/DG · ab sofort.<br>
+            6. <strong style="color:var(--gold);">Exam writing:</strong> Ich wohne in einer [X]-Zimmer-Wohnung in [Stadt]. Die Miete beträgt [X] Euro warm. Die Wohnung hat [rooms].
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Continue →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">Module 23 · Lesson 6 · Quiz</div><h2 class="lesson-h">Housing &amp; Living — Final Check</h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Previous</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var TOTAL=6, currentLesson=0, xp=0;
+var synth=window.speechSynthesis, voices=[], deVoice=null;
+function loadVoices(){ voices=synth.getVoices(); deVoice=voices.find(function(v){return v.lang==='de-DE';})||voices.find(function(v){return v.lang.startsWith('de');})||null; }
+if(synth.onvoiceschanged!==undefined){synth.onvoiceschanged=loadVoices;}
+function speakDE(text){ if(!synth)return; synth.cancel(); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; synth.speak(u); }
+function speakSentence(btn,text){ if(!synth)return; synth.cancel(); document.querySelectorAll('.speak-btn.speaking').forEach(function(b){b.classList.remove('speaking');}); btn.classList.add('speaking'); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; u.onend=function(){btn.classList.remove('speaking');}; synth.speak(u); }
+
+var QD={
+  0:[
+    {q:'What is a "WG" (Wohngemeinschaft) in Germany?',
+     hint:'Think about the word Gemeinschaft — it means community or group. Wohn = living. What kind of living situation involves a group of people?',
+     opts:['a studio flat for one person','a shared apartment with multiple tenants','a student dormitory run by the university','a rented house with a garden'],
+     ans:1,
+     exp:'"A shared apartment with multiple tenants" — WG stands for Wohngemeinschaft (living community). Multiple people (usually 2–5) rent one apartment together and share common areas like the kitchen and bathroom. Each person has their own bedroom (Zimmer). A WG is very common in Germany, especially for students and newcomers. A studio flat is eine Einzimmerwohnung. A student dormitory is das Studentenwohnheim. A rented house is ein Haus.',
+     rule:'WG = Wohngemeinschaft = shared flat. Multiple tenants share kitchen and bathroom, each have own Zimmer. Very common for students and African newcomers to Germany.'}
+  ],
+  1:[
+    {q:'Which room is "das Schlafzimmer"?',
+     hint:'Break the word: schlafen = to sleep, Zimmer = room. What room is used for sleeping?',
+     opts:['the living room','the kitchen','the bedroom','the bathroom'],
+     ans:2,
+     exp:'"The bedroom" — das Schlafzimmer. schlafen = to sleep + Zimmer = room → Schlafzimmer = sleeping room = bedroom. This follows the standard German compound noun pattern for rooms: das Wohnzimmer (Wohnen + Zimmer = living room), das Badezimmer (Bad + Zimmer = bathroom), das Arbeitszimmer (Arbeiten + Zimmer = study). All -zimmer compounds are neuter (das). "Living room" is das Wohnzimmer. "Kitchen" is die Küche (note: feminine, not -zimmer). "Bathroom" is das Badezimmer / das Bad.',
+     rule:'Schlafzimmer = bedroom (schlafen = to sleep). All -zimmer rooms are neuter: das Wohnzimmer, das Schlafzimmer, das Badezimmer, das Arbeitszimmer. Exception: die Küche (feminine).'}
+  ],
+  2:[
+    {q:'What does "die Kaution" mean in German?',
+     hint:'In many countries, when you rent an apartment, the landlord asks for an upfront payment to cover possible damages. What is this called in English?',
+     opts:['monthly rent','rental contract','security deposit','utility costs'],
+     ans:2,
+     exp:'"Security deposit" — die Kaution is the upfront payment a tenant must make before moving in, typically 2–3 months\' rent. The landlord holds this money and returns it when you move out, provided you have not damaged the flat. Compare: die Miete = the monthly rent (ongoing payment), der Mietvertrag = the rental contract (document), die Nebenkosten = utility/additional costs (heating, water, maintenance). The Kaution is a one-time payment at the start, while the Miete is paid monthly.',
+     rule:'die Kaution = security deposit (paid once at start of tenancy). die Miete = monthly rent. die Nebenkosten = utilities. der Mietvertrag = rental contract.'}
+  ],
+  3:[
+    {q:'What is "der Kühlschrank"?',
+     hint:'Break it down: kühl = cool/cold, Schrank = cupboard/cabinet. What kitchen appliance keeps things cold?',
+     opts:['washing machine','wardrobe','desk','refrigerator'],
+     ans:3,
+     exp:'"Refrigerator" — der Kühlschrank. kühl = cool/cold + Schrank = cupboard → Kühlschrank = cool-cupboard = refrigerator/fridge. This is a very logical German compound word. Compare: die Waschmaschine = washing machine (waschen = to wash + Maschine = machine). der Schrank alone = wardrobe/cupboard (for clothes). der Schreibtisch = desk (schreiben = to write + Tisch = table). An important fact: German rental apartments are often unmöbliert (unfurnished) and may not even have a kitchen — tenants often buy their own Kühlschrank and Herd.',
+     rule:'der Kühlschrank = refrigerator (kühl = cool + Schrank = cupboard). die Waschmaschine = washing machine. der Schrank = wardrobe. Kühlschrank is masculine (der).'}
+  ],
+  4:[
+    {q:'A housing ad says "700 Euro kalt." What does "kalt" mean here?',
+     hint:'In German rent ads, kalt and warm describe whether the stated price includes extra costs or not. Think of kalt (cold) as the base price — no warmth/extras included.',
+     opts:['the apartment has no central heating','the rent price without utility costs','the apartment faces north and gets no sun','all costs including heating and water are included'],
+     ans:1,
+     exp:'"The rent price without utility costs" — Kaltmiete (cold rent) is the base rent only, without Nebenkosten (additional costs like heating, water, building maintenance). So "700 Euro kalt" means the landlord\'s basic rent is 700 euros, but you will pay more on top for Nebenkosten (often 100–200 euros extra). Warmmiete = 700 + Nebenkosten = total monthly cost. "All costs included" would be described as "700 Euro warm" or "700 Euro inklusive Nebenkosten". The flat having no heating would be described differently — "keine Zentralheizung."',
+     rule:'kalt = Kaltmiete = rent WITHOUT utilities (Nebenkosten extra). warm = Warmmiete = rent WITH utilities included. Always ask: kalt oder warm? to know your true monthly cost.'}
+  ],
+  5:[
+    {q:'Amina says "Ich suche ___ Wohnung." What belongs in the blank?',
+     hint:'die Wohnung is feminine. When a feminine noun is the direct object of suchen, which article do you use in accusative case?',
+     opts:['ein','einen','eine','der'],
+     ans:2,
+     exp:'"eine" — die Wohnung is feminine. In the accusative case (used after suchen because Wohnung is the direct object), feminine nouns take the article "eine". Article table: masculine → einen (acc.), feminine → eine (acc.), neuter → ein (acc.). So: Ich suche einen Schrank (masc.) / Ich suche eine Wohnung (fem.) / Ich suche ein Zimmer (neut.). "ein" would be used for masculine or neuter nouns. "einen" is the accusative of masculine nouns. "der" is the nominative of masculine nouns, not used here.',
+     rule:'die Wohnung → feminine → accusative article: eine. Ich suche eine Wohnung. Compare: Ich suche ein Zimmer (neuter). Ich suche einen Schrank (masculine accusative).'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">QUESTION '+(s.cur+1)+' OF '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint">'+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Next Question →':'See Results →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Correct!':'✗ Not quite'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent=q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' correct</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfect.':pct>=60?'Good work.':'Review and try again.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(201,168,76,0.12);border:1px solid var(--gold);border-radius:50px;padding:9px 22px;color:var(--gold);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Complete Module 23 →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Next Lesson →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">🏠</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Module 23 Complete!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">Housing and living mastered. You know six housing types with their articles, all major rooms with the -zimmer = neuter rule, ten renting vocabulary words including the critical kalt vs warm distinction, furniture with articles, and how to read a German housing advertisement. You can now describe where you live and ask about apartments in German — skills that matter both in the exam and in daily life.</p><div class="xp-badge">⚡ '+xp+' XP Earned</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Module 23 complete. Next: Module 24 — Food and Shopping (Essen und Einkaufen).</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Back to Overview</button></div>'; }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function resumeLesson(){ goLesson(currentLesson); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+<script src="./ai-tutor.js" data-module="23"></script>
+</body>
+</html>
