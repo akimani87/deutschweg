@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — B1 Modul 1: Konjunktiv II</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --wrd:#3498db; --irr:#e67e22; --mod:#9b59b6; --pol:#27ae60;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--blue); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--blue); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--blue); color:var(--white); width:100%; }
+  .btn-primary:hover { background:#2980b9; transform:translateY(-2px); box-shadow:0 8px 24px rgba(52,152,219,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--blue); color:var(--blue); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(52,152,219,0.2); }
+  .speak-btn.speaking { background:var(--blue); color:var(--white); }
+
+  /* ENGLISH HELP TOGGLE */
+  .en-help { background:rgba(52,152,219,0.05); border:1px dashed rgba(52,152,219,0.25); border-radius:10px; margin:12px 0; }
+  .en-help summary { padding:10px 16px; cursor:pointer; font-size:13px; color:var(--blue); font-family:'DM Mono',monospace; letter-spacing:.03em; list-style:none; display:flex; align-items:center; gap:8px; }
+  .en-help summary::-webkit-details-marker { display:none; }
+  .en-help[open] summary { border-bottom:1px dashed rgba(52,152,219,0.2); }
+  .en-help-body { padding:12px 16px; font-size:13px; color:rgba(245,240,232,.7); line-height:1.8; }
+  .en-help-body p { margin-bottom:8px; }
+  .en-help-body p:last-child { margin-bottom:0; }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-note { font-size:12px; color:var(--gray); line-height:1.6; }
+
+  /* FORMULA BOX */
+  .formula-box { background:var(--card2-bg); border:1px solid rgba(52,152,219,0.2); border-radius:14px; padding:20px 22px; margin:14px 0; text-align:center; }
+  .formula-title { font-size:10px; letter-spacing:3px; font-family:'DM Mono',monospace; color:var(--blue); margin-bottom:14px; }
+  .formula-main { font-family:'DM Mono',monospace; font-size:18px; font-weight:700; color:var(--white); line-height:2; }
+  .formula-part { display:inline-block; }
+  .formula-plus { color:var(--gray); margin:0 8px; }
+  .fp-w { color:var(--wrd); }
+  .fp-i { color:var(--irr); }
+  .fp-m { color:var(--mod); }
+  .fp-p { color:var(--pol); }
+
+  /* COMPARISON TABLE */
+  .comp-table { width:100%; border-collapse:collapse; font-size:13px; margin:14px 0; }
+  .comp-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:10px 14px; text-align:left; border-bottom:2px solid rgba(255,255,255,0.1); }
+  .comp-table td { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'DM Mono',monospace; font-size:13px; vertical-align:top; }
+  .comp-table tr:last-child td { border-bottom:none; }
+  .comp-table tr:hover td { background:rgba(255,255,255,0.02); }
+  .ct-ind { color:var(--gold); }
+  .ct-konj { color:var(--wrd); }
+  .comp-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+
+  /* WRONG/RIGHT */
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.0; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+
+  /* CONTEXT CARDS */
+  .ctx-grid { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ctx-card { background:var(--card2-bg); border-radius:12px; padding:16px 18px; display:flex; gap:14px; align-items:flex-start; }
+  .ctx-icon { font-size:22px; flex-shrink:0; width:32px; text-align:center; margin-top:2px; }
+  .ctx-title { font-size:13px; font-weight:700; color:var(--cream); margin-bottom:4px; }
+  .ctx-desc { font-size:13px; color:var(--gray); line-height:1.65; margin-bottom:6px; }
+  .ctx-ex { font-family:'DM Mono',monospace; font-size:12px; color:var(--blue); }
+  .ctx-card.c-polite { border:1px solid rgba(39,174,96,0.2); }
+  .ctx-card.c-wish   { border:1px solid rgba(52,152,219,0.2); }
+  .ctx-card.c-cond   { border:1px solid rgba(230,126,34,0.2); }
+  .ctx-card.c-adv    { border:1px solid rgba(155,89,182,0.2); }
+
+  /* HIGHLIGHTS */
+  .wh { color:var(--wrd); font-weight:700; }
+  .ih { color:var(--irr); font-weight:700; }
+  .mh { color:var(--mod); font-weight:700; }
+  .ph { color:var(--pol); font-weight:700; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Mono',monospace; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--blue); background:rgba(52,152,219,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(52,152,219,0.1); border-radius:8px; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(52,152,219,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.2); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(52,152,219,0.12); border:1px solid var(--blue); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--blue); font-size:18px; margin:18px 0; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .lesson-h{font-size:22px;} .wr-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">B1 · MODUL 1</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">B1 · Grammatik</div>
+    <h1 class="lesson-h" style="font-size:36px;">Konjunktiv <span style="color:var(--blue)">II</span></h1>
+    <p class="body-text">Konjunktiv II ist eine der prüfungsrelevantesten Strukturen auf B1-Niveau. Er erscheint in der Schreiben- und Sprechen-Prüfung bei höflichen Bitten, Wünschen und irrealen Bedingungen. Wer Konjunktiv II beherrscht, kann nuanciert und höflich auf Deutsch kommunizieren.</p>
+
+    <details class="en-help">
+      <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+      <div class="en-help-body">
+        <p>Konjunktiv II is the subjunctive mood in German. It is used for polite requests ("could you…"), wishes ("I wish I had…"), and unreal conditions ("if I were…, I would…"). It appears in both the writing and speaking sections of the B1 exam.</p>
+      </div>
+    </details>
+
+    <div class="info-box"><strong style="color:var(--gold);">Lernziele dieses Moduls:</strong><br><br>
+      ✦ Du kannst würde + Infinitiv korrekt bilden und verwenden<br>
+      ✦ Du kennst die starken Formen: wäre, hätte, könnte, müsste, dürfte<br>
+      ✦ Du kannst höfliche Bitten mit Konjunktiv II formulieren<br>
+      ✦ Du kannst irreale Bedingungen (wenn…, würde…) konstruieren<br>
+      ✦ Du erkennst typische Fehler und vermeidest sie in der Prüfung
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">💭</div><div><div class="lc-title">Lektion 1 — Würde + Infinitiv</div><div class="lc-desc">Die wichtigste Konjunktiv-II-Konstruktion. Ich würde gehen. Du würdest sagen. Alle Personen.</div></div><div class="lc-tag" style="color:var(--blue);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">⚡</div><div><div class="lc-title">Lektion 2 — Wäre &amp; Hätte</div><div class="lc-desc">Die starken Formen von sein und haben. Wenn ich reich wäre. Wenn ich Zeit hätte.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">🔧</div><div><div class="lc-title">Lektion 3 — Modalverben im Konjunktiv II</div><div class="lc-desc">Könnte, müsste, dürfte, sollte, wollte. Könntest du mir helfen? Das sollte nicht passieren.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">🤝</div><div><div class="lc-title">Lektion 4 — Höfliche Bitten</div><div class="lc-desc">Könnten Sie…? Würden Sie…? Hätten Sie…? Prüfungsrelevant für Schreiben und Sprechen.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">🌠</div><div><div class="lc-title">Lektion 5 — Wenn…, würde… (Irrealis)</div><div class="lc-desc">Irreale Bedingungen. Wenn ich mehr Zeit hätte, würde ich Deutsch üben. Struktur und Tipps.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lektion 6 — Amina &amp; Kwame in der Prüfung</div><div class="lc-desc">Konjunktiv II im Prüfungskontext. Typische Aufgaben, häufige Fehler, Exam-Tipps.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lektionen</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--blue);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LEKTION 1: Würde + Infinitiv ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 1 · Lektion 1 von 6</div>
+          <h2 class="lesson-h">Würde + <span style="color:var(--wrd)">Infinitiv</span></h2>
+          <p class="body-text">Konjunktiv II ist der Modus der Hypothese, des Wunsches und der Höflichkeit. Die häufigste Form im modernen Deutschen ist <strong style="color:var(--wrd);">würde + Infinitiv</strong> — das Äquivalent von „would" auf Englisch.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>In modern German, most verbs form the Konjunktiv II using <em>würde</em> (the Konjunktiv II of <em>werden</em>) + the infinitive. This is equivalent to English "would + verb". For example: "Ich würde gehen" = "I would go".</p>
+              <p>A few common verbs (sein, haben, modal verbs) have their own special Konjunktiv II forms that are used instead of würde — you'll learn those in Lessons 2 and 3.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Die Formel</div>
+          <div class="formula-box">
+            <div class="formula-title">KONJUNKTIV II — WÜRDE-FORM</div>
+            <div class="formula-main">
+              <span class="formula-part fp-w">würde</span>
+              <span class="formula-plus">+</span>
+              <span class="formula-part" style="color:var(--cream)">Infinitiv</span>
+            </div>
+            <div style="font-size:12px;color:var(--gray);margin-top:8px;">würde wird konjugiert · Infinitiv steht am Satzende</div>
+          </div>
+
+          <div class="sec-label">würde — Konjugation (alle Personen)</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Person</th><th style="color:var(--wrd)">würde</th><th>Beispiel</th></tr>
+              <tr><td>ich</td><td class="ct-konj">würde</td><td>Ich würde gehen.</td></tr>
+              <tr><td>du</td><td class="ct-konj">würdest</td><td>Du würdest helfen.</td></tr>
+              <tr><td>er/sie/es</td><td class="ct-konj">würde</td><td>Er würde kommen.</td></tr>
+              <tr><td>wir</td><td class="ct-konj">würden</td><td>Wir würden lernen.</td></tr>
+              <tr><td>ihr</td><td class="ct-konj">würdet</td><td>Ihr würdet arbeiten.</td></tr>
+              <tr><td>sie/Sie</td><td class="ct-konj">würden</td><td>Sie würden fragen.</td></tr>
+            </table>
+          </div>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>Notice that <em>ich</em> and <em>er/sie/es</em> both use <em>würde</em> (no -st ending for er/sie/es). This is different from regular verbs. The endings are: -e, -est, -e, -en, -et, -en — similar to the Präteritum endings.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Beispiele mit würde + Infinitiv</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--wrd);">WUNSCH</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <span class="wh">würde</span> gern nach Deutschland reisen.</div>
+                <div class="ex-note">Wunsch/Hypothese: Ich reise (noch) nicht, aber ich möchte es.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich würde gern nach Deutschland reisen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--wrd);">HÖFLICHKEIT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <span class="wh">würde</span> gern ein Zimmer buchen.</div>
+                <div class="ex-note">Höfliche Anfrage in einem Hotel oder Büro.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich würde gern ein Zimmer buchen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--wrd);">RATSCHLAG</div>
+              <div style="flex:1;">
+                <div class="ex-de">An deiner Stelle <span class="wh">würde</span> ich mehr Wasser trinken.</div>
+                <div class="ex-note">„An deiner Stelle würde ich…" = If I were you, I would… — sehr nützlich in der Prüfung!</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'An deiner Stelle würde ich mehr Wasser trinken.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue);">📌 Wichtig — würde NICHT mit sein und haben!</strong><br><br>
+            Man sagt NICHT „ich würde sein" oder „ich würde haben".<br>
+            Für sein → <strong>wäre</strong> · Für haben → <strong>hätte</strong><br>
+            Diese lernst du in Lektion 2.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 1 · Lektion 1 · Übung</div><h2 class="lesson-h">Würde + Infinitiv — <span style="color:var(--wrd)">Übung</span></h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-0 -->
+
+    <!-- ── LEKTION 2: Wäre & Hätte ── -->
+    <div id="lesson-1" class="lesson-pane">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 1 · Lektion 2 von 6</div>
+          <h2 class="lesson-h"><span style="color:var(--irr)">Wäre</span> &amp; <span style="color:var(--irr)">Hätte</span></h2>
+          <p class="body-text">Für <strong>sein</strong> und <strong>haben</strong> benutzt man nicht „würde sein" oder „würde haben" — sondern die eigenen Konjunktiv-II-Formen: <span class="ih">wäre</span> und <span class="ih">hätte</span>. Diese Formen kommen direkt vom Präteritum (war → wäre, hatte → hätte).</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p><em>Wäre</em> = "would be" / "were" (from <em>war</em>). <em>Hätte</em> = "would have" / "had" (from <em>hatte</em>). These are the Konjunktiv II forms of <em>sein</em> and <em>haben</em>. You form them by taking the Präteritum stem and adding an Umlaut + Konjunktiv endings.</p>
+              <p>War → wär- + endings → wäre, wärst, wäre, wären, wäret, wären</p>
+              <p>Hatte → hätt- + endings → hätte, hättest, hätte, hätten, hättet, hätten</p>
+            </div>
+          </details>
+
+          <div class="sec-label">wäre — Konjugation</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Person</th><th style="color:var(--irr)">wäre</th><th>Beispiel</th></tr>
+              <tr><td>ich</td><td class="ct-konj" style="color:var(--irr)">wäre</td><td>Wenn ich reich wäre…</td></tr>
+              <tr><td>du</td><td class="ct-konj" style="color:var(--irr)">wärst</td><td>Wenn du hier wärst…</td></tr>
+              <tr><td>er/sie/es</td><td class="ct-konj" style="color:var(--irr)">wäre</td><td>Wenn es einfacher wäre…</td></tr>
+              <tr><td>wir</td><td class="ct-konj" style="color:var(--irr)">wären</td><td>Wenn wir in Berlin wären…</td></tr>
+              <tr><td>sie/Sie</td><td class="ct-konj" style="color:var(--irr)">wären</td><td>Wenn Sie bereit wären…</td></tr>
+            </table>
+          </div>
+
+          <div class="sec-label">hätte — Konjugation</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Person</th><th style="color:var(--irr)">hätte</th><th>Beispiel</th></tr>
+              <tr><td>ich</td><td class="ct-konj" style="color:var(--irr)">hätte</td><td>Wenn ich mehr Zeit hätte…</td></tr>
+              <tr><td>du</td><td class="ct-konj" style="color:var(--irr)">hättest</td><td>Wenn du Geld hättest…</td></tr>
+              <tr><td>er/sie/es</td><td class="ct-konj" style="color:var(--irr)">hätte</td><td>Wenn er eine Idee hätte…</td></tr>
+              <tr><td>wir</td><td class="ct-konj" style="color:var(--irr)">hätten</td><td>Wenn wir mehr Platz hätten…</td></tr>
+              <tr><td>sie/Sie</td><td class="ct-konj" style="color:var(--irr)">hätten</td><td>Wenn Sie Zeit hätten…</td></tr>
+            </table>
+          </div>
+
+          <div class="sec-label">Beispiele im Kontext</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--irr);">WÄRE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Wenn ich Ärztin <span class="ih">wäre</span>, würde ich in Ghana arbeiten.</div>
+                <div class="ex-note">Aminas Wunsch — sie ist (noch) keine Ärztin. Irreale Bedingung.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wenn ich Ärztin wäre, würde ich in Ghana arbeiten.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--irr);">HÄTTE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Wenn Kwame mehr Zeit <span class="ih">hätte</span>, würde er mehr lesen.</div>
+                <div class="ex-note">Kwame hat (jetzt) nicht genug Zeit. Hypothetische Situation.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wenn Kwame mehr Zeit hätte, würde er mehr lesen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--irr);">BEIDE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das <span class="ih">wäre</span> schön. Ich <span class="ih">hätte</span> gern mehr Urlaub.</div>
+                <div class="ex-note">Kurzformen ohne wenn-Satz — auch sehr häufig!</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das wäre schön. Ich hätte gern mehr Urlaub.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Wenn ich reich würde sein…</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Wenn ich reich wäre…</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">„würde sein" ist falsch — man verwendet immer wäre für sein im Konjunktiv II.</p>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 1 · Lektion 2 · Übung</div><h2 class="lesson-h">Wäre &amp; Hätte — <span style="color:var(--irr)">Übung</span></h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-1 -->
+
+    <!-- ── LEKTION 3: Modalverben im Konjunktiv II ── -->
+    <div id="lesson-2" class="lesson-pane">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 1 · Lektion 3 von 6</div>
+          <h2 class="lesson-h">Modalverben im <span style="color:var(--mod)">Konjunktiv II</span></h2>
+          <p class="body-text">Modalverben (können, müssen, dürfen, sollen, wollen) haben eigene Konjunktiv-II-Formen. Diese Formen kommen sehr häufig in der Prüfung vor — besonders <span class="mh">könnte</span>, <span class="mh">müsste</span> und <span class="mh">dürfte</span>.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>Modal verbs form their own Konjunktiv II by adding Umlaut to the Präteritum stem + Konjunktiv endings:</p>
+              <p>können → konnte → könnte ("could / would be able to")</p>
+              <p>müssen → musste → müsste ("would have to / should")</p>
+              <p>dürfen → durfte → dürfte ("would be allowed to / might")</p>
+              <p>sollen → sollte ("should — this form already looks like Konjunktiv II")</p>
+              <p>wollen → wollte ("wanted to — context shows if it's Konjunktiv II")</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Die wichtigsten Formen</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Infinitiv</th><th>Präteritum</th><th style="color:var(--mod)">Konj. II (ich/er)</th><th>Bedeutung</th></tr>
+              <tr><td>können</td><td class="ct-ind">konnte</td><td class="ct-konj" style="color:var(--mod)">könnte</td><td>could / would be able to</td></tr>
+              <tr><td>müssen</td><td class="ct-ind">musste</td><td class="ct-konj" style="color:var(--mod)">müsste</td><td>would have to / should</td></tr>
+              <tr><td>dürfen</td><td class="ct-ind">durfte</td><td class="ct-konj" style="color:var(--mod)">dürfte</td><td>would be allowed to / might</td></tr>
+              <tr><td>sollen</td><td class="ct-ind">sollte</td><td class="ct-konj" style="color:var(--mod)">sollte</td><td>should (obligation)</td></tr>
+              <tr><td>wollen</td><td class="ct-ind">wollte</td><td class="ct-konj" style="color:var(--mod)">wollte</td><td>would want to</td></tr>
+            </table>
+          </div>
+
+          <div class="sec-label">Beispiele im Kontext</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--mod);">KÖNNTE</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="mh">Könntest</span> du mir bitte helfen?</div>
+                <div class="ex-note">Höfliche Bitte — viel höflicher als „Kannst du mir helfen?"</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Könntest du mir bitte helfen?')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--mod);">MÜSSTE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Du <span class="mh">müsstest</span> eigentlich mehr schlafen.</div>
+                <div class="ex-note">Ratschlag mit Konjunktiv II — sanfter als „Du musst mehr schlafen."</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Du müsstest eigentlich mehr schlafen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--mod);">DÜRFTE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das <span class="mh">dürfte</span> kein Problem sein.</div>
+                <div class="ex-note">Vorsichtige Einschätzung — wahrscheinlich kein Problem (aber nicht sicher).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das dürfte kein Problem sein.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--mod);">SOLLTE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina <span class="mh">sollte</span> mehr üben, wenn sie die Prüfung bestehen will.</div>
+                <div class="ex-note">Ratschlag/Empfehlung — obligation mit Konjunktiv-II-Ton.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina sollte mehr üben, wenn sie die Prüfung bestehen will.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="info-box"><strong style="color:var(--gold);">Prüfungstipp:</strong><br><br>
+            „Könnten Sie…?" und „Würden Sie…?" sind die höflichsten Bitten im Deutschen. In der B1-Schreiben-Aufgabe (formelle E-Mail) wirst du oft aufgefordert, höfliche Bitten zu formulieren. Lerne diese Floskeln auswendig!
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 1 · Lektion 3 · Übung</div><h2 class="lesson-h">Modalverben — <span style="color:var(--mod)">Übung</span></h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-2 -->
+
+    <!-- ── LEKTION 4: Höfliche Bitten ── -->
+    <div id="lesson-3" class="lesson-pane">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 1 · Lektion 4 von 6</div>
+          <h2 class="lesson-h">Höfliche <span style="color:var(--pol)">Bitten</span></h2>
+          <p class="body-text">Konjunktiv II ist das wichtigste Mittel für Höflichkeit im Deutschen. Besonders in formellen Situationen — Briefe, E-Mails, Behördengespräche — erwartet man Konjunktiv-II-Formulierungen. Diese Strukturen erscheinen direkt in der B1-Prüfung (Schreiben und Sprechen).</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>In formal German, polite requests use Konjunktiv II. Compare:</p>
+              <p>Direct (rude): "Geben Sie mir das Formular!" (Give me the form!)</p>
+              <p>Polite: "Könnten Sie mir das Formular geben?" (Could you give me the form?)</p>
+              <p>Very polite: "Würden Sie mir bitte das Formular geben?" (Would you please give me the form?)</p>
+              <p>This politeness register is expected in written German (formal letters, emails) and in speaking tasks at B1 level.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Die wichtigsten Höflichkeitsformeln</div>
+          <div class="ctx-grid">
+            <div class="ctx-card c-polite">
+              <div class="ctx-icon">🤝</div>
+              <div>
+                <div class="ctx-title">Könnten Sie / Könntest du…?</div>
+                <div class="ctx-desc">Die häufigste höfliche Bitte. Formal (Sie) oder informell (du).</div>
+                <div class="ctx-ex">Könnten Sie mir bitte die Rechnung schicken?</div>
+              </div>
+            </div>
+            <div class="ctx-card c-wish">
+              <div class="ctx-icon">✉️</div>
+              <div>
+                <div class="ctx-title">Würden Sie / Würdest du…?</div>
+                <div class="ctx-desc">Sehr höflich — besonders in formellen E-Mails und Briefen.</div>
+                <div class="ctx-ex">Würden Sie mir einen Termin bestätigen?</div>
+              </div>
+            </div>
+            <div class="ctx-card c-cond">
+              <div class="ctx-icon">📋</div>
+              <div>
+                <div class="ctx-title">Hätten Sie / Hättest du…?</div>
+                <div class="ctx-desc">Höfliche Frage nach Verfügbarkeit oder Möglichkeit.</div>
+                <div class="ctx-ex">Hätten Sie kurz Zeit für ein Gespräch?</div>
+              </div>
+            </div>
+            <div class="ctx-card c-adv">
+              <div class="ctx-icon">💡</div>
+              <div>
+                <div class="ctx-title">Ich würde gern / gerne…</div>
+                <div class="ctx-desc">Höfliche Absichtsbekundung — für Briefe und Bewerbungen.</div>
+                <div class="ctx-ex">Ich würde gern einen Kurs besuchen.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">Beispiele aus der B1-Prüfung (Schreiben)</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--pol);">FORMAL</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="ph">Könnten</span> Sie mir bitte weitere Informationen schicken?</div>
+                <div class="ex-note">Typisch in einer formellen Anfrage-E-Mail. Amina schreibt an eine Volkshochschule.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Könnten Sie mir bitte weitere Informationen schicken?')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--pol);">FORMAL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <span class="ph">würde</span> mich sehr über eine Antwort freuen.</div>
+                <div class="ex-note">Abschlussformel in formellen E-Mails — auswendig lernen!</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich würde mich sehr über eine Antwort freuen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--pol);">SPRECHEN</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="ph">Wärst</span> du bereit, mir dabei zu helfen?</div>
+                <div class="ex-note">Kwame fragt Amina um Hilfe — in der Sprechaufgabe (Diskussion zu zweit).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wärst du bereit, mir dabei zu helfen?')">🔊</button>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue);">📌 Prüfungsformat:</strong><br><br>
+            In der B1-Schreiben-Prüfung wirst du eine formelle E-Mail oder einen Brief schreiben. Die Aufgabe enthält oft Stichpunkte wie „nach Informationen fragen" oder „um etwas bitten". Nutze Konjunktiv II — es zeigt dem Prüfer, dass du B1-Strukturen beherrschst!
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 1 · Lektion 4 · Übung</div><h2 class="lesson-h">Höfliche Bitten — <span style="color:var(--pol)">Übung</span></h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-3 -->
+
+    <!-- ── LEKTION 5: Wenn…, würde… (Irrealis) ── -->
+    <div id="lesson-4" class="lesson-pane">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 1 · Lektion 5 von 6</div>
+          <h2 class="lesson-h">Wenn…, <span style="color:var(--wrd)">würde…</span></h2>
+          <p class="body-text">Irreale Bedingungen beschreiben Situationen, die gerade nicht wahr sind — Hypothesen, Träume, Wünsche. Die Struktur lautet: <strong style="color:var(--irr)">Wenn + Konjunktiv II</strong> (Bedingung), <strong style="color:var(--wrd)">würde + Infinitiv</strong> (Folge).</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>In English: "If I had more money, I would travel." In German: "Wenn ich mehr Geld hätte, würde ich reisen."</p>
+              <p>The <em>wenn</em>-clause (condition) uses Konjunktiv II (hätte, wäre, könnte, etc.). The main clause (result) uses <em>würde</em> + infinitive (or another Konjunktiv II form).</p>
+              <p>Word order: in the <em>wenn</em>-clause, the verb goes to the END. In the main clause that follows, the finite verb comes FIRST (inverted).</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Die Struktur</div>
+          <div class="formula-box">
+            <div class="formula-title">IRREAL BEDINGUNGSSATZ</div>
+            <div class="formula-main" style="font-size:15px;line-height:2.5;">
+              <span style="color:var(--irr);">Wenn</span> + Subjekt + … + <span class="fp-i">Konj. II</span>,<br>
+              <span class="fp-w">würde</span> + Subjekt + … + Infinitiv.
+            </div>
+          </div>
+
+          <div class="sec-label">Wortstellung — Achtung!</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--irr);">WENN-SATZ</div>
+              <div style="flex:1;">
+                <div class="ex-de">Wenn ich mehr Zeit <span class="ih">hätte</span>,</div>
+                <div class="ex-note">Verb am Ende des Nebensatzes. hätte = Konjunktiv II von haben.</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--wrd);">HAUPTSATZ</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="wh">würde</span> ich mehr Deutsch lernen.</div>
+                <div class="ex-note">würde steht am Anfang (Inversion nach Nebensatz). Infinitiv am Ende.</div>
+              </div>
+            </div>
+          </div>
+          <div class="ex-card" style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;margin-bottom:8px;">
+            <div style="flex:1;">
+              <div class="ex-de">Wenn ich mehr Zeit <span class="ih">hätte</span>, <span class="wh">würde</span> ich mehr Deutsch lernen.</div>
+              <div class="ex-note">Vollständiger Satz — Nebensatz zuerst, dann Hauptsatz mit Inversion.</div>
+            </div>
+            <button class="speak-btn" onclick="speakSentence(this,'Wenn ich mehr Zeit hätte, würde ich mehr Deutsch lernen.')">🔊</button>
+          </div>
+
+          <div class="sec-label">Weitere Beispiele mit Kontext</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--irr);">WUNSCH</div>
+              <div style="flex:1;">
+                <div class="ex-de">Wenn Kwame in Deutschland <span class="ih">wäre</span>, <span class="wh">würde</span> er jeden Tag Deutsch sprechen.</div>
+                <div class="ex-note">Kwame ist (jetzt) nicht in Deutschland — hypothetisch.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wenn Kwame in Deutschland wäre, würde er jeden Tag Deutsch sprechen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--irr);">RATSCHLAG</div>
+              <div style="flex:1;">
+                <div class="ex-de">Wenn ich du <span class="ih">wäre</span>, <span class="wh">würde</span> ich die Prüfung verschieben.</div>
+                <div class="ex-note">„Wenn ich du wäre" = If I were you. Sehr nützlicher Ratschlag-Ausdruck!</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wenn ich du wäre, würde ich die Prüfung verschieben.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--mod);">MIT MODAL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Wenn Amina Lehrerin <span class="ih">wäre</span>, <span class="mh">könnte</span> sie besser erklären.</div>
+                <div class="ex-note">Manchmal steht im Hauptsatz ein Modalverb im Konjunktiv II statt würde.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wenn Amina Lehrerin wäre, könnte sie besser erklären.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Wenn ich mehr Zeit hätte, ich würde lernen.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Wenn ich mehr Zeit hätte, würde ich lernen.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Nach dem wenn-Satz kommt INVERSION im Hauptsatz. Das Verb (würde) steht vor dem Subjekt (ich).</p>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 1 · Lektion 5 · Übung</div><h2 class="lesson-h">Wenn…, würde… — <span style="color:var(--wrd)">Übung</span></h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-4 -->
+
+    <!-- ── LEKTION 6: Amina & Kwame in der Prüfung ── -->
+    <div id="lesson-5" class="lesson-pane">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 1 · Lektion 6 von 6</div>
+          <h2 class="lesson-h">Amina &amp; Kwame — <span style="color:var(--blue)">Prüfungsvorbereitung</span></h2>
+          <p class="body-text">Amina und Kwame bereiten sich auf die Goethe-Prüfung B1 vor. Lies ihre Gespräche und Texte — darin erkennst du alle Konjunktiv-II-Strukturen aus diesem Modul in realem Kontext.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>This lesson shows Konjunktiv II in real exam-style situations: a formal email (Schreiben task), a spoken dialogue (Sprechen task), and typical B1 exam tips. Notice how all the structures from Lessons 1–5 appear naturally.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Situation 1 — Aminas formelle E-Mail (Schreiben)</div>
+          <div class="comp-wrap">
+            <p style="font-family:'DM Mono',monospace;font-size:13px;color:var(--cream);line-height:1.9;">
+              Sehr geehrte Damen und Herren,<br><br>
+              ich <span class="wh">würde</span> gern an Ihrem Deutschkurs teilnehmen. <span class="ph">Könnten</span> Sie mir bitte die Kurszeiten mitteilen? Außerdem <span class="ph">hätte</span> ich gern gewusst, ob Plätze noch frei sind.<br><br>
+              Wenn ich einen Platz bekommen <span class="ih">würde</span>, <span class="wh">würde</span> ich mich sehr freuen.<br><br>
+              Ich <span class="wh">würde</span> mich sehr über eine schnelle Antwort freuen.<br><br>
+              Mit freundlichen Grüßen,<br>
+              Amina Diallo
+            </p>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-4px 0 14px;line-height:1.7;">Amina benutzt würde (3×), könnte und hätte — alle Konjunktiv-II-Formen in einer kurzen formellen E-Mail.</p>
+
+          <div class="sec-label">Situation 2 — Kwame &amp; Amina (Sprechen — Diskussion)</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--wrd);">KWAME</div>
+              <div style="flex:1;">
+                <div class="ex-de">Was <span class="wh">würdest</span> du machen, wenn du drei Monate frei <span class="ih">hättest</span>?</div>
+                <div class="ex-note">Typische Sprechen-Aufgabe: Hypothetische Frage mit wenn + Konjunktiv II.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Was würdest du machen, wenn du drei Monate frei hättest?')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--mod);">AMINA</div>
+              <div style="flex:1;">
+                <div class="ex-de">Wenn ich drei Monate frei <span class="ih">hätte</span>, <span class="wh">würde</span> ich durch Europa reisen. Ich <span class="mh">könnte</span> endlich mein Deutsch verbessern!</div>
+                <div class="ex-note">Amina antwortet mit vollständiger Irrealis-Konstruktion + könnte als Variation.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wenn ich drei Monate frei hätte, würde ich durch Europa reisen. Ich könnte endlich mein Deutsch verbessern!')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Häufige Fehler afrikanischer Lernender</div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Wenn ich würde haben Zeit, ich gehe.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Wenn ich Zeit hätte, würde ich gehen.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Zwei Fehler gleichzeitig: „würde haben" statt hätte + keine Inversion im Hauptsatz.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Ich würde sein glücklich.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Ich wäre glücklich.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Nie „würde sein" — immer wäre für sein im Konjunktiv II.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Können Sie mir helfen bitte?</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Könnten Sie mir bitte helfen?</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Für höfliche Bitten: Konjunktiv II (könnten), nicht Indikativ (können). Bitte nicht ans Ende stellen.</p>
+
+          <div class="success-box">
+            <strong style="color:var(--green);">Zusammenfassung — Konjunktiv II auf einen Blick:</strong><br><br>
+            1. <strong style="color:var(--wrd);">Würde + Infinitiv:</strong> Ich würde gehen. Du würdest helfen.<br><br>
+            2. <strong style="color:var(--irr);">Wäre / Hätte:</strong> Wenn ich reich wäre. Wenn ich Zeit hätte.<br><br>
+            3. <strong style="color:var(--mod);">Modalverben:</strong> könnte, müsste, dürfte, sollte (konjugiert wie Präteritum + Umlaut)<br><br>
+            4. <strong style="color:var(--pol);">Höfliche Bitten:</strong> Könnten Sie…? Würden Sie…? Hätten Sie…?<br><br>
+            5. <strong style="color:var(--irr);">Irrealis:</strong> Wenn + Konj. II (Nebensatz) → würde + Infinitiv (Hauptsatz, invertiert)
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 1 · Lektion 6 · Übung</div><h2 class="lesson-h">Konjunktiv II — <span style="color:var(--blue)">Abschlusskontrolle</span></h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-5 -->
+
+  </div>
+</div>
+
+<script>
+var TOTAL=6, currentLesson=0, xp=0;
+var synth=window.speechSynthesis, voices=[], deVoice=null;
+function loadVoices(){ voices=synth.getVoices(); deVoice=voices.find(function(v){return v.lang==='de-DE';})||voices.find(function(v){return v.lang.startsWith('de');})||null; }
+if(synth.onvoiceschanged!==undefined){synth.onvoiceschanged=loadVoices;}
+function speakDE(text){ if(!synth)return; synth.cancel(); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; synth.speak(u); }
+function speakSentence(btn,text){ if(!synth)return; synth.cancel(); document.querySelectorAll('.speak-btn.speaking').forEach(function(b){b.classList.remove('speaking');}); btn.classList.add('speaking'); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; u.onend=function(){btn.classList.remove('speaking');}; synth.speak(u); }
+
+var QD={
+  0:[
+    {q:'Welcher Satz verwendet Würde + Infinitiv korrekt?',
+     hint:'Suche das Muster: würde (konjugiert) + Infinitiv am Satzende.',
+     opts:['Ich würde gehen gern.','Ich gehen würde gern.','Ich würde gern gehen.','Ich gern würde gehen.'],
+     ans:2,
+     exp:'„Ich würde gern gehen." ist korrekt. würde steht an Position 2 (nach dem Subjekt ich), gern ist ein Adverb in der Mitte, und gehen (Infinitiv) steht am Satzende. Option A stellt den Infinitiv falsch — gehen muss ans Ende, nicht nach würde. Option B hat falsche Grundwortstellung. Option D ist völlig unstrukturiert.',
+     rule:'Würde + Infinitiv: würde steht an Position 2 (konjugiert nach Person), der Infinitiv steht IMMER am Satzende.'}
+  ],
+  1:[
+    {q:'Welche Form ist korrekt? „Wenn ich in Berlin _____, würde ich jeden Tag Museen besuchen."',
+     hint:'In Berlin sein = eine irreale Bedingung. Welche Konjunktiv-II-Form braucht man für sein?',
+     opts:['würde sein','bin','wäre','sei'],
+     ans:2,
+     exp:'„wäre" ist korrekt — das ist die Konjunktiv-II-Form von sein. Man sagt nie „würde sein" für sein im Konjunktiv II — das ist der häufigste Fehler! Option B (bin) ist Indikativ Präsens — falsch für eine irreale Bedingung. Option D (sei) ist Konjunktiv I — der wird für indirekte Rede benutzt, nicht für Irrealis.',
+     rule:'Für sein im Konjunktiv II: wäre (NICHT würde sein). Für haben: hätte (NICHT würde haben). Diese Formen sind unverzichtbar!'}
+  ],
+  2:[
+    {q:'Kwame möchte höflich fragen, ob jemand ihm helfen kann. Was ist am höflichsten?',
+     hint:'Konjunktiv II macht Bitten höflicher als Indikativ. Welche Form ist Konjunktiv II von können?',
+     opts:['Kannst du mir helfen?','Könntest du mir helfen?','Du kannst mir helfen.','Hilf mir!'],
+     ans:1,
+     exp:'„Könntest du mir helfen?" ist am höflichsten — könntest ist Konjunktiv II von können (2. Person Singular). Option A (kannst) ist Indikativ — direkt, aber weniger höflich. Option C ist eine Aussage, keine Frage. Option D ist ein direkter Imperativ — am unhöflichsten. In der B1-Prüfung (Schreiben und Sprechen) soll man Konjunktiv II für Bitten verwenden.',
+     rule:'Konjunktiv II macht Bitten und Fragen deutlich höflicher: könntest > kannst; würden Sie > können Sie; hätten Sie > haben Sie.'}
+  ],
+  3:[
+    {q:'Welche Formulierung passt am besten in eine formelle E-Mail an eine Volkshochschule?',
+     hint:'Formelle E-Mails erfordern höfliche Sprache. Konjunktiv II ist das richtige Mittel.',
+     opts:['Ich will Informationen.','Schicken Sie mir Informationen!','Ich würde mich freuen, wenn Sie mir weitere Informationen schicken könnten.','Haben Sie Informationen für mich?'],
+     ans:2,
+     exp:'Option C ist die beste Formulierung für eine formelle E-Mail. Sie verwendet Konjunktiv II (würde, könnten) und zeigt eine höfliche, indirekte Anfrage. Option A ist zu direkt und klingt fordernd. Option B ist ein Imperativ — unpassend für einen formellen Brief. Option D ist zwar eine Frage, aber sie verwendet Indikativ und klingt informell.',
+     rule:'In formellen E-Mails und Briefen: Konjunktiv II zeigt Höflichkeit und ist auf B1-Niveau erwartet. Typische Formulierungen: „Ich würde mich freuen…", „Könnten Sie bitte…", „Würden Sie mir…"'}
+  ],
+  4:[
+    {q:'Welcher Satz ist grammatisch korrekt?',
+     hint:'Achte auf die Wortstellung nach dem wenn-Satz. Was passiert im Hauptsatz?',
+     opts:['Wenn ich mehr Geld hätte, ich würde reisen.','Wenn ich mehr Geld hätte, würde ich reisen.','Wenn ich hätte mehr Geld, würde ich reisen.','Wenn ich mehr Geld hätte, ich reise.'],
+     ans:1,
+     exp:'„Wenn ich mehr Geld hätte, würde ich reisen." ist korrekt. Im wenn-Satz (Nebensatz) geht das Verb ans Ende (hätte). Im Hauptsatz danach kommt Inversion: würde (Verb) steht vor ich (Subjekt). Option A macht den häufigsten Fehler: kein Inversion im Hauptsatz — „ich würde" statt „würde ich". Option C stellt hätte falsch. Option D verwendet Indikativ (reise) statt Konjunktiv II.',
+     rule:'Irrealis-Wortstellung: Wenn + Subjekt + … + Konj.II-Verb(Ende), INVERSION würde + Subjekt + … + Infinitiv(Ende).'}
+  ],
+  5:[
+    {q:'Amina liest: „Wenn es einen Deutschkurs in meiner Stadt gäbe, würde ich sofort anfangen." Was bedeutet dieser Satz?',
+     hint:'gäbe = Konjunktiv II von geben. Ist es ein realer oder irrealer Satz?',
+     opts:['Es gibt einen Deutschkurs — Amina fängt an.','Es gibt keinen Kurs — Amina würde anfangen, wenn es einen gäbe.','Es gab früher einen Kurs, aber jetzt nicht mehr.','Amina hat schon angefangen.'],
+     ans:1,
+     exp:'Der Satz ist eine irreale Bedingung: gäbe ist Konjunktiv II von geben — es gibt (jetzt) keinen Deutschkurs in der Stadt. Würde anfangen zeigt die Folge, die eintreten würde, wenn die Bedingung erfüllt wäre. Es ist ein Wunsch/Hypothese: die Realität ist, dass es keinen Kurs gibt. Option A wäre die Interpretation im Indikativ. Option C wäre Vergangenheit. Option D ist aktiv-positiv und passt nicht.',
+     rule:'Konjunktiv II (wenn + gäbe, hätte, wäre, würde) signalisiert immer eine irreale/hypothetische Bedingung — die Situation ist NICHT wahr in der Gegenwart.'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">FRAGE '+(s.cur+1)+' VON '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint" style="font-family:\'DM Mono\',monospace;">💡 '+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Nächste Frage →':'Ergebnis anzeigen →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Richtig!':'✗ Nicht ganz'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent='📌 Regel: '+q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' richtig</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfekt!':pct>=60?'Gut gemacht!':'Noch einmal versuchen.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(52,152,219,0.12);border:1px solid var(--blue);border-radius:50px;padding:9px 22px;color:var(--blue);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Modul 1 abschließen →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Zur nächsten Lektion →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">💭</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Modul 1 abgeschlossen!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">Du kannst jetzt würde + Infinitiv korrekt bilden, wäre und hätte sicher verwenden, Modalverben im Konjunktiv II einsetzen, höfliche Bitten formulieren und irreale Bedingungen konstruieren. Konjunktiv II erscheint in jedem B1-Schreiben- und Sprechen-Teil — du bist vorbereitet.</p><div class="xp-badge">⚡ '+xp+' XP verdient</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Modul 1 abgeschlossen. Weiter zu Modul 2 — Passiv.</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Zur Übersicht</button></div>'; localStorage.setItem('dw_mod_25_done','1'); var saved=parseInt(localStorage.getItem('dw_xp')||'0'); localStorage.setItem('dw_xp',saved+xp); }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+<script src="./ai-tutor.js" data-module="25"></script>
+</body>
+</html>
