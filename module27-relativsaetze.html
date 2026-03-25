@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — B1 Modul 3: Relativsätze</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --nom:#3498db; --akk:#e67e22; --dat:#9b59b6; --prp:#27ae60;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--blue); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--blue); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--blue); color:var(--white); width:100%; }
+  .btn-primary:hover { background:#2980b9; transform:translateY(-2px); box-shadow:0 8px 24px rgba(52,152,219,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--blue); color:var(--blue); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(52,152,219,0.2); }
+  .speak-btn.speaking { background:var(--blue); color:var(--white); }
+
+  /* ENGLISH HELP TOGGLE */
+  .en-help { background:rgba(52,152,219,0.05); border:1px dashed rgba(52,152,219,0.25); border-radius:10px; margin:12px 0; }
+  .en-help summary { padding:10px 16px; cursor:pointer; font-size:13px; color:var(--blue); font-family:'DM Mono',monospace; letter-spacing:.03em; list-style:none; display:flex; align-items:center; gap:8px; }
+  .en-help summary::-webkit-details-marker { display:none; }
+  .en-help[open] summary { border-bottom:1px dashed rgba(52,152,219,0.2); }
+  .en-help-body { padding:12px 16px; font-size:13px; color:rgba(245,240,232,.7); line-height:1.8; }
+  .en-help-body p { margin-bottom:8px; }
+  .en-help-body p:last-child { margin-bottom:0; }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-note { font-size:12px; color:var(--gray); line-height:1.6; }
+
+  /* TRANSFORM BOX: zwei Sätze → ein Satz */
+  .transform-box { background:var(--card2-bg); border:1px solid rgba(52,152,219,0.15); border-radius:14px; padding:18px 20px; margin:12px 0; }
+  .trn-row { display:flex; align-items:flex-start; gap:12px; margin-bottom:10px; }
+  .trn-row:last-child { margin-bottom:0; }
+  .trn-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; flex-shrink:0; width:50px; padding-top:2px; }
+  .trn-text { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); line-height:1.7; }
+  .trn-arrow { text-align:center; color:var(--blue); font-size:18px; margin:4px 0; padding-left:62px; }
+
+  /* PRONOUN TABLE */
+  .pron-table { width:100%; border-collapse:collapse; font-size:13px; margin:14px 0; }
+  .pron-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:10px 14px; text-align:left; border-bottom:2px solid rgba(255,255,255,0.1); }
+  .pron-table td { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'DM Mono',monospace; font-size:13px; vertical-align:top; text-align:center; }
+  .pron-table td:first-child { text-align:left; }
+  .pron-table tr:last-child td { border-bottom:none; }
+  .pron-table tr:hover td { background:rgba(255,255,255,0.02); }
+  .pt-nom { color:var(--nom); font-weight:700; }
+  .pt-akk { color:var(--akk); font-weight:700; }
+  .pt-dat { color:var(--dat); font-weight:700; }
+  .pron-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+
+  /* CASE BADGE */
+  .case-badge { display:inline-block; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; padding:3px 10px; border-radius:20px; margin:2px 3px; }
+  .cb-nom { background:rgba(52,152,219,0.12); border:1px solid rgba(52,152,219,0.3); color:var(--nom); }
+  .cb-akk { background:rgba(230,126,34,0.12); border:1px solid rgba(230,126,34,0.3); color:var(--akk); }
+  .cb-dat { background:rgba(155,89,182,0.12); border:1px solid rgba(155,89,182,0.3); color:var(--dat); }
+  .cb-prp { background:rgba(39,174,96,0.12); border:1px solid rgba(39,174,96,0.3); color:var(--prp); }
+
+  /* WRONG/RIGHT */
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.0; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+
+  /* HIGHLIGHTS */
+  .nh { color:var(--nom); font-weight:700; }
+  .ah { color:var(--akk); font-weight:700; }
+  .dh { color:var(--dat); font-weight:700; }
+  .ph { color:var(--prp); font-weight:700; }
+  .vh { color:var(--gold); font-weight:700; } /* verb highlight */
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Mono',monospace; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--blue); background:rgba(52,152,219,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(52,152,219,0.1); border-radius:8px; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(52,152,219,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.2); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(52,152,219,0.12); border:1px solid var(--blue); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--blue); font-size:18px; margin:18px 0; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .lesson-h{font-size:22px;} .wr-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">B1 · MODUL 3</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">B1 · Grammatik</div>
+    <h1 class="lesson-h" style="font-size:36px;">Relativ<span style="color:var(--blue)">sätze</span></h1>
+    <p class="body-text">Relativsätze sind einer der wichtigsten Indikatoren für B1-Niveau. Mit einem Relativsatz beschreibst du ein Nomen genauer — du verbindest zwei Sätze zu einem. In der Schreiben-Prüfung gibt jeder korrekte Relativsatz sofort Punkte beim Prüfer.</p>
+
+    <details class="en-help">
+      <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+      <div class="en-help-body">
+        <p>Relative clauses describe a noun more precisely. In English: "That is the man <em>who lives in Berlin</em>." In German the relative pronoun changes depending on the gender and case of the noun it refers to. The verb always goes to the END of the relative clause.</p>
+      </div>
+    </details>
+
+    <div class="info-box"><strong style="color:var(--gold);">Lernziele dieses Moduls:</strong><br><br>
+      ✦ Du kannst Relativsätze mit der/die/das im Nominativ bilden<br>
+      ✦ Du kannst Relativsätze im Akkusativ bilden (den/die/das)<br>
+      ✦ Du kannst Relativsätze im Dativ bilden (dem/der/dem/denen)<br>
+      ✦ Du kannst Präposition + Relativpronomen kombinieren<br>
+      ✦ Du erkennst und vermeidest typische Wortstellungsfehler
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">🔗</div><div><div class="lc-title">Lektion 1 — Was ist ein Relativsatz?</div><div class="lc-desc">Zwei Sätze werden zu einem. Das Verb geht ans Ende. Einführung und Grundprinzip.</div></div><div class="lc-tag" style="color:var(--blue);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">①</div><div><div class="lc-title">Lektion 2 — Nominativ: der, die, das</div><div class="lc-desc">Das Relativpronomen ist das Subjekt im Relativsatz. Der Mann, der… Die Frau, die…</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">②</div><div><div class="lc-title">Lektion 3 — Akkusativ: den, die, das</div><div class="lc-desc">Das Relativpronomen ist das Objekt. Das Buch, das ich lese. Den Mann, den ich kenne.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">③</div><div><div class="lc-title">Lektion 4 — Dativ: dem, der, denen</div><div class="lc-desc">Mit dem, mit der, mit denen. Der Freund, dem ich helfe. Die Stadt, in der ich wohne.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">🔧</div><div><div class="lc-title">Lektion 5 — Präposition + Relativpronomen</div><div class="lc-desc">mit dem, in der, über das, für den. Präposition bestimmt den Fall des Pronomens.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lektion 6 — Kwame &amp; Amina: Prüfungsvorbereitung</div><div class="lc-desc">Häufige Fehler, Prüfungstipps, Relativsätze in echten B1-Texten. Alles zusammen.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lektionen</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--blue);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LEKTION 1: Was ist ein Relativsatz? ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 3 · Lektion 1 von 6</div>
+          <h2 class="lesson-h">Was ist ein <span style="color:var(--nom)">Relativsatz</span>?</h2>
+          <p class="body-text">Ein Relativsatz beschreibt ein Nomen genauer. Er verbindet zwei Sätze zu einem und gibt mehr Informationen über eine Person, ein Ding oder eine Idee. Das Verb des Relativsatzes steht <strong style="color:var(--gold);">immer am Ende</strong>.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>A relative clause adds information about a noun. In English: "That is the man <em>who lives in Berlin</em>." In German, the structure is the same, but two rules are strict: (1) the relative pronoun must match the gender of the noun it refers to, and (2) the conjugated verb always goes to the very end of the relative clause.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Zwei Sätze → Ein Satz</div>
+          <div class="transform-box">
+            <div class="trn-row"><div class="trn-label" style="color:var(--gold);">SATZ 1</div><div class="trn-text">Das ist der Mann.</div></div>
+            <div class="trn-row"><div class="trn-label" style="color:var(--gold);">SATZ 2</div><div class="trn-text">Er wohnt in Berlin.</div></div>
+            <div class="trn-arrow">↓</div>
+            <div class="trn-row"><div class="trn-label" style="color:var(--nom);">RELATIV</div><div class="trn-text">Das ist der Mann, <span class="nh">der</span> in Berlin <span class="vh">wohnt</span>.</div></div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-4px 0 14px;line-height:1.7;">Das Personalpronomen <em>er</em> wird durch das Relativpronomen <span class="nh">der</span> ersetzt. Das Verb <span class="vh">wohnt</span> geht ans Ende des Relativsatzes.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>Step 1: Identify the noun you want to describe (der Mann — masculine).</p>
+              <p>Step 2: Replace the pronoun (<em>er</em>) with the matching relative pronoun (<em>der</em> for masculine nominative).</p>
+              <p>Step 3: Move the relative clause verb to the END.</p>
+              <p>Step 4: Put a comma before the relative clause.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Die wichtigsten Regeln</div>
+          <div class="warn-box">
+            <strong style="color:var(--blue);">Regel 1 — Verb ans Ende:</strong><br>
+            Das Relativpronomen leitet den Nebensatz ein → Verb geht an das Ende.<br><br>
+            <strong style="color:var(--blue);">Regel 2 — Komma:</strong><br>
+            Vor dem Relativsatz steht immer ein Komma.<br><br>
+            <strong style="color:var(--blue);">Regel 3 — Genus des Pronomens:</strong><br>
+            Das Relativpronomen richtet sich nach dem Genus des Bezugsnomens (der/die/das).<br><br>
+            <strong style="color:var(--blue);">Regel 4 — Fall des Pronomens:</strong><br>
+            Der Fall richtet sich nach der Funktion im Relativsatz (Subjekt → Nominativ, Objekt → Akkusativ, usw.).
+          </div>
+
+          <div class="sec-label">Weitere Beispiele</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--nom);">FEMININ</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das ist die Frau, <span class="nh">die</span> Deutsch <span class="vh">lernt</span>.</div>
+                <div class="ex-note">die Frau (feminin) → die. lernt steht am Ende.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das ist die Frau, die Deutsch lernt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--nom);">NEUTRUM</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das ist das Kind, <span class="nh">das</span> gern <span class="vh">singt</span>.</div>
+                <div class="ex-note">das Kind (Neutrum) → das. singt steht am Ende.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das ist das Kind, das gern singt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--nom);">PLURAL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das sind die Leute, <span class="nh">die</span> in Ghana <span class="vh">wohnen</span>.</div>
+                <div class="ex-note">Plural → die. wohnen steht am Ende.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das sind die Leute, die in Ghana wohnen.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="danger-box"><strong style="color:var(--red);">Häufiger Fehler — Verb nicht ans Ende:</strong><br><br>
+            ✗ Das ist der Mann, der <em>wohnt in Berlin</em>.<br>
+            ✓ Das ist der Mann, der in Berlin <strong>wohnt</strong>.<br><br>
+            Das Verb muss das letzte Wort im Relativsatz sein!
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 3 · Lektion 1 · Übung</div><h2 class="lesson-h">Relativsätze — <span style="color:var(--nom)">Grundprinzip</span></h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-0 -->
+
+    <!-- ── LEKTION 2: Nominativ ── -->
+    <div id="lesson-1" class="lesson-pane">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 3 · Lektion 2 von 6</div>
+          <h2 class="lesson-h">Nominativ — <span style="color:var(--nom)">der, die, das</span></h2>
+          <p class="body-text">Wenn das Relativpronomen das <strong style="color:var(--nom);">Subjekt</strong> im Relativsatz ist — also die handelnde Person oder das handelnde Ding — steht es im <span class="nh">Nominativ</span>. Die Formen sehen fast genauso aus wie der bestimmte Artikel.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>Use the nominative relative pronoun when the relative pronoun is the SUBJECT of the relative clause — i.e., the thing doing the action. Ask: "Who/what is doing the action in the relative clause?" If the answer is the relative pronoun itself, use nominative.</p>
+              <p>Example: "Das ist der Mann, der in Berlin wohnt." → Who lives in Berlin? The man (= der Mann) lives there. So "der" is the subject → nominative.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Nominativ-Relativpronomen</div>
+          <div class="pron-wrap">
+            <table class="pron-table">
+              <tr><th>Genus</th><th>Artikel</th><th style="color:var(--nom);">Relativpronomen (NOM)</th><th>Beispiel</th></tr>
+              <tr><td>Maskulin</td><td class="pt-nom">der</td><td class="pt-nom">der</td><td>…der Mann, <span class="nh">der</span> kommt</td></tr>
+              <tr><td>Feminin</td><td class="pt-nom">die</td><td class="pt-nom">die</td><td>…die Frau, <span class="nh">die</span> lernt</td></tr>
+              <tr><td>Neutrum</td><td class="pt-nom">das</td><td class="pt-nom">das</td><td>…das Kind, <span class="nh">das</span> spielt</td></tr>
+              <tr><td>Plural</td><td class="pt-nom">die</td><td class="pt-nom">die</td><td>…die Leute, <span class="nh">die</span> arbeiten</td></tr>
+            </table>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-4px 0 14px;line-height:1.7;">Hinweis: Im Nominativ sehen Relativpronomen genauso aus wie die Artikel der, die, das, die.</p>
+
+          <div class="sec-label">Beispiele mit Amina, Kwame &amp; Kofi</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--nom);">MASKULIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame ist ein Freund, <span class="nh">der</span> immer <span class="vh">hilft</span>.</div>
+                <div class="ex-note">der Freund (maskulin) → der. hilft am Ende (er hilft = er ist das Subjekt im Relativsatz).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame ist ein Freund, der immer hilft.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--nom);">FEMININ</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina ist eine Studentin, <span class="nh">die</span> sehr fleißig <span class="vh">ist</span>.</div>
+                <div class="ex-note">die Studentin (feminin) → die. ist am Ende.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina ist eine Studentin, die sehr fleißig ist.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--nom);">NEUTRUM</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das ist das Café, <span class="nh">das</span> jeden Tag <span class="vh">geöffnet ist</span>.</div>
+                <div class="ex-note">das Café (Neutrum) → das. Verb am Ende — auch bei sein + Adjektiv!</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das ist das Café, das jeden Tag geöffnet ist.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--nom);">PLURAL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das sind die Kollegen, <span class="nh">die</span> aus Ghana <span class="vh">kommen</span>.</div>
+                <div class="ex-note">Plural → die (gleich wie Feminin im Nominativ!). kommen am Ende.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das sind die Kollegen, die aus Ghana kommen.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Transformation: Schritt für Schritt</div>
+          <div class="transform-box">
+            <div class="trn-row"><div class="trn-label" style="color:var(--gold);">SATZ 1</div><div class="trn-text">Kofi ist ein Student.</div></div>
+            <div class="trn-row"><div class="trn-label" style="color:var(--gold);">SATZ 2</div><div class="trn-text"><strong>Er</strong> studiert Medizin in Accra.</div></div>
+            <div class="trn-arrow">↓ er → der (maskulin, Nominativ)</div>
+            <div class="trn-row"><div class="trn-label" style="color:var(--nom);">RELATIV</div><div class="trn-text">Kofi ist ein Student, <span class="nh">der</span> Medizin in Accra <span class="vh">studiert</span>.</div></div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 3 · Lektion 2 · Übung</div><h2 class="lesson-h">Nominativ — <span style="color:var(--nom)">Übung</span></h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-1 -->
+
+    <!-- ── LEKTION 3: Akkusativ ── -->
+    <div id="lesson-2" class="lesson-pane">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 3 · Lektion 3 von 6</div>
+          <h2 class="lesson-h">Akkusativ — <span style="color:var(--akk)">den, die, das</span></h2>
+          <p class="body-text">Wenn das Relativpronomen das <strong style="color:var(--akk);">direkte Objekt</strong> im Relativsatz ist, steht es im <span class="ah">Akkusativ</span>. Nur beim maskulinen Singular ändert sich die Form: <span class="nh">der</span> wird zu <span class="ah">den</span>. Feminin, Neutrum und Plural bleiben gleich.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>Use accusative when the relative pronoun is the DIRECT OBJECT of the relative clause. Ask: "What/whom is the subject of the relative clause doing something TO?" That answer is the accusative object.</p>
+              <p>Example: "Das ist das Buch, das ich lese." → I read WHAT? The book. So "das Buch" is the object → accusative. (Das stays "das" for neuter.)</p>
+              <p>The key change: masculine "der" → "den" in accusative. Everything else looks the same as nominative.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Akkusativ-Relativpronomen</div>
+          <div class="pron-wrap">
+            <table class="pron-table">
+              <tr><th>Genus</th><th>Nominativ</th><th style="color:var(--akk);">Akkusativ</th><th>Beispiel</th></tr>
+              <tr><td>Maskulin</td><td class="pt-nom">der</td><td class="pt-akk">den ⚠️</td><td>…den Mann, <span class="ah">den</span> ich kenne</td></tr>
+              <tr><td>Feminin</td><td class="pt-nom">die</td><td class="pt-akk">die</td><td>…die Frau, <span class="ah">die</span> ich sehe</td></tr>
+              <tr><td>Neutrum</td><td class="pt-nom">das</td><td class="pt-akk">das</td><td>…das Buch, <span class="ah">das</span> ich lese</td></tr>
+              <tr><td>Plural</td><td class="pt-nom">die</td><td class="pt-akk">die</td><td>…die Bücher, <span class="ah">die</span> ich kaufe</td></tr>
+            </table>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-4px 0 14px;line-height:1.7;">⚠️ Nur Maskulin ändert sich: der → <span style="color:var(--akk)">den</span>. Feminin, Neutrum, Plural bleiben gleich wie Nominativ.</p>
+
+          <div class="sec-label">Beispiele — Wie erkenne ich den Akkusativ?</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--akk);">MASKULIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das ist der Freund, <span class="ah">den</span> Amina gut <span class="vh">kennt</span>.</div>
+                <div class="ex-note">Amina kennt WEN? → den Freund (maskulin, Akkusativ) → den. Amina ist das Subjekt, nicht der Freund.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das ist der Freund, den Amina gut kennt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--akk);">FEMININ</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das ist die Lehrerin, <span class="ah">die</span> Kwame sehr <span class="vh">mag</span>.</div>
+                <div class="ex-note">Kwame mag WEN? → die Lehrerin (feminin, Akkusativ) → die. (gleich wie Nominativ!)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das ist die Lehrerin, die Kwame sehr mag.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--akk);">NEUTRUM</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das ist das Buch, <span class="ah">das</span> ich dir empfehlen <span class="vh">möchte</span>.</div>
+                <div class="ex-note">Ich empfehle WAS? → das Buch (Neutrum, Akkusativ) → das. Verb am Ende: möchte.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das ist das Buch, das ich dir empfehlen möchte.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Nominativ vs. Akkusativ — Der Unterschied</div>
+          <div class="pron-wrap">
+            <table class="pron-table">
+              <tr><th>Fall</th><th>Frage</th><th>Maskulin</th><th>Beispiel</th></tr>
+              <tr>
+                <td><span class="case-badge cb-nom">NOM</span></td>
+                <td>Wer handelt?</td>
+                <td class="pt-nom">der</td>
+                <td>…der Mann, <span class="nh">der</span> kommt</td>
+              </tr>
+              <tr>
+                <td><span class="case-badge cb-akk">AKK</span></td>
+                <td>Wen/Was sieht man?</td>
+                <td class="pt-akk">den</td>
+                <td>…der Mann, <span class="ah">den</span> ich sehe</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue);">📌 Tipp — Wie erkenne ich den Fall?</strong><br><br>
+            Schau, wer im Relativsatz die Handlung ausführt (= Subjekt → Nominativ) und wen/was die Handlung trifft (= Objekt → Akkusativ).<br><br>
+            <strong>Test:</strong> Gibt es im Relativsatz ein eigenes Subjekt (Amina, Kwame, ich, er…)?<br>
+            → Ja: das Relativpronomen ist wahrscheinlich Akkusativ.<br>
+            → Nein: das Relativpronomen ist wahrscheinlich Nominativ.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 3 · Lektion 3 · Übung</div><h2 class="lesson-h">Akkusativ — <span style="color:var(--akk)">Übung</span></h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-2 -->
+
+    <!-- ── LEKTION 4: Dativ ── -->
+    <div id="lesson-3" class="lesson-pane">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 3 · Lektion 4 von 6</div>
+          <h2 class="lesson-h">Dativ — <span style="color:var(--dat)">dem, der, denen</span></h2>
+          <p class="body-text">Wenn das Relativpronomen das <strong style="color:var(--dat);">indirekte Objekt</strong> im Relativsatz ist, oder wenn eine Präposition steht, die Dativ verlangt, steht es im <span class="dh">Dativ</span>. Hier ändern sich fast alle Formen im Vergleich zu Nominativ und Akkusativ.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>Use the dative relative pronoun when: (1) the relative pronoun is the indirect object (the person/thing receiving the action), or (2) there is a preposition that takes dative (mit, bei, von, aus, nach, seit, zu, gegenüber).</p>
+              <p>Key changes from nominative/accusative: masculine "der" → "dem", neuter "das" → "dem", plural "die" → "denen".</p>
+              <p>Feminine stays "der" in dative (same form as masculine nominative — confusing! Watch for context).</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Dativ-Relativpronomen</div>
+          <div class="pron-wrap">
+            <table class="pron-table">
+              <tr><th>Genus</th><th style="color:var(--nom);">Nominativ</th><th style="color:var(--akk);">Akkusativ</th><th style="color:var(--dat);">Dativ</th></tr>
+              <tr><td>Maskulin</td><td class="pt-nom">der</td><td class="pt-akk">den</td><td class="pt-dat">dem</td></tr>
+              <tr><td>Feminin</td><td class="pt-nom">die</td><td class="pt-akk">die</td><td class="pt-dat">der</td></tr>
+              <tr><td>Neutrum</td><td class="pt-nom">das</td><td class="pt-akk">das</td><td class="pt-dat">dem</td></tr>
+              <tr><td>Plural</td><td class="pt-nom">die</td><td class="pt-akk">die</td><td class="pt-dat">denen ⚠️</td></tr>
+            </table>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-4px 0 14px;line-height:1.7;">⚠️ Plural Dativ: <span style="color:var(--dat)">denen</span> (nicht den!). Feminin Dativ: <span style="color:var(--dat)">der</span> (sieht aus wie Maskulin Nominativ — Kontext entscheidet!).</p>
+
+          <div class="sec-label">Beispiele — Dativ als indirektes Objekt</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--dat);">MASKULIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das ist der Freund, <span class="dh">dem</span> ich geholfen <span class="vh">habe</span>.</div>
+                <div class="ex-note">Ich habe WEM geholfen? → dem Freund (maskulin, Dativ) → dem.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das ist der Freund, dem ich geholfen habe.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--dat);">FEMININ</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das ist die Kollegin, <span class="dh">der</span> Kwame vertraut.</div>
+                <div class="ex-note">Kwame vertraut WEM? → der Kollegin (feminin, Dativ) → der.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das ist die Kollegin, der Kwame vertraut.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--dat);">PLURAL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das sind die Studenten, <span class="dh">denen</span> Amina Bücher <span class="vh">empfohlen hat</span>.</div>
+                <div class="ex-note">Amina hat WEM Bücher empfohlen? → denen (Plural Dativ). Nicht „den"!</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das sind die Studenten, denen Amina Bücher empfohlen hat.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Komplette Übersicht — Alle drei Fälle</div>
+          <div class="pron-wrap">
+            <table class="pron-table">
+              <tr><th>Fall</th><th>Frage</th><th>Maskulin</th><th>Feminin</th><th>Neutrum</th><th>Plural</th></tr>
+              <tr><td><span class="case-badge cb-nom">NOM</span></td><td>Wer?</td><td class="pt-nom">der</td><td class="pt-nom">die</td><td class="pt-nom">das</td><td class="pt-nom">die</td></tr>
+              <tr><td><span class="case-badge cb-akk">AKK</span></td><td>Wen/Was?</td><td class="pt-akk">den</td><td class="pt-akk">die</td><td class="pt-akk">das</td><td class="pt-akk">die</td></tr>
+              <tr><td><span class="case-badge cb-dat">DAT</span></td><td>Wem?</td><td class="pt-dat">dem</td><td class="pt-dat">der</td><td class="pt-dat">dem</td><td class="pt-dat">denen</td></tr>
+            </table>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 3 · Lektion 4 · Übung</div><h2 class="lesson-h">Dativ — <span style="color:var(--dat)">Übung</span></h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-3 -->
+
+    <!-- ── LEKTION 5: Präposition + Relativpronomen ── -->
+    <div id="lesson-4" class="lesson-pane">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 3 · Lektion 5 von 6</div>
+          <h2 class="lesson-h">Präposition + <span style="color:var(--prp)">Relativpronomen</span></h2>
+          <p class="body-text">Wenn ein Verb oder Ausdruck eine Präposition braucht, bleibt diese Präposition auch im Relativsatz erhalten. Die Präposition steht <strong style="color:var(--prp);">vor dem Relativpronomen</strong> — und bestimmt den Fall des Pronomens.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>In German, prepositions stay attached to the relative pronoun. The preposition determines the case of the pronoun.</p>
+              <p>English: "That is the friend <em>with whom</em> I learn." German: "Das ist der Freund, <em>mit dem</em> ich lerne."</p>
+              <p>Important: The preposition CANNOT be separated to the end of the sentence (unlike in casual English). It must come directly before the relative pronoun.</p>
+              <p>Common preposition + case: mit/bei/von/aus/nach/seit/zu/gegenüber = Dativ. durch/für/gegen/ohne/um = Akkusativ. an/auf/in/über/unter/vor/hinter/neben/zwischen = Dativ or Akkusativ (depends on context).</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Formel: Präposition + Relativpronomen</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--prp);">MIT + DAT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das ist der Freund, <span class="ph">mit dem</span> ich jeden Tag <span class="vh">lerne</span>.</div>
+                <div class="ex-note">lernen mit + Dativ. der Freund (maskulin) → mit dem (Dativ maskulin).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das ist der Freund, mit dem ich jeden Tag lerne.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--prp);">IN + DAT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das ist die Stadt, <span class="ph">in der</span> Amina <span class="vh">wohnt</span>.</div>
+                <div class="ex-note">wohnen in + Dativ. die Stadt (feminin) → in der (Dativ feminin).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das ist die Stadt, in der Amina wohnt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--prp);">ÜBER + AKK</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das ist das Thema, <span class="ph">über das</span> wir <span class="vh">gesprochen haben</span>.</div>
+                <div class="ex-note">sprechen über + Akkusativ. das Thema (Neutrum) → über das (Akkusativ Neutrum).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das ist das Thema, über das wir gesprochen haben.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--prp);">FÜR + AKK</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das ist die Prüfung, <span class="ph">für die</span> Kofi drei Monate <span class="vh">gelernt hat</span>.</div>
+                <div class="ex-note">lernen für + Akkusativ. die Prüfung (feminin) → für die (Akkusativ feminin).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das ist die Prüfung, für die Kofi drei Monate gelernt hat.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--prp);">MIT + DAT (PLURAL)</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das sind die Studenten, <span class="ph">mit denen</span> Fatima <span class="vh">zusammenarbeitet</span>.</div>
+                <div class="ex-note">mit + Dativ. Plural → mit denen (Dativ Plural).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das sind die Studenten, mit denen Fatima zusammenarbeitet.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Präposition bestimmt den Fall</div>
+          <div class="pron-wrap">
+            <table class="pron-table">
+              <tr><th>Präposition</th><th>Fall</th><th>Maskulin</th><th>Feminin</th><th>Neutrum</th><th>Plural</th></tr>
+              <tr>
+                <td>mit, bei, von, aus, nach, zu</td>
+                <td><span class="case-badge cb-dat">DAT</span></td>
+                <td class="pt-dat">dem</td><td class="pt-dat">der</td><td class="pt-dat">dem</td><td class="pt-dat">denen</td>
+              </tr>
+              <tr>
+                <td>für, durch, ohne, gegen, um</td>
+                <td><span class="case-badge cb-akk">AKK</span></td>
+                <td class="pt-akk">den</td><td class="pt-akk">die</td><td class="pt-akk">das</td><td class="pt-akk">die</td>
+              </tr>
+              <tr>
+                <td>in, an, auf, über, unter… (Lage)</td>
+                <td><span class="case-badge cb-dat">DAT</span></td>
+                <td class="pt-dat">dem</td><td class="pt-dat">der</td><td class="pt-dat">dem</td><td class="pt-dat">denen</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Das ist der Freund, der ich mit lerne.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Das ist der Freund, mit dem ich lerne.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Präposition kommt VOR dem Relativpronomen — nicht ans Ende. Das Relativpronomen richtet sich nach der Präposition (mit → Dativ → dem).</p>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 3 · Lektion 5 · Übung</div><h2 class="lesson-h">Präposition + Relativpronomen — <span style="color:var(--prp)">Übung</span></h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-4 -->
+
+    <!-- ── LEKTION 6: Prüfungsvorbereitung ── -->
+    <div id="lesson-5" class="lesson-pane">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 3 · Lektion 6 von 6</div>
+          <h2 class="lesson-h">Kwame &amp; Amina — <span style="color:var(--blue)">Prüfungsvorbereitung</span></h2>
+          <p class="body-text">Amina und Kwame schreiben eine formelle E-Mail und einen kurzen Text. Lies ihre Sätze und erkenne alle Relativsatzstrukturen aus diesem Modul. So sehen Relativsätze in echten B1-Prüfungsaufgaben aus.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>This lesson shows relative clauses in real B1 exam contexts: a formal email, a short description text, and common errors. In the B1 Schreiben exam, using at least one relative clause correctly can earn you extra points for grammatical complexity.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Situation 1 — Kwames Beschreibung (Sprechen)</div>
+          <div class="pron-wrap">
+            <p style="font-family:'DM Mono',monospace;font-size:13px;color:var(--cream);line-height:2.0;">
+              Mein Name ist Kwame. Ich komme aus Ghana und ich lebe jetzt in Deutschland.<br><br>
+              Ich wohne in einer Stadt, <span class="nh">die</span> sehr schön <span class="vh">ist</span>. Die Stadt, <span class="ph">in der</span> ich <span class="vh">wohne</span>, hat viele Parks.<br><br>
+              Ich habe einen Deutschkurs besucht. Es ist ein Kurs, <span class="ah">den</span> ich sehr <span class="vh">empfehlen kann</span>. Der Lehrer, <span class="dh">dem</span> ich am meisten <span class="vh">vertraue</span>, heißt Herr Fischer.<br><br>
+              Ich habe auch neue Freunde gefunden — das sind Menschen, <span class="dh">mit denen</span> ich sehr gern <span class="vh">zusammen bin</span>.
+            </p>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:6px 0 14px;line-height:1.7;">Kwame benutzt 5 Relativsätze: Nominativ (die), Präp.+Dativ (in der), Akkusativ (den), Dativ (dem), Präp.+Dativ Plural (mit denen).</p>
+
+          <div class="sec-label">Situation 2 — Aminas formelle E-Mail (Schreiben)</div>
+          <div class="pron-wrap">
+            <p style="font-family:'DM Mono',monospace;font-size:13px;color:var(--cream);line-height:2.0;">
+              Sehr geehrte Damen und Herren,<br><br>
+              ich interessiere mich für den Kurs, <span class="ah">den</span> Sie auf Ihrer Website <span class="vh">anbieten</span>. Es ist ein Kurs, <span class="nh">der</span> perfekt zu meinen Zielen <span class="vh">passt</span>.<br><br>
+              Ich bin eine Studentin, <span class="nh">die</span> bereits zwei Jahre Deutsch <span class="vh">gelernt hat</span> und jetzt das B1-Niveau <span class="vh">erreichen möchte</span>.<br><br>
+              Mit freundlichen Grüßen,<br>Amina Diallo
+            </p>
+          </div>
+
+          <div class="sec-label">Häufige Fehler afrikanischer Lernender</div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Das ist der Mann, der wohnt in Berlin.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Das ist der Mann, der in Berlin wohnt.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Verb muss ans Ende! Im Nebensatz gilt immer: Verb kommt zuletzt.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Das ist die Frau, die ich kenne sie.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Das ist die Frau, die ich kenne.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Kein zusätzliches Pronomen! Das Relativpronomen <em>ersetzt</em> das Personalpronomen — nie beide zusammen.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Das ist der Freund, der ich mit lerne.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Das ist der Freund, mit dem ich lerne.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Präposition VOR dem Relativpronomen, nicht danach. mit → Dativ → dem (nicht der!).</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Das sind die Freunde, den ich vertraue.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Das sind die Freunde, denen ich vertraue.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Plural Dativ = denen — nicht den! denen ist eine der wichtigsten Formen zu lernen.</p>
+
+          <div class="success-box">
+            <strong style="color:var(--green);">Zusammenfassung — Relativsätze auf einen Blick:</strong><br><br>
+            <span class="case-badge cb-nom">NOM</span> Verb handelt = Subjekt: <strong style="color:var(--nom)">der / die / das / die</strong><br>
+            &nbsp;&nbsp;→ Das ist der Mann, <em>der</em> kommt.<br><br>
+            <span class="case-badge cb-akk">AKK</span> Verb trifft = Objekt: <strong style="color:var(--akk)">den / die / das / die</strong><br>
+            &nbsp;&nbsp;→ Das Buch, <em>das</em> ich lese. Den Mann, <em>den</em> ich kenne.<br><br>
+            <span class="case-badge cb-dat">DAT</span> Indirektes Objekt: <strong style="color:var(--dat)">dem / der / dem / denen</strong><br>
+            &nbsp;&nbsp;→ Der Freund, <em>dem</em> ich helfe.<br><br>
+            <span class="case-badge cb-prp">PRÄ</span> Präposition zuerst: <strong style="color:var(--prp)">mit dem / in der / über das / mit denen</strong><br>
+            &nbsp;&nbsp;→ Die Stadt, <em>in der</em> ich wohne.<br><br>
+            <strong style="color:var(--gold);">Immer: Verb ans Ende!</strong> &nbsp;·&nbsp; <strong style="color:var(--gold);">Immer: Komma vor dem Relativsatz!</strong>
+          </div>
+
+          <div class="warn-box" style="margin-top:14px;"><strong style="color:var(--blue);">📌 Prüfungstipp:</strong><br><br>
+            In der B1-Schreiben-Prüfung: Baue mindestens <strong>einen Relativsatz</strong> in deinen Text ein. Zum Beispiel: „Ich interessiere mich für den Kurs, <em>den</em> Sie anbieten." oder „Ich bin jemand, <em>der</em> sehr fleißig arbeitet." Das zeigt dem Prüfer, dass du B1-Grammatik sicher anwendest.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 3 · Lektion 6 · Übung</div><h2 class="lesson-h">Relativsätze — <span style="color:var(--blue)">Abschlusskontrolle</span></h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-5 -->
+
+  </div>
+</div>
+
+<script>
+var TOTAL=6, currentLesson=0, xp=0;
+var synth=window.speechSynthesis, voices=[], deVoice=null;
+function loadVoices(){ voices=synth.getVoices(); deVoice=voices.find(function(v){return v.lang==='de-DE';})||voices.find(function(v){return v.lang.startsWith('de');})||null; }
+if(synth.onvoiceschanged!==undefined){synth.onvoiceschanged=loadVoices;}
+function speakSentence(btn,text){ if(!synth)return; synth.cancel(); document.querySelectorAll('.speak-btn.speaking').forEach(function(b){b.classList.remove('speaking');}); btn.classList.add('speaking'); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; u.onend=function(){btn.classList.remove('speaking');}; synth.speak(u); }
+
+var QD={
+  0:[
+    {q:'Welcher Satz ist korrekt?',
+     hint:'Ein Relativsatz ist ein Nebensatz — das Verb geht ans Ende. Vor dem Relativsatz steht ein Komma.',
+     opts:['Das ist der Mann, der wohnt in Berlin.','Das ist der Mann der in Berlin wohnt.','Das ist der Mann, der in Berlin wohnt.','Das ist der Mann, der wohnt er in Berlin.'],
+     ans:2,
+     exp:'„Das ist der Mann, der in Berlin wohnt." ist korrekt. Regel 1: Vor dem Relativsatz steht ein Komma — Option B fehlt das Komma. Regel 2: Das Verb (wohnt) muss ans Ende des Relativsatzes — Option A stellt wohnt falsch an Position 2. Option D hat ein zusätzliches er — das ist ein Doppelpronomen-Fehler.',
+     rule:'Relativsatz = Nebensatz. Das Verb steht IMMER am Ende. Vor dem Relativsatz steht immer ein Komma. Kein zusätzliches Pronomen neben dem Relativpronomen.'}
+  ],
+  1:[
+    {q:'Amina ist eine Studentin, ___ sehr fleißig ist. Welches Relativpronomen passt?',
+     hint:'Amina ist das Subjekt im Hauptsatz. Schau das Genus an: die Studentin. Wer ist fleißig im Relativsatz?',
+     opts:['den','der','die','das'],
+     ans:2,
+     exp:'„die" ist korrekt — Nominativ Feminin. die Studentin ist feminin, und das Relativpronomen ist das Subjekt des Relativsatzes (sie ist fleißig). Nominativ Feminin = die. Option A (den) wäre Akkusativ Maskulin — falsch. Option B (der) wäre entweder Maskulin Nominativ oder Feminin Dativ — hier passt keins. Option D (das) wäre Neutrum — falsch für die Studentin.',
+     rule:'Nominativ: das Relativpronomen ist das Subjekt im Relativsatz. Genus von die Studentin (feminin) → Nominativ Feminin = die.'}
+  ],
+  2:[
+    {q:'Das ist das Buch, ___ Kofi kaufen möchte. Welches Relativpronomen passt?',
+     hint:'Kofi möchte WAS kaufen? Kofi ist das Subjekt — also ist das Buch das Objekt. Schau auf Genus und Fall.',
+     opts:['der','den','das','dem'],
+     ans:2,
+     exp:'„das" ist korrekt — Akkusativ Neutrum. das Buch ist Neutrum. Kofi möchte kaufen WAS? → das Buch ist das direkte Objekt (Akkusativ). Akkusativ Neutrum = das (gleich wie Nominativ!). Option A (der) wäre Nominativ Maskulin — falsch. Option B (den) wäre Akkusativ Maskulin — falsch, das Buch ist Neutrum. Option D (dem) wäre Dativ — hier gibt es kein Dativ-Verb.',
+     rule:'Akkusativ: das Relativpronomen ist das direkte Objekt. Bei Neutrum bleibt das Relativpronomen im Akkusativ gleich wie im Nominativ: das → das.'}
+  ],
+  3:[
+    {q:'Das ist der Freund, ___ ich immer vertraue. Welches Relativpronomen passt?',
+     hint:'vertrauen + Dativ! Ich vertraue WEM? Schau auf Genus von der Freund und den Fall.',
+     opts:['der','den','dem','die'],
+     ans:2,
+     exp:'„dem" ist korrekt — Dativ Maskulin. vertrauen braucht Dativ: ich vertraue WEM? → dem Freund. der Freund ist maskulin → Dativ Maskulin = dem. Option A (der) wäre Nominativ Maskulin oder Dativ Feminin — hier ist der Freund maskulin und wir brauchen Dativ. Option B (den) wäre Akkusativ Maskulin — vertrauen nimmt Dativ, nicht Akkusativ. Option D (die) wäre Nominativ/Akkusativ Feminin oder Plural — falsch.',
+     rule:'Dativ: vertrauen, helfen, gefallen, gehören und andere Verben nehmen Dativ. der Freund (maskulin) → Dativ Maskulin = dem.'}
+  ],
+  4:[
+    {q:'Das ist die Stadt, ___ Kwame wohnt. Die Lücke braucht eine Präposition + Relativpronomen.',
+     hint:'wohnen in. Die Stadt ist feminin. in + Dativ. Dativ Feminin = ?',
+     opts:['in dem','in der','in die','mit der'],
+     ans:1,
+     exp:'„in der" ist korrekt. wohnen in + Dativ (Ortsangabe = Dativ). die Stadt ist feminin → Dativ Feminin = der. Also: in + der = in der. Option A (in dem) wäre Dativ Maskulin/Neutrum — die Stadt ist feminin. Option C (in die) wäre Akkusativ — Lage/Ort braucht Dativ, nicht Akkusativ. Option D (mit der) passt semantisch nicht — man wohnt nicht „mit" einer Stadt.',
+     rule:'Präposition + Relativpronomen: Präposition zuerst, dann das Relativpronomen im richtigen Fall. in + Dativ. die Stadt (feminin) → Dativ Feminin = der → in der.'}
+  ],
+  5:[
+    {q:'Welcher Satz ist grammatisch korrekt und typisch für eine B1-Prüfung?',
+     hint:'Suche den Satz ohne Verb-Fehler, ohne Doppelpronomen und mit korrektem Relativpronomen.',
+     opts:['Ich suche einen Job, den ich gut bezahlt werde.','Ich suche einen Job, der gut bezahlt ist.','Ich suche einen Job, der ist gut bezahlt.','Ich suche einen Job, den er gut bezahlt.'],
+     ans:1,
+     exp:'„Ich suche einen Job, der gut bezahlt ist." ist korrekt. ein Job ist maskulin — das Relativpronomen ist das Subjekt des Relativsatzes (der Job ist gut bezahlt). Nominativ Maskulin = der. Verb am Ende: ist. Option A (den…werde) verwendet den falschen Fall (Akkusativ statt Nominativ) und die falsche Konstruktion. Option C stellt ist falsch an Position 2 — Verb muss ans Ende. Option D (den er) hat ein Doppelpronomen — das Relativpronomen ersetzt das Personalpronomen, nie beide zusammen.',
+     rule:'Prüfungstipp: Checkliste für Relativsätze — (1) richtiges Genus, (2) richtiger Fall, (3) Verb am Ende, (4) Komma, (5) kein Doppelpronomen.'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">FRAGE '+(s.cur+1)+' VON '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint" style="font-family:\'DM Mono\',monospace;">💡 '+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Nächste Frage →':'Ergebnis anzeigen →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Richtig!':'✗ Nicht ganz'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent='📌 Regel: '+q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' richtig</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfekt!':pct>=60?'Gut gemacht!':'Noch einmal versuchen.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(52,152,219,0.12);border:1px solid var(--blue);border-radius:50px;padding:9px 22px;color:var(--blue);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Modul 3 abschließen →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Zur nächsten Lektion →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">🔗</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Modul 3 abgeschlossen!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">Du kannst jetzt Relativsätze im Nominativ, Akkusativ und Dativ bilden, Präposition + Relativpronomen korrekt kombinieren und typische Fehler vermeiden. Relativsätze in der Schreiben-Prüfung zeigen sofort B1-Niveau — du bist vorbereitet.</p><div class="xp-badge">⚡ '+xp+' XP verdient</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Modul 3 abgeschlossen. Weiter zu Modul 4 — Präteritum.</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Zur Übersicht</button></div>'; localStorage.setItem('dw_mod_27_done','1'); var saved=parseInt(localStorage.getItem('dw_xp')||'0'); localStorage.setItem('dw_xp',saved+xp); }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+<script src="./ai-tutor.js" data-module="27"></script>
+</body>
+</html>
