@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — B1 Modul 10: Hören Strategie</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --str:#3498db; --wrn:#e67e22; --key:#9b59b6; --tip:#27ae60;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--blue); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--blue); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--blue); color:var(--white); width:100%; }
+  .btn-primary:hover { background:#2980b9; transform:translateY(-2px); box-shadow:0 8px 24px rgba(52,152,219,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--blue); color:var(--blue); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(52,152,219,0.2); }
+  .speak-btn.speaking { background:var(--blue); color:var(--white); }
+
+  /* ENGLISH HELP TOGGLE */
+  .en-help { background:rgba(52,152,219,0.05); border:1px dashed rgba(52,152,219,0.25); border-radius:10px; margin:12px 0; }
+  .en-help summary { padding:10px 16px; cursor:pointer; font-size:13px; color:var(--blue); font-family:'DM Mono',monospace; letter-spacing:.03em; list-style:none; display:flex; align-items:center; gap:8px; }
+  .en-help summary::-webkit-details-marker { display:none; }
+  .en-help[open] summary { border-bottom:1px dashed rgba(52,152,219,0.2); }
+  .en-help-body { padding:12px 16px; font-size:13px; color:rgba(245,240,232,.7); line-height:1.8; }
+  .en-help-body p { margin-bottom:8px; }
+  .en-help-body p:last-child { margin-bottom:0; }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-note { font-size:12px; color:var(--gray); line-height:1.6; }
+
+  /* FORMULA BOX */
+  .formula-box { background:var(--card2-bg); border:1px solid rgba(52,152,219,0.2); border-radius:14px; padding:20px 22px; margin:14px 0; text-align:center; }
+  .formula-title { font-size:10px; letter-spacing:3px; font-family:'DM Mono',monospace; color:var(--blue); margin-bottom:14px; }
+  .formula-main { font-family:'DM Mono',monospace; font-size:18px; font-weight:700; color:var(--white); line-height:2; }
+  .formula-part { display:inline-block; }
+  .formula-plus { color:var(--gray); margin:0 8px; }
+  .fp-w { color:var(--str); }
+  .fp-i { color:var(--wrn); }
+  .fp-m { color:var(--key); }
+  .fp-p { color:var(--tip); }
+
+  /* COMPARISON TABLE */
+  .comp-table { width:100%; border-collapse:collapse; font-size:13px; margin:14px 0; }
+  .comp-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:10px 14px; text-align:left; border-bottom:2px solid rgba(255,255,255,0.1); }
+  .comp-table td { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'DM Mono',monospace; font-size:13px; vertical-align:top; }
+  .comp-table tr:last-child td { border-bottom:none; }
+  .comp-table tr:hover td { background:rgba(255,255,255,0.02); }
+  .ct-r { color:var(--green); }
+  .ct-f { color:var(--red); }
+  .ct-s { color:var(--str); }
+  .ct-k { color:var(--key); }
+  .comp-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+
+  /* WRONG/RIGHT */
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.0; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+
+  /* CONTEXT CARDS */
+  .ctx-grid { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ctx-card { background:var(--card2-bg); border-radius:12px; padding:16px 18px; display:flex; gap:14px; align-items:flex-start; }
+  .ctx-icon { font-size:22px; flex-shrink:0; width:32px; text-align:center; margin-top:2px; }
+  .ctx-title { font-size:13px; font-weight:700; color:var(--cream); margin-bottom:4px; }
+  .ctx-desc { font-size:13px; color:var(--gray); line-height:1.65; margin-bottom:6px; }
+  .ctx-ex { font-family:'DM Mono',monospace; font-size:12px; color:var(--blue); }
+  .ctx-card.c-str { border:1px solid rgba(52,152,219,0.2); }
+  .ctx-card.c-wrn { border:1px solid rgba(230,126,34,0.2); }
+  .ctx-card.c-key { border:1px solid rgba(155,89,182,0.2); }
+  .ctx-card.c-tip { border:1px solid rgba(39,174,96,0.2); }
+
+  /* TRANSCRIPT */
+  .transkrip-wrap { background:var(--card2-bg); border:1px solid rgba(155,89,182,0.2); border-radius:14px; margin:14px 0; overflow:hidden; }
+  .transkrip-head { display:flex; align-items:center; gap:12px; padding:12px 18px; border-bottom:1px solid rgba(155,89,182,0.15); background:rgba(155,89,182,0.06); }
+  .transkrip-icon { font-size:16px; }
+  .transkrip-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:3px; color:var(--key); }
+  .transkrip-body { padding:18px; }
+  .dialog-line { display:flex; gap:12px; margin-bottom:12px; align-items:flex-start; }
+  .dialog-line:last-child { margin-bottom:0; }
+  .dialog-speaker { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1px; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; white-space:nowrap; }
+  .ds-a { background:rgba(52,152,219,0.1); color:var(--str); border:1px solid rgba(52,152,219,0.2); }
+  .ds-k { background:rgba(230,126,34,0.1); color:var(--wrn); border:1px solid rgba(230,126,34,0.2); }
+  .ds-ansage { background:rgba(155,89,182,0.1); color:var(--key); border:1px solid rgba(155,89,182,0.2); }
+  .dialog-text { font-size:13px; color:var(--cream); line-height:1.75; }
+  .hkey { background:rgba(52,152,219,0.15); border-radius:4px; padding:1px 5px; color:var(--str); font-weight:700; }
+
+  /* LISTENING PRACTICE */
+  .frage-list { display:flex; flex-direction:column; gap:8px; margin:14px 0; }
+  .frage-item { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:14px 16px; }
+  .frage-num { font-family:'DM Mono',monospace; font-size:10px; color:var(--blue); letter-spacing:2px; margin-bottom:6px; }
+  .frage-text { font-size:13px; color:var(--cream); margin-bottom:10px; line-height:1.6; }
+  .frage-opts { display:flex; gap:8px; flex-wrap:wrap; }
+  .fanswer { font-family:'DM Mono',monospace; font-size:11px; padding:5px 12px; border-radius:20px; border:1px solid rgba(255,255,255,0.12); cursor:pointer; transition:all 0.2s; background:transparent; color:var(--white); }
+  .fanswer:hover:not([disabled]) { border-color:var(--blue); color:var(--blue); }
+  .fanswer.fa-richtig:hover:not([disabled]) { border-color:var(--green); color:var(--green); }
+  .fanswer.fa-falsch:hover:not([disabled])  { border-color:var(--red); color:var(--red); }
+  .fanswer.fa-nit:hover:not([disabled])     { border-color:var(--gold); color:var(--gold); }
+  .fanswer.selected-ok  { background:rgba(39,174,96,0.15); border-color:var(--green); color:var(--green); }
+  .fanswer.selected-no  { background:rgba(192,57,43,0.12); border-color:var(--red); color:var(--red); }
+  .fanswer.reveal-ok    { background:rgba(39,174,96,0.12); border-color:var(--green); color:var(--green); }
+  .frage-fb { font-size:12px; margin-top:8px; display:none; line-height:1.65; }
+  .frage-fb.show { display:block; }
+
+  /* NOTIZ BOX */
+  .notiz-box { background:rgba(155,89,182,0.05); border:1px dashed rgba(155,89,182,0.3); border-radius:12px; padding:16px 18px; margin:14px 0; }
+  .notiz-title { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:3px; color:var(--key); margin-bottom:10px; }
+  .notiz-line { font-family:'DM Mono',monospace; font-size:12px; color:var(--cream); line-height:2; display:flex; gap:10px; align-items:center; }
+  .notiz-dot { width:6px; height:6px; border-radius:50%; background:var(--key); flex-shrink:0; }
+
+  /* HIGHLIGHTS */
+  .strh { color:var(--str); font-weight:700; }
+  .wrnh { color:var(--wrn); font-weight:700; }
+  .keyh { color:var(--key); font-weight:700; }
+  .tiph { color:var(--tip); font-weight:700; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Mono',monospace; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--blue); background:rgba(52,152,219,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(52,152,219,0.1); border-radius:8px; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(52,152,219,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.2); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(52,152,219,0.12); border:1px solid var(--blue); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--blue); font-size:18px; margin:18px 0; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .lesson-h{font-size:22px;} .wr-grid{grid-template-columns:1fr;} .frage-opts{flex-direction:column;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">B1 · MODUL 10</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">B1 · Prüfungsstrategie</div>
+    <h1 class="lesson-h" style="font-size:36px;"><span style="color:var(--str)">Hören</span> — Strategie &amp; Praxis</h1>
+    <p class="body-text">Der Hören-Teil ist für viele B1-Kandidaten in Nairobi, Accra und Lagos der schwierigste Teil — nicht wegen des Deutschen, sondern wegen Panik. Deutschmuttersprachler sprechen schnell, schlucken Silben und benutzen Umgangssprache. Mit 5 klaren Strategien holst du trotzdem deine Punkte.</p>
+
+    <details class="en-help">
+      <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+      <div class="en-help-body">
+        <p>The Goethe B1 Hören (Listening) section has 3 tasks and you hear every recording TWICE. You don't need to understand every word — you need smart strategies. This module teaches you how to prepare before listening, what to listen for, how to take notes, how to stay calm, and how to use the second listening effectively. You only need 60% to pass!</p>
+      </div>
+    </details>
+
+    <div class="info-box"><strong style="color:var(--gold);">Lernziele dieses Moduls:</strong><br><br>
+      ✦ Du kennst die 3 Höraufgaben im Goethe B1 genau<br>
+      ✦ Du liest die Fragen VOR dem Hören und markierst Schlüsselwörter<br>
+      ✦ Du machst während des Hörens Notizen (erlaubt!)<br>
+      ✦ Du bleibst ruhig wenn du etwas nicht verstehst<br>
+      ✦ Du nutzt das zweite Hören strategisch und lässt nie leer
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">🎧</div><div><div class="lc-title">Lektion 1 — Die 3 Höraufgaben</div><div class="lc-desc">Aufgabe 1 (R/F), Aufgabe 2 (Multiple Choice), Aufgabe 3 (Infos ergänzen). Was dich erwartet.</div></div><div class="lc-tag" style="color:var(--str);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">🔍</div><div><div class="lc-title">Lektion 2 — Strategie 1 &amp; 2: Fragen zuerst</div><div class="lc-desc">Vor dem Hören lesen. Schlüsselwörter markieren. Gezielt hören statt alles verstehen wollen.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">✏️</div><div><div class="lc-title">Lektion 3 — Strategie 3: Mitschreiben</div><div class="lc-desc">Notizen sind erlaubt! Zahlen, Namen, Schlüsselwörter sofort aufschreiben.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">🧘</div><div><div class="lc-title">Lektion 4 — Strategie 4 &amp; 5: Ruhe &amp; zweites Hören</div><div class="lc-desc">Panik ist dein größter Feind. Das zweite Hören ist deine zweite Chance. Nie leer lassen!</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">🎙️</div><div><div class="lc-title">Lektion 5 — Praxistranskript: Kwame &amp; die Sprachschule</div><div class="lc-desc">Echtes Goethe B1 Hören-Transkript. 5 Fragen: richtig / falsch / nicht im Text.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lektion 6 — Amina: Prüfungsvorbereitung</div><div class="lc-desc">Alle Strategien zusammen. Typische Fehler afrikanischer Lernender. Finaler Prüfungstipp.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lektionen</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--blue);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LEKTION 1: Die 3 Höraufgaben ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 10 · Lektion 1 von 6</div>
+          <h2 class="lesson-h">Die 3 <span style="color:var(--str)">Höraufgaben</span> im Goethe B1</h2>
+          <p class="body-text">Der Goethe B1 Hören-Teil hat <strong style="color:var(--str);">30 Minuten</strong> und drei verschiedene Aufgaben. Das Wichtigste zuerst: <strong style="color:var(--tip);">Alle Texte werden ZWEIMAL gespielt!</strong> Das ist deine zweite Chance — nutze sie strategisch.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>The Goethe B1 Hören section has 3 tasks in 30 minutes. All recordings are played TWICE. Task 1: Short dialogues — mark richtig (correct) or falsch (wrong). Task 2: Longer conversation — multiple choice. Task 3: Radio/announcements — fill in information. Knowing the format lets you mentally prepare for each task type before exam day.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Das wichtigste Merkmal — zweimal hören!</div>
+          <div class="formula-box">
+            <div class="formula-title">ALLE TEXTE IM GOETHE B1 HÖREN</div>
+            <div class="formula-main" style="font-size:15px;line-height:2.5;">
+              <span class="formula-part fp-w">1. Hören</span>
+              <span class="formula-plus" style="margin:0 14px;">→</span>
+              <span class="formula-part" style="color:var(--cream);">Hauptidee</span>
+              <span class="formula-plus" style="margin:0 20px;color:var(--gray);">·</span>
+              <span class="formula-part fp-p">2. Hören</span>
+              <span class="formula-plus" style="margin:0 14px;">→</span>
+              <span class="formula-part" style="color:var(--cream);">Details bestätigen</span>
+            </div>
+          </div>
+
+          <div class="sec-label">Überblick — 3 Aufgaben</div>
+          <div class="ctx-grid">
+            <div class="ctx-card c-str">
+              <div class="ctx-icon">1️⃣</div>
+              <div>
+                <div class="ctx-title">Aufgabe 1 — Kurze Gespräche: Richtig / Falsch</div>
+                <div class="ctx-desc">Du hörst 5 kurze Dialoge (je ~1 Minute). Für jeden Dialog entscheidest du: richtig oder falsch. Jeder Dialog wird zweimal gespielt.</div>
+                <div class="ctx-ex">Alltag: Telefongespräche, Einkaufen, Verabredungen</div>
+              </div>
+            </div>
+            <div class="ctx-card c-wrn">
+              <div class="ctx-icon">2️⃣</div>
+              <div>
+                <div class="ctx-title">Aufgabe 2 — Längeres Gespräch: Multiple Choice</div>
+                <div class="ctx-desc">Du hörst ein längeres Gespräch (~3 Minuten) und beantwortest 5 Multiple-Choice-Fragen mit je 3 Optionen. Zweimal gehört.</div>
+                <div class="ctx-ex">Interview, Diskussion, Beratungsgespräch</div>
+              </div>
+            </div>
+            <div class="ctx-card c-key">
+              <div class="ctx-icon">3️⃣</div>
+              <div>
+                <div class="ctx-title">Aufgabe 3 — Radio/Ansagen: Informationen ergänzen</div>
+                <div class="ctx-desc">Du hörst 5 kurze Radio- oder Ansagetexte. Du füllst fehlende Informationen in ein Formular oder eine Tabelle ein. Zweimal gehört.</div>
+                <div class="ctx-ex">Wettervorhersage, Bahnansagen, Veranstaltungen</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">Vergleich — Lesen vs. Hören</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Aspekt</th><th style="color:var(--str)">Lesen</th><th style="color:var(--key)">Hören</th></tr>
+              <tr><td>Zeit</td><td>25 Minuten</td><td>30 Minuten</td></tr>
+              <tr><td>Wiederholung</td><td>Text immer sichtbar</td><td class="ct-k">Zweimal gespielt!</td></tr>
+              <tr><td>Strategie</td><td>Fragen zuerst</td><td class="ct-k">Fragen VOR dem Hören</td></tr>
+              <tr><td>Notizen</td><td>Unterstreichen erlaubt</td><td class="ct-r">Mitschreiben erlaubt!</td></tr>
+              <tr><td>Schlüssel</td><td>Scannen</td><td class="ct-k">Auf Schlüsselwörter warten</td></tr>
+            </table>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue);">📌 Du brauchst nur 60% zum Bestehen:</strong><br><br>
+            Im Goethe B1 Hören brauchst du <strong>18 von 30 Punkten</strong>. Du kannst mehrere Fragen falsch beantworten und trotzdem bestehen. Dein Ziel: Die Fragen lösen, die du kannst — und bei den anderen raten statt leer lassen!
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 10 · Lektion 1 · Übung</div><h2 class="lesson-h">Die 3 Aufgaben — <span style="color:var(--str)">Übung</span></h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-0 -->
+
+    <!-- ── LEKTION 2: Strategie 1 & 2 ── -->
+    <div id="lesson-1" class="lesson-pane">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 10 · Lektion 2 von 6</div>
+          <h2 class="lesson-h">Strategie 1 &amp; 2 — <span style="color:var(--str)">Fragen zuerst</span></h2>
+          <p class="body-text">Vor jedem Hörtext hast du <strong style="color:var(--str);">30–60 Sekunden Lesezeit</strong>. Das ist Gold! Lies in dieser Zeit alle Fragen und markiere die Schlüsselwörter. Dann weißt du genau, <em>worauf</em> du im Audio achten musst.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p><strong>Strategy 1 — Read questions first:</strong> Before each audio plays, you get 30–60 seconds. Use this time to read all questions and underline keywords. This transforms random listening into targeted listening — you know what to listen for.</p>
+              <p><strong>Strategy 2 — Listen for keywords only:</strong> You don't need to understand everything. Focus only on: names, numbers, dates, and the keywords you underlined. When you hear a keyword from the question, that's your signal to pay attention to what follows.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Strategie 1 — Vor dem Hören: Lesezeit nutzen</div>
+          <div class="ctx-grid">
+            <div class="ctx-card c-str">
+              <div class="ctx-icon">①</div>
+              <div>
+                <div class="ctx-title">Alle Fragen lesen (30–60 Sek.)</div>
+                <div class="ctx-desc">Lies alle Fragen und Antwortoptionen durch. Verstehe, worum es geht.</div>
+                <div class="ctx-ex">Aufgabe 2, Frage 3: „Wo findet der Kurs statt?" → Schlüsselwort: Kurs, wo, Ort</div>
+              </div>
+            </div>
+            <div class="ctx-card c-str">
+              <div class="ctx-icon">②</div>
+              <div>
+                <div class="ctx-title">Schlüsselwörter unterstreichen/markieren</div>
+                <div class="ctx-desc">Markiere Nomen, Zahlen, Namen. Das sind die Wörter, auf die du im Audio warten musst.</div>
+                <div class="ctx-ex">„Wie viel kostet der Kurs?" → Zahl kommt! Stift bereit halten.</div>
+              </div>
+            </div>
+            <div class="ctx-card c-str">
+              <div class="ctx-icon">③</div>
+              <div>
+                <div class="ctx-title">Antwortoptionen vergleichen</div>
+                <div class="ctx-desc">Bei Multiple Choice: Was ist der Unterschied zwischen A, B und C? Das zeigt dir, worauf du genau achten musst.</div>
+                <div class="ctx-ex">A: 280€ / B: 380€ / C: 180€ → Du musst nur eine Zahl hören!</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">Strategie 2 — Während des Hörens: Schlüsselwörter suchen</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--str);">NAMEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">„Mein Name ist <span class="strh">Kwame Asante</span>…"</div>
+                <div class="ex-note">Eigennamen sind leicht zu hören — sie klingen anders als normale Wörter und werden oft betont.</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--str);">ZAHLEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">„Der Kurs kostet <span class="strh">280 Euro</span>…"</div>
+                <div class="ex-note">Zahlen und Preise sind im Audio fast immer klar und deutlich gesprochen. Sofort aufschreiben!</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--str);">DATEN/ZEITEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">„Der Kurs beginnt am <span class="strh">15. März</span> und findet <span class="strh">montags und mittwochs</span> statt…"</div>
+                <div class="ex-note">Wochentage und Daten — hör auf -tag Endungen (Montag, Mittwoch, Freitag).</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCHE STRATEGIE</div>
+              <div class="wr-word">Das Audio läuft — du wartest bis du alles verstehst.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIGE STRATEGIE</div>
+              <div class="wr-word">Du hörst gezielt auf deine markierten Schlüsselwörter. Den Rest ignorierst du.</div>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 10 · Lektion 2 · Übung</div><h2 class="lesson-h">Fragen zuerst — <span style="color:var(--str)">Übung</span></h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-1 -->
+
+    <!-- ── LEKTION 3: Mitschreiben ── -->
+    <div id="lesson-2" class="lesson-pane">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 10 · Lektion 3 von 6</div>
+          <h2 class="lesson-h">Strategie 3 — <span style="color:var(--key)">Mitschreiben</span></h2>
+          <p class="body-text">Viele Lernende wissen nicht: <strong style="color:var(--key);">Du darfst während des Hörens Notizen machen!</strong> Das ist einer der wichtigsten Tipps. Zahlen und Namen vergisst man schnell — schreib sie sofort auf. Beim zweiten Hören überprüfst du deine Notizen.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>You are ALLOWED to write notes during the listening test! Many candidates don't use this because they don't know it's permitted, or they're afraid it will distract them. But writing down numbers, names, and key words immediately when you hear them is far better than trying to remember everything. Your working memory has limits — notes don't.</p>
+              <p>What to write down: numbers (prices, times, dates), names (people, places), and single keywords that answer a question. You don't need full sentences — just trigger words that help you choose the right answer.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Was notierst du? — Prioritäten</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th style="color:var(--key)">Priorität</th><th>Was</th><th>Warum</th><th>Beispiel</th></tr>
+              <tr><td class="ct-r">🔴 Hoch</td><td>Zahlen &amp; Preise</td><td style="color:var(--gray)">Vergisst man schnell</td><td class="ct-k">280€, 15.3., 18:00</td></tr>
+              <tr><td class="ct-r">🔴 Hoch</td><td>Namen &amp; Orte</td><td style="color:var(--gray)">Klingen anders als Deutsch</td><td class="ct-k">Kwame, Hamburg, Gleis 5</td></tr>
+              <tr><td style="color:var(--wrn);">🟡 Mittel</td><td>Schlüsselwörter</td><td style="color:var(--gray)">Antwort auf Frage</td><td class="ct-k">montags, inklusive, online</td></tr>
+              <tr><td style="color:var(--gray);">⚪ Niedrig</td><td>Vollständige Sätze</td><td style="color:var(--gray)">Zu viel Zeit</td><td class="ct-k">Nicht nötig!</td></tr>
+            </table>
+          </div>
+
+          <div class="sec-label">Muster-Notizen — Kwames Telefonat</div>
+          <div class="transkrip-wrap">
+            <div class="transkrip-head">
+              <span class="transkrip-icon">🎧</span>
+              <span class="transkrip-label">DU HÖRST DIESES GESPRÄCH</span>
+            </div>
+            <div class="transkrip-body">
+              <div class="dialog-line"><span class="dialog-speaker ds-a">SCHULE</span><span class="dialog-text">Unser B1-Kurs beginnt am <span class="hkey">15. März</span>. Er findet <span class="hkey">montags und mittwochs</span> von <span class="hkey">18 bis 20 Uhr</span> statt.</span></div>
+              <div class="dialog-line"><span class="dialog-speaker ds-k">KWAME</span><span class="dialog-text">Wie viel kostet der Kurs?</span></div>
+              <div class="dialog-line"><span class="dialog-speaker ds-a">SCHULE</span><span class="dialog-text">Der Kurs kostet <span class="hkey">280 Euro</span> für drei Monate. Das Lehrmaterial ist <span class="hkey">inklusive</span>.</span></div>
+            </div>
+          </div>
+
+          <div class="notiz-box">
+            <div class="notiz-title">✏️ DEINE NOTIZEN (WÄHREND DES HÖRENS)</div>
+            <div class="notiz-line"><div class="notiz-dot"></div>Kursstart: 15.3.</div>
+            <div class="notiz-line"><div class="notiz-dot"></div>Tage: Mo + Mi / 18–20 Uhr</div>
+            <div class="notiz-line"><div class="notiz-dot"></div>Preis: 280€ — Material INKLUSIVE</div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-4px 0 14px;line-height:1.7;">Mit diesen Notizen kannst du alle Fragen zu diesem Dialog beantworten — ohne alles im Gedächtnis halten zu müssen.</p>
+
+          <div class="sec-label">Notizen beim zweiten Hören</div>
+          <div class="ctx-grid">
+            <div class="ctx-card c-key">
+              <div class="ctx-icon">1️⃣</div>
+              <div>
+                <div class="ctx-title">Erstes Hören — Notizen machen</div>
+                <div class="ctx-desc">Schreibe schnell die wichtigsten Informationen auf. Zahlen, Namen, Schlüsselwörter.</div>
+              </div>
+            </div>
+            <div class="ctx-card c-tip">
+              <div class="ctx-icon">2️⃣</div>
+              <div>
+                <div class="ctx-title">Zweites Hören — Antworten bestätigen</div>
+                <div class="ctx-desc">Prüfe deine Notizen gegen die Fragen. Ergänze was gefehlt hat. Entscheide bei unsicheren Antworten.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="danger-box"><strong style="color:var(--red);">⚠️ Häufiger Fehler:</strong><br><br>
+            „Ich schreibe nichts auf — ich merke mir alles!" ✗<br><br>
+            Das menschliche Kurzzeitgedächtnis vergisst Zahlen nach 20–30 Sekunden. Wenn du eine Zahl hörst und danach 3 weitere Sätze kommen, ist sie weg. <strong>Schreib sofort auf — immer!</strong>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 10 · Lektion 3 · Übung</div><h2 class="lesson-h">Mitschreiben — <span style="color:var(--key)">Übung</span></h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-2 -->
+
+    <!-- ── LEKTION 4: Panik & zweites Hören ── -->
+    <div id="lesson-3" class="lesson-pane">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 10 · Lektion 4 von 6</div>
+          <h2 class="lesson-h">Strategie 4 &amp; 5 — <span style="color:var(--key)">Ruhe &amp; zweites Hören</span></h2>
+          <p class="body-text">Strategie 4 ist die psychologischste: <strong style="color:var(--key);">Bleib ruhig!</strong> Wenn du eine Passage nicht verstehst, bricht die Welt nicht zusammen. Atme, konzentriere dich auf die nächsten Sekunden, und hör auf das, was du <em>verstehen kannst</em>.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p><strong>Strategy 4 — Don't panic:</strong> Native German speakers talk fast and naturally. You WILL miss things. This is normal and expected. Panicking makes you miss even more. One understood keyword can be enough to answer a question. Keep breathing, keep listening.</p>
+              <p><strong>Strategy 5 — Use the second listening:</strong> First listen: get the overall idea and write key notes. Second listen: check and confirm your answers, fill gaps, decide on uncertain questions. NEVER leave an answer blank — a guess has a chance; blank always scores 0.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Strategie 4 — Panik ist dein größter Feind</div>
+          <div class="ctx-grid">
+            <div class="ctx-card c-wrn">
+              <div class="ctx-icon">😰</div>
+              <div>
+                <div class="ctx-title">Was passiert ohne Strategie</div>
+                <div class="ctx-desc">Du hörst schnelles Deutsch → du verstehst einen Satz nicht → du denkst „Ich kann das nicht!" → du verlierst die Konzentration → du verpasst die nächsten 3 Sätze.</div>
+                <div class="ctx-ex">Resultat: Du verpässt viel mehr als nötig war.</div>
+              </div>
+            </div>
+            <div class="ctx-card c-tip">
+              <div class="ctx-icon">🧘</div>
+              <div>
+                <div class="ctx-title">Die richtige Reaktion</div>
+                <div class="ctx-desc">Du hörst schnelles Deutsch → du verstehst einen Satz nicht → tief atmen, weiterhören → das nächste Schlüsselwort kommt bald.</div>
+                <div class="ctx-ex">Resultat: Du fängst das nächste wichtige Wort!</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-box"><strong style="color:var(--gold);">Das Mantra für den Hören-Teil:</strong><br><br>
+            „Ich brauche nicht <em>alles</em> zu verstehen. <br>
+            Ich brauche nur <strong style="color:var(--str);">die Antwort auf die Frage</strong>.<br>
+            Ein Schlüsselwort reicht oft aus."
+          </div>
+
+          <div class="sec-label">Strategie 5 — Das zweite Hören strategisch nutzen</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th style="color:var(--str)">Erstes Hören</th><th style="color:var(--tip)">Zweites Hören</th></tr>
+              <tr>
+                <td style="color:var(--cream);">Hauptidee des Dialogs verstehen</td>
+                <td style="color:var(--cream);">Unsichere Antworten bestätigen</td>
+              </tr>
+              <tr>
+                <td style="color:var(--cream);">Zahlen und Namen sofort notieren</td>
+                <td style="color:var(--cream);">Fehlende Informationen ergänzen</td>
+              </tr>
+              <tr>
+                <td style="color:var(--cream);">Erste Antworten aufschreiben</td>
+                <td style="color:var(--cream);">Bei unsicheren Fragen: jetzt entscheiden!</td>
+              </tr>
+              <tr>
+                <td style="color:var(--gray);">Nicht alles verstehen nötig</td>
+                <td class="ct-r">Letzte Chance: NIE leer lassen!</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="sec-label">Die Raten-Regel — Nie leer lassen!</div>
+          <div class="formula-box">
+            <div class="formula-title">WARUM MAN IMMER RATEN SOLL</div>
+            <div class="formula-main" style="font-size:15px;line-height:2.5;">
+              <span class="formula-part" style="color:var(--red);">Leer</span>
+              <span class="formula-plus">=</span>
+              <span class="formula-part" style="color:var(--red);">0 Punkte</span>
+              <span class="formula-plus" style="margin:0 20px;color:var(--gray);">·</span>
+              <span class="formula-part fp-i">Falsch</span>
+              <span class="formula-plus">=</span>
+              <span class="formula-part fp-i">0 Punkte</span>
+              <span class="formula-plus" style="margin:0 20px;color:var(--gray);">·</span>
+              <span class="formula-part fp-p">Geraten</span>
+              <span class="formula-plus">=</span>
+              <span class="formula-part fp-p">vielleicht 1!</span>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-4px 0 14px;text-align:center;line-height:1.65;">Bei 3 Optionen hast du 33% Chance mit einem Tipp. Leer hast du 0%. Immer raten!</p>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 10 · Lektion 4 · Übung</div><h2 class="lesson-h">Ruhe &amp; zweites Hören — <span style="color:var(--key)">Übung</span></h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-3 -->
+
+    <!-- ── LEKTION 5: Praxistranskript ── -->
+    <div id="lesson-4" class="lesson-pane">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 10 · Lektion 5 von 6</div>
+          <h2 class="lesson-h">Praxistranskript — <span style="color:var(--str)">Kwame &amp; die Sprachschule</span></h2>
+          <p class="body-text">Hier siehst du ein Hör-Transkript im echten Goethe B1-Stil — als Text, damit du die Strategie üben kannst. In der Prüfung hörst du diesen Dialog. Lies zuerst die Fragen, unterstreiche Schlüsselwörter, dann lies das Transkript und beantworte die Fragen.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>In this practice exercise, the audio is represented as a written transcript so you can practice the strategy. In the real exam, you would hear this conversation. Practice: read the questions first, mark keywords, then "listen" (read) the transcript and answer. The format is identical to the real Goethe B1 Hören Aufgabe 2 style.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Schritt 1 — Fragen zuerst lesen &amp; Schlüsselwörter markieren</div>
+          <div class="frage-list">
+            <div class="frage-item"><div class="frage-num">FRAGE 1</div><div class="frage-text">Der B1-Kurs beginnt am 15. März.</div></div>
+            <div class="frage-item"><div class="frage-num">FRAGE 2</div><div class="frage-text">Der Kurs findet dreimal pro Woche statt.</div></div>
+            <div class="frage-item"><div class="frage-num">FRAGE 3</div><div class="frage-text">Der Kurs kostet 280 Euro.</div></div>
+            <div class="frage-item"><div class="frage-num">FRAGE 4</div><div class="frage-text">Das Lehrmaterial muss extra bezahlt werden.</div></div>
+            <div class="frage-item"><div class="frage-num">FRAGE 5</div><div class="frage-text">Kwame möchte den Kurs online machen.</div></div>
+          </div>
+          <p style="font-size:12px;color:var(--blue);font-family:'DM Mono',monospace;margin-bottom:14px;">→ Schlüsselwörter markiert? Gut. Jetzt das Transkript lesen:</p>
+
+          <div class="sec-label">Schritt 2 — Transkript lesen (= Hören üben)</div>
+          <div class="transkrip-wrap">
+            <div class="transkrip-head">
+              <span class="transkrip-icon">🎙️</span>
+              <span class="transkrip-label">GOETHE B1 STIL · HÖREN · AUFGABE 2 · TRANSKRIPT</span>
+            </div>
+            <div class="transkrip-body">
+              <div class="dialog-line"><span class="dialog-speaker ds-a">SCHULE</span><span class="dialog-text">Guten Tag, hier ist die Sprachschule Berlin. Was kann ich für Sie tun?</span></div>
+              <div class="dialog-line"><span class="dialog-speaker ds-k">KWAME</span><span class="dialog-text">Hallo, mein Name ist Kwame Asante. Ich möchte mich für den B1-Kurs anmelden.</span></div>
+              <div class="dialog-line"><span class="dialog-speaker ds-a">SCHULE</span><span class="dialog-text">Natürlich. Unser nächster B1-Kurs beginnt am <span class="hkey">15. März</span>. Er findet <span class="hkey">montags und mittwochs</span> von 18 bis 20 Uhr statt.</span></div>
+              <div class="dialog-line"><span class="dialog-speaker ds-k">KWAME</span><span class="dialog-text">Sehr gut. Wie viel kostet der Kurs?</span></div>
+              <div class="dialog-line"><span class="dialog-speaker ds-a">SCHULE</span><span class="dialog-text">Der Kurs kostet <span class="hkey">280 Euro</span> für drei Monate. Das Lehrmaterial ist <span class="hkey">inklusive</span> — Sie müssen nichts extra bezahlen.</span></div>
+              <div class="dialog-line"><span class="dialog-speaker ds-k">KWAME</span><span class="dialog-text">Perfekt. Kann ich den Kurs auch <span class="hkey">online</span> machen?</span></div>
+              <div class="dialog-line"><span class="dialog-speaker ds-a">SCHULE</span><span class="dialog-text">Leider nein, der Kurs findet nur in Präsenz statt. Aber wir haben eine kleine Gruppe — nur 12 Teilnehmer.</span></div>
+              <div class="dialog-line"><span class="dialog-speaker ds-k">KWAME</span><span class="dialog-text">Das klingt gut. Ich melde mich an.</span></div>
+            </div>
+          </div>
+
+          <div class="sec-label">Schritt 3 — Antworten wählen</div>
+          <div class="frage-list" id="antworten-list">
+
+            <div class="frage-item" id="hfa-0">
+              <div class="frage-num">FRAGE 1</div>
+              <div class="frage-text">Der B1-Kurs beginnt am 15. März.</div>
+              <div class="frage-opts">
+                <button class="fanswer fa-richtig" onclick="checkHFrage(0,'r')">✓ richtig</button>
+                <button class="fanswer fa-falsch"  onclick="checkHFrage(0,'f')">✗ falsch</button>
+              </div>
+              <div class="frage-fb" id="hfb-0">„Unser nächster B1-Kurs beginnt am 15. März." → Die Aussage stimmt genau. → <strong style="color:var(--green);">RICHTIG</strong></div>
+            </div>
+
+            <div class="frage-item" id="hfa-1">
+              <div class="frage-num">FRAGE 2</div>
+              <div class="frage-text">Der Kurs findet dreimal pro Woche statt.</div>
+              <div class="frage-opts">
+                <button class="fanswer fa-richtig" onclick="checkHFrage(1,'r')">✓ richtig</button>
+                <button class="fanswer fa-falsch"  onclick="checkHFrage(1,'f')">✗ falsch</button>
+              </div>
+              <div class="frage-fb" id="hfb-1">Der Kurs findet montags UND mittwochs statt — das sind nur zweimal pro Woche, nicht dreimal. → <strong style="color:var(--red);">FALSCH</strong></div>
+            </div>
+
+            <div class="frage-item" id="hfa-2">
+              <div class="frage-num">FRAGE 3</div>
+              <div class="frage-text">Der Kurs kostet 280 Euro.</div>
+              <div class="frage-opts">
+                <button class="fanswer fa-richtig" onclick="checkHFrage(2,'r')">✓ richtig</button>
+                <button class="fanswer fa-falsch"  onclick="checkHFrage(2,'f')">✗ falsch</button>
+              </div>
+              <div class="frage-fb" id="hfb-2">„Der Kurs kostet 280 Euro für drei Monate." → Die Aussage stimmt genau. → <strong style="color:var(--green);">RICHTIG</strong></div>
+            </div>
+
+            <div class="frage-item" id="hfa-3">
+              <div class="frage-num">FRAGE 4</div>
+              <div class="frage-text">Das Lehrmaterial muss extra bezahlt werden.</div>
+              <div class="frage-opts">
+                <button class="fanswer fa-richtig" onclick="checkHFrage(3,'r')">✓ richtig</button>
+                <button class="fanswer fa-falsch"  onclick="checkHFrage(3,'f')">✗ falsch</button>
+              </div>
+              <div class="frage-fb" id="hfb-3">„Das Lehrmaterial ist inklusive — Sie müssen nichts extra bezahlen." → Das ist das Gegenteil der Aussage. → <strong style="color:var(--red);">FALSCH</strong></div>
+            </div>
+
+            <div class="frage-item" id="hfa-4">
+              <div class="frage-num">FRAGE 5</div>
+              <div class="frage-text">Kwame möchte den Kurs online machen.</div>
+              <div class="frage-opts">
+                <button class="fanswer fa-richtig" onclick="checkHFrage(4,'r')">✓ richtig</button>
+                <button class="fanswer fa-falsch"  onclick="checkHFrage(4,'f')">✗ falsch</button>
+              </div>
+              <div class="frage-fb" id="hfb-4">Kwame fragt: „Kann ich den Kurs auch online machen?" — Er fragt danach, aber der Text sagt nicht, dass er es unbedingt möchte. Die Schule sagt nein. Kwame meldet sich trotzdem an. Die Aussage „möchte online machen" ist eine Schlussfolgerung, die durch die Frage impliziert wird. In Aufgabe 1 des Goethe B1 zählt diese Interpretation als → <strong style="color:var(--red);">FALSCH</strong> (er hat sich trotz Online-Absage angemeldet)</div>
+            </div>
+
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 10 · Lektion 5 · Übung</div><h2 class="lesson-h">Praxistranskript — <span style="color:var(--str)">Strategiefrage</span></h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-4 -->
+
+    <!-- ── LEKTION 6: Prüfungsvorbereitung ── -->
+    <div id="lesson-5" class="lesson-pane">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 10 · Lektion 6 von 6</div>
+          <h2 class="lesson-h">Amina — <span style="color:var(--blue)">Prüfungsvorbereitung</span></h2>
+          <p class="body-text">Amina hat die Goethe B1-Hörprüfung zweimal nicht bestanden — nicht weil ihr Deutsch schlecht war, sondern weil sie keine Strategie hatte. Beim dritten Versuch hat sie alle 5 Strategien angewendet. Hier siehst du was sich verändert hat.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>This final lesson consolidates all 5 listening strategies through Amina's experience. It shows the most common mistakes made by B1 candidates and gives you a concrete checklist for exam day. The key mindset shift: you don't need to understand everything — you need to find the answers to specific questions.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Aminas häufigste Fehler (vor der Strategie)</div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FEHLER 1</div>
+              <div class="wr-word">Sie hat auf alles gewartet — und wenn sie einen Satz nicht verstand, hat sie aufgehört zu hören.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ JETZT</div>
+              <div class="wr-word">Einen Satz nicht verstehen = normal. Sie atmet und hört auf das nächste Schlüsselwort.</div>
+            </div>
+          </div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FEHLER 2</div>
+              <div class="wr-word">Keine Notizen gemacht — sie wollte sich alles merken. Zahlen vergessen.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ JETZT</div>
+              <div class="wr-word">Stift in der Hand. Zahlen und Namen sofort aufschreiben. Beim zweiten Hören prüfen.</div>
+            </div>
+          </div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FEHLER 3</div>
+              <div class="wr-word">Die Lesezeit vor dem Audio wurde nicht genutzt — sie hat auf das Audio gewartet.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ JETZT</div>
+              <div class="wr-word">Lesezeit = Strategie-Zeit. Sofort Fragen lesen, Schlüsselwörter markieren.</div>
+            </div>
+          </div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FEHLER 4</div>
+              <div class="wr-word">Fragen leer gelassen, weil sie unsicher war. „Lieber nichts als falsch."</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ JETZT</div>
+              <div class="wr-word">Immer raten! Leer = 0 Punkte. Geraten = vielleicht 1 Punkt. Immer raten!</div>
+            </div>
+          </div>
+
+          <div class="sec-label">Die 5 Strategien — Checkliste für den Prüfungstag</div>
+          <div class="ctx-grid">
+            <div class="ctx-card c-str">
+              <div class="ctx-icon">①</div>
+              <div>
+                <div class="ctx-title">Lesezeit nutzen — Fragen VOR dem Hören lesen</div>
+                <div class="ctx-desc">30–60 Sekunden: Alle Fragen lesen, Schlüsselwörter markieren. Nie auf das Audio warten!</div>
+              </div>
+            </div>
+            <div class="ctx-card c-str">
+              <div class="ctx-icon">②</div>
+              <div>
+                <div class="ctx-title">Gezielt hören — Schlüsselwörter, Namen, Zahlen</div>
+                <div class="ctx-desc">Du musst nicht alles verstehen. Wenn du dein Schlüsselwort hörst — konzentriere dich!</div>
+              </div>
+            </div>
+            <div class="ctx-card c-key">
+              <div class="ctx-icon">③</div>
+              <div>
+                <div class="ctx-title">Mitschreiben — Zahlen &amp; Namen sofort notieren</div>
+                <div class="ctx-desc">Stift bereit halten. Alles aufschreiben was wie eine Antwort klingt. Vollständige Sätze nicht nötig.</div>
+              </div>
+            </div>
+            <div class="ctx-card c-tip">
+              <div class="ctx-icon">④</div>
+              <div>
+                <div class="ctx-title">Ruhig bleiben — ein Wort reicht manchmal</div>
+                <div class="ctx-desc">Nicht verstanden? Kein Panik. Atmen, weiterhören. Das nächste Schlüsselwort kommt.</div>
+              </div>
+            </div>
+            <div class="ctx-card c-wrn">
+              <div class="ctx-icon">⑤</div>
+              <div>
+                <div class="ctx-title">Zweites Hören nutzen + NIE leer lassen</div>
+                <div class="ctx-desc">Zweites Hören: Antworten bestätigen, Lücken füllen, Unsicheres entscheiden. Am Ende: Jede Frage beantwortet!</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="success-box">
+            <strong style="color:var(--green);">Die 5 Strategien auf einen Blick:</strong><br><br>
+            1. <strong style="color:var(--str);">Fragen zuerst</strong> — Lesezeit = Strategiezeit. Schlüsselwörter markieren.<br><br>
+            2. <strong style="color:var(--str);">Gezielt hören</strong> — Namen, Zahlen, Daten, markierte Wörter suchen.<br><br>
+            3. <strong style="color:var(--key);">Mitschreiben</strong> — Stift bereit. Zahlen und Namen sofort notieren!<br><br>
+            4. <strong style="color:var(--tip);">Ruhig bleiben</strong> — Nicht alles verstehen ist normal. Atmen, weiterhören.<br><br>
+            5. <strong style="color:var(--wrn);">Zweimal nutzen + raten</strong> — Zweites Hören bestätigt. Leer lassen = Fehler!
+          </div>
+
+          <div class="info-box"><strong style="color:var(--gold);">Aminas finaler Tipp:</strong><br><br>
+            „Der Hören-Teil ist nicht schwerer als Lesen — er fühlt sich nur so an, weil das Audio weiterläuft. Die Lösung: Ich mache Notizen, ich raste nicht aus, und ich rate lieber als ich leer lasse. Beim dritten Mal habe ich 22 von 30 Punkten bekommen. Du kannst das auch!"
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 10 · Lektion 6 · Übung</div><h2 class="lesson-h">Hören Strategie — <span style="color:var(--blue)">Abschlusskontrolle</span></h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-5 -->
+
+  </div>
+</div>
+
+<script>
+var TOTAL=6, currentLesson=0, xp=0;
+var synth=window.speechSynthesis, voices=[], deVoice=null;
+function loadVoices(){ voices=synth.getVoices(); deVoice=voices.find(function(v){return v.lang==='de-DE';})||voices.find(function(v){return v.lang.startsWith('de');})||null; }
+if(synth.onvoiceschanged!==undefined){synth.onvoiceschanged=loadVoices;}
+function speakSentence(btn,text){ if(!synth)return; synth.cancel(); document.querySelectorAll('.speak-btn.speaking').forEach(function(b){b.classList.remove('speaking');}); btn.classList.add('speaking'); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; u.onend=function(){btn.classList.remove('speaking');}; synth.speak(u); }
+
+/* Praxis: 0=richtig, 1=falsch, 2=richtig, 3=falsch, 4=falsch */
+var hFrageAnswers=['r','f','r','f','f'];
+function checkHFrage(idx,chosen){
+  var item=document.getElementById('hfa-'+idx);
+  var btns=item.querySelectorAll('.fanswer');
+  btns.forEach(function(b){b.disabled=true;});
+  var correct=hFrageAnswers[idx];
+  var isOk=(chosen===correct);
+  if(isOk){xp+=10;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';}
+  btns.forEach(function(b){
+    var v=b.getAttribute('onclick').match(/'([rf])'/)[1];
+    if(v===correct)b.classList.add(isOk&&v===chosen?'selected-ok':'reveal-ok');
+    if(v===chosen&&!isOk)b.classList.add('selected-no');
+  });
+  var fb=document.getElementById('hfb-'+idx);
+  fb.classList.add('show');
+  fb.style.color=isOk?'var(--green)':'var(--cream)';
+}
+
+var QD={
+  0:[
+    {q:'Was ist ein wichtiges Merkmal aller Goethe B1 Höraufgaben?',
+     hint:'Wie oft hörst du jeden Text?',
+     opts:['Man hört jeden Text nur einmal — schnell reagieren!','Man hört jeden Text zweimal — zwei Chancen!','Man bekommt alle Texte vorher als Transkript','Man darf das Audio pausieren'],
+     ans:1,
+     exp:'Alle Texte im Goethe B1 Hören werden ZWEIMAL gespielt. Das ist ein entscheidender Vorteil! Beim ersten Hören bekommst du das Gesamtbild und machst Notizen. Beim zweiten Hören bestätigst du deine Antworten und schließt unsichere Fragen ab. Diese zweite Chance bedeutet: Wenn du beim ersten Mal etwas verpasst, ist es nicht vorbei!',
+     rule:'Alle B1-Höraufgaben: zweimal gespielt. Erste Runde = Notizen + Hauptidee. Zweite Runde = Antworten bestätigen + Lücken füllen. Nutze beide Hördurchgänge strategisch!'}
+  ],
+  1:[
+    {q:'Wann liest du die Fragen bei der Höraufgabe?',
+     hint:'Du bekommst Lesezeit vor dem Audio. Wann nutzt du sie?',
+     opts:['Während du hörst — dann kannst du gleichzeitig hören und lesen','VOR dem Hören — in der Lesezeit die Fragen lesen und Schlüsselwörter markieren','Nach dem ersten Hören — wenn du schon weißt worum es geht','Erst nach dem zweiten Hören — dann hast du alles frisch im Kopf'],
+     ans:1,
+     exp:'Immer VOR dem Hören! Du hast 30–60 Sekunden Lesezeit bevor das Audio startet. Das ist kostbare Strategiezeit: Lies alle Fragen, markiere Schlüsselwörter (Namen, Zahlen, Nomen). Dann weißt du beim Hören genau, worauf du achten musst. Wenn du gleichzeitig hörst und liest (Option A), kannst du dich auf nichts richtig konzentrieren.',
+     rule:'Lesezeit = Strategiezeit! Fragen lesen + Schlüsselwörter markieren BEVOR das Audio läuft. Dann gezielt auf diese Schlüsselwörter hören. Das ist der Unterschied zwischen blindem Hören und gezieltem Hören.'}
+  ],
+  2:[
+    {q:'Was darf man während des Goethe B1 Hörens tun?',
+     hint:'Gibt es eine Einschränkung beim Aufschreiben?',
+     opts:['Nichts aufschreiben — das ist im Test verboten','Nur die endgültigen Antworten auf dem Antwortbogen markieren','Notizen machen! Schlüsselwörter, Zahlen und Namen sofort aufschreiben','Seinen Nachbarn fragen wenn man etwas nicht versteht'],
+     ans:2,
+     exp:'Mitschreiben ist ERLAUBT! Das ist einer der wichtigsten Tipps und viele Kandidaten wissen es nicht. Du darfst in der Lesezeit und während des Hörens Notizen machen — auf dem Aufgabenblatt. Zahlen vergisst man sehr schnell, wenn weitere Informationen folgen. Schreib sie sofort auf. Notizen = dein Gedächtnis-Backup.',
+     rule:'Mitschreiben erlaubt! Priorität: Zahlen & Preise (sehr wichtig), Namen & Orte (wichtig), Schlüsselwörter (wenn Zeit). Vollständige Sätze NICHT nötig — nur Stichworte die dir helfen die Fragen zu beantworten.'}
+  ],
+  3:[
+    {q:'Amina hört den Hörtext und versteht einen ganzen Satz nicht. Was soll sie tun?',
+     hint:'Das Audio läuft weiter. Was ist die klügste Reaktion?',
+     opts:['Den Stift hinlegen und auf das Ende warten','Die Frage sofort leer lassen und zur nächsten übergehen','Ruhig bleiben, tief atmen, weiterhören — das nächste Schlüsselwort kommt bald. Nie leer lassen!','Fünf Sekunden zurückgehen und nochmal hören'],
+     ans:2,
+     exp:'Ruhig bleiben und weiterhören ist die einzige richtige Strategie! Das Audio pausiert nicht für dich. Wenn du in Panik gerätst, verpasst du auch die nächsten Sätze. Atmen, fokussieren, auf das nächste Schlüsselwort warten. Und nie leer lassen: beim zweiten Hören bekommst du eine weitere Chance. Wenn danach immer noch unsicher: raten statt leer.',
+     rule:'Einen Satz nicht verstehen = normal! Reaktion: Ruhig bleiben → weiterhören → nächstes Schlüsselwort suchen → beim zweiten Hören bestätigen → wenn noch unsicher: raten. NIEMALS aufgeben und NIEMALS leer lassen!'}
+  ],
+  4:[
+    {q:'Im Transkript steht: „Der Kurs findet montags und mittwochs statt." Frage: „Der Kurs findet dreimal pro Woche statt." Was ist richtig?',
+     hint:'Montags und mittwochs — wie viele Tage sind das?',
+     opts:['Richtig — der Kurs findet regelmäßig statt','Falsch — der Kurs findet nur zweimal pro Woche statt, nicht dreimal','Nicht im Text — über die Häufigkeit sagt der Text nichts','Das kann man so nicht beantworten'],
+     ans:1,
+     exp:'FALSCH ist die richtige Antwort. Montags und mittwochs = zweimal pro Woche. Die Frage behauptet dreimal pro Woche — das ist falsch. Das ist ein typischer Goethe B1 Trick: Der Text sagt etwas Ähnliches (regelmäßige Wochentage), aber die genaue Zahl stimmt nicht. Deshalb: Schlüsselwörter und Zahlen IMMER sofort notieren und genau vergleichen!',
+     rule:'Im Hörtest: Zahlen und Häufigkeiten genau notieren! montags + mittwochs = 2 Tage/Woche. Nicht dreimal. Dieser Typ von Fehler kostet Punkte wenn man nicht aufpasst — deshalb: Notizen machen!'}
+  ],
+  5:[
+    {q:'Du hast nach dem zweiten Hören noch eine unbeantwortete Frage. Was machst du?',
+     hint:'Leer lassen vs. raten — was sind die Konsequenzen?',
+     opts:['Leer lassen — es ist besser nichts als eine falsche Antwort einzutragen','Raten! Falsch gibt 0 Punkte, leer gibt auch 0 Punkte — aber geraten gibt vielleicht 1 Punkt','Beim Prüfer nach einer Verlängerung fragen','Die Frage von deiner Antwort einer anderen Aufgabe abschreiben'],
+     ans:1,
+     exp:'Immer raten! Die Logik ist einfach: Eine leere Antwort bringt 0 Punkte. Eine falsche Antwort bringt auch 0 Punkte. Aber wenn du rätst, hast du eine Chance auf 1 Punkt. Bei 2 Optionen (richtig/falsch) hast du 50% Chance mit einem Tipp. Bei 3 Optionen (Multiple Choice) hast du 33% Chance. Leer lassen ist mathematisch immer schlechter als raten!',
+     rule:'Goldene Regel: NIEMALS leer lassen! Leer = 0 Punkte immer. Raten = 0 Punkte möglicherweise, aber auch vielleicht 1 Punkt! Gehe systematisch vor: Alle Fragen beantworten, auch wenn du nicht sicher bist.'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">FRAGE '+(s.cur+1)+' VON '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint" style="font-family:\'DM Mono\',monospace;">💡 '+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Nächste Frage →':'Ergebnis anzeigen →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Richtig!':'✗ Nicht ganz'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent='📌 Regel: '+q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' richtig</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfekt!':pct>=60?'Gut gemacht!':'Noch einmal versuchen.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(52,152,219,0.12);border:1px solid var(--blue);border-radius:50px;padding:9px 22px;color:var(--blue);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Modul 10 abschließen →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Zur nächsten Lektion →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">🎧</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Modul 10 abgeschlossen!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">Du kennst jetzt alle 5 Hörstrategien für den Goethe B1. Du nutzt die Lesezeit vor dem Audio, hörst gezielt auf Schlüsselwörter, schreibst Notizen, bleibst ruhig bei schwierigen Passagen und nutzt das zweite Hören strategisch. Leer lassen gibt es nicht mehr in deinem Prüfungsvokabular!</p><div class="xp-badge">⚡ '+xp+' XP verdient</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Modul 10 abgeschlossen. Weiter zu Modul 11 — Schreiben Strategie.</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Zur Übersicht</button></div>'; localStorage.setItem('dw_mod_b1_10_done','1'); var saved=parseInt(localStorage.getItem('dw_xp')||'0'); localStorage.setItem('dw_xp',saved+xp); }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+<script src="./ai-tutor.js" data-module="b1-10"></script>
+</body>
+</html>
