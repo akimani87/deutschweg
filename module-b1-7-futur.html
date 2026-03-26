@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — B1 Modul 7: Futur I und Futur II</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --f1:#3498db; --f2:#e67e22; --prs:#9b59b6; --ver:#27ae60;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--blue); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--blue); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--blue); color:var(--white); width:100%; }
+  .btn-primary:hover { background:#2980b9; transform:translateY(-2px); box-shadow:0 8px 24px rgba(52,152,219,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--blue); color:var(--blue); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(52,152,219,0.2); }
+  .speak-btn.speaking { background:var(--blue); color:var(--white); }
+
+  /* ENGLISH HELP TOGGLE */
+  .en-help { background:rgba(52,152,219,0.05); border:1px dashed rgba(52,152,219,0.25); border-radius:10px; margin:12px 0; }
+  .en-help summary { padding:10px 16px; cursor:pointer; font-size:13px; color:var(--blue); font-family:'DM Mono',monospace; letter-spacing:.03em; list-style:none; display:flex; align-items:center; gap:8px; }
+  .en-help summary::-webkit-details-marker { display:none; }
+  .en-help[open] summary { border-bottom:1px dashed rgba(52,152,219,0.2); }
+  .en-help-body { padding:12px 16px; font-size:13px; color:rgba(245,240,232,.7); line-height:1.8; }
+  .en-help-body p { margin-bottom:8px; }
+  .en-help-body p:last-child { margin-bottom:0; }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-note { font-size:12px; color:var(--gray); line-height:1.6; }
+
+  /* FORMULA BOX */
+  .formula-box { background:var(--card2-bg); border:1px solid rgba(52,152,219,0.2); border-radius:14px; padding:20px 22px; margin:14px 0; text-align:center; }
+  .formula-title { font-size:10px; letter-spacing:3px; font-family:'DM Mono',monospace; color:var(--blue); margin-bottom:14px; }
+  .formula-main { font-family:'DM Mono',monospace; font-size:18px; font-weight:700; color:var(--white); line-height:2; }
+  .formula-part { display:inline-block; }
+  .formula-plus { color:var(--gray); margin:0 8px; }
+  .fp-w { color:var(--f1); }
+  .fp-i { color:var(--f2); }
+  .fp-m { color:var(--prs); }
+  .fp-p { color:var(--ver); }
+
+  /* COMPARISON TABLE */
+  .comp-table { width:100%; border-collapse:collapse; font-size:13px; margin:14px 0; }
+  .comp-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:10px 14px; text-align:left; border-bottom:2px solid rgba(255,255,255,0.1); }
+  .comp-table td { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'DM Mono',monospace; font-size:13px; vertical-align:top; }
+  .comp-table tr:last-child td { border-bottom:none; }
+  .comp-table tr:hover td { background:rgba(255,255,255,0.02); }
+  .ct-f1 { color:var(--f1); }
+  .ct-f2 { color:var(--f2); }
+  .ct-prs { color:var(--prs); }
+  .comp-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+
+  /* WRONG/RIGHT */
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.0; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+
+  /* CONTEXT CARDS */
+  .ctx-grid { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ctx-card { background:var(--card2-bg); border-radius:12px; padding:16px 18px; display:flex; gap:14px; align-items:flex-start; }
+  .ctx-icon { font-size:22px; flex-shrink:0; width:32px; text-align:center; margin-top:2px; }
+  .ctx-title { font-size:13px; font-weight:700; color:var(--cream); margin-bottom:4px; }
+  .ctx-desc { font-size:13px; color:var(--gray); line-height:1.65; margin-bottom:6px; }
+  .ctx-ex { font-family:'DM Mono',monospace; font-size:12px; color:var(--blue); }
+  .ctx-card.c-plan  { border:1px solid rgba(52,152,219,0.2); }
+  .ctx-card.c-pred  { border:1px solid rgba(230,126,34,0.2); }
+  .ctx-card.c-prom  { border:1px solid rgba(155,89,182,0.2); }
+  .ctx-card.c-verm  { border:1px solid rgba(39,174,96,0.2); }
+
+  /* HIGHLIGHTS */
+  .wh  { color:var(--f1); font-weight:700; }
+  .ih  { color:var(--f2); font-weight:700; }
+  .prh { color:var(--prs); font-weight:700; }
+  .vmh { color:var(--ver); font-weight:700; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Mono',monospace; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--blue); background:rgba(52,152,219,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(52,152,219,0.1); border-radius:8px; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(52,152,219,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.2); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(52,152,219,0.12); border:1px solid var(--blue); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--blue); font-size:18px; margin:18px 0; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .lesson-h{font-size:22px;} .wr-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">B1 · MODUL 7</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">B1 · Grammatik</div>
+    <h1 class="lesson-h" style="font-size:36px;">Futur I &amp; <span style="color:var(--f1)">Futur II</span></h1>
+    <p class="body-text">Futur I und Futur II sind unverzichtbare Strukturen für die B1-Sprechen-Prüfung. Mit Futur I sprichst du über Pläne, Vorhersagen und Versprechen. Mit Futur II beschreibst du Handlungen, die bis zu einem zukünftigen Zeitpunkt abgeschlossen sein werden. Kwame, Amina und Kofi zeigen dir, wie das in der Praxis aussieht.</p>
+
+    <details class="en-help">
+      <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+      <div class="en-help-body">
+        <p>German has two future tenses. Futur I (werden + infinitive) expresses plans, predictions, promises and assumptions — similar to English "will". Futur II (werden + past participle + haben/sein) expresses something that will have been completed by a future point — like English "will have done". In everyday speech, Germans often use the present tense + a time expression instead of Futur I.</p>
+      </div>
+    </details>
+
+    <div class="info-box"><strong style="color:var(--gold);">Lernziele dieses Moduls:</strong><br><br>
+      ✦ Du kannst Futur I mit werden + Infinitiv korrekt bilden<br>
+      ✦ Du kennst die vier Verwendungen von Futur I (Pläne, Vorhersagen, Versprechen, Vermutungen)<br>
+      ✦ Du kannst Futur II für abgeschlossene Zukunft verwenden<br>
+      ✦ Du weißt, wann Präsens Futur I ersetzen kann<br>
+      ✦ Du vermeidest typische Wortstellungsfehler in der Prüfung
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">📅</div><div><div class="lc-title">Lektion 1 — Futur I: werden + Infinitiv</div><div class="lc-desc">Die Grundformel. werden konjugiert, Infinitiv am Ende. Alle Personen mit Beispielen.</div></div><div class="lc-tag" style="color:var(--f1);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">🎯</div><div><div class="lc-title">Lektion 2 — Futur I: Vier Verwendungen</div><div class="lc-desc">Pläne, Vorhersagen, Versprechen, Vermutungen. Kwame und Amina im Alltag.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">✅</div><div><div class="lc-title">Lektion 3 — Futur II: Abgeschlossene Zukunft</div><div class="lc-desc">werden + Partizip II + haben/sein. Bis morgen werde ich gelernt haben.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">🔄</div><div><div class="lc-title">Lektion 4 — Präsens statt Futur I</div><div class="lc-desc">Im Deutschen benutzt man oft Präsens mit Zeitangabe. Beide Formen sind korrekt!</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">⚖️</div><div><div class="lc-title">Lektion 5 — Futur I vs. Futur II vs. Präsens</div><div class="lc-desc">Wann benutzt man welche Form? Vergleichstabelle und Prüfungsstrategie.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lektion 6 — Kwame, Amina &amp; Kofi in der Prüfung</div><div class="lc-desc">Futur I und II im Prüfungskontext. Typische Aufgaben, häufige Fehler, Exam-Tipps.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lektionen</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--blue);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LEKTION 1: Futur I — werden + Infinitiv ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 7 · Lektion 1 von 6</div>
+          <h2 class="lesson-h">Futur I — <span style="color:var(--f1)">werden + Infinitiv</span></h2>
+          <p class="body-text">Futur I bildet man mit <strong style="color:var(--f1);">werden</strong> (konjugiert) und dem <strong style="color:var(--f2);">Infinitiv</strong> am Satzende. Es entspricht dem englischen „will + Verb". Kwame wird nach Deutschland fliegen. Amina wird die Prüfung bestehen.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>Futur I is formed with the conjugated form of <em>werden</em> (to become/will) + the infinitive at the end of the sentence. It works like English "will + verb": "Ich werde lernen" = "I will learn".</p>
+              <p>The key rule: <em>werden</em> takes position 2 in the sentence (after the subject), and the infinitive always goes to the very END of the sentence. Never put the infinitive right after werden!</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Die Formel</div>
+          <div class="formula-box">
+            <div class="formula-title">FUTUR I — GRUNDFORMEL</div>
+            <div class="formula-main">
+              <span class="formula-part fp-w">werden</span>
+              <span class="formula-plus">+</span>
+              <span class="formula-part" style="color:var(--cream)">…</span>
+              <span class="formula-plus">+</span>
+              <span class="formula-part fp-i">Infinitiv</span>
+            </div>
+            <div style="font-size:12px;color:var(--gray);margin-top:8px;">werden konjugiert (Position 2) · Infinitiv steht am Satzende</div>
+          </div>
+
+          <div class="sec-label">werden — Konjugation (alle Personen)</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Person</th><th style="color:var(--f1)">werden</th><th>Beispiel</th></tr>
+              <tr><td>ich</td><td class="ct-f1">werde</td><td>Ich werde morgen lernen.</td></tr>
+              <tr><td>du</td><td class="ct-f1">wirst</td><td>Du wirst die Prüfung bestehen.</td></tr>
+              <tr><td>er/sie/es</td><td class="ct-f1">wird</td><td>Amina wird nach Berlin fliegen.</td></tr>
+              <tr><td>wir</td><td class="ct-f1">werden</td><td>Wir werden zusammen üben.</td></tr>
+              <tr><td>ihr</td><td class="ct-f1">werdet</td><td>Ihr werdet Erfolg haben.</td></tr>
+              <tr><td>sie/Sie</td><td class="ct-f1">werden</td><td>Kwame und Kofi werden kommen.</td></tr>
+            </table>
+          </div>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>Note the irregular forms: <em>du wirst</em> (not "werdest") and <em>er/sie/es wird</em> (not "werdet"). These are the two forms to memorize. The rest follow a predictable pattern: -e, -en, -en for ich/wir/sie-Sie.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Beispiele mit Kontext</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--f1);">KWAME</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame <span class="wh">wird</span> nächsten Monat nach Deutschland <span class="ih">fliegen</span>.</div>
+                <div class="ex-note">wird = er/sie/es Form · fliegen = Infinitiv am Satzende</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame wird nächsten Monat nach Deutschland fliegen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--f1);">AMINA</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina <span class="wh">wird</span> die B1-Prüfung <span class="ih">bestehen</span>.</div>
+                <div class="ex-note">Zukunftsplan und Vorhersage gleichzeitig — Futur I ist flexibel.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina wird die B1-Prüfung bestehen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--f1);">KOFI</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <span class="wh">werde</span> nächstes Jahr in Berlin <span class="ih">studieren</span>.</div>
+                <div class="ex-note">Kofi spricht über seinen Plan für die Zukunft. werde = ich-Form.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich werde nächstes Jahr in Berlin studieren.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="danger-box"><strong style="color:var(--red);">⚠️ Häufiger Fehler — Infinitiv nicht ans Ende!</strong><br><br>
+            „Ich werde lernen morgen." ✗<br>
+            → „Ich werde morgen lernen." ✓<br><br>
+            Der Infinitiv steht IMMER am Satzende — nicht direkt nach werden!
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 7 · Lektion 1 · Übung</div><h2 class="lesson-h">Futur I — <span style="color:var(--f1)">Übung</span></h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-0 -->
+
+    <!-- ── LEKTION 2: Futur I — Vier Verwendungen ── -->
+    <div id="lesson-1" class="lesson-pane">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 7 · Lektion 2 von 6</div>
+          <h2 class="lesson-h">Futur I — <span style="color:var(--f1)">Vier Verwendungen</span></h2>
+          <p class="body-text">Futur I hat nicht nur eine Funktion. Es drückt vier verschiedene Bedeutungen aus: Pläne, Vorhersagen, Versprechen und Vermutungen. Kwame, Amina und Kofi zeigen dir alle vier Verwendungen im Alltag.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>Futur I has four main uses in German:</p>
+              <p>1. Plans/intentions: "I will study in Berlin next year."</p>
+              <p>2. Predictions: "It will rain tomorrow."</p>
+              <p>3. Promises: "I will help you." (strong commitment)</p>
+              <p>4. Assumptions (with wohl/wahrscheinlich): "He will probably be sick." — this expresses a guess about the present or future.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Die vier Verwendungen</div>
+          <div class="ctx-grid">
+            <div class="ctx-card c-plan">
+              <div class="ctx-icon">📋</div>
+              <div>
+                <div class="ctx-title">1. Pläne und Vorhaben</div>
+                <div class="ctx-desc">Zukünftige Absichten und konkrete Pläne.</div>
+                <div class="ctx-ex">Kofi wird nächstes Jahr in Berlin studieren.<br>Ich werde morgen früh aufstehen.</div>
+              </div>
+            </div>
+            <div class="ctx-card c-pred">
+              <div class="ctx-icon">🌦️</div>
+              <div>
+                <div class="ctx-title">2. Vorhersagen</div>
+                <div class="ctx-desc">Prognosen über die Zukunft — oft beim Wetter und bei Ereignissen.</div>
+                <div class="ctx-ex">Es wird morgen regnen.<br>Die Prüfung wird schwer werden.</div>
+              </div>
+            </div>
+            <div class="ctx-card c-prom">
+              <div class="ctx-icon">🤝</div>
+              <div>
+                <div class="ctx-title">3. Versprechen</div>
+                <div class="ctx-desc">Starke Zusagen und Versprechen — ernste Absicht ausdrücken.</div>
+                <div class="ctx-ex">Ich werde dir helfen!<br>Amina wird pünktlich kommen.</div>
+              </div>
+            </div>
+            <div class="ctx-card c-verm">
+              <div class="ctx-icon">🤔</div>
+              <div>
+                <div class="ctx-title">4. Vermutungen (mit wohl / wahrscheinlich)</div>
+                <div class="ctx-desc">Annahmen über Gegenwart oder Zukunft. Signalwörter: wohl, wahrscheinlich.</div>
+                <div class="ctx-ex">Er wird wohl krank sein.<br>Kwame wird wahrscheinlich schlafen.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">Beispiele im Kontext</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--f1);">PLAN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame <span class="wh">wird</span> nach Deutschland <span class="ih">fliegen</span> und dort <span class="ih">arbeiten</span>.</div>
+                <div class="ex-note">Kwames konkreter Zukunftsplan — er hat bereits alles vorbereitet.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame wird nach Deutschland fliegen und dort arbeiten.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--f2);">VORHERSAGE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Es <span class="wh">wird</span> morgen in Accra sehr heiß <span class="ih">sein</span>.</div>
+                <div class="ex-note">Wettervorhersage — Kofi schaut die Wetterapp an.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Es wird morgen in Accra sehr heiß sein.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--prs);">VERSPRECHEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <span class="wh">werde</span> dir bei den Hausaufgaben <span class="ih">helfen</span>. Versprochen!</div>
+                <div class="ex-note">Amina verspricht Kofi ihre Hilfe — starke Zusage.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich werde dir bei den Hausaufgaben helfen. Versprochen!')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--ver);">VERMUTUNG</div>
+              <div style="flex:1;">
+                <div class="ex-de">Er <span class="wh">wird</span> <span class="vmh">wohl</span> noch <span class="ih">schlafen</span> — er antwortet nicht.</div>
+                <div class="ex-note">Vermutung über die Gegenwart. wohl = Signalwort für Vermutung.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Er wird wohl noch schlafen — er antwortet nicht.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue);">📌 Signalwörter für Vermutung:</strong><br><br>
+            <strong style="color:var(--ver);">wohl</strong> — wahrscheinlich, aber nicht sicher<br>
+            <strong style="color:var(--ver);">wahrscheinlich</strong> — probably<br>
+            <strong style="color:var(--ver);">sicher</strong> — surely (starke Vermutung)<br><br>
+            „Er wird <span style="color:var(--ver);">wohl</span> krank sein." = He is probably sick.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 7 · Lektion 2 · Übung</div><h2 class="lesson-h">Vier Verwendungen — <span style="color:var(--f1)">Übung</span></h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-1 -->
+
+    <!-- ── LEKTION 3: Futur II — Abgeschlossene Zukunft ── -->
+    <div id="lesson-2" class="lesson-pane">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 7 · Lektion 3 von 6</div>
+          <h2 class="lesson-h">Futur II — <span style="color:var(--f2)">Abgeschlossene Zukunft</span></h2>
+          <p class="body-text">Futur II beschreibt eine Handlung, die bis zu einem bestimmten Zeitpunkt in der Zukunft <strong style="color:var(--f2);">abgeschlossen sein wird</strong>. Die Formel: <span class="wh">werden</span> + <span class="ih">Partizip II</span> + <span class="vmh">haben/sein</span>. Bis morgen werde ich gelernt haben. Er wird angekommen sein.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>Futur II corresponds to English "will have done": "By tomorrow, I will have finished the homework." It describes an action that will be completed by a specific point in the future.</p>
+              <p>Formula: werden (conjugated) + past participle + haben or sein (at the end). Just like Perfekt uses haben/sein — same rule applies here: verbs of movement/change of state use sein, most others use haben.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Die Formel</div>
+          <div class="formula-box">
+            <div class="formula-title">FUTUR II — FORMEL</div>
+            <div class="formula-main" style="font-size:16px;line-height:2.5;">
+              <span class="formula-part fp-w">werden</span>
+              <span class="formula-plus">+</span>
+              <span class="formula-part fp-i">Partizip II</span>
+              <span class="formula-plus">+</span>
+              <span class="formula-part fp-p">haben / sein</span>
+            </div>
+            <div style="font-size:12px;color:var(--gray);margin-top:8px;">werden konjugiert (Position 2) · Partizip II + haben/sein am Satzende</div>
+          </div>
+
+          <div class="sec-label">haben oder sein?</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Hilfsverb</th><th>Verben</th><th style="color:var(--f2)">Futur II Beispiel</th></tr>
+              <tr><td class="ct-f2">haben</td><td>die meisten Verben (lernen, machen, essen…)</td><td>gelernt haben</td></tr>
+              <tr><td class="ct-prs">sein</td><td>Bewegungsverben (gehen, fliegen, kommen…)<br>Zustandsverben (sein, werden, bleiben…)</td><td>angekommen sein</td></tr>
+            </table>
+          </div>
+
+          <div class="sec-label">Beispiele mit Zeitangabe</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--ver);">HABEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Bis morgen <span class="wh">werde</span> ich die Hausaufgaben <span class="ih">gemacht haben</span>.</div>
+                <div class="ex-note">Kofi verspricht, dass alles bis morgen fertig ist. gemacht = Partizip II von machen + haben.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Bis morgen werde ich die Hausaufgaben gemacht haben.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--ver);">HABEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Bis Freitag <span class="wh">wird</span> Amina alles für die Prüfung <span class="ih">vorbereitet haben</span>.</div>
+                <div class="ex-note">Amina wird bis Freitag fertig sein. vorbereitet = Partizip II + haben.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Bis Freitag wird Amina alles für die Prüfung vorbereitet haben.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--prs);">SEIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame <span class="wh">wird</span> bis Montag in Berlin <span class="ih">angekommen sein</span>.</div>
+                <div class="ex-note">ankommen = Bewegungsverb → sein. angekommen = Partizip II.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame wird bis Montag in Berlin angekommen sein.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--prs);">SEIN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Bis Ende des Jahres <span class="wh">wird</span> Kofi nach Deutschland <span class="ih">gezogen sein</span>.</div>
+                <div class="ex-note">ziehen (umziehen) = Bewegungsverb → gezogen sein.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Bis Ende des Jahres wird Kofi nach Deutschland gezogen sein.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="info-box"><strong style="color:var(--gold);">Prüfungstipp — Futur II auf B1:</strong><br><br>
+            Futur II erscheint im B1-Lesen- und Hören-Teil. Du musst es erkennen können. Im Schreiben und Sprechen reicht Futur I. Aber wenn du Futur II korrekt verwendest, zeigst du C1-Kompetenz — das beeindruckt den Prüfer!
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 7 · Lektion 3 · Übung</div><h2 class="lesson-h">Futur II — <span style="color:var(--f2)">Übung</span></h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-2 -->
+
+    <!-- ── LEKTION 4: Präsens statt Futur I ── -->
+    <div id="lesson-3" class="lesson-pane">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 7 · Lektion 4 von 6</div>
+          <h2 class="lesson-h"><span style="color:var(--prs)">Präsens</span> statt Futur I</h2>
+          <p class="body-text">Im Deutschen benutzt man sehr häufig das <strong style="color:var(--prs);">Präsens</strong> statt Futur I — wenn eine Zeitangabe im Satz steht! Beide Formen sind korrekt. Das ist ein großer Unterschied zum Englischen.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>In English, you must use "will" for future plans: "I will learn tomorrow" (not "I learn tomorrow"). In German, you can use the present tense with a time expression instead: "Ich lerne morgen." This sounds completely natural and is very common in spoken German.</p>
+              <p>Without a time expression, the present tense refers to the present moment, so Futur I becomes necessary for clarity: "Ich werde lernen" (I will learn — no time expression, so Futur I clarifies it's future).</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Die Regel</div>
+          <div class="formula-box">
+            <div class="formula-title">PRÄSENS = FUTUR I (mit Zeitangabe)</div>
+            <div class="formula-main" style="font-size:15px;line-height:2.5;">
+              <span class="formula-part fp-m">Präsens</span>
+              <span class="formula-plus" style="margin:0 16px;">+</span>
+              <span class="formula-part" style="color:var(--cream)">Zeitangabe</span>
+              <span class="formula-plus" style="margin:0 16px;">=</span>
+              <span class="formula-part fp-w">Futur I</span>
+            </div>
+            <div style="font-size:12px;color:var(--gray);margin-top:8px;">morgen · nächste Woche · bald · später · nächstes Jahr…</div>
+          </div>
+
+          <div class="sec-label">Beide Formen — korrekt und natürlich</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th style="color:var(--prs)">Präsens (mit Zeitangabe)</th><th style="color:var(--f1)">Futur I</th><th>Bedeutung</th></tr>
+              <tr><td class="ct-prs">Ich lerne morgen.</td><td class="ct-f1">Ich werde morgen lernen.</td><td>Ich lerne (in der Zukunft)</td></tr>
+              <tr><td class="ct-prs">Amina fliegt nächste Woche.</td><td class="ct-f1">Amina wird nächste Woche fliegen.</td><td>Aminas Reiseplan</td></tr>
+              <tr><td class="ct-prs">Wir machen das später.</td><td class="ct-f1">Wir werden das später machen.</td><td>zukünftige Handlung</td></tr>
+              <tr><td class="ct-prs">Kofi kommt bald.</td><td class="ct-f1">Kofi wird bald kommen.</td><td>Erwartung/Plan</td></tr>
+            </table>
+          </div>
+
+          <div class="sec-label">Wann muss man Futur I benutzen?</div>
+          <div class="ctx-grid">
+            <div class="ctx-card c-plan">
+              <div class="ctx-icon">✅</div>
+              <div>
+                <div class="ctx-title">Ohne Zeitangabe — Futur I klärt die Bedeutung</div>
+                <div class="ctx-desc">„Ich lerne." = Ich lerne (jetzt/gewöhnlich). Ohne Zeitangabe ist Präsens zweideutig.</div>
+                <div class="ctx-ex">→ „Ich werde lernen." = klare Zukunftsaussage</div>
+              </div>
+            </div>
+            <div class="ctx-card c-verm">
+              <div class="ctx-icon">🎯</div>
+              <div>
+                <div class="ctx-title">Prüfung — Futur I zeigt B1-Kompetenz</div>
+                <div class="ctx-desc">In der B1-Sprechen-Prüfung: „Ich werde..." zeigt dem Prüfer, dass du Futur I aktiv verwendest.</div>
+                <div class="ctx-ex">→ „Ich werde nächstes Jahr in Berlin studieren."</div>
+              </div>
+            </div>
+            <div class="ctx-card c-pred">
+              <div class="ctx-icon">🌦️</div>
+              <div>
+                <div class="ctx-title">Vermutungen — nur Futur I mit wohl</div>
+                <div class="ctx-desc">Für Vermutungen (wohl/wahrscheinlich) benutzt man immer Futur I, nie Präsens.</div>
+                <div class="ctx-ex">→ „Er wird wohl krank sein." (NICHT: „Er ist wohl krank.") ✗</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--prs);">PRÄSENS</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame <span class="prh">fliegt</span> nächste Woche nach Frankfurt.</div>
+                <div class="ex-note">Präsens mit „nächste Woche" = eindeutige Zukunftsaussage. Korrekt!</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame fliegt nächste Woche nach Frankfurt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--f1);">FUTUR I</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame <span class="wh">wird</span> nächste Woche nach Frankfurt <span class="ih">fliegen</span>.</div>
+                <div class="ex-note">Futur I — gleichbedeutend mit dem Präsens-Satz oben. Beide korrekt!</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame wird nächste Woche nach Frankfurt fliegen.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 7 · Lektion 4 · Übung</div><h2 class="lesson-h">Präsens statt Futur — <span style="color:var(--prs)">Übung</span></h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-3 -->
+
+    <!-- ── LEKTION 5: Futur I vs. Futur II vs. Präsens ── -->
+    <div id="lesson-4" class="lesson-pane">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 7 · Lektion 5 von 6</div>
+          <h2 class="lesson-h">Futur I vs. Futur II vs. <span style="color:var(--prs)">Präsens</span></h2>
+          <p class="body-text">Drei Formen — eine klare Logik. Futur I für Zukunftspläne und Vorhersagen. Futur II für abgeschlossene Zukunft. Präsens + Zeitangabe als natürliche Alternative zu Futur I. Lerne den Unterschied und wende ihn in der Prüfung sicher an.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p><strong>Futur I</strong> (werden + infinitive): "I will study" — for plans, predictions, promises, assumptions.</p>
+              <p><strong>Futur II</strong> (werden + Partizip II + haben/sein): "I will have studied" — for actions completed by a future point.</p>
+              <p><strong>Präsens + time expression</strong>: "I'm studying tomorrow" — natural replacement for Futur I in spoken German.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Vergleichstabelle</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Form</th><th>Formel</th><th>Verwendung</th><th>Beispiel</th></tr>
+              <tr>
+                <td class="ct-f1">Futur I</td>
+                <td style="color:var(--cream);">werden + Inf.</td>
+                <td style="color:var(--gray);">Pläne, Vorhersagen, Versprechen, Vermutungen</td>
+                <td class="ct-f1">Ich werde lernen.</td>
+              </tr>
+              <tr>
+                <td class="ct-f2">Futur II</td>
+                <td style="color:var(--cream);">werden + Part.II + haben/sein</td>
+                <td style="color:var(--gray);">Abgeschlossene Zukunft (bis zu einem Zeitpunkt)</td>
+                <td class="ct-f2">Ich werde gelernt haben.</td>
+              </tr>
+              <tr>
+                <td class="ct-prs">Präsens</td>
+                <td style="color:var(--cream);">Präsens + Zeitangabe</td>
+                <td style="color:var(--gray);">Zukunftspläne (informell, natürlich)</td>
+                <td class="ct-prs">Ich lerne morgen.</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="sec-label">Drei Sätze — eine Situation</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--f1);">FUTUR I</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina <span class="wh">wird</span> morgen die Prüfung <span class="ih">machen</span>.</div>
+                <div class="ex-note">Plan/Vorhersage — Standardform für Zukunft</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina wird morgen die Prüfung machen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--f2);">FUTUR II</div>
+              <div style="flex:1;">
+                <div class="ex-de">Bis morgen Abend <span class="wh">wird</span> Amina die Prüfung <span class="ih">gemacht haben</span>.</div>
+                <div class="ex-note">Abgeschlossene Zukunft — die Prüfung ist bis morgen Abend fertig</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Bis morgen Abend wird Amina die Prüfung gemacht haben.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--prs);">PRÄSENS</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina <span class="prh">macht</span> morgen die Prüfung.</div>
+                <div class="ex-note">Präsens + „morgen" = natürliche Umgangssprache, gleichbedeutend mit Futur I</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina macht morgen die Prüfung.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Prüfungsstrategie</div>
+          <div class="ctx-grid">
+            <div class="ctx-card c-plan">
+              <div class="ctx-icon">🗣️</div>
+              <div>
+                <div class="ctx-title">Sprechen-Teil: Futur I verwenden!</div>
+                <div class="ctx-desc">„Ich werde..." zeigt dem Prüfer, dass du aktiv Futur I benutzt. Das ist B1-Niveau.</div>
+                <div class="ctx-ex">„In der Zukunft werde ich in Europa studieren und arbeiten."</div>
+              </div>
+            </div>
+            <div class="ctx-card c-pred">
+              <div class="ctx-icon">✍️</div>
+              <div>
+                <div class="ctx-title">Schreiben-Teil: Futur I für Pläne und Vorhersagen</div>
+                <div class="ctx-desc">In formellen Texten: Futur I klingt strukturierter und klarer.</div>
+                <div class="ctx-ex">„Ich werde an dem Kurs teilnehmen und regelmäßig üben."</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Ich werde lernen morgen Deutsch.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Ich werde morgen Deutsch lernen.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Der Infinitiv steht IMMER am Satzende — nie direkt nach werden und nie mitten im Satz.</p>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 7 · Lektion 5 · Übung</div><h2 class="lesson-h">Vergleich — <span style="color:var(--f1)">Übung</span></h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-4 -->
+
+    <!-- ── LEKTION 6: Kwame, Amina & Kofi — Prüfungsvorbereitung ── -->
+    <div id="lesson-5" class="lesson-pane">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 7 · Lektion 6 von 6</div>
+          <h2 class="lesson-h">Kwame, Amina &amp; Kofi — <span style="color:var(--blue)">Prüfungsvorbereitung</span></h2>
+          <p class="body-text">Kwame, Amina und Kofi haben alle verschiedene Pläne für die Zukunft. Lies ihre Gespräche und Texte — und erkenne alle Futur-I- und Futur-II-Strukturen aus diesem Modul im realen Prüfungskontext.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>This lesson shows Futur I and Futur II in typical B1 exam situations: a speaking task where you talk about future plans, a written task where you describe what you will have done by a certain point, and common mistakes made by African German learners.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Situation 1 — Kwame spricht über seine Zukunftspläne (Sprechen)</div>
+          <div class="comp-wrap">
+            <p style="font-family:'DM Mono',monospace;font-size:13px;color:var(--cream);line-height:1.9;">
+              „In zwei Jahren <span class="wh">werde</span> ich nach Deutschland <span class="ih">ziehen</span>. Ich <span class="wh">werde</span> dort Ingenieurwesen <span class="ih">studieren</span>. Bis dahin <span class="wh">werde</span> ich mein Deutsch <span class="ih">verbessert haben</span>, damit ich dem Unterricht folgen kann. Meine Familie in Ghana <span class="prh">besuche</span> ich dann in den Semesterferien. Ich bin sehr aufgeregt — das <span class="wh">wird</span> eine große Veränderung in meinem Leben <span class="ih">sein</span>!"
+            </p>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-4px 0 14px;line-height:1.7;">Kwame benutzt Futur I (5×), Futur II (1×) und Präsens als Zukunft (1×) — perfekte B1-Mischung.</p>
+
+          <div class="sec-label">Situation 2 — Amina schreibt eine E-Mail (Schreiben)</div>
+          <div class="comp-wrap">
+            <p style="font-family:'DM Mono',monospace;font-size:13px;color:var(--cream);line-height:1.9;">
+              Sehr geehrte Damen und Herren,<br><br>
+              ich <span class="wh">werde</span> nächsten Monat Ihren Deutschkurs <span class="ih">besuchen</span>. Bis zum Kursende <span class="wh">werde</span> ich alle Lektionen <span class="ih">abgeschlossen haben</span>. Könnten Sie mir bitte die genauen Kurszeiten mitteilen? Ich <span class="wh">werde</span> pünktlich <span class="ih">sein</span>.<br><br>
+              Mit freundlichen Grüßen,<br>
+              Amina Diallo
+            </p>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-4px 0 14px;line-height:1.7;">Amina kombiniert Futur I, Futur II und Konjunktiv II (könnten) — starke B1-Schreibkompetenz.</p>
+
+          <div class="sec-label">Kofi — Vermutung mit wohl</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--ver);">KOFI</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame antwortet nicht. Er <span class="wh">wird</span> <span class="vmh">wohl</span> noch <span class="ih">schlafen</span>.</div>
+                <div class="ex-note">Kofi macht eine Vermutung über die Gegenwart mit Futur I + wohl.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame antwortet nicht. Er wird wohl noch schlafen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--ver);">KOFI</div>
+              <div style="flex:1;">
+                <div class="ex-de">Die Prüfung <span class="wh">wird</span> <span class="vmh">wahrscheinlich</span> schwer <span class="ih">sein</span>, aber ich bin bereit!</div>
+                <div class="ex-note">Vorhersage mit wahrscheinlich — Kofi ist trotzdem zuversichtlich.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Die Prüfung wird wahrscheinlich schwer sein, aber ich bin bereit!')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Häufige Fehler</div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Ich werde lernen morgen.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Ich werde morgen lernen.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Infinitiv immer ans Ende — niemals direkt nach werden.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Bis morgen ich werde fertig sein.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Bis morgen werde ich fertig sein.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Nach einem Zeitausdruck am Satzanfang kommt Inversion — werden vor dem Subjekt.</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Er wird wohl schläft.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Er wird wohl schlafen.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Nach werden immer den Infinitiv verwenden — niemals eine konjugierte Form!</p>
+
+          <div class="success-box">
+            <strong style="color:var(--green);">Zusammenfassung — Futur I &amp; II auf einen Blick:</strong><br><br>
+            1. <strong style="color:var(--f1);">Futur I:</strong> werden + Infinitiv (am Satzende). Für Pläne, Vorhersagen, Versprechen, Vermutungen.<br><br>
+            2. <strong style="color:var(--f2);">Futur II:</strong> werden + Partizip II + haben/sein. Für abgeschlossene Zukunft (bis zu einem Zeitpunkt).<br><br>
+            3. <strong style="color:var(--prs);">Präsens + Zeitangabe:</strong> gleiche Bedeutung wie Futur I — natürlich und korrekt.<br><br>
+            4. <strong style="color:var(--ver);">Vermutungen:</strong> Futur I + wohl/wahrscheinlich. Er wird wohl krank sein.<br><br>
+            5. <strong style="color:var(--red);">Achtung:</strong> Infinitiv IMMER ans Satzende! „Ich werde morgen lernen." ✓
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 7 · Lektion 6 · Übung</div><h2 class="lesson-h">Futur I &amp; II — <span style="color:var(--blue)">Abschlusskontrolle</span></h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-5 -->
+
+  </div>
+</div>
+
+<script>
+var TOTAL=6, currentLesson=0, xp=0;
+var synth=window.speechSynthesis, voices=[], deVoice=null;
+function loadVoices(){ voices=synth.getVoices(); deVoice=voices.find(function(v){return v.lang==='de-DE';})||voices.find(function(v){return v.lang.startsWith('de');})||null; }
+if(synth.onvoiceschanged!==undefined){synth.onvoiceschanged=loadVoices;}
+function speakDE(text){ if(!synth)return; synth.cancel(); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; synth.speak(u); }
+function speakSentence(btn,text){ if(!synth)return; synth.cancel(); document.querySelectorAll('.speak-btn.speaking').forEach(function(b){b.classList.remove('speaking');}); btn.classList.add('speaking'); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; u.onend=function(){btn.classList.remove('speaking');}; synth.speak(u); }
+
+var QD={
+  0:[
+    {q:'Welcher Satz verwendet Futur I korrekt?',
+     hint:'Achte auf die Wortstellung: werden an Position 2, Infinitiv am Satzende.',
+     opts:['Ich werde morgen lernen.','Ich werde lernen morgen.','Ich morgen werde lernen.','Ich lerne werde morgen.'],
+     ans:0,
+     exp:'„Ich werde morgen lernen." ist korrekt. werden steht an Position 2 (nach dem Subjekt ich), morgen ist das Zeitadverb in der Satzmitte, und lernen (Infinitiv) steht am Satzende. Option B ist der häufigste Fehler — der Infinitiv muss ans Ende, nicht direkt nach werden! Option C hat falsche Grundwortstellung (werden muss an Position 2, nicht ans Ende). Option D vermischt Präsens und werden falsch.',
+     rule:'Futur I: werden (Position 2) + Satzmitte + Infinitiv (am Satzende). Der Infinitiv steht IMMER am Ende!'}
+  ],
+  1:[
+    {q:'Kofi sagt: „Es wird morgen in Accra sehr heiß sein." Welche Verwendung von Futur I ist das?',
+     hint:'Kofi macht eine Aussage über das Wetter in der Zukunft. Ist das ein Plan, eine Vorhersage, ein Versprechen oder eine Vermutung?',
+     opts:['Ein konkreter Plan für morgen','Eine Vorhersage über das Wetter','Ein Versprechen an Amina','Eine Vermutung mit wohl'],
+     ans:1,
+     exp:'„Es wird morgen in Accra sehr heiß sein." ist eine Vorhersage — Kofi macht eine Prognose über das Wetter. Das Wetter ist kein Plan (Pläne macht man über eigene Handlungen), kein Versprechen (man verspricht dem Wetter nichts) und keine Vermutung mit wohl (wohl fehlt im Satz). Vorhersagen mit Futur I sind sehr häufig beim Wetter: „Es wird regnen/schneien/sonnig sein."',
+     rule:'Futur I für Vorhersagen: Prognosen über zukünftige Ereignisse — besonders beim Wetter. Für Vermutungen: Futur I + wohl/wahrscheinlich. Für Pläne: eigene zukünftige Handlungen. Für Versprechen: starke persönliche Zusagen.'}
+  ],
+  2:[
+    {q:'Was bedeutet: „Bis Freitag wird Amina den Bericht geschrieben haben."?',
+     hint:'geschrieben haben = Futur II. Was beschreibt Futur II?',
+     opts:['Amina schreibt gerade den Bericht.','Amina wird den Bericht vor Freitag fertiggeschrieben haben.','Amina hat den Bericht letzten Freitag geschrieben.','Amina fängt nächsten Freitag an zu schreiben.'],
+     ans:1,
+     exp:'Futur II (wird…geschrieben haben) beschreibt eine Handlung, die bis zu einem bestimmten Zeitpunkt in der Zukunft abgeschlossen sein wird. „Bis Freitag" ist der Endpunkt — bis dahin ist der Bericht fertig. Das ist die klassische Futur-II-Bedeutung: abgeschlossene Zukunft. Option A wäre Präsens Aktiv. Option C wäre Vergangenheit (Perfekt). Option D wäre einfaches Futur I ohne „bis".',
+     rule:'Futur II = werden + Partizip II + haben/sein. Es drückt aus, dass eine Handlung bis zu einem zukünftigen Zeitpunkt abgeschlossen sein wird. Erkennungswort: „bis" (bis morgen, bis Freitag, bis Ende des Jahres).'}
+  ],
+  3:[
+    {q:'Welche zwei Sätze haben dieselbe Bedeutung?',
+     hint:'Präsens kann Futur I ersetzen — aber nur unter bestimmten Bedingungen.',
+     opts:['Ich lerne morgen. = Ich werde morgen lernen.','Ich lerne. = Ich werde lernen.','Ich habe gelernt. = Ich werde lernen.','Ich lernte gestern. = Ich werde morgen lernen.'],
+     ans:0,
+     exp:'„Ich lerne morgen." und „Ich werde morgen lernen." bedeuten dasselbe! Die Zeitangabe „morgen" macht den Präsens-Satz eindeutig zukunftsbezogen. Im Deutschen ist das völlig natürlich und korrekt. Option B ist falsch: „Ich lerne." (ohne Zeitangabe) bedeutet eine Gewohnheit oder aktuelle Handlung in der Gegenwart — kein Futur. Option C ist Perfekt (Vergangenheit) vs. Futur. Option D verbindet Vergangenheit mit Zukunft — keine gleiche Bedeutung.',
+     rule:'Präsens + Zeitangabe (morgen, nächste Woche, bald…) = Futur I. Beide Formen sind korrekt. Ohne Zeitangabe ist Präsens zweideutig — dann lieber Futur I benutzen!'}
+  ],
+  4:[
+    {q:'Kwame spricht in der B1-Prüfung über seine Zukunftspläne. Welcher Satz zeigt am besten B1-Niveau?',
+     hint:'Der Prüfer erwartet aktive Verwendung von Futur I. Welcher Satz zeigt das klar?',
+     opts:['Ich lerne Deutsch.','Nächstes Jahr gehe ich nach Deutschland.','Ich werde nächstes Jahr in Deutschland studieren.','Deutsch ist sehr schwer.'],
+     ans:2,
+     exp:'„Ich werde nächstes Jahr in Deutschland studieren." zeigt klare B1-Struktur: Futur I (werde + studieren), eine Zeitangabe (nächstes Jahr) und einen konkreten Zukunftsplan. In der B1-Sprechen-Prüfung erwartet der Prüfer, dass du Futur I aktiv verwendest. Option A ist Präsens — zu einfach, zeigt kein Futur I. Option B ist Präsens als Zukunft — korrekt, aber zeigt kein Futur-I-Wissen. Option D ist eine allgemeine Aussage ohne Zukunftsbezug.',
+     rule:'In der B1-Sprechen-Prüfung: „Ich werde..." demonstriert Futur-I-Kompetenz. Nutze Futur I aktiv, wenn du über Pläne, Vorhaben und Vorhersagen sprichst!'}
+  ],
+  5:[
+    {q:'Welcher Satz enthält einen Fehler?',
+     hint:'Suche den Satz mit falscher Wortstellung oder falscher Verbform.',
+     opts:['Ich werde nächstes Jahr nach Berlin fliegen.','Bis morgen werde ich die Hausaufgaben gemacht haben.','Ich werde lernen morgen Deutsch.','Er wird wahrscheinlich zu spät kommen.'],
+     ans:2,
+     exp:'„Ich werde lernen morgen Deutsch." enthält zwei Fehler: Erstens steht der Infinitiv (lernen) falsch direkt nach werden — er muss ans Satzende. Zweitens ist die Wortstellung des Satzes falsch. Korrekt wäre: „Ich werde morgen Deutsch lernen." Option A ist perfektes Futur I mit Infinitiv am Ende. Option B ist korrektes Futur II mit dem Partizip II + haben am Ende. Option D ist eine korrekte Vermutung/Vorhersage mit wahrscheinlich.',
+     rule:'Infinitiv immer ans Satzende! „Ich werde lernen morgen." ✗ → „Ich werde morgen lernen." ✓ Das ist der häufigste Futur-I-Fehler in der B1-Prüfung!'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">FRAGE '+(s.cur+1)+' VON '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint" style="font-family:\'DM Mono\',monospace;">💡 '+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Nächste Frage →':'Ergebnis anzeigen →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Richtig!':'✗ Nicht ganz'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent='📌 Regel: '+q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' richtig</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfekt!':pct>=60?'Gut gemacht!':'Noch einmal versuchen.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(52,152,219,0.12);border:1px solid var(--blue);border-radius:50px;padding:9px 22px;color:var(--blue);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Modul 7 abschließen →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Zur nächsten Lektion →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">📅</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Modul 7 abgeschlossen!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">Du kannst jetzt Futur I mit werden + Infinitiv korrekt bilden, die vier Verwendungen sicher anwenden, Futur II für abgeschlossene Zukunft verwenden und weißt, wann Präsens Futur I ersetzen kann. Diese Strukturen helfen dir direkt im B1-Sprechen- und Schreiben-Teil.</p><div class="xp-badge">⚡ '+xp+' XP verdient</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Modul 7 abgeschlossen. Weiter zu Modul 8 — Wechselpräpositionen.</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Zur Übersicht</button></div>'; localStorage.setItem('dw_mod_b1_7_done','1'); var saved=parseInt(localStorage.getItem('dw_xp')||'0'); localStorage.setItem('dw_xp',saved+xp); }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+<script src="./ai-tutor.js" data-module="b1-7"></script>
+</body>
+</html>
