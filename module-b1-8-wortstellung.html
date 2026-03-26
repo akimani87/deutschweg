@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — B1 Modul 8: Wortstellung</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --p2:#3498db; --inv:#9b59b6; --nb:#e67e22; --end:#27ae60;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--blue); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--blue); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--blue); color:var(--white); width:100%; }
+  .btn-primary:hover { background:#2980b9; transform:translateY(-2px); box-shadow:0 8px 24px rgba(52,152,219,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--blue); color:var(--blue); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(52,152,219,0.2); }
+  .speak-btn.speaking { background:var(--blue); color:var(--white); }
+
+  /* ENGLISH HELP TOGGLE */
+  .en-help { background:rgba(52,152,219,0.05); border:1px dashed rgba(52,152,219,0.25); border-radius:10px; margin:12px 0; }
+  .en-help summary { padding:10px 16px; cursor:pointer; font-size:13px; color:var(--blue); font-family:'DM Mono',monospace; letter-spacing:.03em; list-style:none; display:flex; align-items:center; gap:8px; }
+  .en-help summary::-webkit-details-marker { display:none; }
+  .en-help[open] summary { border-bottom:1px dashed rgba(52,152,219,0.2); }
+  .en-help-body { padding:12px 16px; font-size:13px; color:rgba(245,240,232,.7); line-height:1.8; }
+  .en-help-body p { margin-bottom:8px; }
+  .en-help-body p:last-child { margin-bottom:0; }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-note { font-size:12px; color:var(--gray); line-height:1.6; }
+
+  /* FORMULA BOX */
+  .formula-box { background:var(--card2-bg); border:1px solid rgba(52,152,219,0.2); border-radius:14px; padding:20px 22px; margin:14px 0; text-align:center; }
+  .formula-title { font-size:10px; letter-spacing:3px; font-family:'DM Mono',monospace; color:var(--blue); margin-bottom:14px; }
+  .formula-main { font-family:'DM Mono',monospace; font-size:18px; font-weight:700; color:var(--white); line-height:2; }
+  .formula-part { display:inline-block; }
+  .formula-plus { color:var(--gray); margin:0 8px; }
+  .fp-w { color:var(--p2); }
+  .fp-i { color:var(--nb); }
+  .fp-m { color:var(--inv); }
+  .fp-p { color:var(--end); }
+
+  /* POSITION DIAGRAM */
+  .pos-row { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:14px 0; }
+  .pos-cell { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 8px; text-align:center; }
+  .pos-num { font-family:'DM Mono',monospace; font-size:10px; color:var(--gray); letter-spacing:2px; margin-bottom:4px; }
+  .pos-label { font-family:'DM Mono',monospace; font-size:11px; font-weight:700; }
+  .pos-cell.p-verb { border-color:rgba(52,152,219,0.4); background:rgba(52,152,219,0.08); }
+  .pos-cell.p-verb .pos-label { color:var(--p2); }
+  .pos-cell.p-end { border-color:rgba(39,174,96,0.4); background:rgba(39,174,96,0.08); }
+  .pos-cell.p-end .pos-label { color:var(--end); }
+
+  /* COMPARISON TABLE */
+  .comp-table { width:100%; border-collapse:collapse; font-size:13px; margin:14px 0; }
+  .comp-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:10px 14px; text-align:left; border-bottom:2px solid rgba(255,255,255,0.1); }
+  .comp-table td { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'DM Mono',monospace; font-size:13px; vertical-align:top; }
+  .comp-table tr:last-child td { border-bottom:none; }
+  .comp-table tr:hover td { background:rgba(255,255,255,0.02); }
+  .ct-p2  { color:var(--p2); }
+  .ct-inv { color:var(--inv); }
+  .ct-nb  { color:var(--nb); }
+  .ct-end { color:var(--end); }
+  .comp-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+
+  /* WRONG/RIGHT */
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.0; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+
+  /* CONTEXT CARDS */
+  .ctx-grid { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ctx-card { background:var(--card2-bg); border-radius:12px; padding:16px 18px; display:flex; gap:14px; align-items:flex-start; }
+  .ctx-icon { font-size:22px; flex-shrink:0; width:32px; text-align:center; margin-top:2px; }
+  .ctx-title { font-size:13px; font-weight:700; color:var(--cream); margin-bottom:4px; }
+  .ctx-desc { font-size:13px; color:var(--gray); line-height:1.65; margin-bottom:6px; }
+  .ctx-ex { font-family:'DM Mono',monospace; font-size:12px; color:var(--blue); }
+  .ctx-card.c-p2  { border:1px solid rgba(52,152,219,0.2); }
+  .ctx-card.c-inv { border:1px solid rgba(155,89,182,0.2); }
+  .ctx-card.c-nb  { border:1px solid rgba(230,126,34,0.2); }
+  .ctx-card.c-end { border:1px solid rgba(39,174,96,0.2); }
+
+  /* HIGHLIGHTS */
+  .vh  { color:var(--p2);  font-weight:700; }   /* Verb / Position 2 */
+  .nvh { color:var(--nb);  font-weight:700; }   /* Nebensatz-Verb */
+  .invh{ color:var(--inv); font-weight:700; }   /* Inversion signal */
+  .endh{ color:var(--end); font-weight:700; }   /* Verb ans Ende */
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Mono',monospace; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--blue); background:rgba(52,152,219,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(52,152,219,0.1); border-radius:8px; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(52,152,219,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.2); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(52,152,219,0.12); border:1px solid var(--blue); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--blue); font-size:18px; margin:18px 0; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .lesson-h{font-size:22px;} .wr-grid{grid-template-columns:1fr;} .pos-row{grid-template-columns:repeat(2,1fr);} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">B1 · MODUL 8</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">B1 · Grammatik</div>
+    <h1 class="lesson-h" style="font-size:36px;"><span style="color:var(--p2)">Wortstellung</span> in komplexen Sätzen</h1>
+    <p class="body-text">Wortstellungsfehler kosten in der B1-Prüfung die meisten Punkte im Schreiben-Teil. Die gute Nachricht: Es gibt klare Regeln. Verb auf Position 2, Inversion nach Zeitangaben, Verb ans Ende im Nebensatz. Wer diese drei Regeln beherrscht, schreibt sichere B1-Sätze.</p>
+
+    <details class="en-help">
+      <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+      <div class="en-help-body">
+        <p>German word order follows strict rules. In main clauses (Hauptsatz), the verb is always in position 2 — no matter what comes first. In subordinate clauses (Nebensatz), the verb goes to the END. When a subordinate clause comes before the main clause, the main clause verb comes first (inversion). These rules apply to all tenses.</p>
+      </div>
+    </details>
+
+    <div class="info-box"><strong style="color:var(--gold);">Lernziele dieses Moduls:</strong><br><br>
+      ✦ Du weißt, warum das Verb immer auf Position 2 steht<br>
+      ✦ Du beherrschst die Inversionsregel nach Zeitangaben und Adverbien<br>
+      ✦ Du kannst Nebensätze mit korrekter Verb-am-Ende-Stellung bilden<br>
+      ✦ Du wendest Inversion nach Nebensätzen korrekt an<br>
+      ✦ Du vermeidest die häufigsten Wortstellungsfehler in der Prüfung
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">📍</div><div><div class="lc-title">Lektion 1 — Verb auf Position 2</div><div class="lc-desc">Die Grundregel des Deutschen. Egal was auf P1 steht — das Verb bleibt auf P2.</div></div><div class="lc-tag" style="color:var(--p2);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">🔀</div><div><div class="lc-title">Lektion 2 — Inversion nach Adverbien</div><div class="lc-desc">Morgen fahre ich. Gestern hat sie gelernt. Wenn nicht das Subjekt auf P1 steht.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">📎</div><div><div class="lc-title">Lektion 3 — Nebensatz: Verb ans Ende</div><div class="lc-desc">weil, dass, obwohl, wenn, als, damit — im Nebensatz steht das Verb am Ende.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">⚡</div><div><div class="lc-title">Lektion 4 — Inversion nach Nebensatz</div><div class="lc-desc">Der häufigste Fehler! Weil er lernt, arbeitet er. Nach NS kommt sofort das Verb.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">🔧</div><div><div class="lc-title">Lektion 5 — Zweiteilige Verben</div><div class="lc-desc">Modalverb P2 + Infinitiv Ende. Perfekt: haben/sein P2 + Partizip Ende.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lektion 6 — Prüfungsvorbereitung</div><div class="lc-desc">Kwame, Amina und Kofi in komplexen Sätzen. Alle Regeln, typische Fehler, Exam-Tipps.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lektionen</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--blue);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LEKTION 1: Verb auf Position 2 ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 8 · Lektion 1 von 6</div>
+          <h2 class="lesson-h">Verb auf <span style="color:var(--p2)">Position 2</span></h2>
+          <p class="body-text">Die wichtigste Regel der deutschen Grammatik: Im Hauptsatz steht das <strong style="color:var(--p2);">konjugierte Verb immer auf Position 2</strong>. Es ist egal, was auf Position 1 steht — Zeit, Ort, Objekt oder Subjekt. Das Verb bewegt sich nicht von seiner Position.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>In German main clauses, the conjugated verb always occupies position 2 — the second "slot" in the sentence. Position 1 can be anything: subject, time, place, object. But position 2 is always the verb.</p>
+              <p>English has relatively free word order compared to German. In German, changing the position of elements (except position 2) changes emphasis, not grammatical meaning. "Kwame lernt jeden Tag Deutsch" and "Jeden Tag lernt Kwame Deutsch" mean the same thing, but the second emphasizes "every day".</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Die Grundregel</div>
+          <div class="formula-box">
+            <div class="formula-title">HAUPTSATZ — VERB AUF POSITION 2</div>
+            <div class="formula-main" style="font-size:15px;line-height:2.5;">
+              <span class="formula-part" style="color:var(--cream);">[P1 — frei wählbar]</span>
+              <span class="formula-plus" style="margin:0 12px;">→</span>
+              <span class="formula-part fp-w">[P2 — VERB]</span>
+              <span class="formula-plus" style="margin:0 12px;">→</span>
+              <span class="formula-part" style="color:var(--cream);">[Rest des Satzes]</span>
+            </div>
+          </div>
+
+          <div class="sec-label">Drei Sätze — gleiche Aussage, verschiedenes P1</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th style="color:var(--gray)">P1</th><th style="color:var(--p2)">P2 — VERB</th><th style="color:var(--gray)">Rest</th></tr>
+              <tr><td>Kwame</td><td class="ct-p2">lernt</td><td>jeden Tag Deutsch.</td></tr>
+              <tr><td>Jeden Tag</td><td class="ct-p2">lernt</td><td>Kwame Deutsch.</td></tr>
+              <tr><td>Deutsch</td><td class="ct-p2">lernt</td><td>Kwame jeden Tag.</td></tr>
+            </table>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-4px 0 14px;line-height:1.7;">Alle drei Sätze sind korrekt. Das Verb lernt bleibt immer auf Position 2 — egal was auf P1 steht.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>All three sentences are grammatically correct and mean the same thing. The difference is emphasis: starting with "Jeden Tag" emphasizes the frequency; starting with "Deutsch" emphasizes what is being learned. In English you'd need "It is Deutsch that Kwame learns every day" to achieve the same effect. In German, simply moving an element to position 1 creates emphasis.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Beispiele mit Amina und Kofi</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--p2);">SUBJEKT P1</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina <span class="vh">wohnt</span> in Berlin.</div>
+                <div class="ex-note">Subjekt (Amina) auf P1, Verb (wohnt) auf P2. Standard-Wortstellung.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina wohnt in Berlin.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--p2);">ORT P1</div>
+              <div style="flex:1;">
+                <div class="ex-de">In Berlin <span class="vh">wohnt</span> Amina.</div>
+                <div class="ex-note">Ortsangabe (In Berlin) auf P1, Verb (wohnt) bleibt auf P2. Amina rückt auf P3.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'In Berlin wohnt Amina.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--p2);">ZEIT P1</div>
+              <div style="flex:1;">
+                <div class="ex-de">Nächste Woche <span class="vh">fährt</span> Kofi nach Accra.</div>
+                <div class="ex-note">Zeitangabe (Nächste Woche) auf P1, Verb (fährt) auf P2. Kofi auf P3.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Nächste Woche fährt Kofi nach Accra.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="danger-box"><strong style="color:var(--red);">⚠️ Der häufigste Fehler:</strong><br><br>
+            „Jeden Tag Kwame lernt Deutsch." ✗<br>
+            → Verb muss auf P2 kommen, nicht auf P3!<br><br>
+            „Jeden Tag <span style="color:var(--p2);">lernt</span> Kwame Deutsch." ✓
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 8 · Lektion 1 · Übung</div><h2 class="lesson-h">Position 2 — <span style="color:var(--p2)">Übung</span></h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-0 -->
+
+    <!-- ── LEKTION 2: Inversion nach Adverbien ── -->
+    <div id="lesson-1" class="lesson-pane">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 8 · Lektion 2 von 6</div>
+          <h2 class="lesson-h"><span style="color:var(--inv)">Inversion</span> nach Adverbien</h2>
+          <p class="body-text">Wenn eine Zeitangabe, Ortsangabe oder ein Adverb auf <strong style="color:var(--inv);">Position 1</strong> steht, kommt das Verb auf P2 und das Subjekt rückt auf P3. Das nennt man <strong style="color:var(--inv);">Inversion</strong> — das Verb und das Subjekt tauschen die Plätze. Das gilt auch für Perfekt und alle anderen Zeitformen.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>Inversion means the verb "jumps" to position 2 when something other than the subject comes first. In English you'd say "Yesterday, she did the exam" — the order stays subject-verb. In German: "Gestern hat sie die Prüfung gemacht" — the verb (hat) comes before the subject (sie) because "Gestern" is in position 1.</p>
+              <p>This happens with: time expressions (gestern, morgen, heute), place expressions (in Berlin, zu Hause), adverbs (trotzdem, deshalb, auch), and when a clause comes first.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Die Inversionsregel</div>
+          <div class="formula-box">
+            <div class="formula-title">INVERSION — WENN NICHT SUBJEKT AUF P1</div>
+            <div class="formula-main" style="font-size:15px;line-height:2.5;">
+              <span class="formula-part fp-m">[Adverb / Zeit / Ort]</span>
+              <span class="formula-plus" style="margin:0 10px;">→</span>
+              <span class="formula-part fp-w">VERB</span>
+              <span class="formula-plus" style="margin:0 10px;">→</span>
+              <span class="formula-part" style="color:var(--cream);">Subjekt</span>
+              <span class="formula-plus" style="margin:0 10px;">→</span>
+              <span class="formula-part" style="color:var(--gray);">Rest</span>
+            </div>
+          </div>
+
+          <div class="sec-label">Inversion mit Präsens</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--inv);">MORGEN</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="invh">Morgen</span> <span class="vh">fährt</span> Kwame nach Frankfurt.</div>
+                <div class="ex-note">Morgen (P1) → fährt (P2) → Kwame (P3). Inversion: Verb vor Subjekt.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Morgen fährt Kwame nach Frankfurt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--inv);">TROTZDEM</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="invh">Trotzdem</span> <span class="vh">lernt</span> Amina jeden Tag.</div>
+                <div class="ex-note">Adverb trotzdem auf P1 → Inversion. Das Adverb drückt Kontrast aus.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Trotzdem lernt Amina jeden Tag.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--inv);">DESHALB</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="invh">Deshalb</span> <span class="vh">geht</span> Kofi in die Bibliothek.</div>
+                <div class="ex-note">deshalb (therefore) auf P1 → Verb (geht) auf P2 → Subjekt (Kofi) auf P3.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Deshalb geht Kofi in die Bibliothek.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Inversion im Perfekt</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th style="color:var(--inv)">P1 (Adverb)</th><th style="color:var(--p2)">P2 (haben/sein)</th><th>Subjekt</th><th style="color:var(--end)">Ende (Partizip II)</th></tr>
+              <tr><td class="ct-inv">Gestern</td><td class="ct-p2">hat</td><td>Amina</td><td class="ct-end">gelernt.</td></tr>
+              <tr><td class="ct-inv">Letztes Jahr</td><td class="ct-p2">ist</td><td>Kwame</td><td class="ct-end">nach Deutschland geflogen.</td></tr>
+              <tr><td class="ct-inv">Danach</td><td class="ct-p2">hat</td><td>Kofi</td><td class="ct-end">die Prüfung gemacht.</td></tr>
+            </table>
+          </div>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Gestern Amina hat die Prüfung gemacht.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Gestern hat Amina die Prüfung gemacht.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Nach „Gestern" kommt sofort das Hilfsverb (hat) — nicht das Subjekt (Amina)!</p>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 8 · Lektion 2 · Übung</div><h2 class="lesson-h">Inversion — <span style="color:var(--inv)">Übung</span></h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-1 -->
+
+    <!-- ── LEKTION 3: Nebensatz — Verb ans Ende ── -->
+    <div id="lesson-2" class="lesson-pane">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 8 · Lektion 3 von 6</div>
+          <h2 class="lesson-h">Nebensatz — Verb <span style="color:var(--end)">ans Ende</span></h2>
+          <p class="body-text">Im Nebensatz gilt eine andere Regel: Das konjugierte Verb wandert ans <strong style="color:var(--end);">Ende des Nebensatzes</strong>. Das gilt für alle Nebensatz-Konjunktionen: weil, dass, obwohl, wenn, als, damit, ob, bevor, nachdem…</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>In German subordinate clauses (Nebensatz), the conjugated verb goes to the very end. This is the opposite of main clause rules. The subordinating conjunctions that trigger this are: weil (because), dass (that), obwohl (although), wenn (when/if), als (when — past), damit (so that), ob (whether), bevor (before), nachdem (after).</p>
+              <p>With two-part verbs in subordinate clauses: Partizip II or infinitive come first, then haben/sein or the modal verb at the very end: "weil er Deutsch gelernt hat" / "weil er Deutsch lernen kann".</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Die Nebensatz-Konjunktionen</div>
+          <div class="ctx-grid">
+            <div class="ctx-card c-nb">
+              <div class="ctx-icon">📌</div>
+              <div>
+                <div class="ctx-title">Kausal — weil, da</div>
+                <div class="ctx-desc">Grund angeben. Verb ans Ende!</div>
+                <div class="ctx-ex">Ich lerne Deutsch, weil ich in Berlin <span style="color:var(--end);">arbeiten will</span>.</div>
+              </div>
+            </div>
+            <div class="ctx-card c-nb">
+              <div class="ctx-icon">📌</div>
+              <div>
+                <div class="ctx-title">Konzessiv — obwohl</div>
+                <div class="ctx-desc">Gegensatz ausdrücken. Verb ans Ende!</div>
+                <div class="ctx-ex">Kwame lernt, obwohl er sehr müde <span style="color:var(--end);">ist</span>.</div>
+              </div>
+            </div>
+            <div class="ctx-card c-nb">
+              <div class="ctx-icon">📌</div>
+              <div>
+                <div class="ctx-title">Inhalt — dass</div>
+                <div class="ctx-desc">Aussagen einleiten. Verb ans Ende!</div>
+                <div class="ctx-ex">Amina sagt, dass sie die Prüfung <span style="color:var(--end);">bestehen wird</span>.</div>
+              </div>
+            </div>
+            <div class="ctx-card c-nb">
+              <div class="ctx-icon">📌</div>
+              <div>
+                <div class="ctx-title">Temporal — wenn, als, bevor, nachdem</div>
+                <div class="ctx-desc">Zeitbeziehungen. Verb ans Ende!</div>
+                <div class="ctx-ex">Wenn Kofi nach Berlin <span style="color:var(--end);">kommt</span>, besucht er das Museum.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">Zweiteilige Verben im Nebensatz</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Zeitform</th><th>Formel im Nebensatz</th><th style="color:var(--end)">Beispiel (…weil)</th></tr>
+              <tr><td>Perfekt</td><td style="color:var(--cream);">…Partizip II + haben/sein</td><td class="ct-end">weil er Deutsch gelernt hat.</td></tr>
+              <tr><td>Futur I</td><td style="color:var(--cream);">…Infinitiv + werden</td><td class="ct-end">weil er Deutsch lernen wird.</td></tr>
+              <tr><td>Modalverb</td><td style="color:var(--cream);">…Infinitiv + Modalverb</td><td class="ct-end">weil er Deutsch lernen kann.</td></tr>
+            </table>
+          </div>
+
+          <div class="sec-label">Beispiele im Kontext</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--nb);">WEIL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi bleibt zu Hause, weil es <span class="endh">regnet</span>.</div>
+                <div class="ex-note">weil leitet den Nebensatz ein → regnet ans Ende.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi bleibt zu Hause, weil es regnet.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--nb);">OBWOHL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina geht spazieren, obwohl es <span class="endh">regnet</span>.</div>
+                <div class="ex-note">obwohl = although. Verb (regnet) ans Ende. Gegensatz zu Kofis Entscheidung!</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina geht spazieren, obwohl es regnet.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--nb);">DASS</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame weiß, dass er viel üben <span class="endh">muss</span>.</div>
+                <div class="ex-note">Modalverb muss steht am Ende des dass-Satzes. Infinitiv (üben) direkt davor.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame weiß, dass er viel üben muss.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--nb);">WEIL + PERFEKT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina ist müde, weil sie die ganze Nacht <span class="endh">gelernt hat</span>.</div>
+                <div class="ex-note">Perfekt im Nebensatz: Partizip II (gelernt) + hat ans Ende.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina ist müde, weil sie die ganze Nacht gelernt hat.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 8 · Lektion 3 · Übung</div><h2 class="lesson-h">Nebensatz — <span style="color:var(--end)">Übung</span></h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-2 -->
+
+    <!-- ── LEKTION 4: Inversion nach Nebensatz ── -->
+    <div id="lesson-3" class="lesson-pane">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 8 · Lektion 4 von 6</div>
+          <h2 class="lesson-h">Inversion nach <span style="color:var(--inv)">Nebensatz</span></h2>
+          <p class="body-text">Wenn der Nebensatz <strong>vor</strong> dem Hauptsatz steht, gilt: Der ganze Nebensatz ist Position 1. Daher muss im folgenden Hauptsatz sofort das Verb kommen (Position 2) — vor dem Subjekt. Das ist der <strong style="color:var(--inv);">häufigste Wortstellungsfehler</strong> von B1-Lernenden!</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>When a subordinate clause comes first, the entire clause counts as position 1. So the main clause verb must come immediately after the comma — before the subject. This is called "verb-second" (V2): the verb is always the second element, even when the first element is a whole clause.</p>
+              <p>Wrong: "Weil es regnet, ich bleibe zu Hause." (verb in position 3)</p>
+              <p>Right: "Weil es regnet, bleibe ich zu Hause." (verb in position 2, subject in position 3)</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Die Regel</div>
+          <div class="formula-box">
+            <div class="formula-title">NEBENSATZ ZUERST → INVERSION IM HAUPTSATZ</div>
+            <div class="formula-main" style="font-size:14px;line-height:2.5;">
+              <span class="formula-part fp-i">[Nebensatz … Verb-Ende]</span><span style="color:var(--gray);">,</span>
+              <span class="formula-plus" style="margin:0 10px;">→</span>
+              <span class="formula-part fp-w">VERB</span>
+              <span class="formula-plus" style="margin:0 8px;">+</span>
+              <span class="formula-part" style="color:var(--cream);">Subjekt</span>
+              <span class="formula-plus" style="margin:0 8px;">+</span>
+              <span class="formula-part" style="color:var(--gray);">Rest</span>
+            </div>
+          </div>
+
+          <div class="sec-label">Vergleich: Nebensatz zuerst vs. Hauptsatz zuerst</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Hauptsatz zuerst</th><th style="color:var(--inv)">Nebensatz zuerst (Inversion!)</th></tr>
+              <tr>
+                <td>Kofi bleibt zu Hause, <span class="nvh">weil</span> es <span class="endh">regnet</span>.</td>
+                <td class="ct-inv"><span class="nvh">Weil</span> es <span class="endh">regnet</span>, <span class="vh">bleibt</span> Kofi zu Hause.</td>
+              </tr>
+              <tr>
+                <td>Ich lerne Deutsch, <span class="nvh">obwohl</span> es schwer <span class="endh">ist</span>.</td>
+                <td class="ct-inv"><span class="nvh">Obwohl</span> es schwer <span class="endh">ist</span>, <span class="vh">lerne</span> ich Deutsch.</td>
+              </tr>
+              <tr>
+                <td>Amina ist glücklich, <span class="nvh">weil</span> sie die Prüfung <span class="endh">bestanden hat</span>.</td>
+                <td class="ct-inv"><span class="nvh">Weil</span> sie die Prüfung <span class="endh">bestanden hat</span>, <span class="vh">ist</span> Amina glücklich.</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="sec-label">Beispiele mit Sprechen-Tipps</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--inv);">INVERSION</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="nvh">Weil</span> Kwame Deutsch <span class="endh">lernt</span>, <span class="vh">arbeitet</span> er in Berlin.</div>
+                <div class="ex-note">Nebensatz (P1), komma, dann sofort Verb (arbeitet) → Subjekt (er). Korrekt!</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Weil Kwame Deutsch lernt, arbeitet er in Berlin.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--inv);">INVERSION</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="nvh">Obwohl</span> es <span class="endh">regnet</span>, <span class="vh">geht</span> Amina spazieren.</div>
+                <div class="ex-note">Trotz Regen geht sie raus — obwohl + Inversion im Hauptsatz.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Obwohl es regnet, geht Amina spazieren.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--inv);">INVERSION + PERFEKT</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="nvh">Nachdem</span> Kofi die Prüfung <span class="endh">gemacht hat</span>, <span class="vh">hat</span> er gefeiert.</div>
+                <div class="ex-note">Perfekt im Nebensatz UND Inversion im Hauptsatz. Doppelte Komplexität — du schaffst das!</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Nachdem Kofi die Prüfung gemacht hat, hat er gefeiert.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Weil es regnet, ich bleibe zu Hause.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Weil es regnet, bleibe ich zu Hause.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Nach dem Nebensatz: VERB zuerst, dann Subjekt. Nie „ich bleibe" — immer „bleibe ich"!</p>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 8 · Lektion 4 · Übung</div><h2 class="lesson-h">Inversion nach NS — <span style="color:var(--inv)">Übung</span></h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-3 -->
+
+    <!-- ── LEKTION 5: Zweiteilige Verben ── -->
+    <div id="lesson-4" class="lesson-pane">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 8 · Lektion 5 von 6</div>
+          <h2 class="lesson-h">Zweiteilige <span style="color:var(--p2)">Verben</span></h2>
+          <p class="body-text">Viele deutsche Zeitformen haben zwei Verbteile: ein konjugiertes Verb (auf P2) und einen zweiten Teil am Satzende (Infinitiv oder Partizip II). Die Regel gilt für Modalverben, Perfekt und Futur I — immer dasselbe Prinzip.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>German has a "bracket" structure (Satzklammer): the conjugated verb holds position 2 and the second verb part goes to the end, creating a bracket around the rest of the sentence. This applies to: modal verbs (kann...kommen), Perfekt (hat...gelernt), Futur I (wird...lernen), and also to separable verbs (ruft...an).</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Das Prinzip: Satzklammer</div>
+          <div class="formula-box">
+            <div class="formula-title">SATZKLAMMER — VERB AUF P2 + ZWEITER TEIL ANS ENDE</div>
+            <div class="formula-main" style="font-size:14px;line-height:2.5;">
+              <span class="formula-part fp-w">[VERB P2]</span>
+              <span class="formula-plus" style="margin:0 10px;">…Satzmitte…</span>
+              <span class="formula-part fp-p">[2. VERBTEIL Ende]</span>
+            </div>
+          </div>
+
+          <div class="sec-label">Drei Zeitformen im Überblick</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Zeitform</th><th style="color:var(--p2)">P2 (konjugiert)</th><th>Satzmitte</th><th style="color:var(--end)">Satzende</th></tr>
+              <tr>
+                <td>Modalverb</td><td class="ct-p2">kann</td>
+                <td>morgen nicht</td>
+                <td class="ct-end">kommen.</td>
+              </tr>
+              <tr>
+                <td>Perfekt</td><td class="ct-p2">hat</td>
+                <td>gestern Deutsch</td>
+                <td class="ct-end">gelernt.</td>
+              </tr>
+              <tr>
+                <td>Futur I</td><td class="ct-p2">wird</td>
+                <td>nächstes Jahr in Berlin</td>
+                <td class="ct-end">studieren.</td>
+              </tr>
+            </table>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-4px 0 14px;line-height:1.7;">Ich kann morgen nicht kommen. / Amina hat gestern Deutsch gelernt. / Kofi wird nächstes Jahr in Berlin studieren.</p>
+
+          <div class="sec-label">Modalverben — Beispiele</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--p2);">KÖNNEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <span class="vh">kann</span> heute nicht <span class="endh">kommen</span>.</div>
+                <div class="ex-note">kann (P2) → Satzmitte → kommen (Infinitiv, Ende)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich kann heute nicht kommen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--p2);">MÜSSEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kwame <span class="vh">muss</span> morgen früh <span class="endh">aufstehen</span>.</div>
+                <div class="ex-note">Trennbares Verb aufstehen — der ganze Infinitiv steht am Ende.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kwame muss morgen früh aufstehen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--p2);">PERFEKT</div>
+              <div style="flex:1;">
+                <div class="ex-de">Amina <span class="vh">hat</span> gestern die ganze Nacht <span class="endh">gelernt</span>.</div>
+                <div class="ex-note">hat (P2) → Zeit + Objekt in der Mitte → Partizip II (gelernt) ans Ende.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Amina hat gestern die ganze Nacht gelernt.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--p2);">FUTUR I</div>
+              <div style="flex:1;">
+                <div class="ex-de">Kofi <span class="vh">wird</span> nächstes Jahr in Deutschland <span class="endh">studieren</span>.</div>
+                <div class="ex-note">wird (P2) → Zeitangabe + Ort in der Mitte → Infinitiv ans Ende.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi wird nächstes Jahr in Deutschland studieren.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Ich habe gelernt gestern.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Ich habe gestern gelernt.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Das Partizip II steht am Satzende — Zeitangaben kommen vor das Partizip, nicht dahinter!</p>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 8 · Lektion 5 · Übung</div><h2 class="lesson-h">Zweiteilige Verben — <span style="color:var(--p2)">Übung</span></h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-4 -->
+
+    <!-- ── LEKTION 6: Prüfungsvorbereitung ── -->
+    <div id="lesson-5" class="lesson-pane">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 8 · Lektion 6 von 6</div>
+          <h2 class="lesson-h">Kwame, Amina &amp; Kofi — <span style="color:var(--blue)">Prüfungsvorbereitung</span></h2>
+          <p class="body-text">Wortstellungsfehler kosten die meisten Punkte im B1-Schreiben-Teil. Kwame, Amina und Kofi zeigen dir alle Regeln in komplexen Alltagssätzen — und die häufigsten Fehler, die du vermeiden musst.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>This lesson combines all word order rules: Verb on position 2, inversion after adverbs, verb-to-end in subordinate clauses, inversion after subordinate clauses, and bracket structure with two-part verbs. In the B1 Schreiben exam, every sentence will be checked for correct word order.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Situation 1 — Kwame schreibt eine E-Mail (Schreiben-Teil)</div>
+          <div class="comp-wrap">
+            <p style="font-family:'DM Mono',monospace;font-size:13px;color:var(--cream);line-height:2;">
+              Sehr geehrte Damen und Herren,<br><br>
+              ich <span class="vh">schreibe</span>, weil ich mich für Ihren Deutschkurs <span class="endh">interessiere</span>. <span class="invh">Letztes Jahr</span> <span class="vh">habe</span> ich bereits einen A2-Kurs <span class="endh">besucht</span>. <span class="invh">Deshalb</span> <span class="vh">möchte</span> ich jetzt das B1-Niveau <span class="endh">erreichen</span>. <span class="nvh">Obwohl</span> ich berufstätig <span class="endh">bin</span>, <span class="vh">kann</span> ich jeden Abend zwei Stunden <span class="endh">lernen</span>. <span class="nvh">Wenn</span> Plätze noch frei <span class="endh">sind</span>, <span class="vh">würde</span> ich mich sehr <span class="endh">freuen</span>.<br><br>
+              Mit freundlichen Grüßen, Kwame Asante
+            </p>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-4px 0 14px;line-height:1.7;">Kwames E-Mail enthält: P2-Regel (schreibe), Inversion (Letztes Jahr hat, Deshalb möchte), NS-Verb-Ende (interessiere, besucht), Inversion nach NS (kann, würde), Modalverb-Klammer (möchte…erreichen, kann…lernen).</p>
+
+          <div class="sec-label">Situation 2 — Amina und Kofi im Gespräch (Sprechen-Teil)</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--p2);">AMINA</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="nvh">Obwohl</span> die Prüfung schwer <span class="endh">war</span>, <span class="vh">habe</span> ich sie <span class="endh">bestanden</span>!</div>
+                <div class="ex-note">Inversion nach NS: habe (Verb P2) direkt nach dem Komma.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Obwohl die Prüfung schwer war, habe ich sie bestanden!')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--nb);">KOFI</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="invh">Deshalb</span> <span class="vh">feiern</span> wir heute Abend, <span class="nvh">weil</span> du so hart <span class="endh">gearbeitet hast</span>!</div>
+                <div class="ex-note">Inversion (Deshalb feiern) + NS am Ende mit Perfekt (gearbeitet hast).</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Deshalb feiern wir heute Abend, weil du so hart gearbeitet hast!')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Die häufigsten Fehler</div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH — FEHLER 1</div>
+              <div class="wr-word">Jeden Tag Kwame lernt Deutsch.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Jeden Tag lernt Kwame Deutsch.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Verb muss auf P2 — nach „Jeden Tag" kommt sofort das Verb, nicht das Subjekt!</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH — FEHLER 2</div>
+              <div class="wr-word">Weil es regnet, ich bleibe zu Hause.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Weil es regnet, bleibe ich zu Hause.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Inversion nach NS: Nach dem Komma kommt das Verb (bleibe), nicht das Subjekt (ich)!</p>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH — FEHLER 3</div>
+              <div class="wr-word">Ich habe gelernt gestern Abend.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Ich habe gestern Abend gelernt.</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Das Partizip II steht am Satzende — Zeitangaben stehen zwischen haben/sein und dem Partizip!</p>
+
+          <div class="success-box">
+            <strong style="color:var(--green);">Zusammenfassung — Wortstellung auf einen Blick:</strong><br><br>
+            1. <strong style="color:var(--p2);">Hauptsatz:</strong> Verb IMMER auf Position 2. Was auch immer auf P1 steht.<br><br>
+            2. <strong style="color:var(--inv);">Inversion:</strong> Nicht-Subjekt auf P1 → Verb auf P2 → Subjekt auf P3.<br><br>
+            3. <strong style="color:var(--nb);">Nebensatz:</strong> weil/dass/obwohl/wenn… → Verb ans Ende des Nebensatzes.<br><br>
+            4. <strong style="color:var(--inv);">NS zuerst:</strong> Nebensatz (P1) → Verb (P2) → Subjekt (P3). Nie „…, ich gehe" nach NS!<br><br>
+            5. <strong style="color:var(--end);">Klammer:</strong> Modalverb/haben/sein/werden auf P2 + Infinitiv/Partizip ans Ende.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 8 · Lektion 6 · Übung</div><h2 class="lesson-h">Wortstellung — <span style="color:var(--blue)">Abschlusskontrolle</span></h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-5 -->
+
+  </div>
+</div>
+
+<script>
+var TOTAL=6, currentLesson=0, xp=0;
+var synth=window.speechSynthesis, voices=[], deVoice=null;
+function loadVoices(){ voices=synth.getVoices(); deVoice=voices.find(function(v){return v.lang==='de-DE';})||voices.find(function(v){return v.lang.startsWith('de');})||null; }
+if(synth.onvoiceschanged!==undefined){synth.onvoiceschanged=loadVoices;}
+function speakDE(text){ if(!synth)return; synth.cancel(); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; synth.speak(u); }
+function speakSentence(btn,text){ if(!synth)return; synth.cancel(); document.querySelectorAll('.speak-btn.speaking').forEach(function(b){b.classList.remove('speaking');}); btn.classList.add('speaking'); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; u.onend=function(){btn.classList.remove('speaking');}; synth.speak(u); }
+
+var QD={
+  0:[
+    {q:'Welcher Satz hat die korrekte Wortstellung?',
+     hint:'Schau auf Position 1: „Jeden Tag" steht dort. Was kommt auf Position 2?',
+     opts:['Jeden Tag Kwame lernt Deutsch.','Jeden Tag lernt Kwame Deutsch.','Jeden Tag Deutsch Kwame lernt.','Jeden Tag lernt Deutsch Kwame.'],
+     ans:1,
+     exp:'„Jeden Tag lernt Kwame Deutsch." ist korrekt. „Jeden Tag" steht auf P1 (Zeitangabe), daher kommt das Verb lernt sofort auf P2 (Inversion). Das Subjekt Kwame rückt auf P3. Option A hat das Verb auf P3 — der klassische Fehler! Option C hat völlig falsche Reihenfolge. Option D stellt Objekt und Subjekt falsch.',
+     rule:'Verb immer auf Position 2! Wenn ein anderes Element auf P1 steht (Zeit, Ort, Adverb), kommt das Verb auf P2 und das Subjekt auf P3. Das ist Inversion.'}
+  ],
+  1:[
+    {q:'Amina beginnt: „Gestern…" Wie geht der Perfekt-Satz weiter?',
+     hint:'Gestern steht auf P1. Was muss auf P2 kommen? Und wohin geht das Partizip II?',
+     opts:['Gestern Amina hat die Prüfung gemacht.','Gestern hat Amina die Prüfung gemacht.','Gestern hat die Prüfung Amina gemacht.','Gestern gemacht Amina die Prüfung hat.'],
+     ans:1,
+     exp:'„Gestern hat Amina die Prüfung gemacht." ist korrekt. „Gestern" (P1) → hat (Hilfsverb, P2, Inversion!) → Amina (Subjekt, P3) → die Prüfung (Objekt) → gemacht (Partizip II, Satzende). Option A stellt das Hilfsverb auf P3 — Inversion vergessen! Option C klingt wie eine Frage. Option D ist komplett falsch.',
+     rule:'Inversion gilt auch für Perfekt: Zeitangabe (P1) → Hilfsverb haben/sein (P2) → Subjekt (P3) → … → Partizip II (Ende). Nie: „Gestern Amina hat…" — immer: „Gestern hat Amina…"'}
+  ],
+  2:[
+    {q:'Welcher Nebensatz hat die korrekte Wortstellung?',
+     hint:'Im Nebensatz wandert das konjugierte Verb ans Ende des Nebensatzes.',
+     opts:['Ich bleibe zu Hause, weil regnet es.','Ich bleibe zu Hause, weil es regnet.','Ich bleibe zu Hause, weil es regnen.','Ich bleibe zu Hause, weil regnen es tut.'],
+     ans:1,
+     exp:'„Ich bleibe zu Hause, weil es regnet." ist korrekt. Im Nebensatz mit weil: Konjunktion (weil) + Subjekt (es) + … + Verb ans Ende (regnet). Option A stellt Verb vor Subjekt — falsch. Option C benutzt den Infinitiv (regnen) statt der konjugierten Form (regnet). Option D ist eine unnötige Konstruktion mit „tut" — im Deutschen nicht korrekt.',
+     rule:'Nebensatz-Konjunktionen (weil, dass, obwohl, wenn…) schicken das Verb ans Ende: Konjunktion + Subjekt + … + Verb(Ende). Die Konjunktion selbst zählt nicht als „Position" — sie leitet nur den Nebensatz ein.'}
+  ],
+  3:[
+    {q:'Was kommt direkt nach dem Komma? „Weil es regnet, _____ zu Hause."',
+     hint:'Der Nebensatz ist Position 1. Was steht auf Position 2 im Hauptsatz?',
+     opts:['Weil es regnet, ich bleibe zu Hause.','Weil es regnet, bleibe ich zu Hause.','Weil es regnet, bleiben zu Hause ich.','Weil es regnet, zu Hause bleibe ich.'],
+     ans:1,
+     exp:'„Weil es regnet, bleibe ich zu Hause." ist korrekt. Der Nebensatz (Weil es regnet) ist P1 des Gesamtsatzes. Daher kommt direkt nach dem Komma das Verb (bleibe) auf P2, dann das Subjekt (ich) auf P3. Option A macht den häufigsten B1-Fehler: „ich bleibe" statt „bleibe ich" — kein Inversion nach dem NS! Optionen C und D sind grammatisch falsch.',
+     rule:'Hauptsatz nach Nebensatz = INVERSION! Nebensatz (P1) → sofort Verb (P2) → dann Subjekt (P3). Nie: „…, ich gehe/bleibe/mache" — immer: „…, gehe/bleibe/mache ich"!'}
+  ],
+  4:[
+    {q:'Welcher Satz mit Modalverb ist korrekt?',
+     hint:'Das Modalverb steht auf P2. Der Infinitiv steht am Satzende.',
+     opts:['Ich morgen kann nicht kommen.','Ich kann morgen nicht kommen.','Ich kann kommen nicht morgen.','Ich nicht morgen kommen kann.'],
+     ans:1,
+     exp:'„Ich kann morgen nicht kommen." ist korrekt. Modalverb (kann) auf P2, Zeitangabe (morgen) und Negation (nicht) in der Satzmitte, Infinitiv (kommen) am Satzende. Option A stellt das Modalverb auf P3 — Verb muss auf P2! Option C stellt Negation und Zeitangabe falsch (nicht kommt vor kommen, aber morgen sollte vorher). Option D ist Nebensatz-Wortstellung im Hauptsatz — falsch.',
+     rule:'Modalverb-Klammer: Modalverb (P2, konjugiert) + Satzmitte (Adverbien, Objekte) + Infinitiv (Satzende). Das Modalverb und der Infinitiv bilden eine Klammer um die Satzmitte.'}
+  ],
+  5:[
+    {q:'Kwame schreibt: „Obwohl ich müde bin, ich gehe heute zur Schule." Was ist falsch?',
+     hint:'Schau auf den Satz nach dem Komma. Was muss dort auf P2 stehen?',
+     opts:['Das Verb im Nebensatz (bin) steht falsch — es muss auf P2.','Nach dem Nebensatz fehlt die Inversion — es muss „gehe ich" statt „ich gehe" heißen.','Das Wort obwohl ist falsch — man sagt obwohl nicht.','Der Satz ist vollständig korrekt.'],
+     ans:1,
+     exp:'Der Fehler ist die fehlende Inversion im Hauptsatz nach dem Nebensatz. „Obwohl ich müde bin" ist P1 des Gesamtsatzes. Daher muss danach sofort das Verb kommen: „gehe ich" (nicht „ich gehe"). Korrekt: „Obwohl ich müde bin, gehe ich heute zur Schule." Option A ist falsch — im Nebensatz steht bin korrekt am Ende. Option C ist falsch — obwohl ist eine gültige Konjunktion. Option D ist falsch — der Satz hat einen Fehler.',
+     rule:'Nach einem Nebensatz: VERB zuerst! „Obwohl ich müde bin, gehe ich…" ✓ Nicht: „…, ich gehe" ✗. Das ist der häufigste Wortstellungsfehler im B1-Schreiben-Teil!'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">FRAGE '+(s.cur+1)+' VON '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint" style="font-family:\'DM Mono\',monospace;">💡 '+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Nächste Frage →':'Ergebnis anzeigen →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Richtig!':'✗ Nicht ganz'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent='📌 Regel: '+q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' richtig</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfekt!':pct>=60?'Gut gemacht!':'Noch einmal versuchen.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(52,152,219,0.12);border:1px solid var(--blue);border-radius:50px;padding:9px 22px;color:var(--blue);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Modul 8 abschließen →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Zur nächsten Lektion →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">📐</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Modul 8 abgeschlossen!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">Du kennst jetzt die fünf Kernregeln der deutschen Wortstellung: Verb auf P2, Inversion nach Adverbien, Verb ans Ende im Nebensatz, Inversion nach Nebensatz, und die Satzklammer mit zweiteiligen Verben. Korrekte Wortstellung in der B1-Prüfung ist jetzt kein Problem mehr.</p><div class="xp-badge">⚡ '+xp+' XP verdient</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Modul 8 abgeschlossen. Weiter zu Modul 9 — Adjektivdeklination.</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Zur Übersicht</button></div>'; localStorage.setItem('dw_mod_b1_8_done','1'); var saved=parseInt(localStorage.getItem('dw_xp')||'0'); localStorage.setItem('dw_xp',saved+xp); }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+<script src="./ai-tutor.js" data-module="b1-8"></script>
+</body>
+</html>
