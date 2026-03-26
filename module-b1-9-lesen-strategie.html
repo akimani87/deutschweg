@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — B1 Modul 9: Lesen Strategie</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --str:#3498db; --wrn:#e67e22; --exm:#9b59b6; --tip:#27ae60;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--blue); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--blue); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--blue); color:var(--white); width:100%; }
+  .btn-primary:hover { background:#2980b9; transform:translateY(-2px); box-shadow:0 8px 24px rgba(52,152,219,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--blue); color:var(--blue); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(52,152,219,0.2); }
+  .speak-btn.speaking { background:var(--blue); color:var(--white); }
+
+  /* ENGLISH HELP TOGGLE */
+  .en-help { background:rgba(52,152,219,0.05); border:1px dashed rgba(52,152,219,0.25); border-radius:10px; margin:12px 0; }
+  .en-help summary { padding:10px 16px; cursor:pointer; font-size:13px; color:var(--blue); font-family:'DM Mono',monospace; letter-spacing:.03em; list-style:none; display:flex; align-items:center; gap:8px; }
+  .en-help summary::-webkit-details-marker { display:none; }
+  .en-help[open] summary { border-bottom:1px dashed rgba(52,152,219,0.2); }
+  .en-help-body { padding:12px 16px; font-size:13px; color:rgba(245,240,232,.7); line-height:1.8; }
+  .en-help-body p { margin-bottom:8px; }
+  .en-help-body p:last-child { margin-bottom:0; }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-note { font-size:12px; color:var(--gray); line-height:1.6; }
+
+  /* FORMULA BOX */
+  .formula-box { background:var(--card2-bg); border:1px solid rgba(52,152,219,0.2); border-radius:14px; padding:20px 22px; margin:14px 0; text-align:center; }
+  .formula-title { font-size:10px; letter-spacing:3px; font-family:'DM Mono',monospace; color:var(--blue); margin-bottom:14px; }
+  .formula-main { font-family:'DM Mono',monospace; font-size:18px; font-weight:700; color:var(--white); line-height:2; }
+  .formula-part { display:inline-block; }
+  .formula-plus { color:var(--gray); margin:0 8px; }
+  .fp-w { color:var(--str); }
+  .fp-i { color:var(--wrn); }
+  .fp-m { color:var(--exm); }
+  .fp-p { color:var(--tip); }
+
+  /* COMPARISON TABLE */
+  .comp-table { width:100%; border-collapse:collapse; font-size:13px; margin:14px 0; }
+  .comp-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:10px 14px; text-align:left; border-bottom:2px solid rgba(255,255,255,0.1); }
+  .comp-table td { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'DM Mono',monospace; font-size:13px; vertical-align:top; }
+  .comp-table tr:last-child td { border-bottom:none; }
+  .comp-table tr:hover td { background:rgba(255,255,255,0.02); }
+  .ct-r  { color:var(--green); }
+  .ct-f  { color:var(--red); }
+  .ct-n  { color:var(--gold); }
+  .ct-s  { color:var(--str); }
+  .comp-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+
+  /* WRONG/RIGHT */
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.0; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+
+  /* CONTEXT CARDS */
+  .ctx-grid { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ctx-card { background:var(--card2-bg); border-radius:12px; padding:16px 18px; display:flex; gap:14px; align-items:flex-start; }
+  .ctx-icon { font-size:22px; flex-shrink:0; width:32px; text-align:center; margin-top:2px; }
+  .ctx-title { font-size:13px; font-weight:700; color:var(--cream); margin-bottom:4px; }
+  .ctx-desc { font-size:13px; color:var(--gray); line-height:1.65; margin-bottom:6px; }
+  .ctx-ex { font-family:'DM Mono',monospace; font-size:12px; color:var(--blue); }
+  .ctx-card.c-str  { border:1px solid rgba(52,152,219,0.2); }
+  .ctx-card.c-wrn  { border:1px solid rgba(230,126,34,0.2); }
+  .ctx-card.c-exm  { border:1px solid rgba(155,89,182,0.2); }
+  .ctx-card.c-tip  { border:1px solid rgba(39,174,96,0.2); }
+
+  /* READING PRACTICE */
+  .lese-text { background:var(--card2-bg); border:1px solid rgba(201,168,76,0.15); border-radius:14px; padding:22px; margin:14px 0; }
+  .lese-text-title { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:3px; color:var(--gold); margin-bottom:14px; }
+  .lese-body { font-size:14px; color:var(--cream); line-height:2; }
+  .lese-key { background:rgba(52,152,219,0.15); border-radius:4px; padding:1px 5px; color:var(--str); font-weight:700; }
+  .frage-list { display:flex; flex-direction:column; gap:8px; margin:14px 0; }
+  .frage-item { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:14px 16px; }
+  .frage-num { font-family:'DM Mono',monospace; font-size:10px; color:var(--blue); letter-spacing:2px; margin-bottom:6px; }
+  .frage-text { font-size:13px; color:var(--cream); margin-bottom:10px; line-height:1.6; }
+  .frage-opts { display:flex; gap:8px; flex-wrap:wrap; }
+  .fanswer { font-family:'DM Mono',monospace; font-size:11px; padding:5px 12px; border-radius:20px; border:1px solid rgba(255,255,255,0.12); cursor:pointer; transition:all 0.2s; background:transparent; color:var(--white); }
+  .fanswer:hover:not([disabled]) { border-color:var(--blue); color:var(--blue); }
+  .fanswer.fa-richtig:hover:not([disabled]) { border-color:var(--green); color:var(--green); }
+  .fanswer.fa-falsch:hover:not([disabled])  { border-color:var(--red); color:var(--red); }
+  .fanswer.fa-nit:hover:not([disabled])     { border-color:var(--gold); color:var(--gold); }
+  .fanswer.selected-ok  { background:rgba(39,174,96,0.15); border-color:var(--green); color:var(--green); }
+  .fanswer.selected-no  { background:rgba(192,57,43,0.12); border-color:var(--red); color:var(--red); }
+  .fanswer.reveal-ok    { background:rgba(39,174,96,0.12); border-color:var(--green); color:var(--green); }
+  .frage-fb { font-size:12px; margin-top:8px; display:none; line-height:1.65; }
+  .frage-fb.show { display:block; }
+
+  /* HIGHLIGHTS */
+  .strh { color:var(--str); font-weight:700; }
+  .wrnh { color:var(--wrn); font-weight:700; }
+  .exmh { color:var(--exm); font-weight:700; }
+  .tiph { color:var(--tip); font-weight:700; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Mono',monospace; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--blue); background:rgba(52,152,219,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(52,152,219,0.1); border-radius:8px; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(52,152,219,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.2); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(52,152,219,0.12); border:1px solid var(--blue); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--blue); font-size:18px; margin:18px 0; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .lesson-h{font-size:22px;} .wr-grid{grid-template-columns:1fr;} .frage-opts{flex-direction:column;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">B1 · MODUL 9</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">B1 · Prüfungsstrategie</div>
+    <h1 class="lesson-h" style="font-size:36px;"><span style="color:var(--str)">Lesen</span> — Strategie &amp; Praxis</h1>
+    <p class="body-text">Die meisten B1-Kandidaten in Nairobi, Accra und Lagos scheitern am Lesen-Teil — nicht weil ihr Deutsch schlecht ist, sondern weil sie die falsche Strategie benutzen. Dieses Modul zeigt dir, wie du mit 5 klaren Strategien gezielt Punkte holst, ohne jeden Satz zu verstehen.</p>
+
+    <details class="en-help">
+      <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+      <div class="en-help-body">
+        <p>The Goethe B1 Lesen (Reading) section has 3 tasks and takes 25 minutes total. You don't need to understand every word — you need smart strategies. This module teaches you exactly how to approach each task type, manage your time, and pick up points even on unfamiliar vocabulary. You only need 60% to pass!</p>
+      </div>
+    </details>
+
+    <div class="info-box"><strong style="color:var(--gold);">Lernziele dieses Moduls:</strong><br><br>
+      ✦ Du kennst die 3 Lesen-Aufgaben im Goethe B1 genau<br>
+      ✦ Du liest immer zuerst die Fragen, dann den Text<br>
+      ✦ Du erkennst zuverlässig „nicht im Text"-Antworten<br>
+      ✦ Du teilst deine 25 Minuten strategisch ein<br>
+      ✦ Du nutzt den Kontext bei unbekannten Wörtern
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">📋</div><div><div class="lc-title">Lektion 1 — Die 3 Lesen-Aufgaben</div><div class="lc-desc">Aufgabe 1 (R/F/NiT), Aufgabe 2 (Multiple Choice), Aufgabe 3 (Zuordnen). Was dich erwartet.</div></div><div class="lc-tag" style="color:var(--str);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">🔍</div><div><div class="lc-title">Lektion 2 — Strategie 1 &amp; 2: Fragen zuerst</div><div class="lc-desc">Nie den Text zuerst lesen. Schlüsselwörter unterstreichen. So findest du Antworten schnell.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">❓</div><div><div class="lc-title">Lektion 3 — Strategie 3: „Nicht im Text"</div><div class="lc-desc">Wann wählt man „nicht im Text"? Der häufigste Trick im Goethe B1-Test erklärt.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">⏱️</div><div><div class="lc-title">Lektion 4 — Strategie 4 &amp; 5: Zeit &amp; Kontext</div><div class="lc-desc">25 Minuten klug einteilen. Unbekannte Wörter durch Kontext verstehen. Weiterarbeiten!</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">📄</div><div><div class="lc-title">Lektion 5 — Praxistext: Kwame in Hamburg</div><div class="lc-desc">Echter Goethe B1 Stil. Lies den Text, beantworte 5 Fragen: richtig / falsch / nicht im Text.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lektion 6 — Amina: Prüfungsvorbereitung</div><div class="lc-desc">Alle Strategien zusammen. Typische Fehler, häufige Tricks und finaler Prüfungstipp.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lektionen</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--blue);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LEKTION 1: Die 3 Lesen-Aufgaben ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 9 · Lektion 1 von 6</div>
+          <h2 class="lesson-h">Die 3 <span style="color:var(--str)">Lesen-Aufgaben</span> im Goethe B1</h2>
+          <p class="body-text">Der Goethe B1 Lesen-Teil hat <strong style="color:var(--str);">25 Minuten</strong> und besteht aus drei verschiedenen Aufgaben. Jede Aufgabe testet eine andere Lesekompetenz. Wer die Struktur kennt, kann die Zeit von Anfang an richtig einteilen.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>The Goethe B1 Lesen section has 3 tasks in 25 minutes total. Task 1: Short texts — mark richtig (correct), falsch (wrong), or nicht im Text (not in the text). Task 2: Longer text — multiple choice. Task 3: Match statements to texts. Understanding the format before exam day removes stress and lets you focus on the actual reading.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Überblick — 3 Aufgaben in 25 Minuten</div>
+          <div class="ctx-grid">
+            <div class="ctx-card c-str">
+              <div class="ctx-icon">1️⃣</div>
+              <div>
+                <div class="ctx-title">Aufgabe 1 — Richtig / Falsch / Nicht im Text</div>
+                <div class="ctx-desc">Du liest kurze Texte (z.B. Anzeigen, Nachrichten) und entscheidest für jede Aussage: richtig, falsch oder nicht im Text.</div>
+                <div class="ctx-ex">Empfohlene Zeit: ~8 Minuten</div>
+              </div>
+            </div>
+            <div class="ctx-card c-wrn">
+              <div class="ctx-icon">2️⃣</div>
+              <div>
+                <div class="ctx-title">Aufgabe 2 — Multiple Choice</div>
+                <div class="ctx-desc">Du liest einen längeren Text (ca. 300–400 Wörter) und beantwortest 5 Multiple-Choice-Fragen mit je 3 Antwortmöglichkeiten.</div>
+                <div class="ctx-ex">Empfohlene Zeit: ~10 Minuten</div>
+              </div>
+            </div>
+            <div class="ctx-card c-exm">
+              <div class="ctx-icon">3️⃣</div>
+              <div>
+                <div class="ctx-title">Aufgabe 3 — Texte und Aussagen zuordnen</div>
+                <div class="ctx-desc">Du liest kurze Texte (z.B. Forumsbeiträge) und ordnest sie den richtigen Aussagen zu. Achtung: Manche Texte passen zu keiner Aussage!</div>
+                <div class="ctx-ex">Empfohlene Zeit: ~7 Minuten</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">Bewertung — Was zählt?</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Aufgabe</th><th>Fragen</th><th>Punkte</th><th style="color:var(--tip)">Strategie</th></tr>
+              <tr><td>Aufgabe 1</td><td>5 Fragen</td><td>10 Punkte</td><td class="ct-s">R / F / NiT</td></tr>
+              <tr><td>Aufgabe 2</td><td>5 Fragen</td><td>10 Punkte</td><td class="ct-s">Multiple Choice</td></tr>
+              <tr><td>Aufgabe 3</td><td>5 Fragen</td><td>10 Punkte</td><td class="ct-s">Zuordnen</td></tr>
+            </table>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue);">📌 Wichtig — du brauchst nur 60%:</strong><br><br>
+            Im Goethe B1 brauchst du für „Bestanden" insgesamt 60 Punkte von 100 im Lesen-Teil. Das bedeutet: Du kannst einige Fragen falsch beantworten und trotzdem bestehen. Dein Ziel ist nicht Perfektion — dein Ziel ist <strong>18 von 30 Punkten im Lesen</strong>.
+          </div>
+
+          <div class="sec-label">Die richtige Einstellung</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(192,57,43,0.1);color:var(--red);">FALSCH</div>
+              <div style="flex:1;">
+                <div class="ex-de">„Ich muss ALLES verstehen."</div>
+                <div class="ex-note">Diese Einstellung erzeugt Stress und kostet Zeit. Du liest jedes Wort — und vergisst die Strategie.</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.1);color:var(--tip);">RICHTIG</div>
+              <div style="flex:1;">
+                <div class="ex-de">„Ich brauche 60%. Ich suche <span class="strh">gezielt</span> nach Antworten."</div>
+                <div class="ex-note">Mit dieser Einstellung bist du ruhig, effizient und holst die Punkte, die du brauchst.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 9 · Lektion 1 · Übung</div><h2 class="lesson-h">Die 3 Aufgaben — <span style="color:var(--str)">Übung</span></h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-0 -->
+
+    <!-- ── LEKTION 2: Strategie 1 & 2 ── -->
+    <div id="lesson-1" class="lesson-pane">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 9 · Lektion 2 von 6</div>
+          <h2 class="lesson-h">Strategie 1 &amp; 2 — <span style="color:var(--str)">Fragen zuerst</span></h2>
+          <p class="body-text">Die wichtigste Leseregel im Test: <strong style="color:var(--str);">Lies zuerst die Fragen — nicht den Text!</strong> Wenn du die Fragen kennst, weißt du genau, wonach du im Text suchst. Du liest nicht mehr blind — du suchst gezielt.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p><strong>Strategy 1 — Questions first:</strong> Always read the questions before the text. Underline keywords in the questions. Then scan the text for those keywords. This saves time and prevents you from reading everything without purpose.</p>
+              <p><strong>Strategy 2 — Keywords:</strong> You don't need to understand the full text. Just locate the keywords from the question in the text. Numbers, names, dates, and proper nouns are especially easy to find by scanning.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Strategie 1 — Schritt für Schritt</div>
+          <div class="ctx-grid">
+            <div class="ctx-card c-str">
+              <div class="ctx-icon">①</div>
+              <div>
+                <div class="ctx-title">Fragen lesen &amp; Schlüsselwörter unterstreichen</div>
+                <div class="ctx-desc">Lies alle Fragen durch. Unterstreiche die wichtigsten Wörter in jeder Frage.</div>
+                <div class="ctx-ex">Frage: „Kwame arbeitet als Nachhilfelehrer." → Schlüsselwort: Nachhilfelehrer</div>
+              </div>
+            </div>
+            <div class="ctx-card c-str">
+              <div class="ctx-icon">②</div>
+              <div>
+                <div class="ctx-title">Text nach Schlüsselwörtern scannen</div>
+                <div class="ctx-desc">Jetzt liest du den Text — aber du suchst gezielt nach den unterstrichenen Wörtern oder Synonymen.</div>
+                <div class="ctx-ex">Im Text: „Er gibt Mathematikunterricht für Schüler." → Synonym für Nachhilfelehrer ✓</div>
+              </div>
+            </div>
+            <div class="ctx-card c-str">
+              <div class="ctx-icon">③</div>
+              <div>
+                <div class="ctx-title">Antwort im Kontext überprüfen</div>
+                <div class="ctx-desc">Hast du das Schlüsselwort gefunden? Lies den Satz darum herum — stimmt die Aussage der Frage?</div>
+                <div class="ctx-ex">Aussage: „Kwame arbeitet als Lehrer." → Stimmt! → richtig ✓</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">Strategie 2 — Schlüsselwörter erkennen</div>
+          <div class="info-box"><strong style="color:var(--gold);">Was sind gute Schlüsselwörter?</strong><br><br>
+            <span style="color:var(--str);">✦ Namen:</span> Kwame, Berlin, Goethe-Institut — leicht im Text zu finden<br>
+            <span style="color:var(--str);">✦ Zahlen &amp; Daten:</span> 6 Monate, 2018, 300 Euro — sofort sichtbar<br>
+            <span style="color:var(--str);">✦ Spezifische Nomen:</span> Nachhilfelehrer, Bibliothek, Prüfung — seltene Wörter<br>
+            <span style="color:var(--str);">✦ Verben mit starker Bedeutung:</span> heiraten, kündigen, bestehen<br><br>
+            Allgemeine Wörter wie „hat", „ist", „geht" sind schlechte Schlüsselwörter!
+          </div>
+
+          <div class="sec-label">Beispiel — Strategie 1 &amp; 2 in Aktion</div>
+          <div class="lese-text">
+            <div class="lese-text-title">MINI-TEXT (Beispiel)</div>
+            <div class="lese-body">Amina Diallo studiert seit zwei Jahren Medizin in Berlin. Sie wohnt in einem Studentenwohnheim in Prenzlauer Berg. Jeden Morgen fährt sie mit der U-Bahn zur Universität. <span class="lese-key">Nachmittags arbeitet sie in einer Bäckerei</span>, um ihre Miete zu bezahlen.</div>
+          </div>
+          <div class="frage-list">
+            <div class="frage-item">
+              <div class="frage-num">FRAGE</div>
+              <div class="frage-text">Amina arbeitet, um Geld zu verdienen.</div>
+              <div style="font-size:12px;color:var(--tip);margin-top:4px;font-family:'DM Mono',monospace;">→ Schlüsselwort: „arbeitet" + „Geld" · Im Text: „arbeitet…um ihre Miete zu bezahlen" → <strong style="color:var(--green);">RICHTIG ✓</strong></div>
+            </div>
+          </div>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCHE STRATEGIE</div>
+              <div class="wr-word">Text von Anfang bis Ende lesen, dann Fragen anschauen.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIGE STRATEGIE</div>
+              <div class="wr-word">Zuerst Fragen lesen + Schlüsselwörter, dann gezielt im Text suchen.</div>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 9 · Lektion 2 · Übung</div><h2 class="lesson-h">Fragen zuerst — <span style="color:var(--str)">Übung</span></h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-1 -->
+
+    <!-- ── LEKTION 3: „Nicht im Text" ── -->
+    <div id="lesson-2" class="lesson-pane">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 9 · Lektion 3 von 6</div>
+          <h2 class="lesson-h">Strategie 3 — <span style="color:var(--wrn)">"Nicht im Text"</span></h2>
+          <p class="body-text">Die Option <strong style="color:var(--wrn);">„nicht im Text"</strong> ist der häufigste Trick im Goethe B1. Viele Lernende wählen sie zu selten — aus Angst oder Unsicherheit. Die Regel ist einfach: Wenn die spezifische Information in der Frage <em>nirgendwo</em> im Text erscheint, ist die Antwort „nicht im Text".</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>"Nicht im Text" (not in the text) means the specific piece of information asked in the question is neither confirmed nor denied in the text — it simply isn't there. Many learners confuse "not in the text" with "false". The difference: "false" means the text says something different. "Not in the text" means the text says nothing at all about this point.</p>
+              <p>Common trap: The text mentions something related but not the exact detail in the question. Example: Text says "Kwame misses the food from Ghana." Question: "Kwame misses his family." → Not in the text! The text mentions missing, but only about food, not family.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Die drei Optionen erklärt</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Option</th><th>Bedeutung</th><th>Wann?</th></tr>
+              <tr>
+                <td class="ct-r">RICHTIG</td>
+                <td style="color:var(--cream);">Die Aussage stimmt mit dem Text überein.</td>
+                <td class="ct-r">Text bestätigt die Aussage eindeutig.</td>
+              </tr>
+              <tr>
+                <td class="ct-f">FALSCH</td>
+                <td style="color:var(--cream);">Der Text sagt etwas anderes als die Aussage.</td>
+                <td class="ct-f">Text widerspricht der Aussage direkt.</td>
+              </tr>
+              <tr>
+                <td class="ct-n">NICHT IM TEXT</td>
+                <td style="color:var(--cream);">Die spezifische Information fehlt im Text komplett.</td>
+                <td class="ct-n">Du findest die Information gar nicht im Text.</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="sec-label">Der häufigste Trick — ähnlich aber nicht gleich</div>
+          <div class="lese-text">
+            <div class="lese-text-title">TEXT-AUSSCHNITT</div>
+            <div class="lese-body">Kwame sagt: „<span class="lese-key">Hamburg ist eine tolle Stadt, aber ich vermisse das Essen aus Ghana sehr.</span>"</div>
+          </div>
+          <div class="frage-list">
+            <div class="frage-item">
+              <div class="frage-num">FRAGE A</div>
+              <div class="frage-text">Kwame vermisst etwas aus Ghana.</div>
+              <div style="font-size:12px;color:var(--green);margin-top:4px;font-family:'DM Mono',monospace;">→ RICHTIG ✓ — Er vermisst das Essen aus Ghana. Das steht direkt im Text.</div>
+            </div>
+            <div class="frage-item">
+              <div class="frage-num">FRAGE B</div>
+              <div class="frage-text">Kwame mag Hamburg nicht.</div>
+              <div style="font-size:12px;color:var(--red);margin-top:4px;font-family:'DM Mono',monospace;">→ FALSCH ✗ — Er sagt „Hamburg ist eine tolle Stadt." Der Text widerspricht der Aussage.</div>
+            </div>
+            <div class="frage-item">
+              <div class="frage-num">FRAGE C</div>
+              <div class="frage-text">Kwame vermisst seine Familie in Ghana.</div>
+              <div style="font-size:12px;color:var(--gold);margin-top:4px;font-family:'DM Mono',monospace;">→ NICHT IM TEXT ○ — Er vermisst das Essen (steht im Text), aber über seine Familie sagt der Text nichts!</div>
+            </div>
+          </div>
+
+          <div class="danger-box"><strong style="color:var(--red);">⚠️ Die häufigste Falle:</strong><br><br>
+            Die Frage fragt nach einem <strong>Detail</strong>, das ähnlich klingt wie etwas im Text — aber es ist nicht dasselbe!<br><br>
+            Text: „vermisst das <span style="color:var(--wrn);">Essen</span>" → Frage: „vermisst seine <span style="color:var(--wrn);">Familie</span>"<br>
+            Beide sind über „vermissen" — aber die <strong>spezifische Information (Familie)</strong> fehlt im Text.<br>
+            → <strong style="color:var(--gold);">NICHT IM TEXT</strong>
+          </div>
+
+          <div class="success-box">
+            <strong style="color:var(--green);">Entscheidungsbaum für Aufgabe 1:</strong><br><br>
+            1. Finde das Thema der Frage im Text.<br>
+            2. Stimmt die Aussage genau mit dem Text überein? → <strong style="color:var(--green);">RICHTIG</strong><br>
+            3. Sagt der Text etwas anderes? → <strong style="color:var(--red);">FALSCH</strong><br>
+            4. Kannst du die spezifische Information gar nicht finden? → <strong style="color:var(--gold);">NICHT IM TEXT</strong>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 9 · Lektion 3 · Übung</div><h2 class="lesson-h">"Nicht im Text" — <span style="color:var(--wrn)">Übung</span></h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-2 -->
+
+    <!-- ── LEKTION 4: Zeitmanagement & Kontext ── -->
+    <div id="lesson-3" class="lesson-pane">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 9 · Lektion 4 von 6</div>
+          <h2 class="lesson-h">Strategie 4 &amp; 5 — <span style="color:var(--exm)">Zeit &amp; Kontext</span></h2>
+          <p class="body-text">25 Minuten für 3 Aufgaben klingt wenig — aber mit dem richtigen Zeitplan reicht es. Und wenn du ein Wort nicht kennst: <strong style="color:var(--tip);">kein Panik!</strong> Der Kontext hilft dir fast immer, die Bedeutung zu erraten.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p><strong>Strategy 4 — Time management:</strong> Allocate roughly 8 minutes for Task 1, 10 minutes for Task 2, 7 minutes for Task 3. If you get stuck on a question, skip it and come back at the end. Never spend more than 2 minutes on a single question.</p>
+              <p><strong>Strategy 5 — Use context:</strong> You can't use a dictionary in the exam. But context clues — what comes before and after an unknown word — often tell you the meaning. Also: numbers, names, and dates don't require vocabulary knowledge to find.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Strategie 4 — Zeitplan für 25 Minuten</div>
+          <div class="formula-box">
+            <div class="formula-title">ZEITPLAN — LESEN GESAMT</div>
+            <div class="formula-main" style="font-size:15px;line-height:2.5;">
+              <span class="formula-part fp-w">Aufgabe 1</span>
+              <span class="formula-plus" style="color:var(--gray);">~8 Min</span>
+              <span class="formula-plus" style="margin:0 16px;color:var(--gray);">·</span>
+              <span class="formula-part fp-i">Aufgabe 2</span>
+              <span class="formula-plus" style="color:var(--gray);">~10 Min</span>
+              <span class="formula-plus" style="margin:0 16px;color:var(--gray);">·</span>
+              <span class="formula-part fp-m">Aufgabe 3</span>
+              <span class="formula-plus" style="color:var(--gray);">~7 Min</span>
+            </div>
+          </div>
+
+          <div class="ctx-grid">
+            <div class="ctx-card c-exm">
+              <div class="ctx-icon">⚠️</div>
+              <div>
+                <div class="ctx-title">Bei schwierigen Fragen: Weiterarbeiten!</div>
+                <div class="ctx-desc">Wenn du bei einer Frage mehr als 2 Minuten brauchst — überspringen. Mach einen Strich daneben. Am Ende der Aufgabe zurückkommen. Lass dich nicht von einer Frage aufhalten!</div>
+                <div class="ctx-ex">Regel: Max. 2 Minuten pro Frage → dann weiter!</div>
+              </div>
+            </div>
+            <div class="ctx-card c-tip">
+              <div class="ctx-icon">✏️</div>
+              <div>
+                <div class="ctx-title">Priorisiere einfache Fragen</div>
+                <div class="ctx-desc">Zahlen, Daten und Namen sind die einfachsten Fragen — sie brauchen kein tiefes Textverständnis. Beantworte diese zuerst und sichere dir die sicheren Punkte.</div>
+                <div class="ctx-ex">Beispiel: „Kwame ist seit __ Monaten in Hamburg." → Suche nach einer Zahl!</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">Strategie 5 — Kontext nutzen bei unbekannten Wörtern</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--exm);">BEISPIEL 1</div>
+              <div style="flex:1;">
+                <div class="ex-de">„Das Studium ist sehr <span class="exmh">anspruchsvoll</span>, aber interessant."</div>
+                <div class="ex-note">anspruchsvoll = unbekannt? Kontext: Studium + interessant → es muss schwierig/herausfordernd bedeuten. Für die Prüfungsfrage reicht das!</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--exm);">BEISPIEL 2</div>
+              <div style="flex:1;">
+                <div class="ex-de">„Er <span class="exmh">kündigte</span> seinen Job und zog nach Berlin."</div>
+                <div class="ex-note">kündigen = unbekannt? Kontext: Er hat einen Job + zog nach Berlin → er hat aufgehört zu arbeiten / den Job beendet. Bedeutung klar!</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--tip);">TIPP</div>
+              <div style="flex:1;">
+                <div class="ex-de">Zahlen und Namen brauchen <span class="tiph">kein Vokabular</span>!</div>
+                <div class="ex-note">„Kwame wohnt seit 6 Monaten in Hamburg." — Du musst nur die Zahl 6 finden. Kein Vokabular nötig!</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue);">📌 Die goldene Regel:</strong><br><br>
+            Du brauchst nicht <strong>alles</strong> zu verstehen. Du brauchst nur die <strong>Antwort auf die Frage</strong> zu finden. Wenn du ein Wort nicht kennst, aber trotzdem die Frage beantworten kannst — <strong style="color:var(--tip);">weiterarbeiten!</strong>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 9 · Lektion 4 · Übung</div><h2 class="lesson-h">Zeit &amp; Kontext — <span style="color:var(--exm)">Übung</span></h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-3 -->
+
+    <!-- ── LEKTION 5: Praxistext — Kwame in Hamburg ── -->
+    <div id="lesson-4" class="lesson-pane">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 9 · Lektion 5 von 6</div>
+          <h2 class="lesson-h">Praxistext — <span style="color:var(--str)">Kwame in Hamburg</span></h2>
+          <p class="body-text">Jetzt wendest du alle Strategien an. Lies zuerst die 5 Fragen, unterstreiche die Schlüsselwörter, dann lies den Text und entscheide: <strong style="color:var(--green);">richtig</strong>, <strong style="color:var(--red);">falsch</strong> oder <strong style="color:var(--gold);">nicht im Text</strong>. Das ist echter Goethe B1-Stil.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>This is a real Goethe B1-style practice exercise. First, read the 5 questions below and underline the keywords. Then read the text about Kwame and answer each question. After answering, you'll see the explanation. Remember the three-step process: find the topic → check if it matches → or is it not mentioned at all?</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Schritt 1 — Fragen lesen &amp; Schlüsselwörter markieren</div>
+          <div class="frage-list" id="fragen-list">
+            <div class="frage-item"><div class="frage-num">FRAGE 1</div><div class="frage-text">Kwame ist seit einem Jahr in Hamburg.</div></div>
+            <div class="frage-item"><div class="frage-num">FRAGE 2</div><div class="frage-text">Kwame hat in Hamburg neue Freunde gefunden.</div></div>
+            <div class="frage-item"><div class="frage-num">FRAGE 3</div><div class="frage-text">Kofis Freund kommt aus Nigeria.</div></div>
+            <div class="frage-item"><div class="frage-num">FRAGE 4</div><div class="frage-text">Kwame verdient Geld mit Nachhilfe.</div></div>
+            <div class="frage-item"><div class="frage-num">FRAGE 5</div><div class="frage-text">Kwame vermisst seine Familie in Ghana.</div></div>
+          </div>
+          <p style="font-size:12px;color:var(--blue);font-family:'DM Mono',monospace;margin-bottom:14px;">→ Schlüsselwörter markiert? Gut. Jetzt den Text lesen:</p>
+
+          <div class="sec-label">Schritt 2 — Text lesen</div>
+          <div class="lese-text">
+            <div class="lese-text-title">GOETHE B1 STIL · LESEVERSTEHEN · AUFGABE 1</div>
+            <div class="lese-body">
+              Kwame Asante kommt aus Accra in Ghana und ist seit <span class="lese-key">sechs Monaten</span> in Hamburg. Er studiert Wirtschaftsinformatik an der Universität Hamburg. Am Anfang war es für ihn nicht einfach, weil er wenige Menschen kannte und die Sprache noch lernte.<br><br>
+              Jetzt hat <span class="lese-key">Kwame drei gute Freunde gefunden</span> — zwei Deutsche und einen <span class="lese-key">Kenianer namens Kofi</span>. Jeden Dienstag treffen sie sich in einem Café in der Innenstadt. Kwame arbeitet auch als <span class="lese-key">Nachhilfelehrer für Mathematik</span>. Mit dem Geld bezahlt er einen Teil seiner Miete.<br><br>
+              In seiner Freizeit spielt Kwame Basketball und kocht traditionelles ghanaisches Essen für seine Mitbewohner. Er sagt: „Hamburg ist eine tolle Stadt, aber ich <span class="lese-key">vermisse das Essen aus Ghana</span> sehr."
+            </div>
+          </div>
+
+          <div class="sec-label">Schritt 3 — Antworten wählen</div>
+          <div class="frage-list" id="antworten-list">
+
+            <div class="frage-item" id="fa-0">
+              <div class="frage-num">FRAGE 1</div>
+              <div class="frage-text">Kwame ist seit einem Jahr in Hamburg.</div>
+              <div class="frage-opts">
+                <button class="fanswer fa-richtig" onclick="checkFrage(0,'r')">✓ richtig</button>
+                <button class="fanswer fa-falsch"  onclick="checkFrage(0,'f')">✗ falsch</button>
+                <button class="fanswer fa-nit"     onclick="checkFrage(0,'n')">○ nicht im Text</button>
+              </div>
+              <div class="frage-fb" id="fb-0">Der Text sagt „seit sechs Monaten" — nicht seit einem Jahr. Die Frage sagt „einem Jahr" — das widerspricht dem Text direkt. → <strong style="color:var(--red);">FALSCH</strong></div>
+            </div>
+
+            <div class="frage-item" id="fa-1">
+              <div class="frage-num">FRAGE 2</div>
+              <div class="frage-text">Kwame hat in Hamburg neue Freunde gefunden.</div>
+              <div class="frage-opts">
+                <button class="fanswer fa-richtig" onclick="checkFrage(1,'r')">✓ richtig</button>
+                <button class="fanswer fa-falsch"  onclick="checkFrage(1,'f')">✗ falsch</button>
+                <button class="fanswer fa-nit"     onclick="checkFrage(1,'n')">○ nicht im Text</button>
+              </div>
+              <div class="frage-fb" id="fb-1">„Kwame hat drei gute Freunde gefunden" steht direkt im Text. Die Aussage stimmt genau. → <strong style="color:var(--green);">RICHTIG</strong></div>
+            </div>
+
+            <div class="frage-item" id="fa-2">
+              <div class="frage-num">FRAGE 3</div>
+              <div class="frage-text">Kofis Freund kommt aus Nigeria.</div>
+              <div class="frage-opts">
+                <button class="fanswer fa-richtig" onclick="checkFrage(2,'r')">✓ richtig</button>
+                <button class="fanswer fa-falsch"  onclick="checkFrage(2,'f')">✗ falsch</button>
+                <button class="fanswer fa-nit"     onclick="checkFrage(2,'n')">○ nicht im Text</button>
+              </div>
+              <div class="frage-fb" id="fb-2">Kofi ist ein Freund von Kwame — nicht umgekehrt (Kwame ist Kofis Freund, und der Text nennt Kofi als Kenianer, nicht als Nigerianer). Tatsächlich: Die Frage stellt die Beziehung falsch dar (Kofi ist ein Kenianer, nicht ein Nigerianer). → <strong style="color:var(--red);">FALSCH</strong></div>
+            </div>
+
+            <div class="frage-item" id="fa-3">
+              <div class="frage-num">FRAGE 4</div>
+              <div class="frage-text">Kwame verdient Geld mit Nachhilfe.</div>
+              <div class="frage-opts">
+                <button class="fanswer fa-richtig" onclick="checkFrage(3,'r')">✓ richtig</button>
+                <button class="fanswer fa-falsch"  onclick="checkFrage(3,'f')">✗ falsch</button>
+                <button class="fanswer fa-nit"     onclick="checkFrage(3,'n')">○ nicht im Text</button>
+              </div>
+              <div class="frage-fb" id="fb-3">„Er arbeitet als Nachhilfelehrer für Mathematik. Mit dem Geld bezahlt er…" → Er verdient Geld mit Nachhilfe. → <strong style="color:var(--green);">RICHTIG</strong></div>
+            </div>
+
+            <div class="frage-item" id="fa-4">
+              <div class="frage-num">FRAGE 5</div>
+              <div class="frage-text">Kwame vermisst seine Familie in Ghana.</div>
+              <div class="frage-opts">
+                <button class="fanswer fa-richtig" onclick="checkFrage(4,'r')">✓ richtig</button>
+                <button class="fanswer fa-falsch"  onclick="checkFrage(4,'f')">✗ falsch</button>
+                <button class="fanswer fa-nit"     onclick="checkFrage(4,'n')">○ nicht im Text</button>
+              </div>
+              <div class="frage-fb" id="fb-4">Der Text sagt: „ich vermisse das Essen aus Ghana." Über seine Familie sagt der Text nichts! Das ist der klassische „nicht im Text"-Trick: ähnliches Thema (vermissen / Ghana), aber die spezifische Information (Familie) fehlt. → <strong style="color:var(--gold);">NICHT IM TEXT</strong></div>
+            </div>
+
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 9 · Lektion 5 · Übung</div><h2 class="lesson-h">Praxistext — <span style="color:var(--str)">Strategiefrage</span></h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-4 -->
+
+    <!-- ── LEKTION 6: Prüfungsvorbereitung ── -->
+    <div id="lesson-5" class="lesson-pane">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 9 · Lektion 6 von 6</div>
+          <h2 class="lesson-h">Amina — <span style="color:var(--blue)">Prüfungsvorbereitung</span></h2>
+          <p class="body-text">Amina bereitet sich auf die Goethe B1-Prüfung vor. Sie hat früher immer den Text zuerst gelesen — und oft die Zeit überschritten. Jetzt nutzt sie die 5 Strategien. Hier siehst du alle häufigen Fehler und wie Amina sie vermeidet.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>This lesson brings together all 5 strategies with Amina as the example. It shows the most common mistakes made by B1 candidates from African countries (particularly over-reading and avoiding "nicht im Text") and gives you the final exam checklist to use on test day.</div>
+            </div>
+          </details>
+
+          <div class="sec-label">Die häufigsten Fehler im Goethe B1 Lesen</div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FEHLER 1</div>
+              <div class="wr-word">Den ganzen Text lesen, bevor man die Fragen kennt.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ BESSER</div>
+              <div class="wr-word">Zuerst Fragen lesen, Schlüsselwörter markieren, dann gezielt suchen.</div>
+            </div>
+          </div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FEHLER 2</div>
+              <div class="wr-word">Bei einem unbekannten Wort aufhören und nachdenken.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ BESSER</div>
+              <div class="wr-word">Kontext lesen, Bedeutung erraten, weitermachen. Nie bei einem Wort steckenbleiben!</div>
+            </div>
+          </div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FEHLER 3</div>
+              <div class="wr-word">„Nicht im Text" zu selten wählen — aus Angst, falsch zu liegen.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ BESSER</div>
+              <div class="wr-word">Wenn du die spezifische Information gar nicht findest → NiT wählen. Es ist oft richtig!</div>
+            </div>
+          </div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FEHLER 4</div>
+              <div class="wr-word">Zu lange bei einer Aufgabe bleiben und Zeit verlieren.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ BESSER</div>
+              <div class="wr-word">Zeitplan einhalten: A1 (8'), A2 (10'), A3 (7'). Schwierige Fragen überspringen!</div>
+            </div>
+          </div>
+
+          <div class="sec-label">Aminas Strategie am Prüfungstag</div>
+          <div class="ctx-grid">
+            <div class="ctx-card c-str">
+              <div class="ctx-icon">1️⃣</div>
+              <div>
+                <div class="ctx-title">Zuerst alle 3 Aufgaben überfliegen</div>
+                <div class="ctx-desc">30 Sekunden: Wie sehen die Texte aus? Wie viele Fragen? Dann die Zeit einplanen.</div>
+              </div>
+            </div>
+            <div class="ctx-card c-str">
+              <div class="ctx-icon">2️⃣</div>
+              <div>
+                <div class="ctx-title">Fragen lesen → Schlüsselwörter unterstreichen</div>
+                <div class="ctx-desc">Für jede Aufgabe: erst Fragen, dann Text. Nie Text zuerst!</div>
+              </div>
+            </div>
+            <div class="ctx-card c-tip">
+              <div class="ctx-icon">3️⃣</div>
+              <div>
+                <div class="ctx-title">Einfache Fragen zuerst beantworten</div>
+                <div class="ctx-desc">Zahlen, Namen, Daten — diese Fragen gehen schnell. Sichere dir die leichten Punkte zuerst.</div>
+              </div>
+            </div>
+            <div class="ctx-card c-wrn">
+              <div class="ctx-icon">4️⃣</div>
+              <div>
+                <div class="ctx-title">Schwierige Fragen markieren und überspringen</div>
+                <div class="ctx-desc">Strich daneben, weiterarbeiten. Am Ende zurückkommen, wenn Zeit übrig ist.</div>
+              </div>
+            </div>
+            <div class="ctx-card c-exm">
+              <div class="ctx-icon">5️⃣</div>
+              <div>
+                <div class="ctx-title">Keine leere Antwort hinterlassen</div>
+                <div class="ctx-desc">Am Ende: Jede unbeantwortete Frage bekommt eine Antwort — auch wenn du ratst. Falsch zählt 0, leer auch 0. Du hast nichts zu verlieren!</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="success-box">
+            <strong style="color:var(--green);">Die 5 Strategien auf einen Blick:</strong><br><br>
+            1. <strong style="color:var(--str);">Fragen zuerst</strong> — Nie blind den Text lesen. Schlüsselwörter unterstreichen.<br><br>
+            2. <strong style="color:var(--str);">Schlüsselwörter suchen</strong> — Du musst nicht alles verstehen. Suche gezielt.<br><br>
+            3. <strong style="color:var(--wrn);">„Nicht im Text" nutzen</strong> — Wenn die Info fehlt, wähle NiT. Keine Angst!<br><br>
+            4. <strong style="color:var(--exm);">Zeitplan einhalten</strong> — A1: 8', A2: 10', A3: 7'. Schwieriges überspringen.<br><br>
+            5. <strong style="color:var(--tip);">Kontext nutzen</strong> — Unbekannte Wörter? Vorher/nachher lesen. Weitermachen!
+          </div>
+
+          <div class="info-box"><strong style="color:var(--gold);">Finaler Prüfungstipp von Amina:</strong><br><br>
+            „Ich habe dreimal die B1-Prüfung gemacht. Beim dritten Mal habe ich endlich die Strategie benutzt. Ich habe nicht mehr ALLES gelesen — ich habe die <strong>Antworten gesucht</strong>. Das hat mir 8 extra Punkte gebracht. Du brauchst 60% — das schaffst du!"
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 9 · Lektion 6 · Übung</div><h2 class="lesson-h">Lesen Strategie — <span style="color:var(--blue)">Abschlusskontrolle</span></h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-5 -->
+
+  </div>
+</div>
+
+<script>
+var TOTAL=6, currentLesson=0, xp=0;
+var synth=window.speechSynthesis, voices=[], deVoice=null;
+function loadVoices(){ voices=synth.getVoices(); deVoice=voices.find(function(v){return v.lang==='de-DE';})||voices.find(function(v){return v.lang.startsWith('de');})||null; }
+if(synth.onvoiceschanged!==undefined){synth.onvoiceschanged=loadVoices;}
+function speakSentence(btn,text){ if(!synth)return; synth.cancel(); document.querySelectorAll('.speak-btn.speaking').forEach(function(b){b.classList.remove('speaking');}); btn.classList.add('speaking'); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; u.onend=function(){btn.classList.remove('speaking');}; synth.speak(u); }
+
+/* Praxistext answers: 0=falsch, 1=richtig, 2=falsch, 3=richtig, 4=nicht im Text */
+var frageAnswers=['f','r','f','r','n'];
+var frageScore=0;
+function checkFrage(idx, chosen){
+  var item=document.getElementById('fa-'+idx);
+  var btns=item.querySelectorAll('.fanswer');
+  btns.forEach(function(b){b.disabled=true;});
+  var correct=frageAnswers[idx];
+  var isOk=(chosen===correct);
+  if(isOk){frageScore++;xp+=10;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';}
+  btns.forEach(function(b){
+    var v=b.getAttribute('onclick').match(/'([rfn])'/)[1];
+    if(v===correct)b.classList.add(isOk&&v===chosen?'selected-ok':'reveal-ok');
+    if(v===chosen&&!isOk)b.classList.add('selected-no');
+  });
+  var fb=document.getElementById('fb-'+idx);
+  fb.classList.add('show');
+  fb.style.color=isOk?'var(--green)':'var(--cream)';
+}
+
+var QD={
+  0:[
+    {q:'Welche Aufgabentypen hat der Goethe B1 Lesen-Teil?',
+     hint:'Es gibt 3 verschiedene Aufgaben in 25 Minuten. Was sind sie?',
+     opts:['Einen langen Text schreiben und zusammenfassen','Richtig/Falsch/Nicht im Text, Multiple Choice und Texte zuordnen','Nur Multiple Choice mit 20 Fragen','Vier lange Texte mit je 10 Fragen lesen'],
+     ans:1,
+     exp:'Der Goethe B1 Lesen-Teil hat drei Aufgabentypen: Aufgabe 1 (kurze Texte, richtig/falsch/nicht im Text), Aufgabe 2 (längerer Text, Multiple Choice) und Aufgabe 3 (Texte und Aussagen zuordnen). Du hast 25 Minuten für alle drei. Schreiben ist ein separater Teil der Prüfung. Wenn du die Struktur kennst, kannst du die Zeit von Anfang an richtig einteilen.',
+     rule:'Kenne die 3 Lesen-Aufgaben: Aufgabe 1 (R/F/NiT, ~8 Min), Aufgabe 2 (Multiple Choice, ~10 Min), Aufgabe 3 (Zuordnen, ~7 Min). Das hilft beim Zeitmanagement!'}
+  ],
+  1:[
+    {q:'Was ist die wichtigste erste Aktion, wenn du die Lesen-Aufgabe bekommst?',
+     hint:'Denkst du an die Strategie: Was liest du ZUERST?',
+     opts:['Den gesamten Text sorgfältig von Anfang bis Ende lesen','Die Fragen zuerst lesen und Schlüsselwörter unterstreichen','Sofort alle unbekannten Wörter erraten','Den Text dreimal lesen, dann die Fragen']  ,
+     ans:1,
+     exp:'Immer zuerst die Fragen lesen! Wenn du die Fragen kennst und die Schlüsselwörter markiert hast, weißt du genau, wonach du im Text suchen musst. Du liest nicht mehr blind — du suchst gezielt. Option A ist der häufigste Fehler: Man liest den Text ohne zu wissen, was wichtig ist, und verschwendet wertvolle Zeit.',
+     rule:'FRAGEN ZUERST! Lies alle Fragen, unterstreiche die Schlüsselwörter, dann lies den Text und suche gezielt nach diesen Schlüsselwörtern. Das spart Zeit und verbessert die Punktzahl erheblich.'}
+  ],
+  2:[
+    {q:'Im Text steht: „Kwame arbeitet als Nachhilfelehrer." Die Frage: „Kwame macht seinen Job sehr gern." Was ist die richtige Antwort?',
+     hint:'Steht im Text, ob Kwame seinen Job mag? Lies die Information genau.',
+     opts:['Richtig — er arbeitet ja als Nachhilfelehrer, also mag er es','Falsch — der Text sagt, er mag seinen Job nicht','Nicht im Text — ob er den Job gern macht, steht im Text nicht','Das kann man so nicht beantworten'],
+     ans:2,
+     exp:'„Nicht im Text" ist korrekt. Der Text sagt nur, DASS Kwame als Nachhilfelehrer arbeitet. Er sagt absolut nichts darüber, ob er diesen Job gern macht oder nicht. Die Information (ob er den Job mag) fehlt im Text vollständig — weder als richtig noch als falsch. Das ist der typische NiT-Trick: Ein Fakt steht im Text, aber ein Detail darüber fehlt.',
+     rule:'„Nicht im Text" = Die spezifische Information der Frage fehlt im Text komplett. Text sagt: er arbeitet als Lehrer. Frage fragt: mag er den Job? Das ist eine andere Information — nicht im Text!'}
+  ],
+  3:[
+    {q:'Du hast bei Aufgabe 2 eine sehr schwierige Frage. Du hast sie schon 2 Minuten lang versucht. Was tust du?',
+     hint:'Du hast nur 25 Minuten total. Was ist die beste Strategie?',
+     opts:['Noch 5 Minuten bei dieser Frage bleiben, bis du sie löst','Diese Frage überspringen, markieren und am Ende zurückkommen','Die ganze Aufgabe 2 aufgeben und direkt zu Aufgabe 3 gehen','Den Text für diese Frage nochmal von vorne lesen'],
+     ans:1,
+     exp:'Überspringen und weitermachen ist die beste Strategie! Nach 2 Minuten bei einer Frage machst du einen Strich daneben und gehst weiter zu den nächsten Fragen. Am Ende der Aufgabe, wenn noch Zeit übrig ist, kommst du zurück. Du verlierst keine Punkte fürs Überspringen — aber du verlierst wertvolle Zeit für die einfacheren Fragen, wenn du bei einer schwierigen hängenbleibst.',
+     rule:'Zeitregel: Max. 2 Minuten pro Frage. Dann weitergehen, markieren, am Ende zurückkommen. Ziel: A1 (8'), A2 (10'), A3 (7'). Sichere zuerst die leichten Punkte!'}
+  ],
+  4:[
+    {q:'Du liest im Praxistext: „Er vermisst das Essen aus Ghana." Die Frage: „Kwame vermisst seine Familie in Ghana." Was ist die Antwort?',
+     hint:'Schau genau: Was vermisst Kwame laut Text? Stimmt das mit der Frage überein?',
+     opts:['Richtig — er ist in Deutschland, also vermisst er seine Familie','Falsch — der Text sagt, er mag Deutschland','Nicht im Text — der Text erwähnt das Essen, aber nichts über seine Familie','Das ist dieselbe Information'],
+     ans:2,
+     exp:'„Nicht im Text" ist korrekt. Das ist der klassische NiT-Trick: Der Text erwähnt „vermissen" und „Ghana" — aber nur über das Essen, nicht über die Familie. Die Frage fragt nach der Familie — das ist eine andere, spezifische Information, die im Text nicht vorkommt. Viele Lernende wählen hier fälschlicherweise „richtig", weil sie „vermissen + Ghana" sehen. Aber die genaue Information (Familie) fehlt!',
+     rule:'Genau lesen! Text sagt: vermisst das Essen. Frage fragt: vermisst die Familie. Das sind zwei verschiedene Informationen. Nur weil das Thema ähnlich ist, ist es noch nicht richtig → NICHT IM TEXT!'}
+  ],
+  5:[
+    {q:'Kwame sieht das Wort „anspruchsvoll" im Text und kennt es nicht. Im Satz steht: „Das Studium ist anspruchsvoll, aber er liebt es." Was soll er tun?',
+     hint:'Du hast kein Wörterbuch. Aber was sagt der Kontext?',
+     opts:['Den Test unterbrechen und ein Wörterbuch suchen','Den Satz überspringen und die Frage gar nicht beantworten','Den Kontext lesen: Studium + er liebt es → anspruchsvoll bedeutet wahrscheinlich schwierig/herausfordernd. Weitermachen!','5 Minuten über die genaue Bedeutung nachdenken'],
+     ans:2,
+     exp:'Den Kontext nutzen ist die beste Strategie! Kwame sieht: Studium ist anspruchsvoll, aber er liebt es. Kontext: Studium + liebt es → das Wort muss etwas Herausforderndes/Schwieriges bedeuten — sonst würde „aber" keinen Sinn machen. Im Goethe B1 darf man kein Wörterbuch benutzen. Man muss nicht die genaue Bedeutung kennen — man braucht nur genug Information, um die Frage zu beantworten.',
+     rule:'Unbekannte Wörter: Kontext nutzen! Was steht davor und danach? Zahlen und Namen brauchen kein Vokabular. Du brauchst 60% — nicht jedes Wort zu kennen. Weitermachen ist immer besser als aufgeben!'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">FRAGE '+(s.cur+1)+' VON '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint" style="font-family:\'DM Mono\',monospace;">💡 '+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Nächste Frage →':'Ergebnis anzeigen →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Richtig!':'✗ Nicht ganz'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent='📌 Regel: '+q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' richtig</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfekt!':pct>=60?'Gut gemacht!':'Noch einmal versuchen.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(52,152,219,0.12);border:1px solid var(--blue);border-radius:50px;padding:9px 22px;color:var(--blue);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Modul 9 abschließen →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Zur nächsten Lektion →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">📖</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Modul 9 abgeschlossen!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">Du kennst jetzt alle 5 Lesestrategien für den Goethe B1. Du liest immer zuerst die Fragen, erkennst „nicht im Text"-Situationen, nutzt Schlüsselwörter, hältst den Zeitplan ein und bleibst ruhig bei unbekannten Wörtern. Das Lesen ist keine Barriere mehr.</p><div class="xp-badge">⚡ '+xp+' XP verdient</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Modul 9 abgeschlossen. Weiter zu Modul 10 — Schreiben Strategie.</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Zur Übersicht</button></div>'; localStorage.setItem('dw_mod_b1_9_done','1'); var saved=parseInt(localStorage.getItem('dw_xp')||'0'); localStorage.setItem('dw_xp',saved+xp); }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+<script src="./ai-tutor.js" data-module="b1-9"></script>
+</body>
+</html>
