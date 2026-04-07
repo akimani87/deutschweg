@@ -1199,7 +1199,8 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
 
-  // ── Auth guard ────────────────────────────────────────────────────────────
+  // ── Auth guard — TEMPORARILY DISABLED (re-enable when Supabase is stable) ──
+  /*
   dwSupabase.auth.getSession().then(function(res) {
     var session = res.data && res.data.session;
 
@@ -1237,6 +1238,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     initDashboard();
   });
+  */
+
+  // Pass-through: open access while auth is disabled
+  initDashboard();
 
   function initDashboard() {
   document.body.classList.add('ready');
