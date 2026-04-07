@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — B1 Modul 11: Schreiben Strategie</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --wrd:#3498db; --irr:#e67e22; --mod:#9b59b6; --pol:#27ae60;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--blue); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--blue); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--blue); color:var(--white); width:100%; }
+  .btn-primary:hover { background:#2980b9; transform:translateY(-2px); box-shadow:0 8px 24px rgba(52,152,219,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--blue); color:var(--blue); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(52,152,219,0.2); }
+  .speak-btn.speaking { background:var(--blue); color:var(--white); }
+
+  /* ENGLISH HELP TOGGLE */
+  .en-help { background:rgba(52,152,219,0.05); border:1px dashed rgba(52,152,219,0.25); border-radius:10px; margin:12px 0; }
+  .en-help summary { padding:10px 16px; cursor:pointer; font-size:13px; color:var(--blue); font-family:'DM Mono',monospace; letter-spacing:.03em; list-style:none; display:flex; align-items:center; gap:8px; }
+  .en-help summary::-webkit-details-marker { display:none; }
+  .en-help[open] summary { border-bottom:1px dashed rgba(52,152,219,0.2); }
+  .en-help-body { padding:12px 16px; font-size:13px; color:rgba(245,240,232,.7); line-height:1.8; }
+  .en-help-body p { margin-bottom:8px; }
+  .en-help-body p:last-child { margin-bottom:0; }
+
+  /* EXAMPLES */
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-note { font-size:12px; color:var(--gray); line-height:1.6; }
+
+  /* FORMULA BOX */
+  .formula-box { background:var(--card2-bg); border:1px solid rgba(52,152,219,0.2); border-radius:14px; padding:20px 22px; margin:14px 0; text-align:center; }
+  .formula-title { font-size:10px; letter-spacing:3px; font-family:'DM Mono',monospace; color:var(--blue); margin-bottom:14px; }
+  .formula-main { font-family:'DM Mono',monospace; font-size:18px; font-weight:700; color:var(--white); line-height:2; }
+  .formula-part { display:inline-block; }
+  .formula-plus { color:var(--gray); margin:0 8px; }
+  .fp-w { color:var(--wrd); }
+  .fp-i { color:var(--irr); }
+  .fp-m { color:var(--mod); }
+  .fp-p { color:var(--pol); }
+
+  /* COMPARISON TABLE */
+  .comp-table { width:100%; border-collapse:collapse; font-size:13px; margin:14px 0; }
+  .comp-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:10px 14px; text-align:left; border-bottom:2px solid rgba(255,255,255,0.1); }
+  .comp-table td { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'DM Mono',monospace; font-size:13px; vertical-align:top; }
+  .comp-table tr:last-child td { border-bottom:none; }
+  .comp-table tr:hover td { background:rgba(255,255,255,0.02); }
+  .ct-ind { color:var(--gold); }
+  .ct-konj { color:var(--wrd); }
+  .comp-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+
+  /* WRONG/RIGHT */
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.0; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+
+  /* CONTEXT CARDS */
+  .ctx-grid { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ctx-card { background:var(--card2-bg); border-radius:12px; padding:16px 18px; display:flex; gap:14px; align-items:flex-start; }
+  .ctx-icon { font-size:22px; flex-shrink:0; width:32px; text-align:center; margin-top:2px; }
+  .ctx-title { font-size:13px; font-weight:700; color:var(--cream); margin-bottom:4px; }
+  .ctx-desc { font-size:13px; color:var(--gray); line-height:1.65; margin-bottom:6px; }
+  .ctx-ex { font-family:'DM Mono',monospace; font-size:12px; color:var(--blue); }
+  .ctx-card.c-polite { border:1px solid rgba(39,174,96,0.2); }
+  .ctx-card.c-wish   { border:1px solid rgba(52,152,219,0.2); }
+  .ctx-card.c-cond   { border:1px solid rgba(230,126,34,0.2); }
+  .ctx-card.c-adv    { border:1px solid rgba(155,89,182,0.2); }
+
+  /* HIGHLIGHTS */
+  .wh { color:var(--wrd); font-weight:700; }
+  .ih { color:var(--irr); font-weight:700; }
+  .mh { color:var(--mod); font-weight:700; }
+  .ph { color:var(--pol); font-weight:700; }
+
+  /* QUIZ */
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Mono',monospace; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--blue); background:rgba(52,152,219,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(52,152,219,0.1); border-radius:8px; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(52,152,219,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.2); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(52,152,219,0.12); border:1px solid var(--blue); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--blue); font-size:18px; margin:18px 0; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .lesson-h{font-size:22px;} .wr-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">B1 · MODUL 11</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">B1 · Prüfungsstrategie</div>
+    <h1 class="lesson-h" style="font-size:36px;">Schreiben <span style="color:var(--blue)">Strategie</span></h1>
+    <p class="body-text">Die Schreiben-Aufgabe im Goethe B1 ist eine der direktesten Wege, Punkte zu gewinnen — oder zu verlieren. Wer eine klare Strategie hat, schreibt schneller, macht weniger Fehler und beantwortet alle Aufgabenpunkte. Dieses Modul gibt dir genau diese Strategie.</p>
+
+    <details class="en-help">
+      <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+      <div class="en-help-body">
+        <p>The Goethe B1 writing task requires you to write one letter or email (formal or informal) in 30 minutes, about 100 words. You are given specific bullet points that you must address — missing even one costs marks. This module teaches you the structure, vocabulary, and strategy to handle this task confidently.</p>
+      </div>
+    </details>
+
+    <div class="info-box"><strong style="color:var(--gold);">Lernziele dieses Moduls:</strong><br><br>
+      ✦ Du kannst B1 Schreiben-Aufgaben strategisch angehen<br>
+      ✦ Du kennst die Struktur formeller und informeller Briefe<br>
+      ✦ Du kannst die Zeit effektiv einteilen (30 Minuten)<br>
+      ✦ Du erkennst und vermeidest typische Fehler<br>
+      ✦ Du kannst alle Aufgabenpunkte vollständig beantworten
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">📋</div><div><div class="lc-title">Lektion 1 — Die Aufgabe verstehen</div><div class="lc-desc">Was wird im B1 Schreiben getestet? Aufgabentypen, Zeitplan, Bewertungskriterien.</div></div><div class="lc-tag" style="color:var(--blue);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">🏛️</div><div><div class="lc-title">Lektion 2 — Formeller Brief</div><div class="lc-desc">Struktur, Anrede, Einleitung, Schluss. An Firmen, Behörden, unbekannte Personen.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">💌</div><div><div class="lc-title">Lektion 3 — Informeller Brief</div><div class="lc-desc">Struktur, Anrede, lockere Sprache. An Freunde und Bekannte schreiben.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">🔍</div><div><div class="lc-title">Lektion 4 — Strategien 1–3</div><div class="lc-desc">Aufgabe lesen, planen, Konnektoren benutzen. Die drei wichtigsten Vor-dem-Schreiben-Schritte.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">✅</div><div><div class="lc-title">Lektion 5 — Strategien 4–5 &amp; Fehler</div><div class="lc-desc">Wörter zählen, Korrekturlesen, häufige Fehler vermeiden. Der letzte Schliff.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lektion 6 — Kwame schreibt an Kofi</div><div class="lc-desc">Echte B1-Praxisaufgabe mit Kwame und Kofi. Alle Strategien im Einsatz.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lektionen</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--blue);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LEKTION 1: Die Aufgabe verstehen ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 11 · Lektion 1 von 6</div>
+          <h2 class="lesson-h">Die Aufgabe <span style="color:var(--wrd)">verstehen</span></h2>
+          <p class="body-text">Im Goethe B1 gibt es <strong style="color:var(--wrd);">eine Schreiben-Aufgabe</strong>. Du hast <strong style="color:var(--wrd);">30 Minuten</strong> Zeit und sollst ca. <strong style="color:var(--wrd);">100 Wörter</strong> schreiben. Die Aufgabe ist immer ein Brief oder eine E-Mail — entweder formell oder informell.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>The Goethe B1 writing section has one task: write a letter or email of about 100 words in 30 minutes. You are given bullet points that you must address in your text — each missed point loses marks. The task will be either formal (to a company, authority, or stranger) or informal (to a friend or acquaintance).</p>
+            </div>
+          </details>
+
+          <div class="formula-box">
+            <div class="formula-title">DIE SCHREIBEN-AUFGABE IM GOETHE B1</div>
+            <div class="formula-main">
+              <span class="formula-part fp-w">1 Aufgabe</span>
+              <span class="formula-plus">·</span>
+              <span class="formula-part fp-i">30 Minuten</span>
+              <span class="formula-plus">·</span>
+              <span class="formula-part fp-p">~100 Wörter</span>
+            </div>
+            <div style="font-size:12px;color:var(--gray);margin-top:8px;">formeller Brief ODER informeller Brief/Email</div>
+          </div>
+
+          <div class="sec-label">Aufgabentypen</div>
+          <div class="ctx-grid">
+            <div class="ctx-card c-polite">
+              <div class="ctx-icon">🏛️</div>
+              <div>
+                <div class="ctx-title">Formeller Brief / E-Mail</div>
+                <div class="ctx-desc">An eine Firma, Behörde oder unbekannte Person. Höfliche, offizielle Sprache.</div>
+                <div class="ctx-ex">→ Sie benutzen · „Sehr geehrte…" · „Mit freundlichen Grüßen"</div>
+              </div>
+            </div>
+            <div class="ctx-card c-wish">
+              <div class="ctx-icon">💌</div>
+              <div>
+                <div class="ctx-title">Informeller Brief / E-Mail</div>
+                <div class="ctx-desc">An einen Freund, eine Freundin oder Bekannte. Lockere, persönliche Sprache.</div>
+                <div class="ctx-ex">→ du benutzen · „Liebe Amina," · „Viele Grüße"</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">Bewertung — worauf achtet der Prüfer?</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Kriterium</th><th>Was bedeutet das?</th></tr>
+              <tr><td class="ct-ind">Inhalt</td><td>Alle Aufgabenpunkte beantwortet?</td></tr>
+              <tr><td class="ct-ind">Kommunikative Gestaltung</td><td>Ist der Brief logisch und klar strukturiert?</td></tr>
+              <tr><td class="ct-ind">Formale Richtigkeit</td><td>Grammatik, Rechtschreibung, Zeichensetzung</td></tr>
+            </table>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue);">📌 Wichtig — Aufgabenpunkte!</strong><br><br>
+            Die Aufgabe gibt dir immer 3–4 Punkte, die du ansprechen musst.<br>
+            Jeder fehlende Punkt = direkte Punktabzüge beim Inhalt.<br>
+            Das ist der häufigste Fehler im B1 Schreiben!
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 11 · Lektion 1 · Übung</div><h2 class="lesson-h">Die Aufgabe — <span style="color:var(--wrd)">Übung</span></h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-0 -->
+
+    <!-- ── LEKTION 2: Formeller Brief ── -->
+    <div id="lesson-1" class="lesson-pane">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 11 · Lektion 2 von 6</div>
+          <h2 class="lesson-h">Der <span style="color:var(--irr)">formelle</span> Brief</h2>
+          <p class="body-text">Ein formeller Brief hat eine feste Struktur. Wenn du diese Struktur auswendig kennst, sparst du wertvolle Zeit in der Prüfung. Der Prüfer erwartet <span class="ih">Ort und Datum</span>, eine korrekte <span class="ih">Anrede</span>, eine klare <span class="ih">Einleitung</span> und einen höflichen <span class="ih">Schluss</span>.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>A formal letter in German always starts with the place and date (top right), followed by a formal greeting like "Sehr geehrte Damen und Herren" or "Sehr geehrter Herr [Name]". The closing is always "Mit freundlichen Grüßen". These are fixed phrases — memorise them and use them automatically in the exam.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Struktur des formellen Briefes</div>
+          <div class="comp-wrap">
+            <p style="font-family:'DM Mono',monospace;font-size:13px;color:var(--cream);line-height:2.2;">
+              <span style="color:var(--gray);font-size:11px;">ORT, DATUM (oben rechts):</span><br>
+              <span class="ih">Nairobi, den 26. März 2026</span><br><br>
+              <span style="color:var(--gray);font-size:11px;">ANREDE:</span><br>
+              <span class="ih">Sehr geehrte Damen und Herren,</span><br>
+              <span style="color:var(--gray);font-size:11px;">oder: Sehr geehrter Herr Müller, / Sehr geehrte Frau Schmidt,</span><br><br>
+              <span style="color:var(--gray);font-size:11px;">EINLEITUNG — Warum schreibst du?</span><br>
+              <span class="wh">Ich schreibe Ihnen bezüglich...</span><br>
+              <span class="wh">Ich möchte mich bei Ihnen erkundigen...</span><br>
+              <span class="wh">Mit großem Interesse habe ich...</span><br><br>
+              <span style="color:var(--gray);font-size:11px;">HAUPTTEIL — Alle Aufgabenpunkte!</span><br>
+              <span style="color:var(--cream);">[ Hier alle Punkte aus der Aufgabe ansprechen ]</span><br><br>
+              <span style="color:var(--gray);font-size:11px;">SCHLUSS:</span><br>
+              <span class="ph">Ich freue mich auf Ihre Antwort.</span><br>
+              <span class="ph">Mit freundlichen Grüßen,</span><br>
+              <span style="color:var(--cream);">[Dein Name]</span>
+            </p>
+          </div>
+
+          <div class="sec-label">Formelle Wendungen — auswendig lernen!</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--irr);">ANREDE</div>
+              <div style="flex:1;">
+                <div class="ex-de">Sehr geehrte Damen und Herren,</div>
+                <div class="ex-note">Wenn du den Namen nicht kennst — immer diese Formel.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Sehr geehrte Damen und Herren,')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--irr);">EINLEITUNG</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich schreibe Ihnen bezüglich Ihrer Stellenanzeige.</div>
+                <div class="ex-note">„bezüglich + Genitiv" — zeigt sofort B1-Niveau.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich schreibe Ihnen bezüglich Ihrer Stellenanzeige.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--pol);">SCHLUSS</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich freue mich auf Ihre Antwort.</div>
+                <div class="ex-note">Standardformel für den Schluss — immer verwenden!</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich freue mich auf Ihre Antwort.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Hallo, ich bin Amina und...</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Sehr geehrte Damen und Herren,</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">„Hallo" ist informell — in einem formellen Brief immer „Sehr geehrte…" benutzen.</p>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 11 · Lektion 2 · Übung</div><h2 class="lesson-h">Formeller Brief — <span style="color:var(--irr)">Übung</span></h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-1 -->
+
+    <!-- ── LEKTION 3: Informeller Brief ── -->
+    <div id="lesson-2" class="lesson-pane">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 11 · Lektion 3 von 6</div>
+          <h2 class="lesson-h">Der <span style="color:var(--mod)">informelle</span> Brief</h2>
+          <p class="body-text">Beim informellen Brief schreibst du an einen Freund, eine Freundin oder einen Bekannten. Die Sprache ist locker und persönlich. Du benutzt <span class="mh">du</span> statt <span class="ih">Sie</span>. Aber auch hier gibt es eine klare Struktur, die du kennen musst.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>An informal letter is addressed to a friend or acquaintance. You use "du" (not "Sie"), and the tone is warm and personal. The greeting is "Liebe [Name]," for female or "Lieber [Name]," for male. The closing is "Viele Grüße" or "Liebe Grüße". Even though it's informal, you still must address every task point given to you.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Struktur des informellen Briefes</div>
+          <div class="comp-wrap">
+            <p style="font-family:'DM Mono',monospace;font-size:13px;color:var(--cream);line-height:2.2;">
+              <span style="color:var(--gray);font-size:11px;">ANREDE:</span><br>
+              <span class="mh">Liebe Amina,</span> <span style="color:var(--gray);">/ für Frauen</span><br>
+              <span class="mh">Lieber Kwame,</span> <span style="color:var(--gray);">/ für Männer</span><br><br>
+              <span style="color:var(--gray);font-size:11px;">EINLEITUNG — persönlich beginnen:</span><br>
+              <span class="wh">Wie geht es dir?</span><br>
+              <span class="wh">Ich hoffe, es geht dir gut!</span><br>
+              <span class="wh">Es tut mir leid, dass ich so lange nicht geschrieben habe.</span><br><br>
+              <span style="color:var(--gray);font-size:11px;">HAUPTTEIL — Alle Aufgabenpunkte!</span><br>
+              <span style="color:var(--cream);">[ Hier alle Punkte aus der Aufgabe ansprechen ]</span><br><br>
+              <span style="color:var(--gray);font-size:11px;">SCHLUSS:</span><br>
+              <span class="ph">Ich freue mich auf deine Antwort!</span><br>
+              <span class="ph">Viele Grüße / Liebe Grüße</span><br>
+              <span class="ph">Bis bald!</span><br>
+              <span style="color:var(--cream);">[Dein Name]</span>
+            </p>
+          </div>
+
+          <div class="sec-label">Formell vs. informell — der direkte Vergleich</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Element</th><th style="color:var(--irr)">Formell</th><th style="color:var(--mod)">Informell</th></tr>
+              <tr><td>Anrede</td><td class="ct-ind">Sehr geehrte/r…</td><td class="ct-konj" style="color:var(--mod)">Liebe/r…</td></tr>
+              <tr><td>Pronomen</td><td class="ct-ind">Sie / Ihnen / Ihr</td><td class="ct-konj" style="color:var(--mod)">du / dir / dein</td></tr>
+              <tr><td>Ton</td><td class="ct-ind">höflich, offiziell</td><td class="ct-konj" style="color:var(--mod)">locker, persönlich</td></tr>
+              <tr><td>Schluss</td><td class="ct-ind">Mit freundlichen Grüßen</td><td class="ct-konj" style="color:var(--mod)">Viele Grüße / Bis bald</td></tr>
+            </table>
+          </div>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--mod);">EINLEITUNG</div>
+              <div style="flex:1;">
+                <div class="ex-de">Lieber Kofi, wie geht es dir?</div>
+                <div class="ex-note">Persönliche Einleitung — zeigt sofort: das ist ein informeller Brief.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Lieber Kofi, wie geht es dir?')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--mod);">SCHLUSS</div>
+              <div style="flex:1;">
+                <div class="ex-de">Viele Grüße und bis bald!</div>
+                <div class="ex-note">Typischer informeller Schluss — warm und freundlich.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Viele Grüße und bis bald!')">🔊</button>
+            </div>
+          </div>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FALSCH</div>
+              <div class="wr-word">Sehr geehrter Kofi,</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ RICHTIG</div>
+              <div class="wr-word">Lieber Kofi,</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">„Sehr geehrter" bei einem Freund klingt seltsam und distanziert — immer „Liebe/r" beim informellen Brief.</p>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 11 · Lektion 3 · Übung</div><h2 class="lesson-h">Informeller Brief — <span style="color:var(--mod)">Übung</span></h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-2 -->
+
+    <!-- ── LEKTION 4: Strategien 1–3 ── -->
+    <div id="lesson-3" class="lesson-pane">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 11 · Lektion 4 von 6</div>
+          <h2 class="lesson-h">Strategien <span style="color:var(--wrd)">1–3</span></h2>
+          <p class="body-text">Bevor du einen einzigen Satz schreibst, gibt es drei wichtige Strategien. Studenten, die diese Schritte überspringen, machen die meisten Fehler. Nur 4–5 Minuten Vorbereitung können den Unterschied zwischen Bestehen und Nicht-Bestehen bedeuten.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>Before writing, always: (1) Read the task twice and underline every required point. (2) Spend 2 minutes planning your structure and noting connectors to use. (3) Use B1-level connectors like "weil", "obwohl", "damit", "sodass" to show your grammar range. These three steps take only 4–5 minutes but can earn you significantly more points.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Strategie 1 — Aufgabe genau lesen</div>
+          <div class="ctx-card c-wish" style="margin-bottom:10px;">
+            <div class="ctx-icon">🔍</div>
+            <div>
+              <div class="ctx-title">Lies die Aufgabe ZWEIMAL</div>
+              <div class="ctx-desc">Beim ersten Mal: verstehen. Beim zweiten Mal: alle Punkte unterstreichen.</div>
+              <div class="ctx-ex">→ Hake jeden Punkt ab, wenn du ihn geschrieben hast!</div>
+            </div>
+          </div>
+
+          <div class="sec-label">Strategie 2 — Planen vor dem Schreiben</div>
+          <div class="ctx-card c-cond" style="margin-bottom:10px;">
+            <div class="ctx-icon">📝</div>
+            <div>
+              <div class="ctx-title">2 Minuten Planung</div>
+              <div class="ctx-desc">Welche Aufgabenpunkte muss ich ansprechen? Welche Struktur benutze ich (formell/informell)? Welche Konnektoren benutze ich?</div>
+              <div class="ctx-ex">→ Schreib kurze Stichwörter — kein vollständiger Text!</div>
+            </div>
+          </div>
+
+          <div class="sec-label">Strategie 3 — Konnektoren benutzen</div>
+          <div class="ctx-card c-adv" style="margin-bottom:14px;">
+            <div class="ctx-icon">🔗</div>
+            <div>
+              <div class="ctx-title">B1-Konnektoren zeigen dein Niveau</div>
+              <div class="ctx-desc">Einfache Konnektoren (und, aber) zeigen A2-Niveau. B1-Konnektoren zeigen dem Prüfer sofort, dass du auf dem richtigen Niveau bist.</div>
+              <div class="ctx-ex">→ weil · obwohl · damit · sodass · nicht nur...sondern auch · sowohl...als auch · je...desto</div>
+            </div>
+          </div>
+
+          <div class="sec-label">B1-Konnektoren im Vergleich</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Konnektor</th><th>Bedeutung</th><th>Beispiel</th></tr>
+              <tr><td class="ct-konj">weil</td><td>because</td><td>Ich schreibe, weil ich Fragen habe.</td></tr>
+              <tr><td class="ct-konj">obwohl</td><td>although</td><td>Ich komme, obwohl ich müde bin.</td></tr>
+              <tr><td class="ct-konj">damit</td><td>so that</td><td>Ich lerne, damit ich bestehe.</td></tr>
+              <tr><td class="ct-konj">sodass</td><td>so that (result)</td><td>Er arbeitet viel, sodass er müde ist.</td></tr>
+            </table>
+          </div>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--wrd);">BEISPIEL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich schreibe Ihnen, <span class="wh">weil</span> ich mich für den Kurs interessiere.</div>
+                <div class="ex-note">„weil" mit Verb am Ende — typische B1-Struktur in formellen Briefen.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich schreibe Ihnen, weil ich mich für den Kurs interessiere.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--wrd);">BEISPIEL</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich bin umgezogen, <span class="wh">damit</span> ich näher bei der Arbeit wohne.</div>
+                <div class="ex-note">„damit" erklärt eine Absicht — sehr nützlich im Hauptteil.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich bin umgezogen, damit ich näher bei der Arbeit wohne.')">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 11 · Lektion 4 · Übung</div><h2 class="lesson-h">Strategien 1–3 — <span style="color:var(--wrd)">Übung</span></h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-3 -->
+
+    <!-- ── LEKTION 5: Strategien 4–5 & Fehler ── -->
+    <div id="lesson-4" class="lesson-pane">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 11 · Lektion 5 von 6</div>
+          <h2 class="lesson-h">Strategien <span style="color:var(--irr)">4–5</span> &amp; Fehler</h2>
+          <p class="body-text">Die letzten zwei Strategien helfen dir, nach dem Schreiben die Qualität zu sichern. Außerdem lernst du die häufigsten Fehler kennen — viele davon kosten unnötig Punkte und können leicht vermieden werden.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>Strategy 4: Count your words after writing. Too short (under 80 words) loses marks — too long wastes your time. Aim for 100–120 words. Strategy 5: Spend the last 5 minutes proofreading — check verb position (Position 2!), capital letters for nouns, commas before subordinate clauses, and whether all task points are answered.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Strategie 4 — Wörter zählen</div>
+          <div class="ctx-card c-wish" style="margin-bottom:10px;">
+            <div class="ctx-icon">🔢</div>
+            <div>
+              <div class="ctx-title">Ziel: 100–120 Wörter</div>
+              <div class="ctx-desc">Zu kurz (unter 80 Wörter) = Punktabzug beim Inhalt. Zu lang = Zeitverschwendung für die anderen Aufgaben.</div>
+              <div class="ctx-ex">→ Zähle nach dem Schreiben — nicht während des Schreibens!</div>
+            </div>
+          </div>
+
+          <div class="sec-label">Strategie 5 — Korrekturlesen (5 Minuten)</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Prüfpunkt</th><th>Was kontrollieren?</th></tr>
+              <tr><td class="ct-konj">Verb Position 2?</td><td>Ich gehe heute. NICHT: Ich heute gehe.</td></tr>
+              <tr><td class="ct-konj">Großschreibung?</td><td>das Haus, die Arbeit, der Freund</td></tr>
+              <tr><td class="ct-konj">Komma vor Nebensatz?</td><td>Ich schreibe<span style="color:var(--red);">,</span> weil ich Fragen habe.</td></tr>
+              <tr><td class="ct-konj">Alle Punkte beantwortet?</td><td>Jeden Aufgabenpunkt abhaken!</td></tr>
+            </table>
+          </div>
+
+          <div class="sec-label">Häufige Fehler im B1 Schreiben</div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FEHLER 1</div>
+              <div class="wr-word">Nicht alle Punkte ansprechen</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ LÖSUNG</div>
+              <div class="wr-word">Jeden Punkt unterstreichen und abhaken</div>
+            </div>
+          </div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FEHLER 2</div>
+              <div class="wr-word">„Hallo" im formellen Brief</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ LÖSUNG</div>
+              <div class="wr-word">„Sehr geehrte Damen und Herren,"</div>
+            </div>
+          </div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FEHLER 3</div>
+              <div class="wr-word">Kein Datum und kein Ort</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ LÖSUNG</div>
+              <div class="wr-word">Nairobi, den 26. März 2026</div>
+            </div>
+          </div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ FEHLER 4</div>
+              <div class="wr-word">„Sehr geehrte" bei Freund schreiben</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ LÖSUNG</div>
+              <div class="wr-word">„Lieber Kwame," beim informellen Brief</div>
+            </div>
+          </div>
+
+          <div class="danger-box"><strong style="color:var(--red);">⚠️ Prüfungstipp — der häufigste Fehler in Nairobi:</strong><br><br>
+            Studenten vergessen Aufgabenpunkte! Unterstreiche jeden Punkt in der Aufgabe und hake ihn ab, wenn du ihn geschrieben hast. Das allein kann dir 3–4 extra Punkte geben!
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 11 · Lektion 5 · Übung</div><h2 class="lesson-h">Strategien 4–5 — <span style="color:var(--irr)">Übung</span></h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-4 -->
+
+    <!-- ── LEKTION 6: Kwame schreibt an Kofi ── -->
+    <div id="lesson-5" class="lesson-pane">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 11 · Lektion 6 von 6</div>
+          <h2 class="lesson-h">Kwame &amp; Kofi — <span style="color:var(--blue)">Praxisübung</span></h2>
+          <p class="body-text">Kwame hat eine neue Wohnung in Berlin gefunden und schreibt eine E-Mail an seinen Freund Kofi. Lies zuerst die Aufgabe, dann Kwames Musterbrief — und achte darauf, wie er alle vier Aufgabenpunkte anspricht.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>This is a real B1-style writing task. Notice how Kwame's model letter addresses all four required points, uses informal language (du, Lieber), includes a personal greeting and closing, and uses B1-level connectors like "weil", "damit" and "obwohl". Try to identify where each task point appears in his letter.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Die Aufgabe</div>
+          <div class="info-box">
+            <strong style="color:var(--gold);">Kwame hat eine neue Wohnung in Berlin.</strong><br><br>
+            Schreibe eine E-Mail an deinen Freund Kofi:<br><br>
+            ✦ Beschreibe die Wohnung<br>
+            ✦ Erkläre, warum du umgezogen bist<br>
+            ✦ Lade Kofi ein, dich zu besuchen<br>
+            ✦ Frage nach Kofis neuer Arbeit
+          </div>
+
+          <div class="sec-label">Kwames Musterbrief — alle 4 Punkte beantwortet</div>
+          <div class="comp-wrap">
+            <p style="font-family:'DM Mono',monospace;font-size:13px;color:var(--cream);line-height:2.0;">
+              <span class="mh">Lieber Kofi,</span><br><br>
+              ich hoffe, es geht dir gut! Ich habe endlich eine neue Wohnung in Berlin gefunden.<br><br>
+              <span style="color:var(--gray);font-size:11px;">← PUNKT 1: Wohnung beschreiben</span><br>
+              Die Wohnung ist wirklich schön — sie hat drei Zimmer, eine große Küche und einen kleinen Balkon. Das Beste ist, dass sie sehr hell ist!<br><br>
+              <span style="color:var(--gray);font-size:11px;">← PUNKT 2: Warum umgezogen?</span><br>
+              Ich bin umgezogen, <span class="wh">weil</span> die alte Wohnung zu laut war. Jetzt wohne ich in einem ruhigen Viertel, <span class="wh">sodass</span> ich endlich gut schlafen kann.<br><br>
+              <span style="color:var(--gray);font-size:11px;">← PUNKT 3: Einladung</span><br>
+              Du musst mich unbedingt besuchen! Ich lade dich herzlich ein, <span class="wh">damit</span> du Berlin kennenlernst. Ich freue mich wirklich darauf!<br><br>
+              <span style="color:var(--gray);font-size:11px;">← PUNKT 4: Frage nach Kofis Arbeit</span><br>
+              Übrigens — wie läuft es bei deiner neuen Arbeit? Ich hoffe, du hast dich gut eingelebt.<br><br>
+              <span class="ph">Viele Grüße und bis bald,</span><br>
+              <span style="color:var(--cream);">Kwame</span>
+            </p>
+          </div>
+
+          <div class="sec-label">Analyse — was macht Kwame richtig?</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Element</th><th style="color:var(--green)">Kwames Technik</th></tr>
+              <tr><td class="ct-ind">Anrede</td><td>Lieber Kofi — informell korrekt ✓</td></tr>
+              <tr><td class="ct-ind">Einleitung</td><td>Persönlich: „ich hoffe, es geht dir gut!" ✓</td></tr>
+              <tr><td class="ct-ind">Alle Punkte</td><td>Alle 4 Punkte angesprochen ✓</td></tr>
+              <tr><td class="ct-ind">Konnektoren</td><td>weil, sodass, damit — B1-Niveau ✓</td></tr>
+              <tr><td class="ct-ind">Schluss</td><td>Viele Grüße — informell korrekt ✓</td></tr>
+            </table>
+          </div>
+
+          <div class="success-box">
+            <strong style="color:var(--green);">Zusammenfassung — Schreiben Strategie auf einen Blick:</strong><br><br>
+            1. <strong style="color:var(--wrd);">Aufgabe ZWEIMAL lesen:</strong> Alle Punkte unterstreichen und abhaken.<br><br>
+            2. <strong style="color:var(--irr);">Struktur kennen:</strong> Formell (Sehr geehrte…) oder informell (Liebe/r…).<br><br>
+            3. <strong style="color:var(--mod);">B1-Konnektoren:</strong> weil, obwohl, damit, sodass zeigen dein Niveau.<br><br>
+            4. <strong style="color:var(--pol);">Wörter zählen:</strong> 100–120 Wörter — nicht zu kurz, nicht zu lang.<br><br>
+            5. <strong style="color:var(--wrd);">Korrekturlesen:</strong> Verb Position 2, Großschreibung, Komma, alle Punkte?
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 11 · Lektion 6 · Übung</div><h2 class="lesson-h">Schreiben Strategie — <span style="color:var(--blue)">Abschlusskontrolle</span></h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-5 -->
+
+  </div>
+</div>
+
+<script>
+var TOTAL=6, currentLesson=0, xp=0;
+var synth=window.speechSynthesis, voices=[], deVoice=null;
+function loadVoices(){ voices=synth.getVoices(); deVoice=voices.find(function(v){return v.lang==='de-DE';})||voices.find(function(v){return v.lang.startsWith('de');})||null; }
+if(synth.onvoiceschanged!==undefined){synth.onvoiceschanged=loadVoices;}
+function speakDE(text){ if(!synth)return; synth.cancel(); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; synth.speak(u); }
+function speakSentence(btn,text){ if(!synth)return; synth.cancel(); document.querySelectorAll('.speak-btn.speaking').forEach(function(b){b.classList.remove('speaking');}); btn.classList.add('speaking'); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; u.onend=function(){btn.classList.remove('speaking');}; synth.speak(u); }
+
+var QD={
+  0:[
+    {q:'Wie viel Zeit hat man für die Schreiben-Aufgabe im Goethe B1?',
+     hint:'Denk an den Zeitplan: eine Aufgabe, ein festes Zeitlimit.',
+     opts:['15 Minuten','20 Minuten','30 Minuten','45 Minuten'],
+     ans:2,
+     exp:'Man hat genau 30 Minuten für die Schreiben-Aufgabe. Das ist nicht viel — deshalb ist eine Strategie so wichtig. Plane 2 Minuten für das Lesen, 2–3 Minuten für die Planung, 20 Minuten für das Schreiben und 5 Minuten für das Korrekturlesen.',
+     rule:'30 Minuten für ~100 Wörter. Zeit gut einteilen: Lesen → Planen → Schreiben → Korrekturlesen.'}
+  ],
+  1:[
+    {q:'Welche Anrede ist korrekt für einen formellen Brief an eine unbekannte Firma?',
+     hint:'Du kennst weder den Namen noch das Geschlecht der Person. Welche Formel deckt alle Personen ab?',
+     opts:['Hallo zusammen,','Liebe Firma,','Sehr geehrte Damen und Herren,','Guten Tag,'],
+     ans:2,
+     exp:'„Sehr geehrte Damen und Herren," ist die korrekte formelle Anrede, wenn man den Namen der Person nicht kennt. „Hallo zusammen" ist viel zu informell für einen Geschäftsbrief. „Liebe Firma" existiert nicht als formelle Anrede. „Guten Tag" kann mündlich benutzt werden, gehört aber nicht in einen formellen Brief.',
+     rule:'Formeller Brief: „Sehr geehrte Damen und Herren," (unbekannt) oder „Sehr geehrter Herr / Sehr geehrte Frau [Name]," (bekannt).'}
+  ],
+  2:[
+    {q:'Amina schreibt an ihre Freundin Fatima. Welche Anrede ist richtig?',
+     hint:'Informeller Brief an eine Frau — welches Adjektiv benutzt man vor einem weiblichen Namen?',
+     opts:['Sehr geehrte Fatima,','Hallo Fatima!','Liebe Fatima,','Guten Tag Fatima,'],
+     ans:2,
+     exp:'„Liebe Fatima," ist die korrekte Anrede für einen informellen Brief an eine Frau. „Liebe" ist die weibliche Form — für Männer sagt man „Lieber". „Sehr geehrte" ist formell und klingt seltsam bei einer Freundin. „Hallo Fatima!" ist zu informell für einen Prüfungsbrief. „Guten Tag" gehört nicht in Briefe.',
+     rule:'Informeller Brief: „Liebe [weiblicher Name]," oder „Lieber [männlicher Name]," — das ist die Standardform.'}
+  ],
+  3:[
+    {q:'Kwame schreibt einen Brief und will zeigen, warum er umgezogen ist. Welcher Konnektor passt am besten?',
+     hint:'Du suchst einen Konnektor, der eine Ursache oder einen Grund ausdrückt — das Verb geht ans Ende des Satzes.',
+     opts:['aber','und','weil','dann'],
+     ans:2,
+     exp:'„weil" drückt einen Grund oder eine Ursache aus und ist der typische B1-Konnektor dafür. Nach „weil" steht das Verb am Ende des Satzes (Nebensatz). Beispiel: „Ich bin umgezogen, weil die alte Wohnung zu laut war." „Aber" drückt einen Gegensatz aus. „Und" ist nur eine Verbindung. „Dann" gibt eine zeitliche Reihenfolge an.',
+     rule:'weil + Nebensatz (Verb am Ende) = Grund/Ursache. Zeigt B1-Grammatik sofort. Merke: Komma vor weil!'}
+  ],
+  4:[
+    {q:'Amina hat ihren Brief fertig geschrieben. Er hat 75 Wörter. Was sollte sie tun?',
+     hint:'Denk an die Mindestanzahl von Wörtern und was zu kurze Texte bedeuten.',
+     opts:['Perfekt — einreichen!','Den Brief kürzen, er ist zu lang.','Mehr schreiben — unter 80 Wörter bedeutet Punktabzug.','Das Datum und den Ort löschen, um Platz zu sparen.'],
+     ans:2,
+     exp:'75 Wörter ist zu kurz! Das Ziel sind 100–120 Wörter. Texte unter 80 Wörtern bekommen direkte Punktabzüge beim Inhalt. Amina sollte einen der Aufgabenpunkte ausführlicher beschreiben oder einen weiteren Gedanken hinzufügen. Nicht kürzen (Option B) — das macht es noch schlimmer. Datum und Ort löschen (Option D) ist ein weiterer Fehler.',
+     rule:'Mindestens 80 Wörter — besser 100–120. Zu kurz = Punktabzug. Zähle nach dem Schreiben!'}
+  ],
+  5:[
+    {q:'Kwame liest seinen Brief nochmal durch (Korrekturlesen). Welchen Fehler findet er in „Ich heute in Berlin wohne."?',
+     hint:'Denk an die wichtigste Grammatikregel für deutsche Hauptsätze — wo steht das Verb?',
+     opts:['Das Nomen „Berlin" ist falsch geschrieben.','Das Verb steht falsch — es muss auf Position 2 stehen.','„heute" darf nicht im Brief stehen.','Der Satz braucht ein Komma.'],
+     ans:1,
+     exp:'Der Fehler ist die Wortstellung. Im deutschen Hauptsatz steht das Verb IMMER auf Position 2. Korrekt: „Ich wohne heute in Berlin." (Verb „wohne" auf Position 2, nach dem Subjekt „Ich"). Das ist einer der häufigsten Grammatikfehler im B1 Schreiben — deshalb ist Korrekturlesen so wichtig!',
+     rule:'Hauptsatz: Subjekt (Pos. 1) + Verb (Pos. 2) + Rest. Beim Korrekturlesen: Verb auf Position 2 immer zuerst prüfen!'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">FRAGE '+(s.cur+1)+' VON '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint" style="font-family:\'DM Mono\',monospace;">💡 '+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Nächste Frage →':'Ergebnis anzeigen →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Richtig!':'✗ Nicht ganz'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent='📌 Regel: '+q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' richtig</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfekt!':pct>=60?'Gut gemacht!':'Noch einmal versuchen.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(52,152,219,0.12);border:1px solid var(--blue);border-radius:50px;padding:9px 22px;color:var(--blue);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Modul 11 abschließen →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Zur nächsten Lektion →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">✍️</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Modul 11 abgeschlossen!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">Du kennst jetzt die Struktur formeller und informeller Briefe, hast die 5 wichtigsten Strategien gelernt, weißt wie du alle Aufgabenpunkte beantwortest und kannst dein Niveau mit B1-Konnektoren zeigen. Im B1 Schreiben bist du jetzt vorbereitet.</p><div class="xp-badge">⚡ '+xp+' XP verdient</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Modul 11 abgeschlossen. Weiter üben — jede Schreiben-Aufgabe wird besser!</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Zur Übersicht</button></div>'; localStorage.setItem('dw_mod_b1_11_done','1'); var saved=parseInt(localStorage.getItem('dw_xp')||'0'); localStorage.setItem('dw_xp',saved+xp); }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+<script src="./ai-tutor.js" data-module="b1-11"></script>
+</body>
+</html>
