@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — B1 Modul 12: Sprechen Strategie</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --wrd:#3498db; --irr:#e67e22; --mod:#9b59b6; --pol:#27ae60;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--blue); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--blue); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--blue); color:var(--white); width:100%; }
+  .btn-primary:hover { background:#2980b9; transform:translateY(-2px); box-shadow:0 8px 24px rgba(52,152,219,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--blue); color:var(--blue); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(52,152,219,0.2); }
+  .speak-btn.speaking { background:var(--blue); color:var(--white); }
+  .en-help { background:rgba(52,152,219,0.05); border:1px dashed rgba(52,152,219,0.25); border-radius:10px; margin:12px 0; }
+  .en-help summary { padding:10px 16px; cursor:pointer; font-size:13px; color:var(--blue); font-family:'DM Mono',monospace; letter-spacing:.03em; list-style:none; display:flex; align-items:center; gap:8px; }
+  .en-help summary::-webkit-details-marker { display:none; }
+  .en-help[open] summary { border-bottom:1px dashed rgba(52,152,219,0.2); }
+  .en-help-body { padding:12px 16px; font-size:13px; color:rgba(245,240,232,.7); line-height:1.8; }
+  .en-help-body p { margin-bottom:8px; }
+  .en-help-body p:last-child { margin-bottom:0; }
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-note { font-size:12px; color:var(--gray); line-height:1.6; }
+  .formula-box { background:var(--card2-bg); border:1px solid rgba(52,152,219,0.2); border-radius:14px; padding:20px 22px; margin:14px 0; text-align:center; }
+  .formula-title { font-size:10px; letter-spacing:3px; font-family:'DM Mono',monospace; color:var(--blue); margin-bottom:14px; }
+  .formula-main { font-family:'DM Mono',monospace; font-size:18px; font-weight:700; color:var(--white); line-height:2; }
+  .formula-part { display:inline-block; }
+  .formula-plus { color:var(--gray); margin:0 8px; }
+  .fp-w { color:var(--wrd); }
+  .fp-i { color:var(--irr); }
+  .fp-m { color:var(--mod); }
+  .fp-p { color:var(--pol); }
+  .comp-table { width:100%; border-collapse:collapse; font-size:13px; margin:14px 0; }
+  .comp-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:10px 14px; text-align:left; border-bottom:2px solid rgba(255,255,255,0.1); }
+  .comp-table td { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'DM Mono',monospace; font-size:13px; vertical-align:top; }
+  .comp-table tr:last-child td { border-bottom:none; }
+  .comp-table tr:hover td { background:rgba(255,255,255,0.02); }
+  .ct-ind { color:var(--gold); }
+  .ct-konj { color:var(--wrd); }
+  .comp-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.0; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+  .ctx-grid { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ctx-card { background:var(--card2-bg); border-radius:12px; padding:16px 18px; display:flex; gap:14px; align-items:flex-start; }
+  .ctx-icon { font-size:22px; flex-shrink:0; width:32px; text-align:center; margin-top:2px; }
+  .ctx-title { font-size:13px; font-weight:700; color:var(--cream); margin-bottom:4px; }
+  .ctx-desc { font-size:13px; color:var(--gray); line-height:1.65; margin-bottom:6px; }
+  .ctx-ex { font-family:'DM Mono',monospace; font-size:12px; color:var(--blue); }
+  .ctx-card.c-polite { border:1px solid rgba(39,174,96,0.2); }
+  .ctx-card.c-wish   { border:1px solid rgba(52,152,219,0.2); }
+  .ctx-card.c-cond   { border:1px solid rgba(230,126,34,0.2); }
+  .ctx-card.c-adv    { border:1px solid rgba(155,89,182,0.2); }
+  .wh { color:var(--wrd); font-weight:700; }
+  .ih { color:var(--irr); font-weight:700; }
+  .mh { color:var(--mod); font-weight:700; }
+  .ph { color:var(--pol); font-weight:700; }
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Mono',monospace; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--blue); background:rgba(52,152,219,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(52,152,219,0.1); border-radius:8px; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(52,152,219,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.2); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(52,152,219,0.12); border:1px solid var(--blue); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--blue); font-size:18px; margin:18px 0; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .lesson-h{font-size:22px;} .wr-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
+<div id="screen-overview" class="screen active">
+  <div class="top-nav">
+    <div class="logo">Deutsch<span>Weg</span></div>
+    <div class="mod-tag">B1 · MODUL 12</div>
+  </div>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">B1 · Prüfungsstrategie</div>
+    <h1 class="lesson-h" style="font-size:36px;">Sprechen <span style="color:var(--blue)">Strategie</span></h1>
+    <p class="body-text">Die Sprechen-Prüfung im Goethe B1 macht viele Lernende nervös — aber mit der richtigen Strategie ist sie die beste Chance, Punkte zu gewinnen. Du kannst nicht nachschlagen oder korrigieren. Du musst einfach sprechen. Dieses Modul gibt dir Struktur, Phrasen und Selbstvertrauen.</p>
+
+    <details class="en-help">
+      <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+      <div class="en-help-body">
+        <p>The Goethe B1 speaking exam has three tasks: a 4-minute monologue on a given topic, a 3-minute collaborative planning task with the examiner, and a 3-minute clarification task where you ask about things you don't understand. This module teaches you the structure, phrases, and strategies to perform confidently in all three.</p>
+      </div>
+    </details>
+
+    <div class="info-box"><strong style="color:var(--gold);">Lernziele dieses Moduls:</strong><br><br>
+      ✦ Du kennst die 3 Sprechen-Aufgaben und ihre Struktur<br>
+      ✦ Du kannst strategisch und strukturiert sprechen<br>
+      ✦ Du hast Phrasen für jede Aufgabe auswendig gelernt<br>
+      ✦ Du weißt, wie du mit Pausen und fehlenden Wörtern umgehst<br>
+      ✦ Du vermeidest die typischen Fehler afrikanischer Lernender
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">📋</div><div><div class="lc-title">Lektion 1 — Die 3 Aufgaben im Überblick</div><div class="lc-desc">Was wird getestet? Zeitplan, Bewertungskriterien, was der Prüfer wirklich beobachtet.</div></div><div class="lc-tag" style="color:var(--blue);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">🎙️</div><div><div class="lc-title">Lektion 2 — Aufgabe 1: Über ein Thema sprechen</div><div class="lc-desc">4 Minuten Monolog. Einleitung, Hauptteil, Schluss. Alle Stichpunkte ansprechen.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">🤝</div><div><div class="lc-title">Lektion 3 — Aufgabe 2: Gemeinsam planen</div><div class="lc-desc">3 Minuten Dialog. Vorschläge machen, reagieren, Konjunktiv II zeigen.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">❓</div><div><div class="lc-title">Lektion 4 — Aufgabe 3: Um Erklärung bitten</div><div class="lc-desc">3 Minuten. Höflich nachfragen, Konjunktiv II, wenn du etwas nicht verstehst.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">💡</div><div><div class="lc-title">Lektion 5 — 5 Strategien für die Prüfung</div><div class="lc-desc">Weitersprechen, Fehler korrigieren, Pausen nutzen, Blickkontakt halten.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
+      <div class="lesson-card" onclick="goLesson(5)"><div class="lc-icon">🌍</div><div><div class="lc-title">Lektion 6 — Amina &amp; Kwame in der Prüfung</div><div class="lc-desc">3 echte Sprechen-Situationen: Sport, Geburtstag, Krankmeldung.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 6</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ LESSON SCREEN ═══════════════════════════════ -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lektionen</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--blue);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- ── LEKTION 1: Die 3 Aufgaben im Überblick ── -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 12 · Lektion 1 von 6</div>
+          <h2 class="lesson-h">Die <span style="color:var(--wrd)">3 Aufgaben</span> im Überblick</h2>
+          <p class="body-text">Die Sprechen-Prüfung im Goethe B1 besteht aus <strong style="color:var(--wrd);">3 Aufgaben</strong>. Du machst sie zusammen mit einem anderen Kandidaten oder dem Prüfer. Der Prüfer beobachtet nicht nur deine Grammatik — er beobachtet wie du kommunizierst.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>The Goethe B1 speaking exam has three tasks completed with a partner (usually another candidate) in front of an examiner. Task 1: give a 4-minute presentation on a topic with bullet points. Task 2: plan something together for 3 minutes. Task 3: ask each other about German words you don't understand for 3 minutes. The examiner assesses communication, fluency, and interaction — not just grammar.</p>
+            </div>
+          </details>
+
+          <div class="formula-box">
+            <div class="formula-title">SPRECHEN-PRÜFUNG GOETHE B1</div>
+            <div class="formula-main">
+              <span class="formula-part fp-w">4 Min</span>
+              <span class="formula-plus">+</span>
+              <span class="formula-part fp-i">3 Min</span>
+              <span class="formula-plus">+</span>
+              <span class="formula-part fp-p">3 Min</span>
+            </div>
+            <div style="font-size:12px;color:var(--gray);margin-top:8px;">Thema sprechen · Gemeinsam planen · Erklärung bitten</div>
+          </div>
+
+          <div class="sec-label">Die 3 Aufgaben</div>
+          <div class="ctx-grid">
+            <div class="ctx-card c-wish">
+              <div class="ctx-icon">🎙️</div>
+              <div>
+                <div class="ctx-title">Aufgabe 1 — Über ein Thema sprechen</div>
+                <div class="ctx-desc">Du bekommst ein Thema mit Stichpunkten. Sprich 4 Minuten strukturiert darüber.</div>
+                <div class="ctx-ex">→ Einleitung · Hauptteil · Schluss</div>
+              </div>
+            </div>
+            <div class="ctx-card c-cond">
+              <div class="ctx-icon">🤝</div>
+              <div>
+                <div class="ctx-title">Aufgabe 2 — Gemeinsam planen</div>
+                <div class="ctx-desc">Du planst etwas zusammen mit dem Prüfer. Mach Vorschläge und reagiere auf Vorschläge.</div>
+                <div class="ctx-ex">→ „Wir könnten…" · „Was hältst du von…?"</div>
+              </div>
+            </div>
+            <div class="ctx-card c-polite">
+              <div class="ctx-icon">❓</div>
+              <div>
+                <div class="ctx-title">Aufgabe 3 — Um Erklärung bitten</div>
+                <div class="ctx-desc">Du verstehst ein deutsches Wort nicht und fragst höflich nach. Benutze Konjunktiv II.</div>
+                <div class="ctx-ex">→ „Könnten Sie das bitte erklären?"</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">Was bewertet der Prüfer?</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Kriterium</th><th>Was bedeutet das?</th></tr>
+              <tr><td class="ct-ind">Kommunikation</td><td>Wirst du verstanden? Kannst du dich ausdrücken?</td></tr>
+              <tr><td class="ct-ind">Flüssigkeit</td><td>Sprichst du ohne zu lange Pausen?</td></tr>
+              <tr><td class="ct-ind">Interaktion</td><td>Reagierst du auf den Prüfer / Partner?</td></tr>
+              <tr><td class="ct-ind">Formale Richtigkeit</td><td>Grammatik, Aussprache, Wortschatz</td></tr>
+            </table>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue);">📌 Wichtig — Kommunikation zuerst!</strong><br><br>
+            Der Prüfer bewertet NICHT nur Grammatik.<br>
+            Ein freundliches Lächeln, Blickkontakt und Konjunktiv II geben sofort einen besseren Eindruck.<br>
+            Sprich — auch wenn du Fehler machst!
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 12 · Lektion 1 · Übung</div><h2 class="lesson-h">Die 3 Aufgaben — <span style="color:var(--wrd)">Übung</span></h2><div id="qz-0"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-0 -->
+
+    <!-- ── LEKTION 2: Aufgabe 1 — Über ein Thema sprechen ── -->
+    <div id="lesson-1" class="lesson-pane">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 12 · Lektion 2 von 6</div>
+          <h2 class="lesson-h">Aufgabe 1 — <span style="color:var(--irr)">Über ein Thema sprechen</span></h2>
+          <p class="body-text">Du bekommst eine Karte mit einem Thema und 3–4 Stichpunkten. Du hast eine kurze Vorbereitungszeit und sprichst dann <strong style="color:var(--irr);">4 Minuten</strong> darüber. Struktur ist alles — ohne Struktur redest du im Kreis.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>You receive a card with a topic and bullet points. After a short preparation time, you speak for 4 minutes. Structure your talk with an introduction (say what you'll talk about), a main body (address every bullet point, give opinions and reasons), and a conclusion (summarise). Using connectors like "einerseits…andererseits" and opinion phrases shows B1 level immediately.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Struktur des 4-Minuten-Vortrags</div>
+          <div class="comp-wrap">
+            <p style="font-family:'DM Mono',monospace;font-size:13px;color:var(--cream);line-height:2.3;">
+              <span style="color:var(--gray);font-size:11px;">EINLEITUNG (~30 Sek.):</span><br>
+              <span class="ih">Ich möchte heute über [Thema] sprechen.</span><br>
+              <span class="ih">Das Thema [X] ist für mich sehr wichtig, weil...</span><br><br>
+              <span style="color:var(--gray);font-size:11px;">HAUPTTEIL (~3 Min.) — alle Stichpunkte ansprechen:</span><br>
+              <span class="wh">Meiner Meinung nach...</span><br>
+              <span class="wh">Ich bin der Meinung, dass...</span><br>
+              <span class="wh">Einerseits... andererseits...</span><br>
+              <span class="wh">Ein wichtiger Aspekt ist...</span><br>
+              <span class="wh">Was mich besonders interessiert ist...</span><br><br>
+              <span style="color:var(--gray);font-size:11px;">SCHLUSS (~30 Sek.):</span><br>
+              <span class="ph">Zusammenfassend kann ich sagen...</span><br>
+              <span class="ph">Zum Schluss möchte ich sagen, dass...</span>
+            </p>
+          </div>
+
+          <div class="sec-label">Phrasen für Aufgabe 1 — auswendig lernen!</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--irr);">EINLEITUNG</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich möchte heute über das Thema Sport sprechen.</div>
+                <div class="ex-note">Klarer Einstieg — zeigt sofort Struktur und Selbstvertrauen.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich möchte heute über das Thema Sport sprechen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--wrd);">MEINUNG</div>
+              <div style="flex:1;">
+                <div class="ex-de">Einerseits ist Sport sehr gesund, andererseits braucht man viel Zeit.</div>
+                <div class="ex-note">„Einerseits…andererseits" — zeigt sofort B1-Niveau.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Einerseits ist Sport sehr gesund, andererseits braucht man viel Zeit.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--pol);">SCHLUSS</div>
+              <div style="flex:1;">
+                <div class="ex-de">Zusammenfassend kann ich sagen, dass Sport sehr wichtig für die Gesundheit ist.</div>
+                <div class="ex-note">Strukturierter Schluss — gibt dem Vortrag ein professionelles Ende.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Zusammenfassend kann ich sagen, dass Sport sehr wichtig für die Gesundheit ist.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ OHNE STRUKTUR</div>
+              <div class="wr-word">„Sport ist gut. Ich mag Fußball. Fußball ist populär in Afrika. Laufen ist auch gut..."</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ MIT STRUKTUR</div>
+              <div class="wr-word">„Ich möchte über Sport sprechen. Meiner Meinung nach ist Fußball besonders wichtig, weil..."</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Mit Struktur klingt derselbe Inhalt viel professioneller und gibt mehr Punkte.</p>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 12 · Lektion 2 · Übung</div><h2 class="lesson-h">Aufgabe 1 — <span style="color:var(--irr)">Übung</span></h2><div id="qz-1"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-1 -->
+
+    <!-- ── LEKTION 3: Aufgabe 2 — Gemeinsam planen ── -->
+    <div id="lesson-2" class="lesson-pane">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 12 · Lektion 3 von 6</div>
+          <h2 class="lesson-h">Aufgabe 2 — <span style="color:var(--mod)">Gemeinsam planen</span></h2>
+          <p class="body-text">In Aufgabe 2 planst du etwas zusammen mit dem Prüfer oder deinem Partner. Du sollst <strong style="color:var(--mod);">Vorschläge machen</strong>, auf Vorschläge reagieren und zu einer gemeinsamen Lösung kommen. Konjunktiv II ist hier Pflicht — er zeigt sofort B1-Niveau.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>In Task 2 you plan something together (e.g., organise a farewell party, plan a class trip). You need to make suggestions, respond to suggestions, agree or politely disagree, and come to a joint decision. Using Konjunktiv II ("Wir könnten…", "Es wäre gut, wenn…") shows grammar range and earns points immediately.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Nützliche Phrasen für Aufgabe 2</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--mod);">VORSCHLAG</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="mh">Wir könnten</span> die Feier im Park machen.</div>
+                <div class="ex-note">Konjunktiv II von können — der wichtigste Vorschlag-Ausdruck!</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wir könnten die Feier im Park machen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--mod);">VORSCHLAG</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich <span class="mh">schlage vor</span>, dass wir Musik organisieren.</div>
+                <div class="ex-note">Formelle Vorschlagsstruktur — sehr gut für die Prüfung.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich schlage vor, dass wir Musik organisieren.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--mod);">FRAGEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Was <span class="mh">hältst du von</span> einer Grillparty?</div>
+                <div class="ex-note">Den Partner einbeziehen — zeigt gute Interaktion.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Was hältst du von einer Grillparty?')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--pol);">ZUSTIMMEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das <span class="ph">klingt gut!</span> / <span class="ph">Einverstanden!</span> / <span class="ph">Das ist eine gute Idee.</span></div>
+                <div class="ex-note">Positiv reagieren — fördert die Interaktion.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das klingt gut! Einverstanden!')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(192,57,43,0.12);color:var(--red);">ABLEHNEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich bin <span style="color:var(--red);font-weight:700;">nicht sicher</span>, ob das eine gute Idee ist, weil...</div>
+                <div class="ex-note">Höflich ablehnen — nie direkt „Nein" sagen in der Prüfung!</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich bin nicht sicher, ob das eine gute Idee ist.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong style="color:var(--blue);">📌 Konjunktiv II in Aufgabe 2!</strong><br><br>
+            „Wir könnten…", „Es wäre gut, wenn…", „Ich würde vorschlagen…"<br>
+            Diese Formen zeigen sofort B1-Niveau.<br>
+            Indikativ (Wir machen…, Ich will…) klingt zu direkt und zeigt kein grammatisches Niveau.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 12 · Lektion 3 · Übung</div><h2 class="lesson-h">Gemeinsam planen — <span style="color:var(--mod)">Übung</span></h2><div id="qz-2"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-2 -->
+
+    <!-- ── LEKTION 4: Aufgabe 3 — Um Erklärung bitten ── -->
+    <div id="lesson-3" class="lesson-pane">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 12 · Lektion 4 von 6</div>
+          <h2 class="lesson-h">Aufgabe 3 — <span style="color:var(--wrd)">Um Erklärung bitten</span></h2>
+          <p class="body-text">In Aufgabe 3 bekommst du eine Karte mit einem deutschen Wort oder Ausdruck. Du verstehst ihn nicht und bittest deinen Partner höflich um eine Erklärung. Auch dein Partner tut dasselbe. <strong style="color:var(--wrd);">Konjunktiv II</strong> ist hier besonders wichtig — er macht deine Fragen höflicher.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>In Task 3, each candidate receives a card with a German word or expression they pretend not to know. You ask your partner to explain it, and they explain it using descriptions, examples, or synonyms — without using the word itself. Then you swap. Key skill: asking politely using Konjunktiv II ("Könnten Sie…?", "Würden Sie…?") and explaining without the exact word.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Phrasen für Aufgabe 3 — höflich fragen</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--wrd);">ERKLÄRUNG</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="wh">Könnten</span> Sie das bitte erklären?</div>
+                <div class="ex-note">Konjunktiv II von können — höflichste Form zum Nachfragen.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Könnten Sie das bitte erklären?')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--wrd);">BEDEUTUNG</div>
+              <div style="flex:1;">
+                <div class="ex-de">Was bedeutet „Krankmeldung" genau?</div>
+                <div class="ex-note">Direkte Frage nach der Bedeutung — kurz und klar.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Was bedeutet Krankmeldung genau?')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--wrd);">WIEDERHOLUNG</div>
+              <div style="flex:1;">
+                <div class="ex-de"><span class="wh">Könnten</span> Sie das bitte wiederholen?</div>
+                <div class="ex-note">Wenn du zu schnell gesprochen hast — immer höflich bitten.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Könnten Sie das bitte wiederholen?')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--wrd);">VERSTEHEN</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich habe das nicht ganz verstanden. <span class="wh">Würden</span> Sie das bitte langsamer sagen?</div>
+                <div class="ex-note">Zwei Sätze kombinieren — zeigt Kommunikationsfähigkeit.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ich habe das nicht ganz verstanden. Würden Sie das bitte langsamer sagen?')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">So erklärt man ein Wort ohne es zu sagen</div>
+          <div class="ctx-card c-wish" style="margin-bottom:10px;">
+            <div class="ctx-icon">💡</div>
+            <div>
+              <div class="ctx-title">Beispiel: „Krankmeldung" erklären</div>
+              <div class="ctx-desc">Das ist ein Dokument, das man vom Arzt bekommt, wenn man krank ist und nicht arbeiten kann. Man gibt es dem Chef oder dem Arbeitgeber.</div>
+              <div class="ctx-ex">→ Umschreiben ohne das Wort selbst zu benutzen!</div>
+            </div>
+          </div>
+
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">✗ ZU DIREKT</div>
+              <div class="wr-word">„Erklär mir das!"</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">✓ HÖFLICH</div>
+              <div class="wr-word">„Könnten Sie das bitte erklären?"</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--gray);margin:-6px 0 14px;line-height:1.65;">Imperativ klingt unhöflich — Konjunktiv II zeigt Respekt und B1-Niveau gleichzeitig.</p>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 12 · Lektion 4 · Übung</div><h2 class="lesson-h">Aufgabe 3 — <span style="color:var(--wrd)">Übung</span></h2><div id="qz-3"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-3 -->
+
+    <!-- ── LEKTION 5: 5 Strategien & Fehler ── -->
+    <div id="lesson-4" class="lesson-pane">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 12 · Lektion 5 von 6</div>
+          <h2 class="lesson-h">5 Strategien für die <span style="color:var(--irr)">Prüfung</span></h2>
+          <p class="body-text">Diese fünf Strategien helfen dir, ruhig, strukturiert und selbstsicher zu sprechen — auch wenn du nervös bist oder ein Wort vergisst. Lerne sie auswendig, damit du in der Prüfung nicht nachdenken musst.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>Five strategies: (1) Always keep talking — silence costs marks; describe around unknown words. (2) Use Konjunktiv II to show B1 level. (3) Correct yourself calmly — examiners appreciate self-correction. (4) Maintain eye contact — in German culture this signals confidence and respect. (5) Use filler words during pauses rather than staying silent.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Strategie 1 — Immer weitersprechen!</div>
+          <div class="ctx-card c-wish" style="margin-bottom:10px;">
+            <div class="ctx-icon">🗣️</div>
+            <div>
+              <div class="ctx-title">Schweigen = Punktabzug</div>
+              <div class="ctx-desc">Wenn du ein Wort nicht weißt — umschreibe es! Das zeigt sogar Kommunikationskompetenz.</div>
+              <div class="ctx-ex">→ „Das Ding, womit man…" · „Eine Art von…" · „Das Gegenteil von…"</div>
+            </div>
+          </div>
+
+          <div class="sec-label">Strategie 2 — Konjunktiv II benutzen</div>
+          <div class="ctx-card c-cond" style="margin-bottom:10px;">
+            <div class="ctx-icon">⚡</div>
+            <div>
+              <div class="ctx-title">Sofort B1-Niveau zeigen</div>
+              <div class="ctx-desc">Konjunktiv II in Vorschlägen, Bitten und Bedingungen signalisiert dem Prüfer direkt dein Niveau.</div>
+              <div class="ctx-ex">→ „Ich würde vorschlagen…" · „Wir könnten…" · „Es wäre gut, wenn…"</div>
+            </div>
+          </div>
+
+          <div class="sec-label">Strategie 3 — Auf Fehler reagieren</div>
+          <div class="ctx-card c-adv" style="margin-bottom:10px;">
+            <div class="ctx-icon">✏️</div>
+            <div>
+              <div class="ctx-title">Ruhig korrigieren — Prüfer mögen das!</div>
+              <div class="ctx-desc">Wenn du einen Fehler merkst, korrigiere dich einfach. Das zeigt Sprachbewusstsein.</div>
+              <div class="ctx-ex">→ „Ich meine…" · „Also, ich wollte sagen…" · „Entschuldigung, ich meine…"</div>
+            </div>
+          </div>
+
+          <div class="sec-label">Strategie 4 — Blickkontakt halten</div>
+          <div class="ctx-card c-polite" style="margin-bottom:10px;">
+            <div class="ctx-icon">👀</div>
+            <div>
+              <div class="ctx-title">In Deutschland: Blickkontakt = Respekt</div>
+              <div class="ctx-desc">Viele afrikanische Lernende schauen nach unten aus Respekt — in Deutschland bedeutet das Unsicherheit. Schaue den Prüfer freundlich an.</div>
+              <div class="ctx-ex">→ Blickkontakt + Lächeln = sofort positiver Eindruck</div>
+            </div>
+          </div>
+
+          <div class="sec-label">Strategie 5 — Pausen überbrücken</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(201,168,76,0.12);color:var(--gold);">FÜLLWÖRTER</div>
+              <div style="flex:1;">
+                <div class="ex-de">Also... / Hmm, ich überlege... / Das ist eine interessante Frage...</div>
+                <div class="ex-note">Kurze Pausen sind normal — Füllwörter überbrücken sie professionell.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Also, das ist eine interessante Frage. Ich überlege kurz.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Häufige Fehler afrikanischer Lernender</div>
+          <div class="wr-grid">
+            <div class="wr-wrong"><div class="wr-label">✗ FEHLER 1</div><div class="wr-word">Zu leise sprechen</div></div>
+            <div class="wr-right"><div class="wr-label">✓ LÖSUNG</div><div class="wr-word">Laut und deutlich sprechen!</div></div>
+          </div>
+          <div class="wr-grid">
+            <div class="wr-wrong"><div class="wr-label">✗ FEHLER 2</div><div class="wr-word">„du" zum Prüfer sagen</div></div>
+            <div class="wr-right"><div class="wr-label">✓ LÖSUNG</div><div class="wr-word">Immer „Sie" zum Prüfer!</div></div>
+          </div>
+          <div class="wr-grid">
+            <div class="wr-wrong"><div class="wr-label">✗ FEHLER 3</div><div class="wr-word">Schweigen wenn ein Wort fehlt</div></div>
+            <div class="wr-right"><div class="wr-label">✓ LÖSUNG</div><div class="wr-word">Umschreiben: „Das Ding, womit man…"</div></div>
+          </div>
+          <div class="wr-grid">
+            <div class="wr-wrong"><div class="wr-label">✗ FEHLER 4</div><div class="wr-word">Kein Blickkontakt</div></div>
+            <div class="wr-right"><div class="wr-label">✓ LÖSUNG</div><div class="wr-word">Prüfer freundlich ansehen</div></div>
+          </div>
+
+          <div class="danger-box"><strong style="color:var(--red);">⚠️ Prüfungstipp:</strong><br><br>
+            Der häufigste Fehler in Nairobi: Zu kurze Antworten!<br>
+            „Ja." oder „Ich mag Sport." reichen nicht.<br>
+            Erkläre immer WARUM: „Ich mag Sport, weil es gesund ist und weil man dabei Freunde treffen kann."
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 12 · Lektion 5 · Übung</div><h2 class="lesson-h">5 Strategien — <span style="color:var(--irr)">Übung</span></h2><div id="qz-4"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-4 -->
+
+    <!-- ── LEKTION 6: Amina & Kwame in der Prüfung ── -->
+    <div id="lesson-5" class="lesson-pane">
+      <div class="step active" id="l5-s0">
+        <div class="card">
+          <div class="concept-tag">B1 · Modul 12 · Lektion 6 von 6</div>
+          <h2 class="lesson-h">Amina &amp; Kwame — <span style="color:var(--blue)">Praxisübung</span></h2>
+          <p class="body-text">Amina und Kwame machen die drei Sprechen-Aufgaben. Lies ihre Musterlösungen und achte darauf, wie sie alle Strategien aus diesem Modul anwenden.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Brauchst du Hilfe? Klick hier</summary>
+            <div class="en-help-body">
+              <p>Three real exam-style speaking situations: (1) Kwame gives a structured monologue about sport and health in Africa using connectors and opinion phrases. (2) Amina and the examiner plan a birthday party using Konjunktiv II suggestions. (3) Amina asks about the word "Krankmeldung" using polite Konjunktiv II questions and Kwame explains it by describing it.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Situation 1 — Kwame: „Sport und Gesundheit in Afrika"</div>
+          <div class="info-box">
+            <strong style="color:var(--gold);">Thema:</strong> Sport und Gesundheit in Afrika<br>
+            <strong style="color:var(--gold);">Stichpunkte:</strong> Fußball · Laufen · Ernährung
+          </div>
+          <div class="comp-wrap">
+            <p style="font-family:'DM Mono',monospace;font-size:13px;color:var(--cream);line-height:2.0;">
+              <span class="ih">Ich möchte heute über das Thema Sport und Gesundheit sprechen.</span> Dieses Thema ist für mich sehr interessant, weil ich selbst gern Sport mache.<br><br>
+              <span class="wh">Meiner Meinung nach</span> ist Fußball der beliebteste Sport in Afrika. <span class="wh">Einerseits</span> verbindet er Menschen aus verschiedenen Ländern, <span class="wh">andererseits</span> braucht man nur einen Ball — das macht ihn sehr zugänglich.<br><br>
+              <span class="wh">Ein weiterer wichtiger Aspekt ist</span> das Laufen. In Kenia und Äthiopien zum Beispiel sind Läufer weltberühmt. Laufen ist kostenlos und sehr gesund.<br><br>
+              Was die Ernährung betrifft: traditionelle afrikanische Gerichte sind oft sehr gesund, weil sie viel Gemüse und wenig Zucker enthalten.<br><br>
+              <span class="ph">Zusammenfassend kann ich sagen</span>, dass Sport und gesunde Ernährung in Afrika eine große Rolle spielen und dass wir davon viel lernen können.
+            </p>
+          </div>
+
+          <div class="sec-label">Situation 2 — Aminas Geburtstag planen</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--wrd);">KWAME</div>
+              <div style="flex:1;">
+                <div class="ex-de">Für Aminas Geburtstag — <span class="mh">wir könnten</span> eine Grillparty machen.</div>
+                <div class="ex-note">Vorschlag mit Konjunktiv II — zeigt sofort B1-Niveau.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Für Aminas Geburtstag — wir könnten eine Grillparty machen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--mod);">PRÜFER</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das klingt gut! Was hältst du von Musik?</div>
+                <div class="ex-note">Prüfer reagiert und stellt Gegenfrage — Kwame muss reagieren!</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das klingt gut! Was hältst du von Musik?')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--wrd);">KWAME</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ja, <span class="mh">es wäre schön</span>, wenn wir afrikanische Musik spielen <span class="mh">könnten</span>. Ich bin nicht sicher, ob alle das mögen — aber wir können fragen.</div>
+                <div class="ex-note">Zustimmung + Vorbehalt + Lösungsvorschlag — perfekte Interaktion!</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ja, es wäre schön, wenn wir afrikanische Musik spielen könnten.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="sec-label">Situation 3 — Amina fragt nach „Krankmeldung"</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--mod);">AMINA</div>
+              <div style="flex:1;">
+                <div class="ex-de">Ich habe hier das Wort „Krankmeldung". <span class="wh">Könntest</span> du mir erklären, was das bedeutet?</div>
+                <div class="ex-note">Höfliche Bitte mit Konjunktiv II — genau richtig für Aufgabe 3.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Könntest du mir erklären, was das bedeutet?')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--wrd);">KWAME</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das ist ein Dokument vom Arzt. Wenn man krank ist und nicht arbeiten kann, bekommt man dieses Papier und gibt es dem Arbeitgeber.</div>
+                <div class="ex-note">Erklärung ohne das Wort selbst — Umschreibung auf B1-Niveau.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das ist ein Dokument vom Arzt. Wenn man krank ist und nicht arbeiten kann, bekommt man dieses Papier und gibt es dem Arbeitgeber.')">🔊</button>
+            </div>
+          </div>
+
+          <div class="success-box">
+            <strong style="color:var(--green);">Zusammenfassung — Sprechen Strategie auf einen Blick:</strong><br><br>
+            1. <strong style="color:var(--wrd);">Aufgabe 1:</strong> Einleitung → alle Stichpunkte → Schluss. Meinungsphrasen benutzen.<br><br>
+            2. <strong style="color:var(--irr);">Aufgabe 2:</strong> „Wir könnten…" / „Ich schlage vor…" / „Was hältst du von…?"<br><br>
+            3. <strong style="color:var(--mod);">Aufgabe 3:</strong> „Könnten Sie…?" / „Was bedeutet…?" — Konjunktiv II zeigt Höflichkeit.<br><br>
+            4. <strong style="color:var(--pol);">Immer sprechen:</strong> Umschreiben wenn ein Wort fehlt. Nie schweigen!<br><br>
+            5. <strong style="color:var(--wrd);">Blickkontakt + Sie:</strong> Prüfer ansehen, immer „Sie" benutzen.
+          </div>
+        </div>
+        <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Weiter →</button></div>
+      </div>
+      <div class="step" id="l5-s1">
+        <div class="card"><div class="concept-tag">B1 · Modul 12 · Lektion 6 · Übung</div><h2 class="lesson-h">Sprechen Strategie — <span style="color:var(--blue)">Abschlusskontrolle</span></h2><div id="qz-5"></div></div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(5,1)">← Zurück</button></div>
+      </div>
+    </div><!-- /lesson-5 -->
+
+  </div>
+</div>
+
+<script>
+var TOTAL=6, currentLesson=0, xp=0;
+var synth=window.speechSynthesis, voices=[], deVoice=null;
+function loadVoices(){ voices=synth.getVoices(); deVoice=voices.find(function(v){return v.lang==='de-DE';})||voices.find(function(v){return v.lang.startsWith('de');})||null; }
+if(synth.onvoiceschanged!==undefined){synth.onvoiceschanged=loadVoices;}
+function speakDE(text){ if(!synth)return; synth.cancel(); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; synth.speak(u); }
+function speakSentence(btn,text){ if(!synth)return; synth.cancel(); document.querySelectorAll('.speak-btn.speaking').forEach(function(b){b.classList.remove('speaking');}); btn.classList.add('speaking'); var u=new SpeechSynthesisUtterance(text); u.lang='de-DE'; u.rate=0.85; if(deVoice)u.voice=deVoice; u.onend=function(){btn.classList.remove('speaking');}; synth.speak(u); }
+
+var QD={
+  0:[
+    {q:'Wie lange dauert Aufgabe 1 (Über ein Thema sprechen) im Goethe B1 Sprechen?',
+     hint:'Denk an den Zeitplan: drei Aufgaben mit unterschiedlicher Dauer.',
+     opts:['2 Minuten','3 Minuten','4 Minuten','5 Minuten'],
+     ans:2,
+     exp:'Aufgabe 1 dauert 4 Minuten — das ist die längste Aufgabe. Du sprichst einen Monolog über ein Thema mit Stichpunkten. Aufgabe 2 (Gemeinsam planen) und Aufgabe 3 (Um Erklärung bitten) dauern jeweils 3 Minuten. Insgesamt hat die Sprechen-Prüfung also 10 Minuten aktive Sprechzeit.',
+     rule:'Aufgabe 1: 4 Minuten Monolog. Aufgabe 2 + 3: je 3 Minuten. Insgesamt 10 Minuten Sprechen.'}
+  ],
+  1:[
+    {q:'Kwame beginnt seinen 4-Minuten-Vortrag über Sport. Welcher Satz ist die beste Einleitung?',
+     hint:'Eine gute Einleitung nennt das Thema klar und zeigt Struktur — suche die strukturierteste Formulierung.',
+     opts:['Sport ist gut für die Gesundheit.','Ja, ich mag Sport sehr.','Ich möchte heute über das Thema Sport und Gesundheit sprechen.','Fußball ist in Afrika populär.'],
+     ans:2,
+     exp:'„Ich möchte heute über das Thema Sport und Gesundheit sprechen." ist die beste Einleitung. Sie nennt das Thema explizit und signalisiert dem Prüfer sofort eine strukturierte Präsentation. Option A und D sind Behauptungen ohne Einleitung — direkt ins Thema zu springen zeigt keine Struktur. Option B klingt zu informell und unpräzise.',
+     rule:'Einleitung Aufgabe 1: „Ich möchte heute über [Thema] sprechen." — immer das Thema nennen, Struktur zeigen.'}
+  ],
+  2:[
+    {q:'Amina und der Prüfer planen eine Feier. Was sagt Amina, um einen Vorschlag zu machen?',
+     hint:'In Aufgabe 2 zeigt Konjunktiv II sofort B1-Niveau. Welche Option benutzt Konjunktiv II?',
+     opts:['Wir machen eine Party im Park.','Ich will Musik haben.','Wir könnten die Feier im Park organisieren.','Macht eine Party!'],
+     ans:2,
+     exp:'„Wir könnten die Feier im Park organisieren." ist korrekt — könnten ist Konjunktiv II von können und zeigt sofort B1-Niveau. Option A (machen) ist Indikativ — korrekt aber zeigt kein Grammatikniveau. Option B (will) klingt direkt und etwas unhöflich. Option D ist ein Imperativ — völlig unangemessen in der Prüfung.',
+     rule:'Aufgabe 2 — Vorschläge: „Wir könnten…" / „Ich würde vorschlagen…" / „Es wäre gut, wenn…" — immer Konjunktiv II!'}
+  ],
+  3:[
+    {q:'Kwame versteht das Wort „Überstunden" nicht. Wie fragt er höflich nach?',
+     hint:'Aufgabe 3 erfordert höfliche Sprache — Konjunktiv II macht Bitten höflicher als Indikativ oder Imperativ.',
+     opts:['Was ist das?','Erklär mir das!','Könnten Sie mir erklären, was „Überstunden" bedeutet?','Ich verstehe nicht.'],
+     ans:2,
+     exp:'„Könnten Sie mir erklären, was „Überstunden" bedeutet?" ist die beste Formulierung. „Könnten" ist Konjunktiv II von können — das macht die Bitte höflich und zeigt B1-Grammatik. Option A ist zu kurz und klingt ungeduldig. Option B ist ein direkter Imperativ — unhöflich. Option D ist eine Aussage, keine Frage — man wartet auf keine Antwort.',
+     rule:'Aufgabe 3: „Könnten Sie…?" / „Würden Sie…?" — Konjunktiv II für höfliche Nachfragen. Nie Imperativ benutzen!'}
+  ],
+  4:[
+    {q:'Amina kennt das Wort „Pendler" nicht. Sie sagt: „Das Ding, mit dem man jeden Tag zur Arbeit fährt?" Was macht sie hier?',
+     hint:'Denk an Strategie 1 — was tut man, wenn man ein Wort nicht kennt?',
+     opts:['Sie macht einen Grammatikfehler.','Sie benutzt den falschen Kasus.','Sie umschreibt das Wort — das ist richtig!','Sie sollte schweigen und nachdenken.'],
+     ans:2,
+     exp:'Amina umschreibt das Wort — das ist genau die richtige Strategie! Wenn man ein Wort nicht kennt, beschreibt man es mit anderen Wörtern. Das zeigt dem Prüfer Kommunikationskompetenz. Schweigen (Option D) ist das Schlechteste, was man tun kann. Umschreiben ist besser als schweigen — der Prüfer versteht, was gemeint ist, und sieht die Fähigkeit zur Kommunikation.',
+     rule:'Strategie 1: Immer weitersprechen! Unbekannte Wörter umschreiben: „Das Ding, womit man…" / „Eine Art von…"'}
+  ],
+  5:[
+    {q:'Was ist der wichtigste Unterschied zwischen „du" und „Sie" in der Sprechen-Prüfung?',
+     hint:'Denk daran: Wer ist der Prüfer? In welchem Kontext findet die Prüfung statt?',
+     opts:['„du" ist höflicher als „Sie".','„Sie" benutzt man nur in Briefen, nicht im Gespräch.','Den Prüfer spricht man immer mit „Sie" an — nie mit „du".','„du" ist okay, wenn man nervös ist.'],
+     ans:2,
+     exp:'Den Prüfer spricht man IMMER mit „Sie" an — das ist eine der wichtigsten Regeln. „Sie" zeigt Respekt und ist in offiziellen Situationen wie einer Prüfung obligatorisch. „du" zu einem Prüfer sagen ist ein schwerer Höflichkeitsfehler und gibt direkte Punktabzüge. Nervosität ist keine Ausrede — „Sie" muss automatisch sein.',
+     rule:'Prüfer = immer „Sie". Auch wenn der Prüfer jung ist oder freundlich wirkt. Das ist in der deutschen Prüfungskultur nicht verhandelbar.'}
+  ]
+};
+
+var qSt={};
+function initQuiz(li){ var el=document.getElementById('qz-'+li); if(!el||el.dataset.ready)return; el.dataset.ready='1'; qSt[li]={cur:0,correct:0}; renderQ(li); }
+function renderQ(li){ var el=document.getElementById('qz-'+li); if(!el)return; var s=qSt[li],qs=QD[li]; if(s.cur>=qs.length){showResult(li);return;} var q=qs[s.cur]; el.innerHTML='<div class="quiz-qnum">FRAGE '+(s.cur+1)+' VON '+qs.length+'</div><div class="quiz-q">'+q.q+'</div><div class="quiz-hint" style="font-family:\'DM Mono\',monospace;">💡 '+q.hint+'</div><div class="quiz-opts">'+q.opts.map(function(o,i){return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')">'+'<span class="qletter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';}).join('')+'</div><div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div><div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'Nächste Frage →':'Ergebnis anzeigen →')+'</button></div>'; }
+function pickQ(li,idx){ var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans; if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';} document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){b.disabled=true;if(i===q.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}); var fb=document.getElementById('qz'+li+'-fb');fb.classList.add('show',ok?'ok':'no'); var fbt=document.getElementById('qz'+li+'-fbt');fbt.className='qft '+(ok?'ok':'no');fbt.textContent=ok?'✓ Richtig!':'✗ Nicht ganz'; document.getElementById('qz'+li+'-fbb').textContent=q.exp; document.getElementById('qz'+li+'-fbr').textContent='📌 Regel: '+q.rule; document.getElementById('qz'+li+'-nx').classList.add('show'); }
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){ var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length,pct=Math.round(s.correct/total*100),isLast=li===5; el.innerHTML='<div style="text-align:center;padding:16px 0;"><div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'🌟':pct>=60?'👍':'💪')+'</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' richtig</div><div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfekt!':pct>=60?'Gut gemacht!':'Noch einmal versuchen.')+'</div><div style="display:inline-flex;align-items:center;gap:8px;background:rgba(52,152,219,0.12);border:1px solid var(--blue);border-radius:50px;padding:9px 22px;color:var(--blue);font-weight:700;margin-bottom:20px;">⚡ +'+(s.correct*20)+' XP</div><br>'+(isLast?'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="showCompletion()">Modul 12 abschließen →</button>':'<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">Zur nächsten Lektion →</button>')+'</div>'; }
+function showCompletion(){ var el=document.querySelector('#lesson-5 .step.active'); el.innerHTML='<div class="complete-wrap"><div class="complete-icon">🎙️</div><h2 style="font-family:\'Playfair Display\',serif;font-size:30px;margin-bottom:10px;">Modul 12 abgeschlossen!</h2><p style="color:var(--gray);font-size:15px;line-height:1.7;max-width:420px;margin:0 auto;">Du kennst jetzt alle 3 Sprechen-Aufgaben, hast Phrasen für jede Situation gelernt, weißt wie du mit Pausen und fehlenden Wörtern umgehst und vermeidest die typischen Fehler. Die Sprechen-Prüfung ist keine Bedrohung mehr — sie ist deine Chance!</p><div class="xp-badge">⚡ '+xp+' XP verdient</div><p style="color:var(--gray);font-size:14px;margin-bottom:24px;">Modul 12 abgeschlossen. Übe laut — jeden Tag ein bisschen!</p><button class="btn btn-primary" style="max-width:340px;" onclick="showOverview()">← Zur Übersicht</button></div>'; localStorage.setItem('dw_mod_b1_12_done','1'); var saved=parseInt(localStorage.getItem('dw_xp')||'0'); localStorage.setItem('dw_xp',saved+xp); }
+
+function showOverview(){ document.getElementById('screen-overview').classList.add('active'); document.getElementById('screen-lesson').classList.remove('active'); }
+function goLesson(idx){ currentLesson=idx; document.getElementById('screen-overview').classList.remove('active'); document.getElementById('screen-lesson').classList.add('active'); document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';}); var pane=document.getElementById('lesson-'+idx); if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});} renderDots();updateProg(idx,0);window.scrollTo(0,0); }
+function nextStep(li,si){ var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1; if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===steps.length-1)initQuiz(li);}else{if(li+1<TOTAL)goLesson(li+1);else showCompletion();} }
+function prevStep(li,si){ if(si===0){showOverview();return;} var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'); steps[si].classList.remove('active');steps[si-1].classList.add('active');updateProg(li,si-1);window.scrollTo(0,0); }
+function renderDots(){ var row=document.getElementById('dotRow');row.innerHTML=''; for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);} }
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');if(synth){try{loadVoices();}catch(e){}}});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+<script src="./ai-tutor.js" data-module="b1-12"></script>
+</body>
+</html>
