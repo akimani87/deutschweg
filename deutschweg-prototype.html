@@ -326,6 +326,7 @@
 <div class="top-nav">
   <div class="logo">Deutsch<span>Weg</span></div>
   <div style="display:flex;align-items:center;gap:10px;">
+    <div id="adminBadge" style="display:none;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;padding:5px 12px;border-radius:20px;background:rgba(155,89,182,0.15);border:1px solid rgba(155,89,182,0.4);color:#9b59b6;">ADMIN</div>
     <div id="trialBadge" style="display:none;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;padding:5px 12px;border-radius:20px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);color:var(--gold);"></div>
     <div class="xp-display">
       <span class="xp-star">✦</span>
@@ -1109,6 +1110,69 @@
 
 </div><!-- /main -->
 
+<!-- UPGRADE OVERLAY -->
+<div id="upgradeOverlay" style="display:none;position:fixed;inset:0;z-index:300;background:#0a0a0a;overflow-y:auto;">
+  <div style="max-width:520px;margin:0 auto;padding:60px 24px 80px;">
+    <div style="text-align:center;margin-bottom:40px;">
+      <div style="font-size:52px;margin-bottom:16px;">⏰</div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:3px;color:#9b59b6;margin-bottom:12px;">TESTZEITRAUM ABGELAUFEN</div>
+      <h1 style="font-family:'Playfair Display',serif;font-size:28px;line-height:1.3;color:#f5f0e8;margin-bottom:14px;">Dein kostenloser<br>Testzeitraum ist abgelaufen</h1>
+      <p style="color:#6b6b6b;font-size:15px;line-height:1.75;">Du hast DeutschWeg kostenlos ausprobiert — toll! Wähle jetzt einen Plan und lerne weiter auf deinem Weg zum Goethe-Zertifikat.</p>
+    </div>
+
+    <!-- A1 Plan -->
+    <div style="background:#141414;border:1px solid rgba(201,168,76,0.2);border-radius:16px;padding:22px 24px;margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:#c9a84c;margin-bottom:6px;">STARTER</div>
+          <div style="font-family:'Playfair Display',serif;font-size:20px;color:#f5f0e8;">A1 Plan</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:#c9a84c;">KES 800</div>
+          <div style="font-size:12px;color:#6b6b6b;">/Monat</div>
+        </div>
+      </div>
+      <div style="font-size:13px;color:#ede8dc;line-height:1.7;margin-bottom:16px;">Alle 13 A1-Module · Quizzes &amp; Übungen · Sprachausgabe · Prüfungsvorbereitung</div>
+      <a href="index.html#pricing" style="display:block;text-align:center;padding:12px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.35);border-radius:50px;color:#c9a84c;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;text-decoration:none;">A1 Plan wählen →</a>
+    </div>
+
+    <!-- A1+A2 Plan -->
+    <div style="background:#141414;border:2px solid rgba(52,152,219,0.4);border-radius:16px;padding:22px 24px;margin-bottom:12px;position:relative;">
+      <div style="position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:#3498db;color:#fff;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;padding:4px 14px;border-radius:20px;">BELIEBT</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:#3498db;margin-bottom:6px;">KOMPLETT</div>
+          <div style="font-family:'Playfair Display',serif;font-size:20px;color:#f5f0e8;">A1 + A2 Plan</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:#3498db;">KES 1.400</div>
+          <div style="font-size:12px;color:#6b6b6b;">/Monat</div>
+        </div>
+      </div>
+      <div style="font-size:13px;color:#ede8dc;line-height:1.7;margin-bottom:16px;">Alle A1 &amp; A2 Module · 25+ Lektionen · Vollständige Prüfungsvorbereitung für Goethe A1 und A2</div>
+      <a href="index.html#pricing" style="display:block;text-align:center;padding:12px;background:#3498db;border-radius:50px;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;text-decoration:none;">A1 + A2 Plan wählen →</a>
+    </div>
+
+    <!-- Lifetime -->
+    <div style="background:#141414;border:1px solid rgba(39,174,96,0.25);border-radius:16px;padding:22px 24px;margin-bottom:32px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:#27ae60;margin-bottom:6px;">EINMALIG</div>
+          <div style="font-family:'Playfair Display',serif;font-size:20px;color:#f5f0e8;">Lifetime Zugang</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:#27ae60;">KES 8.000</div>
+          <div style="font-size:12px;color:#6b6b6b;">einmalig</div>
+        </div>
+      </div>
+      <div style="font-size:13px;color:#ede8dc;line-height:1.7;margin-bottom:16px;">Alle aktuellen und zukünftigen Module · A1, A2 und B1 · Für immer — keine weiteren Zahlungen</div>
+      <a href="index.html#pricing" style="display:block;text-align:center;padding:12px;background:rgba(39,174,96,0.12);border:1px solid rgba(39,174,96,0.35);border-radius:50px;color:#27ae60;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;text-decoration:none;">Lifetime wählen →</a>
+    </div>
+
+    <p style="text-align:center;font-size:12px;color:#6b6b6b;">Fragen? Schreib uns: <a href="mailto:support@deutschweg.com" style="color:#3498db;text-decoration:none;">support@deutschweg.com</a></p>
+  </div>
+</div>
+
 <!-- MODULE VIEWER OVERLAY -->
 <div class="module-overlay" id="moduleOverlay">
   <div class="viewer-header">
@@ -1201,6 +1265,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // ── Auth guard — TEMPORARILY DISABLED (re-enable when Supabase is stable) ──
   /*
+  var ADMIN_EMAIL = 'angela.kimani@outlook.de';
+
   dwSupabase.auth.getSession().then(function(res) {
     var session = res.data && res.data.session;
 
@@ -1209,12 +1275,23 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    var meta     = session.user.user_metadata || {};
+    var userEmail = (session.user.email || '').toLowerCase();
+    var meta      = session.user.user_metadata || {};
+
+    // ── Admin bypass — full access, skip all checks ──────────────────────────
+    if (userEmail === ADMIN_EMAIL) {
+      document.getElementById('adminBadge').style.display = '';
+      initDashboard();
+      return;
+    }
+
     var trialEnd = meta.trial_end ? new Date(meta.trial_end) : null;
     var now      = new Date();
 
+    // ── Trial expired — show friendly upgrade page ───────────────────────────
     if (trialEnd && now > trialEnd) {
-      window.location.href = 'index.html#pricing';
+      document.getElementById('upgradeOverlay').style.display = '';
+      document.body.classList.add('ready');
       return;
     }
 
