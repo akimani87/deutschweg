@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DeutschWeg — Sprechen Prep</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="deutschweg-theme.css">
 <style>
   :root {
     --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
@@ -149,18 +149,37 @@
     .keyword-word{font-size:28px;}
   }
 </style>
+<style>
+/* LIGHT THEME OVERRIDE */
+:root {
+  --black:#F8FAFC; --white:#1F2937; --cream:#4B5563;
+  --gold:#3B82F6; --gold-light:#2563EB;
+  --red:#EF4444; --green:#10B981; --blue:#3B82F6;
+  --gray:#9CA3AF; --card-bg:#FFFFFF; --card2-bg:#F8FAFC;
+  --border:#E5E7EB;
+}
+body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-serif; }
+.top-nav { background:white; border-bottom:1px solid #E5E7EB; backdrop-filter:none; }
+.btn-primary { background:#3B82F6; color:white; }
+.btn-primary:hover { background:#2563EB; box-shadow:0 8px 24px rgba(59,130,246,0.3); }
+.btn-outline { background:transparent; border:1px solid #3B82F6; color:#3B82F6; }
+.card { background:#FFFFFF; border:1px solid #E5E7EB; box-shadow:0 1px 3px rgba(0,0,0,0.07); }
+.info-box { background:#EFF6FF; border-left:3px solid #3B82F6; color:#1D4ED8; }
+.warn-box { background:#EFF6FF; border-left:3px solid #3B82F6; color:#1D4ED8; }
+</style>
 </head>
 <body>
 
 <!-- TOP NAV -->
-<div class="top-nav">
-  <div class="logo">Deutsch<span>Weg</span></div>
-  <div class="nav-links">
-    <a href="deutschweg-prototype.html">My Courses</a>
-    <a href="exam-whisperer.html">🤖 AI Examiner</a>
+<nav class="dw-nav">
+  <div class="dw-nav-inner">
+    <a href="deutschweg-prototype.html" class="dw-logo">
+      <div class="dw-logo-icon">D</div>
+      <span class="dw-logo-text">Deutsch<span>Weg</span></span>
+    </a>
+    <a href="deutschweg-prototype.html" class="dw-btn dw-btn-secondary">← Back to Dashboard</a>
   </div>
-  <a href="signup.html" class="nav-cta">Start Free</a>
-</div>
+</nav>
 
 <!-- MAIN -->
 <div class="main">

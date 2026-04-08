@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DeutschWeg — Admin</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="deutschweg-theme.css">
 <style>
   :root {
     --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
@@ -79,6 +79,28 @@
     .stats-row{grid-template-columns:1fr;}
     .lock-card{padding:32px 24px;}
   }
+</style>
+<style>
+/* LIGHT THEME OVERRIDE */
+:root {
+  --black:#F8FAFC; --white:#1F2937; --cream:#4B5563;
+  --gold:#3B82F6; --gold-light:#2563EB;
+  --red:#EF4444; --green:#10B981; --blue:#3B82F6;
+  --gray:#9CA3AF; --card-bg:#FFFFFF; --card2-bg:#F8FAFC;
+  --border:#E5E7EB;
+}
+body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-serif; }
+.admin-header { background:#3B82F6; color:white; }
+.admin-table th { background:#EFF6FF; color:#1D4ED8; border-bottom:2px solid #3B82F6; }
+.admin-table td { border-bottom:1px solid #E5E7EB; }
+.admin-table tr:hover td { background:#F8FAFC; }
+.badge-active { background:#ECFDF5; color:#065F46; border:1px solid #10B981; }
+.badge-expired { background:#FEF2F2; color:#991B1B; border:1px solid #EF4444; }
+.lock-screen { background:#F8FAFC; }
+.lock-card { background:#FFFFFF; border:1px solid #E5E7EB; box-shadow:0 4px 24px rgba(0,0,0,0.08); }
+.lock-logo { color:#3B82F6; }
+.lock-btn { background:#3B82F6; color:white; }
+.lock-btn:hover { background:#2563EB; }
 </style>
 </head>
 <body>
