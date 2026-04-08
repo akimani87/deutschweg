@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DeutschWeg — Exam Vault: A1 Simulation</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="deutschweg-theme.css">
 <style>
   :root {
     --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
@@ -171,13 +171,56 @@
     .intro-h{font-size:28px;}
   }
 </style>
+<style>
+/* LIGHT THEME OVERRIDE */
+:root {
+  --black:#F8FAFC; --white:#1F2937; --cream:#4B5563;
+  --gold:#3B82F6; --gold-light:#2563EB;
+  --red:#EF4444; --green:#10B981; --blue:#3B82F6;
+  --gray:#9CA3AF; --card-bg:#FFFFFF; --card2-bg:#F8FAFC;
+  --border:#E5E7EB;
+}
+body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-serif; }
+.top-nav { background:white; border-bottom:1px solid #E5E7EB; }
+.btn-start { background:#3B82F6; color:white; box-shadow:0 3px 12px rgba(59,130,246,0.3); }
+.btn-start:hover { background:#2563EB; box-shadow:0 6px 20px rgba(59,130,246,0.35); }
+.btn-next { background:#3B82F6; color:white; }
+.btn-next:hover { background:#2563EB; }
+.exam-card { background:#FFFFFF; border:1px solid #E5E7EB; box-shadow:0 1px 3px rgba(0,0,0,0.07); }
+.q-card { background:#FFFFFF; border:1px solid #E5E7EB; }
+.schreiben-task { background:#FFFFFF; border:1px solid #E5E7EB; }
+.sprechen-part { background:#FFFFFF; border:1px solid #E5E7EB; }
+.option { border:1px solid #E5E7EB; background:white; color:#1F2937; }
+.option:hover:not([disabled]) { border-color:#3B82F6; background:#EFF6FF; }
+.option.selected { border-color:#3B82F6; background:#EFF6FF; }
+.tf-btn { border:1px solid #E5E7EB; background:white; color:#1F2937; }
+.tf-btn.selected { border-color:#3B82F6; background:#EFF6FF; }
+.timer-box { background:#F8FAFC; border:1px solid #E5E7EB; }
+.timer-display { color:#3B82F6; }
+.intro-eyebrow { color:#3B82F6; }
+.intro-h span { color:#3B82F6; }
+.section-eyebrow { color:#3B82F6; }
+.section-title span { color:#3B82F6; }
+.ec-pts { background:#EFF6FF; border-color:#DBEAFE; color:#3B82F6; }
+.pass-note { background:#ECFDF5; border-color:#A7F3D0; }
+.pass-note strong { color:#10B981; }
+.scoring-overlay { background:rgba(248,250,252,0.95); }
+.scoring-spinner { border-color:#E5E7EB; border-top-color:#3B82F6; }
+.scoring-msg { color:#1F2937; }
+select.match-select { background:white; border:1px solid #E5E7EB; color:#1F2937; }
+</style>
 </head>
 <body>
 
-<div class="top-nav">
-  <a href="deutschweg-prototype.html" class="logo">Deutsch<span>Weg</span></a>
-  <a href="deutschweg-prototype.html" class="nav-back">← Dashboard</a>
-</div>
+<nav class="dw-nav">
+  <div class="dw-nav-inner">
+    <a href="deutschweg-prototype.html" class="dw-logo">
+      <div class="dw-logo-icon">D</div>
+      <span class="dw-logo-text">Deutsch<span>Weg</span></span>
+    </a>
+    <a href="deutschweg-prototype.html" class="dw-btn dw-btn-secondary">← Back to Dashboard</a>
+  </div>
+</nav>
 
 <!-- AI SCORING OVERLAY -->
 <div class="scoring-overlay" id="scoringOverlay">
