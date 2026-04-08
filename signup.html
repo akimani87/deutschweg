@@ -4,348 +4,286 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DeutschWeg — Start Your Free Trial</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="deutschweg-theme.css">
 <style>
-  :root {
-    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
-    --gold:#c9a84c; --gold-light:#e8c96a;
-    --red:#c0392b; --green:#27ae60; --blue:#3498db;
-    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
-    --border:rgba(201,168,76,0.2);
-  }
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{
-    background:var(--black);color:var(--white);
-    font-family:'DM Sans',sans-serif;min-height:100vh;
-    display:flex;flex-direction:column;
-    opacity:0;transition:opacity 0.25s ease;
-  }
+  body{min-height:100vh;display:flex;flex-direction:column;opacity:0;transition:opacity 0.25s;}
   body.ready{opacity:1;}
 
-  /* ── NAV ── */
-  .top-nav{
-    display:flex;align-items:center;justify-content:space-between;
-    padding:18px 28px;
-    border-bottom:1px solid rgba(201,168,76,0.1);
-    background:rgba(10,10,10,0.97);
-    flex-shrink:0;
-  }
-  .logo{font-family:'Playfair Display',serif;font-size:21px;font-weight:900;text-decoration:none;color:var(--white);}
-  .logo span{color:var(--gold);}
-  .nav-login{font-size:13px;color:var(--gray);text-decoration:none;transition:color 0.2s;}
-  .nav-login:hover{color:var(--cream);}
-  .nav-login em{color:var(--gold);font-style:normal;}
+  /* ── TWO-COLUMN LAYOUT ── */
+  .signup-wrap{flex:1;display:grid;grid-template-columns:1fr 1fr;min-height:calc(100vh - 0px);}
 
-  /* ── LAYOUT ── */
-  .page{
-    flex:1;display:flex;align-items:center;justify-content:center;
-    padding:40px 24px 60px;
-  }
-  .card{
-    background:var(--card-bg);border:1px solid var(--border);
-    border-radius:24px;padding:44px 40px;
-    width:100%;max-width:460px;
+  /* ── LEFT PANEL ── */
+  .left-panel{
+    background:#3B82F6;padding:56px 48px;
+    display:flex;flex-direction:column;justify-content:space-between;
     position:relative;overflow:hidden;
   }
-  .card::before{
-    content:'';position:absolute;top:-80px;left:50%;transform:translateX(-50%);
-    width:400px;height:300px;
-    background:radial-gradient(ellipse, rgba(201,168,76,0.06) 0%, transparent 70%);
-    pointer-events:none;
+  .left-panel::before{
+    content:'';position:absolute;top:-80px;right:-80px;
+    width:320px;height:320px;border-radius:50%;
+    background:rgba(255,255,255,0.06);
   }
+  .left-panel::after{
+    content:'';position:absolute;bottom:-60px;left:-60px;
+    width:240px;height:240px;border-radius:50%;
+    background:rgba(255,255,255,0.05);
+  }
+  .left-logo{display:flex;align-items:center;gap:10px;margin-bottom:48px;position:relative;z-index:1;}
+  .left-logo-icon{width:34px;height:34px;background:rgba(255,255,255,0.2);border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;font-weight:800;}
+  .left-logo-text{font-size:18px;font-weight:800;color:#fff;}
+  .left-headline{font-size:26px;font-weight:800;color:#fff;line-height:1.3;margin-bottom:36px;position:relative;z-index:1;letter-spacing:-0.3px;}
+  .trust-points{display:flex;flex-direction:column;gap:14px;margin-bottom:40px;position:relative;z-index:1;}
+  .trust-point{display:flex;align-items:flex-start;gap:12px;}
+  .trust-check{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;flex-shrink:0;margin-top:1px;}
+  .trust-text{font-size:14px;color:rgba(255,255,255,0.9);line-height:1.5;}
+  .left-testimonial{background:rgba(255,255,255,0.1);border-radius:14px;padding:18px 20px;position:relative;z-index:1;}
+  .lt-quote{font-size:13px;color:rgba(255,255,255,0.9);line-height:1.7;margin-bottom:12px;font-style:italic;}
+  .lt-author{display:flex;align-items:center;gap:10px;}
+  .lt-av{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;}
+  .lt-name{font-size:12px;font-weight:700;color:#fff;}
+  .lt-sub{font-size:11px;color:rgba(255,255,255,0.65);}
 
-  /* ── HEADER ── */
-  .card-eyebrow{
-    font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;
-    color:var(--gold);margin-bottom:14px;
-    display:flex;align-items:center;gap:8px;
+  /* ── RIGHT PANEL ── */
+  .right-panel{
+    background:#fff;padding:56px 52px;
+    display:flex;flex-direction:column;justify-content:center;
   }
-  .eyebrow-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2.5s ease infinite;}
-  .card-h{
-    font-family:'Playfair Display',serif;font-size:30px;font-weight:900;
-    line-height:1.15;margin-bottom:8px;
-  }
-  .card-sub{font-size:14px;color:var(--gray);line-height:1.75;margin-bottom:32px;}
-  .card-sub strong{color:var(--cream);}
+  .form-header{margin-bottom:32px;}
+  .form-title{font-size:26px;font-weight:800;color:#1F2937;margin-bottom:8px;}
+  .form-sub{font-size:14px;color:#6B7280;}
+  .form-sub a{color:#3B82F6;text-decoration:none;font-weight:600;}
+  .form-sub a:hover{text-decoration:underline;}
 
-  /* ── FORM ── */
+  /* ── FORM FIELDS ── */
   .field{margin-bottom:18px;}
-  .field label{
-    display:block;font-size:12px;font-weight:600;letter-spacing:0.5px;
-    color:var(--cream);margin-bottom:7px;
-    font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;
-  }
-  .field input, .field select{
-    width:100%;
-    background:var(--card2-bg);
-    border:1px solid rgba(255,255,255,0.1);
-    border-radius:12px;
-    padding:14px 16px;
-    font-family:'DM Sans',sans-serif;font-size:15px;
-    color:var(--white);
-    transition:border-color 0.2s, box-shadow 0.2s;
-    outline:none;
-    -webkit-appearance:none;
-    appearance:none;
-  }
-  .field select{
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6b6b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat:no-repeat;
-    background-position:right 16px center;
-    padding-right:42px;
-    cursor:pointer;
-  }
-  .field input::placeholder{color:var(--gray);}
-  .field input:focus, .field select:focus{
-    border-color:rgba(201,168,76,0.5);
-    box-shadow:0 0 0 3px rgba(201,168,76,0.08);
-  }
-  .field input.error, .field select.error{
-    border-color:rgba(192,57,43,0.6);
-    box-shadow:0 0 0 3px rgba(192,57,43,0.08);
-  }
-  .field-err{font-size:12px;color:#e74c3c;margin-top:6px;display:none;}
+  .field-err{font-size:12px;color:#EF4444;margin-top:5px;display:none;}
   .field-err.show{display:block;}
-
-  /* password wrapper */
   .pw-wrap{position:relative;}
   .pw-toggle{
-    position:absolute;right:14px;top:50%;transform:translateY(-50%);
+    position:absolute;right:12px;top:50%;transform:translateY(-50%);
     background:none;border:none;cursor:pointer;
-    color:var(--gray);font-size:14px;padding:4px;
+    color:#9CA3AF;font-size:14px;padding:4px;
     transition:color 0.2s;
   }
-  .pw-toggle:hover{color:var(--cream);}
+  .pw-toggle:hover{color:#4B5563;}
+  .pw-wrap .dw-input{padding-right:42px;}
 
   /* ── SUBMIT ── */
   .btn-submit{
-    width:100%;padding:16px;border-radius:50px;
-    background:var(--gold);color:var(--black);
-    font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;
+    width:100%;padding:14px;border-radius:10px;
+    background:#3B82F6;color:#fff;
+    font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;
     border:none;cursor:pointer;
-    transition:all 0.25s;
-    box-shadow:0 6px 20px rgba(201,168,76,0.25);
-    margin-top:6px;
+    transition:all 0.2s;
+    box-shadow:0 3px 12px rgba(59,130,246,0.3);
+    margin-top:4px;
     display:flex;align-items:center;justify-content:center;gap:10px;
   }
-  .btn-submit:hover{background:var(--gold-light);transform:translateY(-2px);box-shadow:0 10px 28px rgba(201,168,76,0.35);}
-  .btn-submit:active{transform:translateY(0);}
-  .btn-submit:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+  .btn-submit:hover{background:#2563EB;transform:translateY(-1px);box-shadow:0 6px 20px rgba(59,130,246,0.35);}
+  .btn-submit:disabled{opacity:0.6;cursor:not-allowed;transform:none;box-shadow:none;}
 
-  .spinner{
-    width:18px;height:18px;border-radius:50%;
-    border:2.5px solid rgba(0,0,0,0.2);
-    border-top-color:rgba(0,0,0,0.7);
-    animation:spin 0.7s linear infinite;
-    display:none;
-  }
+  .spinner{width:18px;height:18px;border-radius:50%;border:2.5px solid rgba(255,255,255,0.3);border-top-color:#fff;animation:spin 0.7s linear infinite;display:none;}
   .spinner.show{display:block;}
 
-  /* ── DIVIDER ── */
-  .divider{
-    display:flex;align-items:center;gap:12px;
-    margin:24px 0 20px;
-  }
-  .divider-line{flex:1;height:1px;background:rgba(255,255,255,0.07);}
-  .divider-txt{font-size:12px;color:var(--gray);white-space:nowrap;}
+  .divider{display:flex;align-items:center;gap:12px;margin:20px 0 16px;}
+  .divider-line{flex:1;height:1px;background:#E5E7EB;}
+  .divider-txt{font-size:12px;color:#9CA3AF;white-space:nowrap;}
 
-  /* ── LOGIN LINK ── */
-  .login-link{
-    text-align:center;font-size:14px;color:var(--gray);
-  }
-  .login-link a{color:var(--gold);text-decoration:none;font-weight:600;}
+  .login-link{text-align:center;font-size:14px;color:#6B7280;}
+  .login-link a{color:#3B82F6;text-decoration:none;font-weight:600;}
   .login-link a:hover{text-decoration:underline;}
 
-  /* ── TRUST SIGNALS ── */
-  .trust{
-    display:grid;grid-template-columns:1fr 1fr;gap:9px;
-    margin-top:28px;
-  }
-  .trust-item{
-    display:flex;align-items:center;gap:8px;
-    font-size:12px;color:var(--gray);
-  }
-  .trust-check{
-    width:18px;height:18px;border-radius:50%;
-    background:rgba(39,174,96,0.1);border:1px solid rgba(39,174,96,0.3);
-    display:flex;align-items:center;justify-content:center;
-    font-size:10px;color:var(--green);flex-shrink:0;
-  }
+  .privacy-note{font-size:11px;color:#9CA3AF;text-align:center;margin-top:16px;line-height:1.6;}
 
   /* ── SUCCESS STATE ── */
-  .success-view{
-    display:none;text-align:center;padding:16px 0;
-  }
+  .success-view{display:none;text-align:center;padding:24px 0;}
   .success-view.show{display:block;animation:fadeUp 0.5s ease both;}
-  .success-icon{font-size:64px;margin-bottom:20px;animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both;}
-  .success-h{font-family:'Playfair Display',serif;font-size:26px;margin-bottom:10px;line-height:1.2;}
-  .success-sub{font-size:15px;color:var(--cream);line-height:1.8;opacity:0.82;margin-bottom:28px;}
-  .success-trial{
+  .success-icon{font-size:56px;margin-bottom:18px;}
+  .success-h{font-size:24px;font-weight:800;color:#1F2937;margin-bottom:10px;}
+  .success-sub{font-size:14px;color:#4B5563;line-height:1.75;margin-bottom:24px;}
+  .success-badge{
     display:inline-flex;align-items:center;gap:8px;
-    background:rgba(201,168,76,0.1);border:1px solid var(--gold);
-    border-radius:50px;padding:10px 26px;
-    font-weight:700;color:var(--gold);font-size:15px;
-    margin-bottom:28px;
-    font-family:'DM Mono',monospace;letter-spacing:1px;
+    background:#ECFDF5;border:1px solid #A7F3D0;
+    border-radius:50px;padding:10px 24px;
+    font-weight:700;color:#10B981;font-size:14px;margin-bottom:24px;
   }
   .btn-go{
-    display:block;width:100%;padding:16px;border-radius:50px;
-    background:var(--gold);color:var(--black);
-    font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;
+    display:block;width:100%;padding:14px;border-radius:10px;
+    background:#3B82F6;color:#fff;
+    font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;
     border:none;cursor:pointer;text-decoration:none;text-align:center;
-    transition:all 0.25s;
-    box-shadow:0 6px 20px rgba(201,168,76,0.25);
+    transition:all 0.2s;box-shadow:0 3px 12px rgba(59,130,246,0.25);
   }
-  .btn-go:hover{background:var(--gold-light);transform:translateY(-2px);box-shadow:0 10px 28px rgba(201,168,76,0.35);}
+  .btn-go:hover{background:#2563EB;transform:translateY(-1px);}
 
   /* ── FOOTER ── */
-  .page-footer{
-    text-align:center;padding:20px 24px;
-    font-size:12px;color:var(--gray);
-    border-top:1px solid rgba(255,255,255,0.04);
-    flex-shrink:0;
-  }
-  .page-footer a{color:var(--gray);text-decoration:none;}
-  .page-footer a:hover{color:var(--cream);}
+  .page-footer{text-align:center;padding:16px 24px;font-size:12px;color:#9CA3AF;border-top:1px solid #F1F5F9;}
+  .page-footer a{color:#9CA3AF;text-decoration:none;}
+  .page-footer a:hover{color:#4B5563;}
 
   /* ── ANIMATIONS ── */
-  @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
   @keyframes spin{to{transform:rotate(360deg)}}
   @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-  @keyframes popIn{from{transform:scale(0.5);opacity:0}to{transform:scale(1);opacity:1}}
 
   /* ── MOBILE ── */
-  @media(max-width:520px){
-    .card{padding:32px 24px;border-radius:20px;}
-    .card-h{font-size:26px;}
-    .trust{grid-template-columns:1fr;}
+  @media(max-width:768px){
+    .signup-wrap{grid-template-columns:1fr;}
+    .left-panel{display:none;}
+    .right-panel{padding:40px 28px;}
+  }
+  @media(max-width:480px){
+    .right-panel{padding:32px 20px;}
+    .form-title{font-size:22px;}
   }
 </style>
 </head>
 <body>
 
-<!-- TOP NAV -->
-<div class="top-nav">
-  <a href="index.html" class="logo">Deutsch<span>Weg</span></a>
-  <a href="login.html" class="nav-login">Already have an account? <em>Log in</em></a>
-</div>
-
-<!-- PAGE -->
-<div class="page">
-  <div class="card">
-
-    <!-- ── SIGNUP FORM ── -->
-    <div id="formView">
-
-      <div class="card-eyebrow">
-        <span class="eyebrow-dot"></span>
-        FREE 14-DAY TRIAL
-      </div>
-      <h1 class="card-h">Start Your Free<br>14-Day Trial</h1>
-      <p class="card-sub">
-        <strong>No credit card needed.</strong> Full access to all 13 modules instantly.
-      </p>
-
-      <form id="signupForm" novalidate>
-
-        <div class="field">
-          <label for="name">Full Name</label>
-          <input type="text" id="name" name="name" placeholder="e.g. Kwame Mensah" autocomplete="name">
-          <div class="field-err" id="nameErr">Please enter your full name.</div>
-        </div>
-
-        <div class="field">
-          <label for="email">Email Address</label>
-          <input type="email" id="email" name="email" placeholder="kwame@example.com" autocomplete="email">
-          <div class="field-err" id="emailErr">Please enter a valid email address.</div>
-        </div>
-
-        <div class="field">
-          <label for="password">Password</label>
-          <div class="pw-wrap">
-            <input type="password" id="password" name="password" placeholder="At least 8 characters" autocomplete="new-password">
-            <button type="button" class="pw-toggle" id="pwToggle" aria-label="Show password">👁</button>
-          </div>
-          <div class="field-err" id="passwordErr">Password must be at least 8 characters.</div>
-        </div>
-
-        <div class="field">
-          <label for="country">Country</label>
-          <select id="country" name="country">
-            <option value="" disabled selected>Select your country</option>
-            <optgroup label="East Africa">
-              <option value="KE">🇰🇪 Kenya</option>
-              <option value="TZ">🇹🇿 Tanzania</option>
-              <option value="UG">🇺🇬 Uganda</option>
-              <option value="ET">🇪🇹 Ethiopia</option>
-            </optgroup>
-            <optgroup label="West Africa">
-              <option value="NG">🇳🇬 Nigeria</option>
-              <option value="GH">🇬🇭 Ghana</option>
-              <option value="SN">🇸🇳 Senegal</option>
-              <option value="CI">🇨🇮 Côte d'Ivoire</option>
-            </optgroup>
-            <optgroup label="Southern Africa">
-              <option value="ZA">🇿🇦 South Africa</option>
-              <option value="ZW">🇿🇼 Zimbabwe</option>
-              <option value="ZM">🇿🇲 Zambia</option>
-            </optgroup>
-            <optgroup label="Other">
-              <option value="AF_OTHER">🌍 Other African Country</option>
-              <option value="INTL">🌐 Outside Africa</option>
-            </select>
-          <div class="field-err" id="countryErr">Please select your country.</div>
-        </div>
-
-        <button type="submit" class="btn-submit" id="submitBtn">
-          <span id="btnText">Start Learning Free ✦</span>
-          <span class="spinner" id="spinner"></span>
-        </button>
-
-      </form>
-
-      <div class="divider">
-        <div class="divider-line"></div>
-        <div class="divider-txt">or</div>
-        <div class="divider-line"></div>
-      </div>
-
-      <div class="login-link">
-        Already have an account? <a href="login.html">Log in here</a>
-      </div>
-
-      <div class="trust">
-        <div class="trust-item">
-          <div class="trust-check">✓</div>
-          <span>14 days completely free</span>
-        </div>
-        <div class="trust-item">
-          <div class="trust-check">✓</div>
-          <span>No credit card required</span>
-        </div>
-        <div class="trust-item">
-          <div class="trust-check">✓</div>
-          <span>Cancel anytime</span>
-        </div>
-        <div class="trust-item">
-          <div class="trust-check">✓</div>
-          <span>Built for African learners</span>
-        </div>
-      </div>
-
-    </div><!-- /formView -->
-
-    <!-- ── SUCCESS VIEW ── -->
-    <div class="success-view" id="successView">
-      <div class="success-icon">🎉</div>
-      <h2 class="success-h">Welcome to DeutschWeg!</h2>
-      <p class="success-sub">Your 14-day free trial has started. All 13 A1 modules are unlocked and ready for you.</p>
-      <div class="success-trial">✦ 14 days free · starts today</div>
-      <a href="deutschweg-prototype.html" class="btn-go">Go to My Courses →</a>
+<!-- NAV -->
+<nav class="dw-nav">
+  <div class="dw-nav-inner">
+    <a href="index.html" class="dw-logo">
+      <div class="dw-logo-icon">D</div>
+      <span class="dw-logo-text">Deutsch<span>Weg</span></span>
+    </a>
+    <div class="dw-nav-right">
+      <a href="login.html" style="font-size:13px;font-weight:500;color:#6B7280;text-decoration:none;">Already have an account? <strong style="color:#3B82F6;">Log in</strong></a>
     </div>
+  </div>
+</nav>
 
-  </div><!-- /card -->
-</div><!-- /page -->
+<!-- TWO-COLUMN LAYOUT -->
+<div class="signup-wrap">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div>
+      <div class="left-logo">
+        <div class="left-logo-icon">D</div>
+        <span class="left-logo-text">DeutschWeg</span>
+      </div>
+      <div class="left-headline">Join thousands of African learners preparing for their Goethe exam.</div>
+      <div class="trust-points">
+        <div class="trust-point">
+          <div class="trust-check">✓</div>
+          <div class="trust-text">14-day free trial, no card needed</div>
+        </div>
+        <div class="trust-point">
+          <div class="trust-check">✓</div>
+          <div class="trust-text">All A1, A2 and B1 modules included</div>
+        </div>
+        <div class="trust-point">
+          <div class="trust-check">✓</div>
+          <div class="trust-text">AI Exam Whisperer + AI Tutor access</div>
+        </div>
+      </div>
+    </div>
+    <div class="left-testimonial">
+      <div class="lt-quote">"I passed my Goethe A2 on the first try. DeutschWeg made German feel natural for the first time."</div>
+      <div class="lt-author">
+        <div class="lt-av">A</div>
+        <div>
+          <div class="lt-name">Amina K.</div>
+          <div class="lt-sub">Nairobi, Kenya 🇰🇪 · Goethe A2</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div style="max-width:400px;width:100%;margin:0 auto;">
+
+      <!-- SIGNUP FORM -->
+      <div id="formView">
+        <div class="form-header">
+          <h1 class="form-title">Create your account</h1>
+          <p class="form-sub">Already have an account? <a href="login.html">Log in</a></p>
+        </div>
+
+        <form id="signupForm" novalidate>
+
+          <div class="field">
+            <label class="dw-label-text" for="name">Full Name</label>
+            <input class="dw-input" type="text" id="name" name="name" placeholder="e.g. Kwame Mensah" autocomplete="name">
+            <div class="field-err" id="nameErr">Please enter your full name.</div>
+          </div>
+
+          <div class="field">
+            <label class="dw-label-text" for="email">Email Address</label>
+            <input class="dw-input" type="email" id="email" name="email" placeholder="kwame@example.com" autocomplete="email">
+            <div class="field-err" id="emailErr">Please enter a valid email address.</div>
+          </div>
+
+          <div class="field">
+            <label class="dw-label-text" for="password">Password</label>
+            <div class="pw-wrap">
+              <input class="dw-input" type="password" id="password" name="password" placeholder="At least 8 characters" autocomplete="new-password">
+              <button type="button" class="pw-toggle" id="pwToggle" aria-label="Show password">👁</button>
+            </div>
+            <div class="field-err" id="passwordErr">Password must be at least 8 characters.</div>
+          </div>
+
+          <div class="field">
+            <label class="dw-label-text" for="country">Country</label>
+            <select class="dw-select" id="country" name="country">
+              <option value="" disabled selected>Select your country</option>
+              <optgroup label="East Africa">
+                <option value="KE">🇰🇪 Kenya</option>
+                <option value="TZ">🇹🇿 Tanzania</option>
+                <option value="UG">🇺🇬 Uganda</option>
+                <option value="ET">🇪🇹 Ethiopia</option>
+              </optgroup>
+              <optgroup label="West Africa">
+                <option value="NG">🇳🇬 Nigeria</option>
+                <option value="GH">🇬🇭 Ghana</option>
+                <option value="SN">🇸🇳 Senegal</option>
+                <option value="CI">🇨🇮 Côte d'Ivoire</option>
+              </optgroup>
+              <optgroup label="Southern Africa">
+                <option value="ZA">🇿🇦 South Africa</option>
+                <option value="ZW">🇿🇼 Zimbabwe</option>
+                <option value="ZM">🇿🇲 Zambia</option>
+              </optgroup>
+              <optgroup label="Other">
+                <option value="AF_OTHER">🌍 Other African Country</option>
+                <option value="INTL">🌐 Outside Africa</option>
+              </select>
+            <div class="field-err" id="countryErr">Please select your country.</div>
+          </div>
+
+          <button type="submit" class="btn-submit" id="submitBtn">
+            <span id="btnText">Start Learning Free →</span>
+            <span class="spinner" id="spinner"></span>
+          </button>
+
+        </form>
+
+        <div class="divider">
+          <div class="divider-line"></div>
+          <div class="divider-txt">or</div>
+          <div class="divider-line"></div>
+        </div>
+
+        <div class="login-link">Already have an account? <a href="login.html">Log in here</a></div>
+
+        <div class="privacy-note">By signing up you agree to our <a href="#" style="color:#9CA3AF;text-decoration:underline;">Terms of Service</a> and <a href="#" style="color:#9CA3AF;text-decoration:underline;">Privacy Policy</a>.</div>
+
+      </div><!-- /formView -->
+
+      <!-- SUCCESS VIEW -->
+      <div class="success-view" id="successView">
+        <div class="success-icon">🎉</div>
+        <h2 class="success-h">Welcome to DeutschWeg!</h2>
+        <p class="success-sub">Your 14-day free trial has started. All 13 A1 modules are unlocked and ready for you.</p>
+        <div class="success-badge">✓ 14 days free · starts today</div>
+        <a href="deutschweg-prototype.html" class="btn-go">Go to My Courses →</a>
+      </div>
+
+    </div>
+  </div><!-- /right-panel -->
+
+</div><!-- /signup-wrap -->
 
 <!-- FOOTER -->
 <div class="page-footer">
