@@ -288,6 +288,12 @@
   <!-- RESULTS CARD — populated dynamically by scoreWriting() -->
   <div class="results-card" id="results"></div>
 
+  <!-- RECOMMENDATIONS — shown after scoring -->
+  <div class="dw-recommendations" id="recommendations" style="display:none">
+    <div class="dw-rec-title">📚 Recommended next steps</div>
+    <div class="dw-rec-grid" id="recGrid"></div>
+  </div>
+
 </div><!-- /main -->
 
 <script>
@@ -422,6 +428,9 @@ function renderResults(data) {
   res.classList.add('show');
   res.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
+  // Show recommendations based on weak scores
+  showRecommendations(data.breakdown || {});
+
   // Animate the score arc
   setTimeout(function() {
     var arc = document.getElementById('scoreArc');
@@ -524,6 +533,61 @@ document.addEventListener('DOMContentLoaded', function() {
     cc.classList.toggle('warn', n > 0 && n < 50);
   });
 });
+
+// ── RECOMMENDATIONS ────────────────────────────────────────────────────────
+function showRecommendations(breakdown) {
+  var recMap = [
+    {
+      key: 'task',
+      threshold: 7,
+      name: 'Schreiben Strategie',
+      desc: 'Master the Aufgabe structure and topic coverage for B1 writing.',
+      href: 'module-b1-11-schreiben-strategie.html'
+    },
+    {
+      key: 'grammar',
+      threshold: 7,
+      name: 'Wortstellung & Satzbau',
+      desc: 'Fix word order mistakes that cost you the most grammar points.',
+      href: 'module-b1-8-wortstellung.html'
+    },
+    {
+      key: 'vocabulary',
+      threshold: 7,
+      name: 'Konnektoren & Linking Words',
+      desc: 'Expand your range with the connectors examiners reward.',
+      href: 'module-b1-5-konnektoren.html'
+    },
+    {
+      key: 'structure',
+      threshold: 7,
+      name: 'Brief-Struktur & Aufbau',
+      desc: 'Learn the formal structure that earns points in every task type.',
+      href: 'module-b1-11-schreiben-strategie.html'
+    }
+  ];
+
+  var recs = recMap.filter(function(r) {
+    var item = breakdown[r.key];
+    return item && item.score < r.threshold;
+  });
+
+  if (!recs.length) return;
+
+  var grid = document.getElementById('recGrid');
+  var recDiv = document.getElementById('recommendations');
+  if (!grid || !recDiv) return;
+
+  grid.innerHTML = recs.map(function(r) {
+    return '<div class="dw-rec-card">'
+      + '<div><div class="dw-rec-name">' + r.name + '</div>'
+      + '<div class="dw-rec-desc">' + r.desc + '</div></div>'
+      + '<a href="' + r.href + '" class="dw-rec-link">Go to Module →</a>'
+      + '</div>';
+  }).join('');
+
+  recDiv.style.display = 'block';
+}
 </script>
 </body>
 </html>

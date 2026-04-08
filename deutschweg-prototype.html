@@ -287,6 +287,33 @@
   </div>
 </div>
 
+<!-- PROGRESS BANNER -->
+<div class="dw-progress-banner" id="progressBanner">
+  <div class="dw-progress-banner-inner">
+    <div class="dw-pb-item">
+      <div class="dw-pb-number" id="totalDone">0</div>
+      <div class="dw-pb-label">Modules done</div>
+    </div>
+    <div class="dw-pb-divider"></div>
+    <div class="dw-pb-item">
+      <div class="dw-pb-number" id="currentStreak">0</div>
+      <div class="dw-pb-label">Day streak</div>
+    </div>
+    <div class="dw-pb-divider"></div>
+    <div class="dw-pb-item">
+      <div class="dw-pb-number" id="levelProgress">A1</div>
+      <div class="dw-pb-label">Current level</div>
+    </div>
+    <div class="dw-pb-bar-wrap">
+      <div class="dw-pb-bar-label">Overall progress</div>
+      <div class="dw-progress-bg">
+        <div class="dw-progress-fill" id="overallBar" style="width:0%"></div>
+      </div>
+      <div class="dw-pb-pct" id="overallPct">0% complete</div>
+    </div>
+  </div>
+</div>
+
 <!-- MAIN CONTENT -->
 <div class="main">
 
@@ -1316,6 +1343,45 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('pctDisp').textContent = pct + '%';
   document.getElementById('overallBar').style.width = pct + '%';
   document.getElementById('modDoneDisp').textContent = done + '/13';
+
+  // Update progress banner
+  (function() {
+    // Count all module completions across A1+A2+B1 (modules 0-27 + b1-4 to b1-12)
+    var totalModules = 40;
+    var totalDone = 0;
+    for (var m = 0; m <= 27; m++) {
+      if (localStorage.getItem('dw_mod_' + m + '_done') === '1') totalDone++;
+    }
+    var b1keys = [4,5,6,7,8,9,10,11,12];
+    b1keys.forEach(function(k) {
+      if (localStorage.getItem('dw_b1_' + k + '_done') === '1') totalDone++;
+    });
+    var overallPct = Math.round(totalDone / totalModules * 100);
+    var savedLevel = localStorage.getItem('dw_level') || 'a1';
+    var levelLabel = { a1: 'A1', a2: 'A2', b1: 'B1' }[savedLevel] || 'A1';
+
+    // Day streak (compare today's date to last-active date)
+    var today = new Date().toDateString();
+    var lastActive = localStorage.getItem('dw_last_active');
+    var streak = parseInt(localStorage.getItem('dw_streak') || '0');
+    if (lastActive !== today) {
+      var yesterday = new Date(Date.now() - 86400000).toDateString();
+      streak = (lastActive === yesterday) ? streak + 1 : 1;
+      localStorage.setItem('dw_streak', streak);
+      localStorage.setItem('dw_last_active', today);
+    }
+
+    var tdEl = document.getElementById('totalDone');
+    var stEl = document.getElementById('currentStreak');
+    var lvEl = document.getElementById('levelProgress');
+    var obEl = document.getElementById('overallBar');
+    var opEl = document.getElementById('overallPct');
+    if (tdEl) tdEl.textContent = totalDone;
+    if (stEl) stEl.textContent = streak;
+    if (lvEl) lvEl.textContent = levelLabel;
+    if (obEl) obEl.style.width = overallPct + '%';
+    if (opEl) opEl.textContent = overallPct + '% complete';
+  })();
 
   var ring = document.querySelector('.op-ring');
   if (ring) {

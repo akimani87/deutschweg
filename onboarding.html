@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Let's personalise your plan</title>
+<link rel="stylesheet" href="deutschweg-theme.css">
+<style>
+  body { min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* ── HEADER ── */
+  .ob-header {
+    padding: 20px 28px;
+    border-bottom: 1px solid var(--border);
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .ob-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .ob-logo-icon { width: 30px; height: 30px; background: var(--blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 15px; font-weight: 800; }
+  .ob-logo-text { font-size: 16px; font-weight: 800; color: var(--dark); }
+  .ob-logo-text span { color: var(--blue); }
+  .ob-step-label { font-size: 12px; font-weight: 600; color: var(--light); }
+
+  /* ── PROGRESS BAR ── */
+  .ob-progress { height: 4px; background: var(--border); position: relative; }
+  .ob-progress-fill { height: 100%; background: var(--blue); transition: width 0.4s ease; }
+
+  /* ── MAIN ── */
+  .ob-main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px 100px;
+  }
+  .ob-card {
+    width: 100%;
+    max-width: 600px;
+  }
+  .ob-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--blue);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+  .ob-question {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--dark);
+    line-height: 1.25;
+    margin-bottom: 32px;
+    letter-spacing: -0.3px;
+  }
+  .ob-hint {
+    font-size: 13px;
+    color: var(--light);
+    margin-bottom: 16px;
+    font-style: italic;
+  }
+
+  /* ── OPTION CARDS ── */
+  .ob-options { display: flex; flex-direction: column; gap: 12px; }
+  .ob-option {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 20px;
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.18s;
+    user-select: none;
+  }
+  .ob-option:hover { border-color: var(--blue); background: var(--blue-light); }
+  .ob-option.selected {
+    border-color: var(--blue);
+    background: var(--blue-light);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+  }
+  .ob-option-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+    transition: background 0.18s;
+  }
+  .ob-option.selected .ob-option-icon { background: white; }
+  .ob-option-text { flex: 1; }
+  .ob-option-main { font-size: 15px; font-weight: 700; color: var(--dark); }
+  .ob-option-sub { font-size: 12px; color: var(--light); margin-top: 2px; }
+  .ob-option-check {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    color: white;
+    flex-shrink: 0;
+    transition: all 0.18s;
+  }
+  .ob-option.selected .ob-option-check {
+    background: var(--blue);
+    border-color: var(--blue);
+  }
+  .ob-option.selected .ob-option-check::after { content: '✓'; }
+
+  /* ── FOOTER NAV ── */
+  .ob-footer {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: white;
+    border-top: 1px solid var(--border);
+    padding: 16px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.05);
+    z-index: 50;
+  }
+  .ob-back-btn {
+    background: none;
+    border: 1.5px solid var(--border);
+    color: var(--mid);
+    padding: 10px 22px;
+    border-radius: var(--radius-sm);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .ob-back-btn:hover { border-color: var(--mid); }
+  .ob-back-btn:disabled { opacity: 0.3; cursor: default; }
+  .ob-next-btn {
+    background: var(--blue);
+    color: white;
+    border: none;
+    padding: 12px 28px;
+    border-radius: var(--radius-sm);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.18s;
+    box-shadow: 0 3px 10px rgba(59,130,246,0.3);
+  }
+  .ob-next-btn:hover:not(:disabled) { background: var(--blue-dark); transform: translateY(-1px); }
+  .ob-next-btn:disabled { background: var(--border); color: var(--light); box-shadow: none; cursor: default; }
+
+  /* ── SUMMARY SCREEN ── */
+  .ob-summary { text-align: center; }
+  .ob-confetti { font-size: 56px; margin-bottom: 20px; animation: pop 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .ob-sum-title { font-size: 30px; font-weight: 800; color: var(--dark); margin-bottom: 10px; }
+  .ob-sum-sub { font-size: 15px; color: var(--mid); margin-bottom: 32px; line-height: 1.6; }
+  .ob-sum-items { display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; text-align: left; }
+  .ob-sum-row {
+    display: flex; align-items: center; gap: 12px;
+    background: white; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 14px 16px;
+  }
+  .ob-sum-icon { font-size: 20px; flex-shrink: 0; }
+  .ob-sum-key { font-size: 11px; font-weight: 700; color: var(--light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
+  .ob-sum-val { font-size: 14px; font-weight: 700; color: var(--dark); }
+  .ob-start-btn {
+    display: block; width: 100%;
+    background: var(--blue); color: white;
+    border: none; padding: 16px;
+    border-radius: var(--radius-sm);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 16px; font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(59,130,246,0.35);
+    transition: all 0.18s;
+    text-decoration: none;
+    text-align: center;
+  }
+  .ob-start-btn:hover { background: var(--blue-dark); transform: translateY(-1px); }
+
+  @keyframes pop { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+
+  /* ── MOBILE ── */
+  @media (max-width: 480px) {
+    .ob-question { font-size: 22px; }
+    .ob-main { padding: 32px 16px 100px; }
+    .ob-footer { padding: 14px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="ob-header">
+  <a href="index.html" class="ob-logo">
+    <div class="ob-logo-icon">D</div>
+    <span class="ob-logo-text">Deutsch<span>Weg</span></span>
+  </a>
+  <span class="ob-step-label" id="stepLabel">Step 1 of 4</span>
+</header>
+
+<div class="ob-progress">
+  <div class="ob-progress-fill" id="progressFill" style="width:25%"></div>
+</div>
+
+<main class="ob-main" id="obMain">
+  <!-- Populated by JS -->
+</main>
+
+<footer class="ob-footer" id="obFooter">
+  <button class="ob-back-btn" id="backBtn" onclick="goBack()" disabled>← Back</button>
+  <button class="ob-next-btn" id="nextBtn" onclick="goNext()" disabled>Next →</button>
+</footer>
+
+<script>
+var steps = [
+  {
+    eyebrow: 'Step 1 of 4 · Your Level',
+    question: 'What is your current German level?',
+    type: 'single',
+    key: 'level',
+    options: [
+      { icon: '🌱', main: 'Complete beginner', sub: 'Never studied German before', value: 'beginner' },
+      { icon: '📖', main: 'Some basics', sub: 'I know a little — A1 level', value: 'a1' },
+      { icon: '📗', main: 'Elementary', sub: 'I have A2 level German', value: 'a2' },
+      { icon: '🎯', main: 'Intermediate', sub: 'I am around B1 level', value: 'b1' },
+    ]
+  },
+  {
+    eyebrow: 'Step 2 of 4 · Your Goal',
+    question: 'Which Goethe exam are you preparing for?',
+    type: 'single',
+    key: 'exam',
+    options: [
+      { icon: '🏅', main: 'Goethe A1', sub: 'Start Deutsch 1 — Basic communication', value: 'A1' },
+      { icon: '🥈', main: 'Goethe A2', sub: 'Fit in Deutsch — Elementary level', value: 'A2' },
+      { icon: '🥇', main: 'Goethe B1', sub: 'Zertifikat B1 — Independent level', value: 'B1' },
+      { icon: '❓', main: 'Not sure yet', sub: 'Help me figure it out', value: 'unsure' },
+    ]
+  },
+  {
+    eyebrow: 'Step 3 of 4 · Your Struggles',
+    question: 'What do you find hardest about German?',
+    hint: 'Select all that apply',
+    type: 'multi',
+    key: 'struggles',
+    options: [
+      { icon: '📝', main: 'Grammar rules', sub: 'Cases, articles, word order', value: 'grammar' },
+      { icon: '✍️', main: 'Writing (Schreiben)', sub: 'Emails, letters, formal text', value: 'writing' },
+      { icon: '🎤', main: 'Speaking (Sprechen)', sub: 'Expressing ideas out loud', value: 'speaking' },
+      { icon: '🎧', main: 'Listening (Hören)', sub: 'Understanding spoken German', value: 'listening' },
+      { icon: '📖', main: 'Reading (Lesen)', sub: 'Understanding written texts', value: 'reading' },
+      { icon: '🧠', main: 'Remembering vocabulary', sub: 'New words don\'t stick', value: 'vocab' },
+    ]
+  },
+  {
+    eyebrow: 'Step 4 of 4 · Your Time',
+    question: 'How much time can you study per day?',
+    type: 'single',
+    key: 'time',
+    options: [
+      { icon: '⚡', main: '10 minutes', sub: 'Quick daily sessions', value: '10min' },
+      { icon: '⏱️', main: '20–30 minutes', sub: 'A solid daily habit', value: '30min' },
+      { icon: '📚', main: '45–60 minutes', sub: 'Committed daily study', value: '60min' },
+      { icon: '🔥', main: 'More than 1 hour', sub: 'Intensive preparation', value: '1hr+' },
+    ]
+  }
+];
+
+var currentStep = 0;
+var answers = {};
+
+function render() {
+  var step = steps[currentStep];
+  var selected = answers[step.key] || (step.type === 'multi' ? [] : null);
+
+  // Update progress
+  var pct = ((currentStep + 1) / steps.length * 100).toFixed(0);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('stepLabel').textContent = 'Step ' + (currentStep + 1) + ' of ' + steps.length;
+
+  // Build options HTML
+  var optsHtml = step.options.map(function(opt) {
+    var isSel = step.type === 'multi'
+      ? selected.indexOf(opt.value) !== -1
+      : selected === opt.value;
+    return '<div class="ob-option' + (isSel ? ' selected' : '') + '" onclick="selectOption(\'' + opt.value + '\')">'
+      + '<div class="ob-option-icon">' + opt.icon + '</div>'
+      + '<div class="ob-option-text">'
+      + '<div class="ob-option-main">' + opt.main + '</div>'
+      + (opt.sub ? '<div class="ob-option-sub">' + opt.sub + '</div>' : '')
+      + '</div>'
+      + '<div class="ob-option-check"></div>'
+      + '</div>';
+  }).join('');
+
+  document.getElementById('obMain').innerHTML =
+    '<div class="ob-card">'
+    + '<div class="ob-eyebrow">' + step.eyebrow + '</div>'
+    + '<div class="ob-question">' + step.question + '</div>'
+    + (step.hint ? '<div class="ob-hint">' + step.hint + '</div>' : '')
+    + '<div class="ob-options">' + optsHtml + '</div>'
+    + '</div>';
+
+  // Footer buttons
+  document.getElementById('backBtn').disabled = currentStep === 0;
+  updateNextBtn();
+}
+
+function updateNextBtn() {
+  var step = steps[currentStep];
+  var selected = answers[step.key];
+  var hasAnswer = step.type === 'multi'
+    ? (selected && selected.length > 0)
+    : !!selected;
+  document.getElementById('nextBtn').disabled = !hasAnswer;
+}
+
+function selectOption(value) {
+  var step = steps[currentStep];
+  if (step.type === 'multi') {
+    var arr = answers[step.key] || [];
+    var idx = arr.indexOf(value);
+    if (idx === -1) { arr.push(value); } else { arr.splice(idx, 1); }
+    answers[step.key] = arr;
+  } else {
+    answers[step.key] = value;
+  }
+  render();
+}
+
+function goNext() {
+  if (currentStep < steps.length - 1) {
+    currentStep++;
+    render();
+  } else {
+    showSummary();
+  }
+}
+
+function goBack() {
+  if (currentStep > 0) {
+    currentStep--;
+    render();
+  }
+}
+
+function showSummary() {
+  // Save to localStorage
+  localStorage.setItem('dw_onboarding', JSON.stringify(answers));
+  localStorage.setItem('dw_onboarding_done', '1');
+
+  // Level display
+  var levelMap = { beginner: 'Complete beginner', a1: 'Some basics (A1)', a2: 'Elementary (A2)', b1: 'Intermediate (B1)' };
+  var examMap  = { A1: 'Goethe A1 — Start Deutsch 1', A2: 'Goethe A2 — Fit in Deutsch', B1: 'Goethe B1 — Zertifikat B1', unsure: 'Not sure yet' };
+  var timeMap  = { '10min': '10 minutes/day', '30min': '20–30 minutes/day', '60min': '45–60 minutes/day', '1hr+': 'More than 1 hour/day' };
+  var struggles = (answers.struggles || []).map(function(s) {
+    return { grammar: 'Grammar', writing: 'Writing', speaking: 'Speaking', listening: 'Listening', reading: 'Reading', vocab: 'Vocabulary' }[s];
+  }).join(', ') || '—';
+
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('stepLabel').textContent = 'Plan ready!';
+  document.getElementById('obFooter').style.display = 'none';
+
+  document.getElementById('obMain').innerHTML =
+    '<div class="ob-card ob-summary">'
+    + '<div class="ob-confetti">🎉</div>'
+    + '<div class="ob-sum-title">Your personalised plan is ready!</div>'
+    + '<div class="ob-sum-sub">We\'ve set up your DeutschWeg dashboard based on your answers. Start with Module 1 and follow the path.</div>'
+    + '<div class="ob-sum-items">'
+    + '<div class="ob-sum-row"><span class="ob-sum-icon">📊</span><div><div class="ob-sum-key">Current level</div><div class="ob-sum-val">' + (levelMap[answers.level] || '—') + '</div></div></div>'
+    + '<div class="ob-sum-row"><span class="ob-sum-icon">🎯</span><div><div class="ob-sum-key">Target exam</div><div class="ob-sum-val">' + (examMap[answers.exam] || '—') + '</div></div></div>'
+    + '<div class="ob-sum-row"><span class="ob-sum-icon">⚠️</span><div><div class="ob-sum-key">Biggest struggles</div><div class="ob-sum-val">' + struggles + '</div></div></div>'
+    + '<div class="ob-sum-row"><span class="ob-sum-icon">⏱️</span><div><div class="ob-sum-key">Daily study time</div><div class="ob-sum-val">' + (timeMap[answers.time] || '—') + '</div></div></div>'
+    + '</div>'
+    + '<a href="deutschweg-prototype.html" class="ob-start-btn">Start Learning →</a>'
+    + '</div>';
+}
+
+// Init
+render();
+</script>
+</body>
+</html>
