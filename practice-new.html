@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Practice: Akkusativ &amp; Dativ</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#F8FAFC;color:#1F2937;font-family:'Plus Jakarta Sans',sans-serif;line-height:1.6;opacity:0;transition:opacity 0.25s;}
+body.ready{opacity:1;}
+:root{
+  --blue:#3B82F6;--blue-dark:#2563EB;--blue-light:#EFF6FF;--blue-mid:#DBEAFE;
+  --dark:#1F2937;--mid:#4B5563;--light:#9CA3AF;
+  --bg:#F8FAFC;--white:#FFFFFF;--border:#E5E7EB;
+  --green:#10B981;--green-light:#ECFDF5;
+  --red:#EF4444;--red-light:#FEF2F2;
+  --amber:#F59E0B;--amber-light:#FFFBEB;
+  --shadow:0 1px 3px rgba(0,0,0,0.08),0 4px 16px rgba(0,0,0,0.05);
+  --shadow-lg:0 4px 24px rgba(0,0,0,0.09),0 1px 4px rgba(0,0,0,0.05);
+}
+
+/* ── NAV ── */
+.nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;height:58px;padding:0 32px;background:var(--white);border-bottom:1px solid var(--border);}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.nav-logo-icon{width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;}
+.nav-logo-text{font-size:17px;font-weight:700;color:var(--dark);}
+.nav-logo-text span{color:var(--blue);}
+.nav-links{display:flex;align-items:center;gap:28px;}
+.nav-links a{font-size:14px;font-weight:500;color:var(--mid);text-decoration:none;transition:color 0.15s;}
+.nav-links a:hover{color:var(--dark);}
+.nav-right{display:flex;align-items:center;gap:12px;}
+.btn-ghost{padding:8px 18px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--mid);font-size:14px;font-weight:500;cursor:pointer;text-decoration:none;transition:all 0.15s;font-family:'Plus Jakarta Sans',sans-serif;}
+.btn-ghost:hover{border-color:var(--blue);color:var(--blue);}
+.btn-primary-nav{padding:9px 20px;border-radius:10px;border:none;background:var(--blue);color:#fff;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;transition:all 0.2s;box-shadow:0 2px 8px rgba(59,130,246,0.3);font-family:'Plus Jakarta Sans',sans-serif;}
+.btn-primary-nav:hover{background:var(--blue-dark);}
+
+/* ── LAYOUT ── */
+.wrap{max-width:1100px;margin:0 auto;padding:0 28px;}
+.page-layout{display:grid;grid-template-columns:1fr 280px;gap:32px;padding:40px 0 80px;align-items:start;}
+
+/* ── BREADCRUMB ── */
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--light);margin-bottom:28px;flex-wrap:wrap;}
+.breadcrumb a{color:var(--light);text-decoration:none;transition:color 0.15s;}
+.breadcrumb a:hover{color:var(--blue);}
+.breadcrumb-sep{color:var(--border);}
+.breadcrumb-current{color:var(--mid);font-weight:500;}
+
+/* ── PROGRESS HEADER ── */
+.prog-header{background:var(--white);border:1px solid var(--border);border-radius:20px;padding:20px 24px;margin-bottom:20px;box-shadow:var(--shadow);}
+.prog-header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.prog-title{font-size:16px;font-weight:700;color:var(--dark);}
+.q-pill{background:var(--blue-light);border:1px solid var(--blue-mid);border-radius:20px;padding:4px 14px;font-size:12px;font-weight:700;color:var(--blue);}
+.prog-bar{height:8px;background:#F1F5F9;border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--blue),#818CF8);border-radius:4px;transition:width 0.5s ease;}
+
+/* ── QUESTION CARD ── */
+.q-card{background:var(--white);border:1px solid var(--border);border-radius:20px;padding:32px;margin-bottom:20px;box-shadow:var(--shadow);}
+.q-type-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue);margin-bottom:16px;}
+.q-text{font-size:22px;font-weight:700;color:var(--dark);margin-bottom:8px;line-height:1.35;}
+.q-text .blank{color:var(--blue);border-bottom:3px solid var(--blue-mid);padding-bottom:2px;}
+.q-hint{font-size:13px;color:var(--light);margin-bottom:24px;font-style:italic;}
+.answer-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;}
+.opt{
+  padding:16px 18px;border-radius:12px;border:1.5px solid var(--border);
+  font-size:14px;font-weight:500;color:var(--mid);background:var(--bg);
+  cursor:pointer;transition:all 0.15s;text-align:left;position:relative;
+  font-family:'Plus Jakarta Sans',sans-serif;display:flex;align-items:center;gap:12px;
+}
+.opt:hover:not(:disabled){border-color:var(--blue);background:var(--blue-light);color:var(--blue-dark);}
+.opt.selected{border-color:var(--blue);background:var(--blue-light);color:var(--blue-dark);}
+.opt.correct{border-color:var(--green);background:var(--green-light);color:#065F46;}
+.opt.wrong{border-color:var(--red);background:var(--red-light);color:#991B1B;}
+.opt:disabled{cursor:default;}
+.opt-letter{
+  width:26px;height:26px;border-radius:8px;background:var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;
+  flex-shrink:0;transition:background 0.15s;
+}
+.opt.selected .opt-letter{background:var(--blue);color:#fff;}
+.opt.correct .opt-letter{background:var(--green);color:#fff;}
+.opt.wrong .opt-letter{background:var(--red);color:#fff;}
+.opt-check{position:absolute;top:10px;right:12px;font-size:14px;font-weight:700;display:none;}
+.opt.correct .opt-check,.opt.wrong .opt-check{display:block;}
+.opt.correct .opt-check::after{content:'✓';color:var(--green);}
+.opt.wrong .opt-check::after{content:'✗';color:var(--red);}
+
+/* Submit */
+.submit-wrap{display:flex;justify-content:center;}
+.btn-submit{
+  padding:15px 48px;border-radius:12px;border:none;
+  background:var(--blue);color:#fff;font-size:15px;font-weight:700;
+  cursor:pointer;transition:all 0.2s;
+  font-family:'Plus Jakarta Sans',sans-serif;
+  box-shadow:0 4px 16px rgba(59,130,246,0.35);
+}
+.btn-submit:hover:not(:disabled){background:var(--blue-dark);transform:translateY(-2px);box-shadow:0 6px 20px rgba(59,130,246,0.4);}
+.btn-submit:disabled{background:#D1D5DB;color:var(--light);cursor:not-allowed;box-shadow:none;transform:none;}
+
+/* ── FEEDBACK CARD ── */
+.feedback-card{
+  border-radius:20px;padding:24px 28px;margin-bottom:20px;
+  animation:slideIn 0.3s ease both;display:none;
+}
+.feedback-card.show{display:block;}
+.feedback-card.correct-fb{background:var(--green-light);border-left:5px solid var(--green);border:1px solid #A7F3D0;border-left:5px solid var(--green);}
+.feedback-card.wrong-fb{background:var(--red-light);border:1px solid #FECACA;border-left:5px solid var(--red);}
+.fb-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.fb-icon{font-size:22px;}
+.fb-title{font-size:17px;font-weight:800;}
+.correct-fb .fb-title{color:#065F46;}
+.wrong-fb .fb-title{color:#991B1B;}
+.fb-body{font-size:14px;color:var(--mid);line-height:1.75;margin-bottom:16px;}
+.fb-correct-box{background:var(--green-light);border:1px solid #A7F3D0;border-radius:10px;padding:12px 16px;margin-bottom:12px;font-size:14px;color:#065F46;display:none;}
+.fb-tip-box{background:var(--amber-light);border:1px solid #FDE68A;border-radius:10px;padding:12px 16px;font-size:13px;color:#92400E;display:none;}
+.fb-correct-box strong,.fb-tip-box strong{display:block;margin-bottom:4px;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;}
+.btn-next{
+  width:100%;padding:15px;border-radius:12px;border:none;
+  background:var(--blue);color:#fff;font-size:15px;font-weight:700;
+  cursor:pointer;transition:all 0.2s;margin-top:8px;
+  font-family:'Plus Jakarta Sans',sans-serif;
+  box-shadow:0 2px 10px rgba(59,130,246,0.3);
+}
+.btn-next:hover{background:var(--blue-dark);}
+
+/* ── RESULTS SCREEN ── */
+.results-card{background:var(--white);border:1px solid var(--border);border-radius:20px;padding:48px 32px;text-align:center;box-shadow:var(--shadow-lg);display:none;}
+.results-card.show{display:block;}
+.results-emoji{font-size:56px;margin-bottom:16px;}
+.results-score{font-size:48px;font-weight:800;color:var(--blue);margin-bottom:8px;}
+.results-label{font-size:16px;color:var(--mid);margin-bottom:28px;}
+.results-msg{font-size:15px;color:var(--mid);line-height:1.75;max-width:380px;margin:0 auto 32px;}
+.results-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+.btn-try{padding:14px 28px;border-radius:10px;border:1.5px solid var(--blue);background:transparent;color:var(--blue);font-size:14px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;}
+.btn-try:hover{background:var(--blue-light);}
+.btn-next-lesson{padding:14px 28px;border-radius:10px;border:none;background:var(--blue);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;text-decoration:none;box-shadow:0 2px 8px rgba(59,130,246,0.3);}
+.btn-next-lesson:hover{background:var(--blue-dark);}
+
+/* ── SIDEBAR ── */
+.sidebar{display:flex;flex-direction:column;gap:16px;}
+.streak-mini{background:linear-gradient(135deg,#3B82F6,#6366F1);border-radius:16px;padding:18px;color:#fff;display:flex;align-items:center;gap:14px;box-shadow:0 4px 16px rgba(59,130,246,0.25);}
+.streak-mini-num{font-size:32px;font-weight:800;line-height:1;}
+.streak-mini-label{font-size:13px;opacity:0.85;}
+
+.sidebar-card{background:var(--white);border:1px solid var(--border);border-radius:20px;padding:22px;box-shadow:var(--shadow);}
+.sidebar-title{font-size:14px;font-weight:700;color:var(--dark);margin-bottom:4px;}
+.sidebar-sub{font-size:12px;color:var(--light);margin-bottom:16px;}
+.score-big{font-size:48px;font-weight:800;color:var(--blue);line-height:1;margin-bottom:2px;}
+.score-of{font-size:13px;color:var(--light);margin-bottom:14px;}
+.score-bar-wrap{height:8px;background:#F1F5F9;border-radius:4px;overflow:hidden;margin-bottom:12px;}
+.score-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue),#818CF8);border-radius:4px;transition:width 0.5s ease;}
+.score-desc{font-size:13px;color:var(--mid);line-height:1.65;}
+
+.weak-card{background:var(--white);border:1px solid var(--border);border-radius:20px;padding:22px;box-shadow:var(--shadow);}
+.weak-title{font-size:14px;font-weight:700;color:var(--dark);margin-bottom:12px;}
+.weak-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);}
+.weak-item:last-child{border-bottom:none;}
+.weak-name{font-size:13px;color:var(--mid);}
+.weak-pill{font-size:11px;font-weight:700;background:var(--amber-light);color:#92400E;border:1px solid #FDE68A;border-radius:20px;padding:2px 10px;}
+
+.more-card{background:#F9FAFB;border:1px solid var(--border);border-radius:20px;padding:22px;}
+.more-title{font-size:14px;font-weight:700;color:var(--dark);margin-bottom:4px;}
+.more-sub{font-size:12px;color:var(--light);margin-bottom:14px;}
+.more-rec{font-size:13px;color:var(--mid);margin-bottom:14px;line-height:1.6;}
+.btn-more{display:block;width:100%;padding:11px;border-radius:10px;border:1.5px solid var(--blue);background:transparent;color:var(--blue);font-size:13px;font-weight:700;cursor:pointer;text-align:center;text-decoration:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;}
+.btn-more:hover{background:var(--blue-light);}
+
+/* ── ANIMATIONS ── */
+@keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .nav-links{display:none;}
+  .page-layout{grid-template-columns:1fr;}
+  .sidebar{display:none;}
+  .answer-grid{grid-template-columns:1fr;}
+}
+@media(max-width:600px){
+  .wrap{padding:0 16px;}
+  .nav{padding:0 16px;}
+  .q-card{padding:22px 18px;}
+  .q-text{font-size:18px;}
+  .answer-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav class="nav">
+  <a href="index.html" class="nav-logo">
+    <div class="nav-logo-icon">D</div>
+    <span class="nav-logo-text">Deutsch<span>Weg</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="deutschweg-prototype.html">My Courses</a>
+    <a href="exam-whisperer.html">Exam Whisperer</a>
+    <a href="sprechen-prep.html">Sprechen Prep</a>
+  </div>
+  <div class="nav-right">
+    <a href="login.html" class="btn-ghost">Log In</a>
+    <a href="signup.html" class="btn-primary-nav">Get Started</a>
+  </div>
+</nav>
+
+<!-- ── PAGE ── -->
+<div class="wrap">
+  <div style="padding-top:28px;">
+    <div class="breadcrumb">
+      <a href="deutschweg-prototype.html">My Courses</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="deutschweg-prototype.html">A2 Level</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="lesson-new.html">Akkusativ &amp; Dativ</a>
+      <span class="breadcrumb-sep">›</span>
+      <span class="breadcrumb-current">Practice</span>
+    </div>
+  </div>
+
+  <div class="page-layout">
+    <!-- ── MAIN ── -->
+    <div>
+      <!-- Progress header -->
+      <div class="prog-header">
+        <div class="prog-header-row">
+          <span class="prog-title">Akkusativ &amp; Dativ — Practice</span>
+          <span class="q-pill" id="qPill">Question 1 of 5</span>
+        </div>
+        <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+      </div>
+
+      <!-- Question card -->
+      <div class="q-card" id="qCard">
+        <div class="q-type-label">FILL IN THE BLANK</div>
+        <div class="q-text" id="qText"></div>
+        <div class="q-hint" id="qHint"></div>
+        <div class="answer-grid" id="answerGrid"></div>
+        <div class="submit-wrap">
+          <button class="btn-submit" id="submitBtn" disabled onclick="submit()">Submit Answer →</button>
+        </div>
+      </div>
+
+      <!-- Feedback card -->
+      <div class="feedback-card" id="feedbackCard">
+        <div class="fb-header">
+          <span class="fb-icon" id="fbIcon"></span>
+          <span class="fb-title" id="fbTitle"></span>
+        </div>
+        <div class="fb-body" id="fbBody"></div>
+        <div class="fb-correct-box" id="fbCorrectBox">
+          <strong>✓ Correct Answer</strong>
+          <span id="fbCorrectText"></span>
+        </div>
+        <div class="fb-tip-box" id="fbTipBox">
+          <strong>💡 Practice Tip</strong>
+          <span id="fbTipText"></span>
+        </div>
+        <button class="btn-next" id="nextBtn" onclick="next()">Next Question →</button>
+      </div>
+
+      <!-- Results screen -->
+      <div class="results-card" id="resultsCard">
+        <div class="results-emoji" id="resultsEmoji"></div>
+        <div class="results-score" id="resultsScore"></div>
+        <div class="results-label">out of 5 questions</div>
+        <div class="results-msg" id="resultsMsg"></div>
+        <div class="results-btns">
+          <button class="btn-try" onclick="restart()">Try Again</button>
+          <a href="deutschweg-prototype.html" class="btn-next-lesson">Next Lesson →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SIDEBAR ── -->
+    <div class="sidebar">
+      <!-- Streak mini -->
+      <div class="streak-mini">
+        <div>
+          <div class="streak-mini-num">7 🔥</div>
+          <div class="streak-mini-label">Day streak</div>
+        </div>
+      </div>
+
+      <!-- Score card -->
+      <div class="sidebar-card">
+        <div class="sidebar-title">Your Score</div>
+        <div class="sidebar-sub">Updates as you answer</div>
+        <div class="score-big" id="scoreBig">0</div>
+        <div class="score-of">out of 5</div>
+        <div class="score-bar-wrap"><div class="score-bar-fill" id="scoreBarFill" style="width:0%"></div></div>
+        <div class="score-desc" id="scoreDesc">Answer your first question to see your score.</div>
+      </div>
+
+      <!-- Weak areas -->
+      <div class="weak-card">
+        <div class="weak-title">Common Weak Areas</div>
+        <div class="weak-item"><span class="weak-name">Masculine Accusative</span><span class="weak-pill">3 errors</span></div>
+        <div class="weak-item"><span class="weak-name">Dative Feminine</span><span class="weak-pill">2 errors</span></div>
+        <div class="weak-item"><span class="weak-name">Dative Prepositions</span><span class="weak-pill">1 error</span></div>
+      </div>
+
+      <!-- More practice -->
+      <div class="more-card">
+        <div class="more-title">Need more practice?</div>
+        <div class="more-sub">Recommended next exercise</div>
+        <div class="more-rec">📖 <strong>Lesson 6 — Subordinate Clauses</strong> builds directly on case knowledge.</div>
+        <a href="lesson-new.html" class="btn-more">Practice This Next →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var questions = [
+  {
+    question: 'Ich kaufe _____ Hund.',
+    blank: '_____',
+    hint: 'Hint: "der Hund" is masculine. The verb "kaufen" takes Accusative.',
+    options: ['der Hund', 'den Hund', 'dem Hund', 'die Hund'],
+    correct: 1,
+    explanation: '"den Hund" is correct. "kaufen" takes Accusative case. Masculine articles change: der → den in Accusative. "Ich kaufe den Hund" = I am buying the dog.',
+    correctLabel: 'den Hund',
+    tip: 'Remember: only masculine articles change in Accusative (der → den). Feminine "die" and neuter "das" stay the same.'
+  },
+  {
+    question: 'Er schreibt _____ Frau einen Brief.',
+    blank: '_____',
+    hint: 'Hint: "die Frau" is feminine. "schreiben" takes Dative for the recipient.',
+    options: ['die Frau', 'den Frau', 'der Frau', 'dem Frau'],
+    correct: 2,
+    explanation: '"der Frau" is correct. "schreiben" (to write) takes Dative for the recipient — the person you write to. Feminine Dative: die → der. So "der Frau" = to the woman.',
+    correctLabel: 'der Frau',
+    tip: 'Dative verbs — geben, schreiben, helfen, zeigen, gehören — always take Dative. The recipient is always Dative.'
+  },
+  {
+    question: 'Sie hilft _____ Kind.',
+    blank: '_____',
+    hint: 'Hint: "das Kind" is neuter. "helfen" always takes Dative.',
+    options: ['das Kind', 'den Kind', 'die Kind', 'dem Kind'],
+    correct: 3,
+    explanation: '"dem Kind" is correct. "helfen" (to help) always takes Dative. Neuter Dative: das → dem. "Sie hilft dem Kind" = She is helping the child.',
+    correctLabel: 'dem Kind',
+    tip: '"helfen" is a key Dative verb. Memorise: "Ich helfe dem Mann / der Frau / dem Kind." All recipients are Dative.'
+  },
+  {
+    question: 'Wir fahren mit _____ Bus.',
+    blank: '_____',
+    hint: 'Hint: "der Bus" is masculine. "mit" always takes Dative.',
+    options: ['der Bus', 'den Bus', 'dem Bus', 'die Bus'],
+    correct: 2,
+    explanation: '"dem Bus" is correct. "mit" is a Dative preposition — it always takes Dative. Masculine Dative: der → dem. "mit dem Bus" = by bus / with the bus.',
+    correctLabel: 'dem Bus',
+    tip: 'The prepositions mit, nach, bei, von, seit, aus, zu, gegenüber ALWAYS take Dative. Learn them as a list.'
+  },
+  {
+    question: 'Ich sehe _____ Mann.',
+    blank: '_____',
+    hint: 'Hint: "der Mann" is masculine. "sehen" (to see) takes Accusative.',
+    options: ['der Mann', 'dem Mann', 'die Mann', 'den Mann'],
+    correct: 3,
+    explanation: '"den Mann" is correct. "sehen" takes Accusative — the man is the direct object being seen. Masculine Accusative: der → den. "Ich sehe den Mann" = I see the man.',
+    correctLabel: 'den Mann',
+    tip: 'Ask yourself: is this the DIRECT object (Accusative) or the INDIRECT/recipient object (Dative)? "Sehen" always takes Accusative.'
+  }
+];
+
+var current = 0;
+var score = 0;
+var selected = null;
+var answered = false;
+
+function renderQuestion() {
+  var q = questions[current];
+  answered = false;
+  selected = null;
+
+  // Pill + progress
+  document.getElementById('qPill').textContent = 'Question ' + (current+1) + ' of ' + questions.length;
+  document.getElementById('progFill').style.width = (current / questions.length * 100) + '%';
+
+  // Question text with blank highlighted
+  var qtext = q.question.replace(q.blank, '<span class="blank">' + q.blank + '</span>');
+  document.getElementById('qText').innerHTML = qtext;
+  document.getElementById('qHint').textContent = q.hint;
+
+  // Answer grid
+  var grid = document.getElementById('answerGrid');
+  grid.innerHTML = '';
+  var letters = ['A','B','C','D'];
+  q.options.forEach(function(opt, i) {
+    var btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.innerHTML = '<span class="opt-letter">' + letters[i] + '</span>' + opt + '<span class="opt-check"></span>';
+    btn.onclick = function() { pick(btn, i); };
+    grid.appendChild(btn);
+  });
+
+  // Reset submit
+  var submitBtn = document.getElementById('submitBtn');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Submit Answer →';
+
+  // Hide feedback
+  var fb = document.getElementById('feedbackCard');
+  fb.classList.remove('show','correct-fb','wrong-fb');
+  fb.style.display = 'none';
+
+  // Show question card
+  document.getElementById('qCard').style.display = 'block';
+
+  // Next button text
+  document.getElementById('nextBtn').textContent = current < questions.length - 1 ? 'Next Question →' : 'See Results →';
+}
+
+function pick(el, idx) {
+  if (answered) return;
+  selected = idx;
+  document.querySelectorAll('.opt').forEach(function(b) { b.classList.remove('selected'); });
+  el.classList.add('selected');
+  document.getElementById('submitBtn').disabled = false;
+}
+
+function submit() {
+  if (selected === null || answered) return;
+  answered = true;
+
+  var q = questions[current];
+  var isCorrect = selected === q.correct;
+  if (isCorrect) score++;
+
+  // Mark options
+  document.querySelectorAll('.opt').forEach(function(b, i) {
+    b.disabled = true;
+    if (i === q.correct) b.classList.add('correct');
+    if (i === selected && !isCorrect) b.classList.add('wrong');
+    b.classList.remove('selected');
+  });
+
+  // Disable submit
+  document.getElementById('submitBtn').disabled = true;
+
+  // Show feedback
+  var fb = document.getElementById('feedbackCard');
+  fb.style.display = 'block';
+  fb.classList.add('show');
+
+  if (isCorrect) {
+    fb.className = 'feedback-card show correct-fb';
+    document.getElementById('fbIcon').textContent = '✅';
+    document.getElementById('fbTitle').textContent = 'Correct!';
+    document.getElementById('fbBody').textContent = q.explanation;
+    document.getElementById('fbCorrectBox').style.display = 'none';
+    document.getElementById('fbTipBox').style.display = 'none';
+  } else {
+    fb.className = 'feedback-card show wrong-fb';
+    document.getElementById('fbIcon').textContent = '❌';
+    document.getElementById('fbTitle').textContent = 'Not quite';
+    document.getElementById('fbBody').textContent = q.explanation;
+    document.getElementById('fbCorrectBox').style.display = 'block';
+    document.getElementById('fbCorrectText').textContent = q.correctLabel;
+    document.getElementById('fbTipBox').style.display = 'block';
+    document.getElementById('fbTipText').textContent = q.tip;
+  }
+
+  // Update sidebar score
+  updateScore();
+
+  // Scroll to feedback
+  fb.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function next() {
+  current++;
+  if (current >= questions.length) {
+    showResults();
+  } else {
+    renderQuestion();
+    document.getElementById('qCard').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+}
+
+function showResults() {
+  document.getElementById('qCard').style.display = 'none';
+  var fb = document.getElementById('feedbackCard');
+  fb.classList.remove('show');
+  fb.style.display = 'none';
+
+  var pct = score / questions.length;
+  var emoji = pct === 1 ? '🌟' : pct >= 0.6 ? '👍' : '💪';
+  var msg = pct === 1
+    ? 'Perfect score! You have mastered Accusative and Dative cases. Keep this momentum going!'
+    : pct >= 0.6
+    ? 'Good work! You understand the core patterns. Review any mistakes and try again for a perfect score.'
+    : 'Keep practising! Focus on which articles change in Accusative (only masculine) vs Dative (all genders).';
+
+  document.getElementById('resultsEmoji').textContent = emoji;
+  document.getElementById('resultsScore').textContent = score + '/5';
+  document.getElementById('resultsMsg').textContent = msg;
+
+  var rc = document.getElementById('resultsCard');
+  rc.classList.add('show');
+  rc.style.display = 'block';
+  rc.scrollIntoView({behavior:'smooth', block:'start'});
+
+  // Final progress bar
+  document.getElementById('progFill').style.width = '100%';
+  document.getElementById('qPill').textContent = 'Complete!';
+}
+
+function updateScore() {
+  document.getElementById('scoreBig').textContent = score;
+  var pct = score / questions.length * 100;
+  document.getElementById('scoreBarFill').style.width = pct + '%';
+  var descs = [
+    'Keep going — you can do this!',
+    'Good start — 1 correct so far.',
+    '2 correct — you\'re building momentum!',
+    '3 correct — solid understanding!',
+    '4 correct — almost perfect!',
+    '5/5 — excellent mastery!'
+  ];
+  document.getElementById('scoreDesc').textContent = descs[score] || '';
+}
+
+function restart() {
+  current = 0;
+  score = 0;
+  selected = null;
+  answered = false;
+  document.getElementById('resultsCard').classList.remove('show');
+  document.getElementById('resultsCard').style.display = 'none';
+  document.getElementById('scoreBig').textContent = '0';
+  document.getElementById('scoreBarFill').style.width = '0%';
+  document.getElementById('scoreDesc').textContent = 'Answer your first question to see your score.';
+  renderQuestion();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.body.classList.add('ready');
+  renderQuestion();
+});
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  document.body.classList.add('ready');
+  renderQuestion();
+}
+</script>
+</body>
+</html>

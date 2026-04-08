@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — Accusative & Dative Cases</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#F8FAFC;color:#1F2937;font-family:'Plus Jakarta Sans',sans-serif;line-height:1.6;opacity:0;transition:opacity 0.25s;}
+body.ready{opacity:1;}
+:root{
+  --blue:#3B82F6;--blue-dark:#2563EB;--blue-light:#EFF6FF;--blue-mid:#DBEAFE;
+  --dark:#1F2937;--mid:#4B5563;--light:#9CA3AF;
+  --bg:#F8FAFC;--white:#FFFFFF;--border:#E5E7EB;
+  --green:#10B981;--green-light:#ECFDF5;
+  --red:#EF4444;
+  --shadow:0 1px 3px rgba(0,0,0,0.08),0 4px 16px rgba(0,0,0,0.05);
+  --shadow-lg:0 4px 24px rgba(0,0,0,0.09),0 1px 4px rgba(0,0,0,0.05);
+}
+
+/* ── NAV ── */
+.nav{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  height:58px;padding:0 32px;
+  background:var(--white);border-bottom:1px solid var(--border);
+}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.nav-logo-icon{width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;}
+.nav-logo-text{font-size:17px;font-weight:700;color:var(--dark);}
+.nav-logo-text span{color:var(--blue);}
+.nav-links{display:flex;align-items:center;gap:28px;}
+.nav-links a{font-size:14px;font-weight:500;color:var(--mid);text-decoration:none;transition:color 0.15s;}
+.nav-links a:hover{color:var(--dark);}
+.nav-right{display:flex;align-items:center;gap:12px;}
+.btn-ghost{padding:8px 18px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--mid);font-size:14px;font-weight:500;cursor:pointer;text-decoration:none;transition:all 0.15s;font-family:'Plus Jakarta Sans',sans-serif;}
+.btn-ghost:hover{border-color:var(--blue);color:var(--blue);}
+.btn-primary{padding:9px 20px;border-radius:10px;border:none;background:var(--blue);color:#fff;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;transition:all 0.2s;box-shadow:0 2px 8px rgba(59,130,246,0.3);font-family:'Plus Jakarta Sans',sans-serif;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary:hover{background:var(--blue-dark);transform:translateY(-1px);}
+
+/* ── LAYOUT ── */
+.wrap{max-width:1100px;margin:0 auto;padding:0 28px;}
+.page-layout{display:grid;grid-template-columns:1fr 300px;gap:32px;padding:40px 0 80px;align-items:start;}
+
+/* ── BREADCRUMB ── */
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--light);margin-bottom:28px;flex-wrap:wrap;}
+.breadcrumb a{color:var(--light);text-decoration:none;transition:color 0.15s;}
+.breadcrumb a:hover{color:var(--blue);}
+.breadcrumb-sep{color:var(--border);}
+.breadcrumb-current{color:var(--mid);font-weight:500;}
+
+/* ── CARDS ── */
+.card{background:var(--white);border:1px solid var(--border);border-radius:20px;padding:28px;margin-bottom:20px;box-shadow:var(--shadow);}
+
+/* ── HEADER CARD ── */
+.level-chip{display:inline-flex;align-items:center;gap:6px;background:var(--blue-light);border:1px solid var(--blue-mid);border-radius:6px;padding:4px 12px;font-size:11px;font-weight:700;color:var(--blue);letter-spacing:0.5px;margin-bottom:14px;}
+.lesson-title{font-size:26px;font-weight:800;color:var(--dark);margin-bottom:12px;line-height:1.25;}
+.lesson-intro{font-size:15px;color:var(--mid);line-height:1.75;margin-bottom:20px;}
+.progress-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.progress-label{font-size:13px;font-weight:600;color:var(--mid);}
+.progress-sub{font-size:12px;color:var(--light);}
+.prog-bar{height:8px;background:#F1F5F9;border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--blue),#818CF8);border-radius:4px;transition:width 0.6s ease;}
+
+/* ── SECTION LABEL ── */
+.sec-label-row{display:flex;align-items:center;gap:14px;margin:8px 0 20px;}
+.sec-label-text{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue);white-space:nowrap;}
+.sec-label-line{flex:1;height:1px;background:var(--border);}
+
+/* ── CONTENT ── */
+.content-h{font-size:20px;font-weight:700;color:var(--dark);margin-bottom:12px;}
+.content-p{font-size:15px;color:var(--mid);line-height:1.8;margin-bottom:16px;}
+
+/* ── EXAMPLE BOX ── */
+.example-box{
+  border-left:4px solid var(--blue);background:var(--blue-light);
+  border-radius:0 12px 12px 0;padding:16px 20px;margin:16px 0;
+}
+.example-de{font-size:17px;font-weight:700;color:var(--dark);margin-bottom:4px;}
+.example-en{font-size:13px;color:var(--mid);font-style:italic;}
+
+/* ── GRAMMAR TABLE ── */
+.table-wrap{overflow-x:auto;margin:16px 0;}
+table{width:100%;border-collapse:collapse;font-size:14px;}
+th{background:#F9FAFB;padding:10px 16px;text-align:left;font-weight:700;color:var(--mid);font-size:12px;letter-spacing:0.5px;text-transform:uppercase;border-bottom:2px solid var(--border);}
+td{padding:12px 16px;border-bottom:1px solid var(--border);color:var(--dark);font-weight:500;}
+tr:last-child td{border-bottom:none;}
+tr.highlight td{background:var(--blue-light);color:var(--blue-dark);}
+tr.highlight td:first-child{border-left:3px solid var(--blue);}
+
+/* ── INFO BOX ── */
+.info-box{background:var(--blue-light);border:1px solid var(--blue-mid);border-radius:12px;padding:16px 18px;margin:16px 0;font-size:14px;color:#1E40AF;line-height:1.75;}
+.info-box strong{display:block;margin-bottom:4px;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;}
+
+/* ── PRACTICE QUESTION ── */
+.practice-q-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue);margin-bottom:12px;}
+.practice-q-text{font-size:18px;font-weight:700;color:var(--dark);margin-bottom:16px;line-height:1.4;}
+.practice-q-text em{color:var(--blue);font-style:normal;border-bottom:2px solid var(--blue-mid);}
+.answer-chips{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.chip{
+  padding:13px 16px;border-radius:10px;border:1.5px solid var(--border);
+  font-size:14px;font-weight:500;color:var(--mid);background:var(--bg);
+  cursor:pointer;transition:all 0.15s;text-align:left;
+  font-family:'Plus Jakarta Sans',sans-serif;display:flex;align-items:center;gap:10px;
+}
+.chip:hover{border-color:var(--blue);background:var(--blue-light);color:var(--blue);}
+.chip.correct{border-color:var(--green);background:var(--green-light);color:#065F46;}
+.chip-letter{width:22px;height:22px;border-radius:6px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.chip.correct .chip-letter{background:var(--green);color:#fff;}
+
+/* ── BOTTOM BAR ── */
+.bottom-bar{
+  background:var(--white);border:1px solid var(--border);border-radius:20px;
+  padding:20px 28px;display:flex;align-items:center;justify-content:space-between;gap:14px;
+  box-shadow:var(--shadow);
+}
+.btn-gray{padding:12px 22px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--mid);font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.15s;}
+.btn-gray:hover{border-color:var(--mid);}
+.btn-next{padding:12px 22px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--light);font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.15s;}
+.btn-next:hover{border-color:var(--mid);color:var(--mid);}
+.btn-start{padding:12px 28px;border-radius:10px;border:none;background:var(--blue);color:#fff;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;box-shadow:0 2px 8px rgba(59,130,246,0.3);}
+.btn-start:hover{background:var(--blue-dark);transform:translateY(-1px);}
+
+/* ── SIDEBAR ── */
+.sidebar{display:flex;flex-direction:column;gap:16px;}
+
+/* Streak card */
+.streak-card{
+  background:linear-gradient(135deg,#3B82F6,#6366F1);
+  border-radius:20px;padding:22px;color:#fff;position:relative;overflow:hidden;
+  box-shadow:0 4px 20px rgba(59,130,246,0.3);
+}
+.streak-card::before{content:'';position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:rgba(255,255,255,0.08);border-radius:50%;}
+.streak-badge{position:absolute;top:14px;right:14px;background:rgba(255,255,255,0.2);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;}
+.streak-num{font-size:42px;font-weight:800;line-height:1;margin-bottom:4px;}
+.streak-label{font-size:13px;opacity:0.85;margin-bottom:16px;}
+.streak-days{display:flex;gap:6px;}
+.day-box{
+  flex:1;background:rgba(255,255,255,0.15);border-radius:6px;
+  padding:6px 4px;text-align:center;
+}
+.day-box.done{background:rgba(255,255,255,0.85);}
+.day-box.today{background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.12);}
+.day-letter{font-size:10px;font-weight:700;color:rgba(255,255,255,0.7);display:block;margin-bottom:2px;}
+.day-box.done .day-letter,.day-box.today .day-letter{color:#3B82F6;}
+.day-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.4);margin:0 auto;}
+.day-box.done .day-dot,.day-box.today .day-dot{background:#3B82F6;}
+
+/* Module progress card */
+.sidebar-card{background:var(--white);border:1px solid var(--border);border-radius:20px;padding:22px;box-shadow:var(--shadow);}
+.sidebar-title{font-size:14px;font-weight:700;color:var(--dark);margin-bottom:16px;}
+.module-list{display:flex;flex-direction:column;gap:2px;margin-bottom:16px;}
+.module-item{display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:10px;transition:background 0.15s;}
+.module-item:hover{background:var(--bg);}
+.module-item.active{background:var(--blue-light);}
+.mi-icon{
+  width:28px;height:28px;border-radius:8px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;
+}
+.mi-done{background:var(--green-light);color:var(--green);}
+.mi-active{background:var(--blue-light);color:var(--blue);}
+.mi-pending{background:#F9FAFB;color:var(--light);border:1px solid var(--border);}
+.mi-body{flex:1;min-width:0;}
+.mi-name{font-size:13px;font-weight:600;color:var(--mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.module-item.active .mi-name{color:var(--dark);}
+.mi-sub{font-size:11px;color:var(--light);margin-top:1px;}
+.mi-done-sub{color:var(--green);}
+.progress-summary{background:#F9FAFB;border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px;}
+.progress-summary-text{font-size:13px;color:var(--mid);line-height:1.6;margin-bottom:8px;}
+.mini-bar{height:5px;background:#E5E7EB;border-radius:3px;overflow:hidden;}
+.mini-fill{height:100%;background:var(--blue);border-radius:3px;width:68%;}
+.btn-continue{display:block;width:100%;padding:12px;border-radius:10px;border:none;background:var(--blue);color:#fff;font-size:14px;font-weight:700;cursor:pointer;text-align:center;text-decoration:none;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;box-shadow:0 2px 8px rgba(59,130,246,0.25);}
+.btn-continue:hover{background:var(--blue-dark);}
+
+/* Exam whisperer widget */
+.whisper-card{background:linear-gradient(135deg,#EFF6FF,#DBEAFE);border:1px solid var(--blue-mid);border-radius:20px;padding:22px;}
+.whisper-title{font-size:14px;font-weight:700;color:var(--dark);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.whisper-desc{font-size:13px;color:var(--mid);line-height:1.65;margin-bottom:16px;}
+.btn-whisper{display:block;width:100%;padding:12px;border-radius:10px;border:none;background:var(--blue);color:#fff;font-size:13px;font-weight:700;cursor:pointer;text-align:center;text-decoration:none;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;}
+.btn-whisper:hover{background:var(--blue-dark);}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .nav-links{display:none;}
+  .page-layout{grid-template-columns:1fr;}
+  .sidebar{display:none;}
+  .answer-chips{grid-template-columns:1fr;}
+}
+@media(max-width:600px){
+  .wrap{padding:0 16px;}
+  .nav{padding:0 16px;}
+  .lesson-title{font-size:22px;}
+  .bottom-bar{flex-direction:column;}
+  .bottom-bar a,.bottom-bar button{width:100%;text-align:center;justify-content:center;}
+}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav class="nav">
+  <a href="index.html" class="nav-logo">
+    <div class="nav-logo-icon">D</div>
+    <span class="nav-logo-text">Deutsch<span>Weg</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="deutschweg-prototype.html">My Courses</a>
+    <a href="exam-whisperer.html">Exam Whisperer</a>
+    <a href="sprechen-prep.html">Sprechen Prep</a>
+  </div>
+  <div class="nav-right">
+    <a href="login.html" class="btn-ghost">Log In</a>
+    <a href="signup.html" class="btn-primary">Get Started</a>
+  </div>
+</nav>
+
+<!-- ── PAGE ── -->
+<div class="wrap">
+  <!-- BREADCRUMB -->
+  <div style="padding-top:28px;">
+    <div class="breadcrumb">
+      <a href="deutschweg-prototype.html">My Courses</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href="deutschweg-prototype.html">A2 Level</a>
+      <span class="breadcrumb-sep">›</span>
+      <span class="breadcrumb-current">Accusative &amp; Dative Cases</span>
+    </div>
+  </div>
+
+  <div class="page-layout">
+    <!-- ── MAIN COLUMN ── -->
+    <div>
+
+      <!-- Header card -->
+      <div class="card">
+        <div class="level-chip">A2 · MODULE 5</div>
+        <h1 class="lesson-title">Accusative &amp; Dative Cases</h1>
+        <p class="lesson-intro">In German, nouns change their form depending on their role in the sentence. This lesson covers the two most commonly tested cases in the Goethe A2 exam — Accusative (direct object) and Dative (indirect object).</p>
+        <div class="progress-row">
+          <span class="progress-label">Section Progress</span>
+          <span class="progress-sub">2 of 5 sections</span>
+        </div>
+        <div class="prog-bar"><div class="prog-fill" style="width:40%"></div></div>
+      </div>
+
+      <!-- Section 1 — Accusative -->
+      <div class="card">
+        <div class="sec-label-row">
+          <span class="sec-label-text">Section 1</span>
+          <div class="sec-label-line"></div>
+        </div>
+
+        <h2 class="content-h">The Accusative Case</h2>
+        <p class="content-p">The <strong>Accusative case</strong> marks the <strong>direct object</strong> of a sentence — the thing that receives the action of the verb directly. It answers the question "Wen? / Was?" (Who? / What?).</p>
+
+        <div class="example-box">
+          <div class="example-de">Ich sehe <strong style="color:var(--blue);">den Hund</strong>.</div>
+          <div class="example-en">I see the dog. → "den Hund" is the direct object (Accusative)</div>
+        </div>
+
+        <p class="content-p">The key change in Accusative happens with <strong>masculine nouns</strong>. "der" becomes "den". Feminine and neuter articles stay the same.</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Gender</th><th>Nominative (Subject)</th><th>Accusative (Direct Object)</th></tr>
+            </thead>
+            <tbody>
+              <tr class="highlight"><td>Masculine</td><td>der Mann</td><td><strong>den Mann</strong></td></tr>
+              <tr><td>Feminine</td><td>die Frau</td><td>die Frau</td></tr>
+              <tr><td>Neuter</td><td>das Kind</td><td>das Kind</td></tr>
+              <tr><td>Plural</td><td>die Männer</td><td>die Männer</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="info-box">
+          <strong>💡 Exam Tip</strong>
+          Only masculine nouns change in Accusative (der → den). This is the most tested pattern in Goethe A2. Memorise: "Ich sehe <em>den</em> Mann" not "der Mann".
+        </div>
+
+        <div style="margin-top:20px;">
+          <div class="practice-q-label">Quick Check</div>
+          <div class="practice-q-text">Ich kaufe <em>_____</em> Apfel. (der Apfel — masculine)</div>
+          <div class="answer-chips">
+            <button class="chip" onclick="pickChip(this,false)"><span class="chip-letter">A</span>der Apfel</button>
+            <button class="chip" onclick="pickChip(this,true)"><span class="chip-letter">B</span>den Apfel</button>
+            <button class="chip" onclick="pickChip(this,false)"><span class="chip-letter">C</span>dem Apfel</button>
+            <button class="chip" onclick="pickChip(this,false)"><span class="chip-letter">D</span>die Apfel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2 — Dative -->
+      <div class="card">
+        <div class="sec-label-row">
+          <span class="sec-label-text">Section 2</span>
+          <div class="sec-label-line"></div>
+        </div>
+
+        <h2 class="content-h">The Dative Case</h2>
+        <p class="content-p">The <strong>Dative case</strong> marks the <strong>indirect object</strong> — the recipient of the action. It answers "Wem?" (To whom?). Verbs like <em>geben, schreiben, helfen, zeigen</em> take Dative.</p>
+
+        <div class="example-box">
+          <div class="example-de">Er schreibt <strong style="color:var(--blue);">der Frau</strong> einen Brief.</div>
+          <div class="example-en">He writes the woman a letter. → "der Frau" is the indirect object (Dative)</div>
+        </div>
+
+        <p class="content-p">In Dative, ALL genders change. The articles shift: der→dem, die→der, das→dem, die(pl)→den(+n).</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Gender</th><th>Nominative</th><th>Dative (Indirect Object)</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Masculine</td><td>der Mann</td><td><strong>dem Mann</strong></td></tr>
+              <tr class="highlight"><td>Feminine</td><td>die Frau</td><td><strong>der Frau</strong></td></tr>
+              <tr><td>Neuter</td><td>das Kind</td><td><strong>dem Kind</strong></td></tr>
+              <tr><td>Plural</td><td>die Männer</td><td><strong>den Männern</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="info-box">
+          <strong>📋 Dative Prepositions — Learn these for the exam</strong>
+          These prepositions <em>always</em> take Dative: <strong>mit, nach, bei, von, seit, aus, zu, gegenüber</strong>. Example: "Ich fahre <em>mit dem</em> Bus." (not "mit der Bus" — Bus is masculine → dem)
+        </div>
+
+        <div style="margin-top:20px;">
+          <div class="practice-q-label">Quick Check</div>
+          <div class="practice-q-text">Er schreibt <em>_____</em> Frau einen Brief. (die Frau — feminine Dative)</div>
+          <div class="answer-chips">
+            <button class="chip" onclick="pickChip(this,false)"><span class="chip-letter">A</span>die Frau</button>
+            <button class="chip" onclick="pickChip(this,false)"><span class="chip-letter">B</span>den Frau</button>
+            <button class="chip" onclick="pickChip(this,true)"><span class="chip-letter">C</span>der Frau</button>
+            <button class="chip" onclick="pickChip(this,false)"><span class="chip-letter">D</span>dem Frau</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom bar -->
+      <div class="bottom-bar">
+        <a href="deutschweg-prototype.html" class="btn-gray">← Previous</a>
+        <a href="practice-new.html" class="btn-start">Start Practice →</a>
+        <a href="deutschweg-prototype.html" class="btn-next">Next Lesson →</a>
+      </div>
+
+    </div>
+
+    <!-- ── SIDEBAR ── -->
+    <div class="sidebar">
+
+      <!-- Streak card -->
+      <div class="streak-card">
+        <div class="streak-badge">🔥 On fire!</div>
+        <div class="streak-num">7</div>
+        <div class="streak-label">Day learning streak</div>
+        <div class="streak-days">
+          <div class="day-box done"><span class="day-letter">M</span><div class="day-dot"></div></div>
+          <div class="day-box done"><span class="day-letter">T</span><div class="day-dot"></div></div>
+          <div class="day-box done"><span class="day-letter">W</span><div class="day-dot"></div></div>
+          <div class="day-box done"><span class="day-letter">T</span><div class="day-dot"></div></div>
+          <div class="day-box done"><span class="day-letter">F</span><div class="day-dot"></div></div>
+          <div class="day-box done"><span class="day-letter">S</span><div class="day-dot"></div></div>
+          <div class="day-box today"><span class="day-letter">S</span><div class="day-dot"></div></div>
+        </div>
+      </div>
+
+      <!-- Module progress -->
+      <div class="sidebar-card">
+        <div class="sidebar-title">A2 Module Progress</div>
+        <div class="module-list">
+          <div class="module-item">
+            <div class="mi-icon mi-done">✓</div>
+            <div class="mi-body">
+              <div class="mi-name">Present Tense Verbs</div>
+              <div class="mi-sub mi-done-sub">8 min · Completed</div>
+            </div>
+          </div>
+          <div class="module-item">
+            <div class="mi-icon mi-done">✓</div>
+            <div class="mi-body">
+              <div class="mi-name">Modal Verbs</div>
+              <div class="mi-sub mi-done-sub">10 min · Completed</div>
+            </div>
+          </div>
+          <div class="module-item">
+            <div class="mi-icon mi-done">✓</div>
+            <div class="mi-body">
+              <div class="mi-name">Perfekt (Past Tense)</div>
+              <div class="mi-sub mi-done-sub">12 min · Completed</div>
+            </div>
+          </div>
+          <div class="module-item">
+            <div class="mi-icon mi-done">✓</div>
+            <div class="mi-body">
+              <div class="mi-name">Prepositions</div>
+              <div class="mi-sub mi-done-sub">9 min · Completed</div>
+            </div>
+          </div>
+          <div class="module-item active">
+            <div class="mi-icon mi-active">→</div>
+            <div class="mi-body">
+              <div class="mi-name">Accusative &amp; Dative</div>
+              <div class="mi-sub">15 min · In progress</div>
+            </div>
+          </div>
+          <div class="module-item">
+            <div class="mi-icon mi-pending">○</div>
+            <div class="mi-body">
+              <div class="mi-name">Subordinate Clauses</div>
+              <div class="mi-sub">11 min · Locked</div>
+            </div>
+          </div>
+          <div class="module-item">
+            <div class="mi-icon mi-pending">○</div>
+            <div class="mi-body">
+              <div class="mi-name">Adjective Endings</div>
+              <div class="mi-sub">10 min · Locked</div>
+            </div>
+          </div>
+        </div>
+        <div class="progress-summary">
+          <div class="progress-summary-text">You are <strong>68% complete</strong> with A2 grammar.</div>
+          <div class="mini-bar"><div class="mini-fill"></div></div>
+        </div>
+        <a href="practice-new.html" class="btn-continue">Continue Lesson →</a>
+      </div>
+
+      <!-- Exam Whisperer widget -->
+      <div class="whisper-card">
+        <div class="whisper-title">🎯 Exam Whisperer</div>
+        <div class="whisper-desc">Write a Goethe-style German text and get instant AI scoring with detailed feedback on grammar, vocabulary, and structure.</div>
+        <a href="exam-whisperer.html" class="btn-whisper">Open Exam Whisperer →</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function pickChip(el, correct){
+  var group = el.closest('.answer-chips');
+  if(group.dataset.answered) return;
+  group.dataset.answered = '1';
+  Array.from(group.children).forEach(function(b){ b.disabled = true; b.style.cursor='default'; });
+  if(correct){
+    el.classList.add('correct');
+  } else {
+    el.style.borderColor='#EF4444';
+    el.style.background='#FEF2F2';
+    el.style.color='#991B1B';
+    // show correct
+    Array.from(group.children).forEach(function(b){
+      if(b.dataset && b.getAttribute('onclick') && b.getAttribute('onclick').includes('true')){
+        b.classList.add('correct');
+      }
+    });
+  }
+}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+</script>
+</body>
+</html>
