@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DeutschWeg — Module 9: Personal Pronouns</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="deutschweg-theme.css">
 <style>
   :root {
     --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
@@ -164,15 +164,63 @@
   @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
   @media(max-width:600px){ .sw{font-size:13px;padding:6px 8px;} .lesson-h{font-size:22px;} .sie-cards{grid-template-columns:1fr;} .pron-table{font-size:12px;} }
 </style>
+<style>
+/* LIGHT THEME OVERRIDE */
+:root {
+  --black:#F8FAFC; --white:#1F2937; --cream:#4B5563;
+  --gold:#3B82F6; --gold-light:#2563EB;
+  --red:#EF4444; --green:#10B981; --blue:#3B82F6;
+  --gray:#9CA3AF; --card-bg:#FFFFFF; --card2-bg:#F8FAFC;
+  --border:#E5E7EB; --verb:#F59E0B; --sie-f:#F59E0B;
+}
+body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-serif; }
+.top-nav { background:white; border-bottom:1px solid #E5E7EB; backdrop-filter:none; }
+.bottom-nav { background:white; border-top:1px solid #E5E7EB; backdrop-filter:none; }
+.nav-item { color:#9CA3AF; }
+.nav-item:hover, .nav-item.active { color:#3B82F6; }
+.progress-bar { background:#E5E7EB; }
+.dot { background:#DBEAFE; }
+.btn-primary { background:#3B82F6; color:white; }
+.btn-primary:hover { background:#2563EB; box-shadow:0 8px 24px rgba(59,130,246,0.3); }
+.btn-outline { background:transparent; border:1px solid #3B82F6; color:#3B82F6; }
+.btn-outline:hover { border-color:#2563EB; color:#2563EB; background:#EFF6FF; }
+.card { background:#FFFFFF; border:1px solid #E5E7EB; box-shadow:0 1px 3px rgba(0,0,0,0.07); }
+.card2 { background:#F8FAFC; border:1px solid #E5E7EB; }
+.info-box { background:#EFF6FF; border-left:3px solid #3B82F6; color:#1D4ED8; }
+.warn-box { background:#EFF6FF; border-left:3px solid #3B82F6; color:#1D4ED8; }
+.danger-box { background:#FEF2F2; border-left:3px solid #EF4444; color:#991B1B; }
+.success-box { background:#ECFDF5; border-left:3px solid #10B981; color:#065F46; }
+.qopt { border:1px solid #E5E7EB; background:white; color:#1F2937; }
+.qopt:hover:not([disabled]) { border-color:#3B82F6; background:#EFF6FF; }
+.qletter { background:#F1F5F9; }
+.qfeedback.ok { background:#ECFDF5; border:1px solid #A7F3D0; }
+.qfeedback.no { background:#FEF2F2; border:1px solid #FECACA; }
+.qft.ok { color:#10B981; }
+.qft.no { color:#EF4444; }
+.qfr { background:#EFF6FF; color:#3B82F6; }
+.xp-badge { background:#EFF6FF; border:1px solid #3B82F6; color:#3B82F6; }
+.speak-btn { background:#EFF6FF; border-color:#DBEAFE; color:#3B82F6; }
+.speak-btn:hover { background:#DBEAFE; }
+.speak-btn.speaking { background:#3B82F6; color:white; }
+.lesson-card { background:#F8FAFC; border:1px solid #E5E7EB; }
+.lesson-card:hover { border-color:#3B82F6; }
+.lc-icon { background:#EFF6FF; border-color:#DBEAFE; }
+.ex-card { background:#F8FAFC; border:1px solid #E5E7EB; }
+</style>
 </head>
 <body>
 
 <!-- ═══════════════════════════════ OVERVIEW ═══════════════════════════════ -->
 <div id="screen-overview" class="screen active">
-  <div class="top-nav">
-    <div class="logo">Deutsch<span>Weg</span></div>
-    <div class="mod-tag">MODULE 9</div>
-  </div>
+  <nav class="dw-nav">
+    <div class="dw-nav-inner">
+      <a href="deutschweg-prototype.html" class="dw-logo">
+        <div class="dw-logo-icon">D</div>
+        <span class="dw-logo-text">Deutsch<span>Weg</span></span>
+      </a>
+      <a href="deutschweg-prototype.html" class="dw-btn dw-btn-secondary">← Back to Dashboard</a>
+    </div>
+  </nav>
   <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
     <div class="concept-tag">A1 · Grammar Foundation</div>
     <h1 class="lesson-h" style="font-size:36px;">Personal<br><span style="color:var(--verb)">Pronouns</span></h1>
