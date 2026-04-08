@@ -4,9 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DeutschWeg · Module 24 · A2 Mock Exam</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="deutschweg-theme.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -216,14 +214,41 @@ option{background:#1a1a1a}
   .form-row{grid-template-columns:1fr}
 }
 </style>
+<style>
+/* LIGHT THEME OVERRIDE */
+:root {
+  --black:#F8FAFC; --white:#1F2937; --cream:#4B5563;
+  --gold:#3B82F6; --gold-light:#2563EB;
+  --red:#EF4444; --green:#10B981; --blue:#3B82F6;
+  --gray:#9CA3AF; --card-bg:#FFFFFF; --card2-bg:#F8FAFC;
+  --border:#E5E7EB;
+  --lesen:#3B82F6; --horen:#F59E0B; --schreiben:#8B5CF6; --sprechen:#10B981;
+}
+body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-serif; }
+.top-nav { background:white; border-bottom:1px solid #E5E7EB; }
+.nav-back { color:#3B82F6; }
+.nav-logo { color:#3B82F6; }
+.nav-badge { background:#EFF6FF; border-color:#3B82F6; color:#3B82F6; }
+.btn-primary { background:#3B82F6; color:white; }
+.btn-primary:hover { background:#2563EB; }
+.card { background:#FFFFFF; border:1px solid #E5E7EB; }
+.qopt { border:1px solid #E5E7EB; background:white; color:#1F2937; }
+.qopt:hover:not([disabled]) { border-color:#3B82F6; background:#EFF6FF; }
+.result-pass { background:#ECFDF5; border:1px solid #10B981; color:#065F46; }
+.result-fail { background:#FEF2F2; border:1px solid #EF4444; color:#991B1B; }
+</style>
 </head>
 <body>
 
 <!-- TOP NAV -->
-<nav class="top-nav">
-  <div class="nav-back" onclick="goBack()">← Zurück</div>
-  <div class="nav-logo">DeutschWeg</div>
-  <span class="nav-badge">MODUL 24 · EXAM</span>
+<nav class="dw-nav">
+  <div class="dw-nav-inner">
+    <a href="deutschweg-prototype.html" class="dw-logo">
+      <div class="dw-logo-icon">D</div>
+      <span class="dw-logo-text">Deutsch<span>Weg</span></span>
+    </a>
+    <a href="deutschweg-prototype.html" class="dw-btn dw-btn-secondary">← Back to Dashboard</a>
+  </div>
 </nav>
 
 <!-- SCREEN: OVERVIEW -->
