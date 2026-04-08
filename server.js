@@ -14,10 +14,11 @@ const PORT = process.env.PORT || 3000;
 
 // ── Middleware ──────────────────────────────────────────────────────────────
 const allowedOrigins = [
-  'https://deutschweg.netlify.app',
-  'https://www.deutschweg.netlify.app',
   'https://deutschweg.de',
   'https://www.deutschweg.de',
+  'https://deutschweg.pages.dev',
+  'https://deutschweg.netlify.app',
+  'https://www.deutschweg.netlify.app',
   'http://localhost:3000',
   'http://127.0.0.1:3000',
 ];
