@@ -82,7 +82,13 @@ section{padding:96px 0;}
 }
 .hero-h1{font-size:46px;font-weight:800;line-height:1.12;letter-spacing:-0.5px;margin-bottom:20px;color:var(--dark);}
 .hero-h1 .accent{color:var(--blue);}
-.hero-p{font-size:17px;color:var(--mid);line-height:1.75;margin-bottom:32px;max-width:480px;}
+.hero-p{font-size:17px;color:var(--mid);line-height:1.75;margin-bottom:24px;max-width:480px;}
+
+/* ── BENEFIT BULLETS ── */
+.hero-bullets{display:flex;flex-direction:column;gap:9px;margin-bottom:28px;}
+.hero-bullet{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--mid);line-height:1.5;}
+.hero-bullet-check{color:var(--green);font-weight:700;flex-shrink:0;margin-top:1px;}
+
 .hero-btns{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:36px;}
 .hero-trust{display:flex;align-items:center;gap:14px;}
 .trust-avs{display:flex;}
@@ -147,10 +153,25 @@ section{padding:96px 0;}
 .fc-green{background:var(--green);}
 .fc-blue{background:var(--blue);}
 
+/* ── TRUST BAR ── */
+.trust-bar{
+  background:var(--white);
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  padding:16px 0;
+}
+.trust-bar-inner{
+  display:flex;align-items:center;justify-content:center;
+  gap:36px;flex-wrap:wrap;
+}
+.trust-bar-item{
+  display:flex;align-items:center;gap:7px;
+  font-size:13px;font-weight:600;color:var(--mid);
+}
+
 /* ── COUNTRIES STRIP ── */
 .countries-strip{
   background:var(--white);
-  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  border-bottom:1px solid var(--border);
   padding:18px 0;
 }
 .countries-inner{display:flex;align-items:center;gap:28px;flex-wrap:wrap;justify-content:center;}
@@ -160,6 +181,43 @@ section{padding:96px 0;}
   background:var(--bg);border:1px solid var(--border);border-radius:20px;
   padding:5px 12px;font-size:13px;font-weight:500;color:var(--mid);
 }
+
+/* ── HOW IT WORKS ── */
+.how-section{background:var(--bg);}
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+.how-card{
+  background:var(--white);border:1px solid var(--border);border-radius:24px;
+  padding:32px 28px;transition:all 0.2s;
+}
+.how-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
+.how-num{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--blue);color:#fff;
+  font-size:16px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:16px;
+}
+.how-icon{font-size:28px;margin-bottom:14px;}
+.how-title{font-size:17px;font-weight:700;color:var(--dark);margin-bottom:10px;}
+.how-body{font-size:14px;color:var(--mid);line-height:1.75;}
+
+/* ── WHY DEUTSCHWEG ── */
+.why-section{
+  background:var(--blue-light);
+  border-top:1px solid var(--blue-mid);
+  border-bottom:1px solid var(--blue-mid);
+}
+.why-inner{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:64px;align-items:center;
+}
+.why-quote{
+  font-size:24px;font-weight:700;color:var(--dark);
+  line-height:1.4;letter-spacing:-0.2px;
+}
+.why-points{display:flex;flex-direction:column;gap:16px;}
+.why-point{display:flex;align-items:flex-start;gap:12px;font-size:14px;color:var(--mid);line-height:1.6;}
+.why-check{color:var(--blue);font-weight:700;font-size:16px;flex-shrink:0;margin-top:1px;}
 
 /* ── FEATURES ── */
 .features-section{background:var(--white);}
@@ -199,8 +257,36 @@ section{padding:96px 0;}
 .author-name{font-size:15px;font-weight:700;color:var(--dark);margin-bottom:2px;}
 .author-sub{font-size:13px;color:var(--light);}
 
+/* ── PRICING ── */
+.pricing-section{background:var(--white);}
+.pricing-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:24px;max-width:720px;margin:0 auto;
+}
+.pricing-card{
+  background:var(--bg);border:1.5px solid var(--border);
+  border-radius:20px;padding:32px 28px;text-align:left;
+}
+.pricing-card-premium{
+  background:var(--blue-light);border-color:var(--blue);
+}
+.pricing-label{
+  font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  color:var(--blue);margin-bottom:10px;
+}
+.pricing-price{font-size:40px;font-weight:800;color:var(--dark);line-height:1;margin-bottom:4px;}
+.pricing-sub{font-size:12px;color:var(--light);margin-bottom:20px;}
+.pricing-list{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:24px;}
+.pricing-list li{
+  font-size:13.5px;color:var(--mid);
+  padding-left:20px;position:relative;line-height:1.5;
+}
+.pricing-list li::before{content:'✓';position:absolute;left:0;color:var(--green);font-weight:700;}
+.pricing-btn-wrap{display:flex;}
+.pricing-btn-wrap a{width:100%;justify-content:center;}
+
 /* ── LEVELS ── */
-.levels-section{background:var(--white);}
+.levels-section{background:var(--bg);}
 .levels-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
 .level-card{
   background:var(--white);border:1px solid var(--border);border-radius:20px;
@@ -224,11 +310,24 @@ section{padding:96px 0;}
 .level-desc{font-size:14px;color:var(--mid);line-height:1.7;margin-bottom:18px;}
 .level-meta{font-size:12px;color:var(--light);font-weight:500;}
 
+/* ── EMOTIONAL CLOSING ── */
+.closing-section{padding:100px 0;background:var(--white);}
+.closing-h{
+  font-size:32px;font-weight:800;color:var(--dark);
+  line-height:1.3;letter-spacing:-0.3px;
+  margin-bottom:20px;max-width:600px;
+  margin-left:auto;margin-right:auto;
+}
+.closing-p{
+  font-size:17px;color:var(--mid);line-height:1.75;
+  max-width:520px;margin:0 auto;
+}
+
 /* ── CTA ── */
 .cta-section{background:var(--blue);padding:80px 0;}
 .cta-section .section-label{color:rgba(255,255,255,0.65);}
 .cta-section .section-h{color:#fff;}
-.cta-section .section-sub{color:rgba(255,255,255,0.75);max-width:440px;}
+.cta-section .section-sub{color:rgba(255,255,255,0.75);max-width:480px;}
 .btn-white{
   padding:15px 36px;border-radius:10px;border:none;
   background:#fff;color:var(--blue);font-size:15px;font-weight:700;
@@ -259,10 +358,13 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
   .nav-links{display:none;}
   .hero-inner{grid-template-columns:1fr;gap:48px;}
   .hero-h1{font-size:34px;}
-  .feat-grid{grid-template-columns:1fr;}
+  .feat-grid,.how-grid{grid-template-columns:1fr;}
+  .why-inner{grid-template-columns:1fr;gap:32px;}
+  .pricing-grid{grid-template-columns:1fr;}
   .levels-grid{grid-template-columns:1fr;}
   .footer-top{grid-template-columns:1fr 1fr;}
   .hero-right{display:none;}
+  .trust-bar-inner{gap:16px;}
 }
 @media(max-width:600px){
   .wrap{padding:0 18px;}
@@ -270,10 +372,13 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
   .hero{padding:56px 0 72px;}
   .hero-h1{font-size:28px;}
   section{padding:72px 0;}
-  .feat-grid,.levels-grid{grid-template-columns:1fr;}
+  .feat-grid,.levels-grid,.how-grid,.pricing-grid{grid-template-columns:1fr;}
   .testimonial-card{padding:28px 22px;}
   .footer-top{grid-template-columns:1fr;}
   .footer-bottom{flex-direction:column;gap:10px;text-align:center;}
+  .trust-bar-inner{gap:10px;}
+  .closing-h{font-size:24px;}
+  .closing-p{font-size:15px;}
 }
 </style>
 </head>
@@ -286,8 +391,8 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
     <span class="nav-logo-text">Deutsch<span>Weg</span></span>
   </a>
   <div class="nav-links">
-    <a href="#features">How It Works</a>
-    <a href="#levels">Pricing</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#pricing">Pricing</a>
     <a href="exam-whisperer.html">Exam Whisperer</a>
   </div>
   <div class="nav-right">
@@ -303,11 +408,25 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
       <!-- LEFT -->
       <div>
         <div class="hero-badge">🌍 Built for African Learners</div>
-        <h1 class="hero-h1">Learn German Faster with <span class="accent">Personalized</span> Practice</h1>
-        <p class="hero-p">Practice grammar, get instant AI feedback, and improve based on your mistakes. Built specifically for Goethe exam preparation — in simple English.</p>
+        <h1 class="hero-h1">Pass Your Goethe Exam Faster with <span class="accent">Instant AI Feedback</span></h1>
+        <p class="hero-p">German practice built for African learners preparing for Germany. Simple English explanations, Goethe-focused lessons, and AI feedback on every mistake.</p>
+        <div class="hero-bullets">
+          <div class="hero-bullet">
+            <span class="hero-bullet-check">✓</span>
+            <span>Personalized grammar practice based on your mistakes</span>
+          </div>
+          <div class="hero-bullet">
+            <span class="hero-bullet-check">✓</span>
+            <span>Instant AI feedback — know exactly what to fix</span>
+          </div>
+          <div class="hero-bullet">
+            <span class="hero-bullet-check">✓</span>
+            <span>Built specifically for Goethe A1, A2 and B1 success</span>
+          </div>
+        </div>
         <div class="hero-btns">
-          <a href="signup.html" class="btn-primary btn-large">Start Learning Free →</a>
-          <a href="#features" class="btn-secondary">See How It Works</a>
+          <a href="signup.html" class="btn-primary btn-large">Start Practicing Free →</a>
+          <a href="#how-it-works" class="btn-secondary">See How It Works</a>
         </div>
         <div class="hero-trust">
           <div class="trust-avs">
@@ -364,6 +483,19 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
   </div>
 </section>
 
+<!-- ── TRUST BAR ── -->
+<div class="trust-bar">
+  <div class="wrap">
+    <div class="trust-bar-inner">
+      <div class="trust-bar-item">⭐ Goethe-focused curriculum</div>
+      <div class="trust-bar-item">🌍 Built for African learners</div>
+      <div class="trust-bar-item">🤖 AI-powered feedback</div>
+      <div class="trust-bar-item">📚 38 modules A1 to B1</div>
+      <div class="trust-bar-item">✓ Free 14-day trial</div>
+    </div>
+  </div>
+</div>
+
 <!-- ── COUNTRIES STRIP ── -->
 <div class="countries-strip">
   <div class="wrap">
@@ -380,10 +512,69 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
   </div>
 </div>
 
+<!-- ── HOW IT WORKS ── -->
+<section class="how-section" id="how-it-works">
+  <div class="wrap">
+    <div class="section-label">HOW IT WORKS</div>
+    <div class="section-h">Three steps to exam success</div>
+    <div class="section-sub">From beginner to Goethe-ready in a structured path built around your level and your mistakes.</div>
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="how-num">1</div>
+        <div class="how-icon">🎯</div>
+        <div class="how-title">Choose Your Level</div>
+        <div class="how-body">Pick A1, A2 or B1 based on where you are. Not sure? Take our 3-question placement guide and we'll point you in the right direction.</div>
+      </div>
+      <div class="how-card">
+        <div class="how-num">2</div>
+        <div class="how-icon">📚</div>
+        <div class="how-title">Practice Lessons &amp; Quizzes</div>
+        <div class="how-body">Work through structured modules with interactive quizzes, audio, and AI-powered explanations in simple English — designed for how you think.</div>
+      </div>
+      <div class="how-card">
+        <div class="how-num">3</div>
+        <div class="how-icon">📈</div>
+        <div class="how-title">Improve Based on Mistakes</div>
+        <div class="how-body">The AI tracks your weak areas and focuses your practice where you need it most. Every session gets smarter as you learn.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── WHY DEUTSCHWEG ── -->
+<section class="why-section">
+  <div class="wrap">
+    <div class="why-inner">
+      <div>
+        <div class="section-label">WHY DEUTSCHWEG</div>
+        <div class="why-quote">"Unlike generic German apps, DeutschWeg is built for African learners preparing for Germany."</div>
+      </div>
+      <div class="why-points">
+        <div class="why-point">
+          <span class="why-check">✓</span>
+          <div>Simple English explanations — not designed for Europeans</div>
+        </div>
+        <div class="why-point">
+          <span class="why-check">✓</span>
+          <div>Goethe-focused from A1 to B1 — every lesson maps to the exam</div>
+        </div>
+        <div class="why-point">
+          <span class="why-check">✓</span>
+          <div>AI feedback on your actual mistakes — not generic corrections</div>
+        </div>
+        <div class="why-point">
+          <span class="why-check">✓</span>
+          <div>African examples — Kwame, Amina, Nairobi, Lagos — not Hans and München</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ── FEATURES ── -->
 <section class="features-section" id="features">
   <div class="wrap">
-    <div class="section-label">WHY DEUTSCHWEG</div>
+    <div class="section-label">WHAT YOU GET</div>
     <div class="section-h">Everything you need to pass</div>
     <div class="section-sub">Three powerful tools that work together to get you from beginner to exam-ready.</div>
     <div class="feat-grid">
@@ -425,6 +616,48 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
   </div>
 </section>
 
+<!-- ── PRICING ── -->
+<section class="pricing-section" id="pricing">
+  <div class="wrap" style="text-align:center;">
+    <div class="section-label">PRICING</div>
+    <div class="section-h">Start Free. Upgrade When Ready.</div>
+    <div class="section-sub" style="margin:0 auto 48px;">No credit card needed to start.</div>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-label">Free Starter</div>
+        <div class="pricing-price">€0</div>
+        <div class="pricing-sub">&nbsp;</div>
+        <ul class="pricing-list">
+          <li>A1 Modules 1–3</li>
+          <li>Basic quizzes</li>
+          <li>3 AI Exam Whisperer uses</li>
+          <li>Limited AI Tutor</li>
+        </ul>
+        <div class="pricing-btn-wrap">
+          <a href="signup.html" class="btn-secondary">Start Free →</a>
+        </div>
+      </div>
+      <div class="pricing-card pricing-card-premium">
+        <div class="pricing-label">Premium Plans from €9.99</div>
+        <div class="pricing-price">€9.99</div>
+        <div class="pricing-sub">one-time or monthly</div>
+        <ul class="pricing-list">
+          <li>All 38 modules A1 + A2 + B1</li>
+          <li>Unlimited AI Exam Whisperer</li>
+          <li>Full AI Tutor with language progression</li>
+          <li>Sprechen Prep — all 3 exam parts</li>
+          <li>Mock exam simulations</li>
+          <li>Weak area tracking</li>
+          <li>Progress dashboard</li>
+        </ul>
+        <div class="pricing-btn-wrap">
+          <a href="#pricing" class="btn-primary btn-large">See All Plans →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ── LEVELS ── -->
 <section class="levels-section" id="levels">
   <div class="wrap">
@@ -457,13 +690,21 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
   </div>
 </section>
 
+<!-- ── EMOTIONAL CLOSING ── -->
+<section class="closing-section">
+  <div class="wrap" style="text-align:center;">
+    <div class="closing-h">You are preparing for a life in Germany.<br>That deserves more than a generic app.</div>
+    <div class="closing-p">DeutschWeg helps you prepare with simple English explanations and practice designed around your mistakes — not someone else's.</div>
+  </div>
+</section>
+
 <!-- ── CTA ── -->
 <section class="cta-section">
   <div class="wrap" style="text-align:center;">
     <div class="section-label">GET STARTED</div>
-    <div class="section-h" style="max-width:520px;margin:0 auto 16px;">Ready to Pass Your Goethe Exam?</div>
-    <div class="section-sub" style="margin:0 auto 36px;">Join learners from across Africa. Start your free 14-day trial.</div>
-    <a href="signup.html" class="btn-white">Start Learning Free →</a>
+    <div class="section-h" style="max-width:520px;margin:0 auto 16px;">Prepare for Goethe Faster</div>
+    <div class="section-sub" style="margin:0 auto 36px;">Join learners from Kenya, Nigeria, Ghana and across Africa. 14-day free trial — no card needed.</div>
+    <a href="signup.html" class="btn-white">Start Practicing Free →</a>
   </div>
 </section>
 
