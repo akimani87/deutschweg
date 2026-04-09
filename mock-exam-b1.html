@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Goethe B1 Mock Exam — Zertifikat Deutsch | DeutschWeg</title>
+<link rel="stylesheet" href="deutschweg-theme.css">
+<style>
+.exam-wrap { max-width: 760px; margin: 0 auto; padding: 24px 20px 100px; }
+.intro-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px; margin-bottom: 24px; }
+.intro-hero { text-align: center; margin-bottom: 28px; }
+.exam-badge { display: inline-block; background: #EFF6FF; color: #1D4ED8; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; padding: 5px 14px; border-radius: 50px; margin-bottom: 14px; text-transform: uppercase; }
+.intro-title { font-size: 26px; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
+.intro-sub { font-size: 14px; color: var(--mid); }
+.section-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-bottom: 24px; }
+.section-info { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; }
+.si-name { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+.si-pts { font-size: 22px; font-weight: 800; color: var(--dark); }
+.si-desc { font-size: 12px; color: var(--light); margin-top: 2px; }
+.rules-list { list-style: none; padding: 0; margin: 0; }
+.rules-list li { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--mid); line-height: 1.5; }
+.rules-list li:last-child { border-bottom: none; }
+.rules-list li span:first-child { color: var(--blue); font-size: 16px; flex-shrink: 0; }
+.start-btn { display: block; width: 100%; padding: 15px; background: var(--blue); color: white; font-family: inherit; font-size: 16px; font-weight: 700; border: none; border-radius: var(--radius-sm); cursor: pointer; transition: background 0.2s; margin-top: 24px; }
+.start-btn:hover { background: var(--blue-dark); }
+.section-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 24px; overflow-x: auto; }
+.st-tab { padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--light); border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; cursor: default; display: flex; align-items: center; gap: 6px; }
+.st-tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+.st-tab.done { color: var(--green); }
+.st-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.timer-bar { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 18px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
+.timer-label { font-size: 12px; font-weight: 600; color: var(--mid); }
+.timer-display { font-size: 22px; font-weight: 800; color: var(--blue); font-variant-numeric: tabular-nums; }
+.timer-display.warning { color: var(--amber); }
+.timer-display.danger { color: var(--red); }
+.sec-hdr { margin-bottom: 20px; }
+.sec-hdr-top { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+.sec-icon { width: 42px; height: 42px; border-radius: 12px; background: var(--blue-light); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.sec-title { font-size: 22px; font-weight: 800; color: var(--dark); }
+.sec-meta { font-size: 13px; color: var(--mid); }
+.task-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--blue); display: block; margin: 24px 0 10px; }
+.task-instr { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 13px 16px; font-size: 13.5px; color: var(--mid); line-height: 1.6; margin-bottom: 18px; }
+.conv-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px 18px; margin-bottom: 16px; }
+.conv-num { font-size: 10px; font-weight: 700; color: var(--blue); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+.conv-text { font-size: 14px; line-height: 1.8; color: var(--dark); background: var(--bg); border-radius: 8px; padding: 13px 16px; margin-bottom: 14px; font-style: italic; white-space: pre-line; }
+.q-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); gap: 10px; }
+.q-row:last-child { border-bottom: none; }
+.q-text { font-size: 13.5px; color: var(--dark); flex: 1; }
+.q-btns { display: flex; gap: 6px; flex-shrink: 0; }
+.tf-btn { padding: 6px 14px; font-size: 12px; font-weight: 700; border: 1.5px solid var(--border); border-radius: 8px; cursor: pointer; font-family: inherit; background: white; color: var(--mid); transition: all 0.15s; }
+.tf-btn:hover { border-color: var(--blue); color: var(--blue); }
+.tf-btn.correct { border-color: var(--green); background: var(--green-light); color: var(--green); }
+.tf-btn.wrong { border-color: var(--red); background: var(--red-light); color: var(--red); }
+.notice-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px 18px; margin-bottom: 12px; }
+.notice-header { font-size: 14px; font-weight: 700; color: var(--dark); margin-bottom: 8px; }
+.notice-body { font-size: 13.5px; line-height: 1.7; color: var(--mid); white-space: pre-line; }
+.mc-opts { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.mc-opt { padding: 11px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 13.5px; color: var(--dark); cursor: pointer; background: white; font-family: inherit; text-align: left; transition: all 0.15s; }
+.mc-opt:hover { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
+.mc-opt.selected { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
+.mc-opt.correct { border-color: var(--green); background: var(--green-light); color: var(--green); }
+.mc-opt.wrong { border-color: var(--red); background: var(--red-light); color: var(--red); }
+.match-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+.match-table th { background: var(--blue-light); color: #1D4ED8; font-size: 12px; font-weight: 700; padding: 10px 12px; text-align: left; border-bottom: 2px solid var(--blue-mid); }
+.match-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 13.5px; color: var(--dark); vertical-align: middle; }
+.match-select { border: 1.5px solid var(--border); border-radius: 8px; padding: 7px 10px; font-size: 13px; font-family: inherit; color: var(--dark); background: white; outline: none; width: 100%; cursor: pointer; }
+.match-select:focus { border-color: var(--blue); }
+.writing-task { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 20px; margin-bottom: 16px; }
+.writing-prompt { font-size: 14px; line-height: 1.7; color: var(--dark); margin-bottom: 14px; }
+.bullet-list { list-style: none; padding: 0; margin: 0 0 14px; }
+.bullet-list li { padding: 6px 0 6px 20px; position: relative; font-size: 13.5px; color: var(--mid); }
+.bullet-list li::before { content: '—'; position: absolute; left: 0; color: var(--blue); }
+.writing-area { width: 100%; min-height: 160px; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; font-family: inherit; color: var(--dark); resize: vertical; outline: none; transition: border-color 0.2s; line-height: 1.7; }
+.writing-area:focus { border-color: var(--blue); }
+.word-count { font-size: 12px; color: var(--light); margin-top: 5px; }
+.sprechen-task { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 20px; margin-bottom: 16px; }
+.question-text { font-size: 14px; font-weight: 600; color: var(--dark); margin-bottom: 8px; }
+.nav-btns { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border); }
+.results-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px; text-align: center; margin-bottom: 20px; }
+.result-verdict { font-size: 42px; font-weight: 800; margin-bottom: 8px; }
+.result-verdict.pass { color: var(--green); }
+.result-verdict.fail { color: var(--red); }
+.result-sub { font-size: 14px; color: var(--mid); margin-bottom: 24px; }
+.score-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-bottom: 20px; }
+.score-cell { background: var(--bg); border-radius: var(--radius-sm); padding: 14px; }
+.score-cell-name { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--mid); margin-bottom: 4px; }
+.score-cell-pts { font-size: 20px; font-weight: 800; color: var(--dark); }
+.score-cell-pct { font-size: 12px; color: var(--light); }
+.hint-toggle { font-size: 12.5px; color: var(--blue); cursor: pointer; background: none; border: none; font-family: inherit; padding: 0; margin-top: 8px; text-decoration: underline; }
+.hint-box { display: none; background: var(--blue-light); border: 1px solid var(--blue-mid); border-radius: 8px; padding: 12px 14px; margin-top: 8px; font-size: 13px; color: #1D4ED8; line-height: 1.6; }
+.hint-box.open { display: block; }
+.screen { display: none; }
+.screen.active { display: block; }
+@media (max-width: 600px) {
+  .section-grid { grid-template-columns: 1fr; }
+  .score-grid { grid-template-columns: 1fr; }
+  .q-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="dw-nav">
+  <div class="dw-nav-inner">
+    <a href="deutschweg-prototype.html" class="dw-logo">
+      <div class="dw-logo-icon">D</div>
+      <span class="dw-logo-text">Deutsch<span>Weg</span></span>
+    </a>
+    <a href="deutschweg-prototype.html" class="dw-btn dw-btn-secondary">← Back to Dashboard</a>
+  </div>
+</nav>
+
+<div class="exam-wrap">
+
+<!-- ===== INTRO ===== -->
+<div class="screen active" id="screen-intro">
+  <div class="intro-card">
+    <div class="intro-hero">
+      <div class="exam-badge">Goethe B1 · Zertifikat Deutsch</div>
+      <div class="intro-title">B1 Complete Mock Exam</div>
+      <div class="intro-sub">Vollständige Simulation der offiziellen Goethe B1 Prüfung — 130 Minuten, 4 Abschnitte</div>
+    </div>
+
+    <div class="section-grid">
+      <div class="section-info">
+        <div class="si-name" style="color:#3B82F6;">🎧 Hören</div>
+        <div class="si-pts">25 <span style="font-size:14px;font-weight:400;color:var(--light);">Punkte</span></div>
+        <div class="si-desc">40 Minuten · 3 Teile</div>
+      </div>
+      <div class="section-info">
+        <div class="si-name" style="color:#8B5CF6;">📖 Lesen</div>
+        <div class="si-pts">25 <span style="font-size:14px;font-weight:400;color:var(--light);">Punkte</span></div>
+        <div class="si-desc">45 Minuten · 3 Teile</div>
+      </div>
+      <div class="section-info">
+        <div class="si-name" style="color:#10B981;">✍️ Schreiben</div>
+        <div class="si-pts">25 <span style="font-size:14px;font-weight:400;color:var(--light);">Punkte</span></div>
+        <div class="si-desc">30 Minuten · Brief/E-Mail</div>
+      </div>
+      <div class="section-info">
+        <div class="si-name" style="color:#F59E0B;">🎤 Sprechen</div>
+        <div class="si-pts">25 <span style="font-size:14px;font-weight:400;color:var(--light);">Punkte</span></div>
+        <div class="si-desc">15 Minuten · 3 Aufgaben</div>
+      </div>
+    </div>
+
+    <div class="dw-label">Prüfungsregeln</div>
+    <ul class="rules-list">
+      <li><span>⏱</span><span>130 Minuten Gesamtzeit — jeder Abschnitt hat sein eigenes Zeitlimit</span></li>
+      <li><span>✅</span><span>Bestanden: mindestens 60% in JEDEM Abschnitt (nicht nur insgesamt)</span></li>
+      <li><span>🇩🇪</span><span>B1-Immersion: Die gesamte Prüfung ist auf Deutsch — englische Hilfe aufklappbar</span></li>
+      <li><span>✍️</span><span>Schreiben: mindestens 100 Wörter, alle 4 Punkte ansprechen</span></li>
+      <li><span>🤖</span><span>KI-Prüfer für Schreiben und Sprechen verfügbar</span></li>
+    </ul>
+
+    <button class="start-btn" onclick="startExam()">Prüfung beginnen →</button>
+  </div>
+</div>
+
+<!-- ===== EXAM ===== -->
+<div class="screen" id="screen-exam">
+  <div class="section-tabs">
+    <div class="st-tab active" id="tab-horen"><span class="st-dot"></span> Hören</div>
+    <div class="st-tab" id="tab-lesen"><span class="st-dot"></span> Lesen</div>
+    <div class="st-tab" id="tab-schreiben"><span class="st-dot"></span> Schreiben</div>
+    <div class="st-tab" id="tab-sprechen"><span class="st-dot"></span> Sprechen</div>
+  </div>
+
+  <!-- ── HÖREN ── -->
+  <div class="screen active" id="ep-horen">
+    <div class="timer-bar">
+      <div class="timer-label">⏱ Hören · 40 Minuten</div>
+      <div class="timer-display" id="timer-horen">40:00</div>
+    </div>
+    <div class="sec-hdr">
+      <div class="sec-hdr-top">
+        <div class="sec-icon">🎧</div>
+        <div>
+          <div class="sec-title">Hören</div>
+          <div class="sec-meta">25 Punkte · Gespräche, Interview, Radiosendung</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="hint-toggle" onclick="toggleHint('h-hint')">🇬🇧 English hint (click to expand)</button>
+    <div class="hint-box" id="h-hint">Read the questions before listening. Focus on key words — numbers, names, times. You hear each recording twice in the real exam. Answer all questions — no penalty for wrong answers.</div>
+
+    <span class="task-label">Teil 1 — Gespräche am Arbeitsplatz</span>
+    <div class="task-instr">Lesen Sie die Aussagen. Entscheiden Sie: Richtig (R) oder Falsch (F)?</div>
+
+    <div class="conv-card">
+      <div class="conv-num">Gespräch — Bewerbungsgespräch</div>
+      <div class="conv-text">— Herr Mensah, Sie haben sich auf die Stelle als Softwareentwickler beworben. Was hat Sie dazu bewogen?
+— Ich arbeite seit fünf Jahren in der IT-Branche. In Ghana habe ich bereits für ein internationales Unternehmen gearbeitet und möchte meine Karriere jetzt in Deutschland weiterentwickeln.
+— Haben Sie Erfahrung mit agilen Methoden?
+— Ja, ich habe zwei Jahre mit Scrum gearbeitet. Ich bin außerdem zertifizierter Java-Entwickler.
+— Sehr gut. Wann könnten Sie anfangen?
+— Ich bin ab dem ersten März verfügbar.
+— Wir melden uns bis Ende der Woche.</div>
+      <div>
+        <div class="q-row">
+          <div class="q-text">1. Herr Mensah arbeitet seit zwei Jahren in der IT-Branche.</div>
+          <div class="q-btns">
+            <button class="tf-btn" onclick="tfClick(this,'h1','R','F')">R</button>
+            <button class="tf-btn" onclick="tfClick(this,'h1','F','F')">F</button>
+          </div>
+        </div>
+        <div class="q-row">
+          <div class="q-text">2. Er hat Erfahrung mit Scrum.</div>
+          <div class="q-btns">
+            <button class="tf-btn" onclick="tfClick(this,'h2','R','R')">R</button>
+            <button class="tf-btn" onclick="tfClick(this,'h2','F','R')">F</button>
+          </div>
+        </div>
+        <div class="q-row">
+          <div class="q-text">3. Er kann sofort anfangen.</div>
+          <div class="q-btns">
+            <button class="tf-btn" onclick="tfClick(this,'h3','R','F')">R</button>
+            <button class="tf-btn" onclick="tfClick(this,'h3','F','F')">F</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <span class="task-label">Teil 2 — Interview zur Integration</span>
+    <div class="task-instr">Lesen Sie die Aussagen. Richtig (R) oder Falsch (F)?</div>
+
+    <div class="conv-card">
+      <div class="conv-num">Radiointerview — Integration in Deutschland</div>
+      <div class="conv-text">— Heute sprechen wir über das Thema Integration. Frau Diallo, Sie sind seit vier Jahren in Berlin. Wie war Ihre Integration?
+— Es war nicht einfach am Anfang. Die Bürokratie ist sehr komplex — Anmeldung, Aufenthaltstitel, Krankenversicherung. Man braucht viel Geduld.
+— Was hat Ihnen am meisten geholfen?
+— Definitiv der Integrationskurs. Dort habe ich nicht nur Deutsch gelernt, sondern auch verstanden, wie das deutsche System funktioniert. Und natürlich meine Kollegen bei der Arbeit — sie haben mir geholfen, die Kultur zu verstehen.
+— Haben Sie Ratschläge für Neuankömmlinge?
+— Ja: Lernt die Sprache so früh wie möglich. Ohne Deutsch läuft hier nichts. Und habt Geduld mit der Bürokratie — das dauert, aber es geht voran.</div>
+      <div>
+        <div class="q-row">
+          <div class="q-text">4. Frau Diallo lebt seit zwei Jahren in Berlin.</div>
+          <div class="q-btns">
+            <button class="tf-btn" onclick="tfClick(this,'h4','R','F')">R</button>
+            <button class="tf-btn" onclick="tfClick(this,'h4','F','F')">F</button>
+          </div>
+        </div>
+        <div class="q-row">
+          <div class="q-text">5. Der Integrationskurs hat ihr geholfen, die Sprache und das System zu verstehen.</div>
+          <div class="q-btns">
+            <button class="tf-btn" onclick="tfClick(this,'h5','R','R')">R</button>
+            <button class="tf-btn" onclick="tfClick(this,'h5','F','R')">F</button>
+          </div>
+        </div>
+        <div class="q-row">
+          <div class="q-text">6. Sie empfiehlt, zuerst Arbeit zu suchen, bevor man Deutsch lernt.</div>
+          <div class="q-btns">
+            <button class="tf-btn" onclick="tfClick(this,'h6','R','F')">R</button>
+            <button class="tf-btn" onclick="tfClick(this,'h6','F','F')">F</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <span class="task-label">Teil 3 — Radiosendung · Multiple Choice</span>
+    <div class="task-instr">Lesen Sie die Fragen und wählen Sie die richtige Antwort (a, b oder c).</div>
+
+    <div class="conv-card">
+      <div class="conv-num">Radiosendung — Gesundheit und Arbeit</div>
+      <div class="conv-text">In der heutigen Sendung sprechen wir über Work-Life-Balance in Deutschland. Laut einer aktuellen Studie arbeiten Deutsche durchschnittlich 34 Stunden pro Woche. Im Vergleich zu anderen europäischen Ländern ist das relativ wenig. Trotzdem klagen viele Arbeitnehmer über Stress und Erschöpfung. Die Expertin Dr. Weber erklärt: „Das Problem ist nicht die Anzahl der Stunden, sondern die ständige Erreichbarkeit durch Smartphones. Viele können nach der Arbeit nicht mehr abschalten." Als Lösung empfiehlt sie klare Grenzen zwischen Arbeits- und Freizeit zu setzen — zum Beispiel keine E-Mails nach 18 Uhr zu beantworten.</div>
+      <div style="margin-top:14px;">
+        <div style="margin-bottom:14px;">
+          <div class="q-text" style="font-weight:700;margin-bottom:8px;">7. Wie viele Stunden arbeiten Deutsche durchschnittlich?</div>
+          <div class="mc-opts">
+            <button class="mc-opt" onclick="mcClick(this,'h7','a','b')">a) 40 Stunden</button>
+            <button class="mc-opt" onclick="mcClick(this,'h7','b','b')">b) 34 Stunden</button>
+            <button class="mc-opt" onclick="mcClick(this,'h7','c','b')">c) 30 Stunden</button>
+          </div>
+        </div>
+        <div style="margin-bottom:14px;">
+          <div class="q-text" style="font-weight:700;margin-bottom:8px;">8. Was ist laut Dr. Weber das Hauptproblem?</div>
+          <div class="mc-opts">
+            <button class="mc-opt" onclick="mcClick(this,'h8','a','b')">a) Zu viele Arbeitsstunden</button>
+            <button class="mc-opt" onclick="mcClick(this,'h8','b','b')">b) Ständige Erreichbarkeit durch Smartphones</button>
+            <button class="mc-opt" onclick="mcClick(this,'h8','c','b')">c) Schlechte Bezahlung</button>
+          </div>
+        </div>
+        <div>
+          <div class="q-text" style="font-weight:700;margin-bottom:8px;">9. Was empfiehlt Dr. Weber?</div>
+          <div class="mc-opts">
+            <button class="mc-opt" onclick="mcClick(this,'h9','a','c')">a) Weniger Smartphone benutzen</button>
+            <button class="mc-opt" onclick="mcClick(this,'h9','b','c')">b) Mehr Urlaub nehmen</button>
+            <button class="mc-opt" onclick="mcClick(this,'h9','c','c')">c) Klare Grenzen zwischen Arbeit und Freizeit</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-btns">
+      <div></div>
+      <button class="dw-btn dw-btn-primary" onclick="goSection('lesen')">Weiter: Lesen →</button>
+    </div>
+  </div>
+
+  <!-- ── LESEN ── -->
+  <div class="screen" id="ep-lesen">
+    <div class="timer-bar">
+      <div class="timer-label">⏱ Lesen · 45 Minuten</div>
+      <div class="timer-display" id="timer-lesen">45:00</div>
+    </div>
+    <div class="sec-hdr">
+      <div class="sec-hdr-top">
+        <div class="sec-icon">📖</div>
+        <div>
+          <div class="sec-title">Lesen</div>
+          <div class="sec-meta">25 Punkte · Anzeigen · Zeitungsartikel · Matching</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="hint-toggle" onclick="toggleHint('l-hint')">🇬🇧 English hint (click to expand)</button>
+    <div class="hint-box" id="l-hint">Read the questions first, then the text. For "Nicht im Text" — the information must be completely absent, not just implied. For matching, eliminate obvious wrong answers first.</div>
+
+    <span class="task-label">Teil 1 — Anzeigen · Richtig / Falsch / Nicht im Text</span>
+    <div class="task-instr">Sind die Aussagen richtig (R), falsch (F) oder nicht im Text (NiT)?</div>
+
+    <div class="notice-card">
+      <div class="notice-header">Stellenanzeige</div>
+      <div class="notice-body">SOFTWAREENTWICKLER (m/w/d) — Berlin
+Wir suchen einen erfahrenen Java-Entwickler für unser wachsendes Team.
+Voraussetzungen: Min. 3 Jahre Berufserfahrung · Kenntnisse in Spring Boot · Deutsch B2 oder höher
+Wir bieten: Homeoffice möglich · 30 Tage Urlaub · Weiterbildungsbudget
+Bewerbung an: jobs@techfirma.de</div>
+      <div style="margin-top:14px;">
+        <div class="q-row">
+          <div class="q-text">1. Man braucht mindestens 3 Jahre Erfahrung für diese Stelle.</div>
+          <div class="q-btns">
+            <button class="tf-btn" onclick="tritClick(this,'l1','R','R')">R</button>
+            <button class="tf-btn" onclick="tritClick(this,'l1','F','R')">F</button>
+            <button class="tf-btn" onclick="tritClick(this,'l1','NiT','R')">NiT</button>
+          </div>
+        </div>
+        <div class="q-row">
+          <div class="q-text">2. Das Gehalt wird in der Anzeige genannt.</div>
+          <div class="q-btns">
+            <button class="tf-btn" onclick="tritClick(this,'l2','R','NiT')">R</button>
+            <button class="tf-btn" onclick="tritClick(this,'l2','F','NiT')">F</button>
+            <button class="tf-btn" onclick="tritClick(this,'l2','NiT','NiT')">NiT</button>
+          </div>
+        </div>
+        <div class="q-row">
+          <div class="q-text">3. Homeoffice ist bei dieser Stelle möglich.</div>
+          <div class="q-btns">
+            <button class="tf-btn" onclick="tritClick(this,'l3','R','R')">R</button>
+            <button class="tf-btn" onclick="tritClick(this,'l3','F','R')">F</button>
+            <button class="tf-btn" onclick="tritClick(this,'l3','NiT','R')">NiT</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <span class="task-label">Teil 2 — Zeitungsartikel · Multiple Choice</span>
+    <div class="task-instr">Lesen Sie den Artikel und beantworten Sie die Fragen.</div>
+
+    <div class="notice-card">
+      <div style="font-size:14px;line-height:1.85;color:var(--dark);margin-bottom:20px;">
+        <strong>Fachkräftemangel: Chancen für afrikanische Einwanderer</strong><br><br>
+        Deutschland steht vor einer demografischen Herausforderung: Bis 2030 werden laut Prognosen rund 3 Millionen Fachkräfte fehlen. Die Bundesregierung reagiert darauf mit dem neuen Fachkräfteeinwanderungsgesetz, das qualifizierten Einwanderern aus Drittstaaten den Zugang zum deutschen Arbeitsmarkt erleichtern soll.<br><br>
+        Für Ingenieure, Ärzte, Pflegekräfte und IT-Spezialisten aus Afrika bieten sich dadurch neue Möglichkeiten. Allerdings gibt es weiterhin Hürden: Berufsabschlüsse müssen anerkannt werden, was oft mehrere Monate dauert. Außerdem sind ausreichende Deutschkenntnisse — mindestens B1, oft B2 — Pflicht.<br><br>
+        Experten betonen: Wer die Sprache beherrscht und einen anerkannten Abschluss hat, hat in Deutschland sehr gute Chancen. Das Goethe-Institut und die Bundesagentur für Arbeit bieten gemeinsam Programme an, die die Integration in den Arbeitsmarkt unterstützen.
+      </div>
+      <div style="margin-bottom:14px;">
+        <div class="q-text" style="font-weight:700;margin-bottom:8px;">4. Wie viele Fachkräfte werden bis 2030 in Deutschland fehlen?</div>
+        <div class="mc-opts">
+          <button class="mc-opt" onclick="mcClick(this,'l4','a','b')">a) 1 Million</button>
+          <button class="mc-opt" onclick="mcClick(this,'l4','b','b')">b) 3 Millionen</button>
+          <button class="mc-opt" onclick="mcClick(this,'l4','c','b')">c) 5 Millionen</button>
+        </div>
+      </div>
+      <div style="margin-bottom:14px;">
+        <div class="q-text" style="font-weight:700;margin-bottom:8px;">5. Was ist laut Text eine Hürde für afrikanische Einwanderer?</div>
+        <div class="mc-opts">
+          <button class="mc-opt" onclick="mcClick(this,'l5','a','a')">a) Berufsabschlüsse müssen anerkannt werden</button>
+          <button class="mc-opt" onclick="mcClick(this,'l5','b','a')">b) Es gibt keine Arbeit in Deutschland</button>
+          <button class="mc-opt" onclick="mcClick(this,'l5','c','a')">c) Deutsche Unternehmen stellen keine Afrikaner ein</button>
+        </div>
+      </div>
+      <div style="margin-bottom:14px;">
+        <div class="q-text" style="font-weight:700;margin-bottom:8px;">6. Welches Sprachniveau ist oft Pflicht?</div>
+        <div class="mc-opts">
+          <button class="mc-opt" onclick="mcClick(this,'l6','a','b')">a) A2</button>
+          <button class="mc-opt" onclick="mcClick(this,'l6','b','b')">b) B1 bis B2</button>
+          <button class="mc-opt" onclick="mcClick(this,'l6','c','b')">c) C1</button>
+        </div>
+      </div>
+      <div>
+        <div class="q-text" style="font-weight:700;margin-bottom:8px;">7. Was bieten das Goethe-Institut und die Bundesagentur für Arbeit an?</div>
+        <div class="mc-opts">
+          <button class="mc-opt" onclick="mcClick(this,'l7','a','c')">a) Kostenlose Sprachkurse für alle</button>
+          <button class="mc-opt" onclick="mcClick(this,'l7','b','c')">b) Anerkennung von Berufsabschlüssen</button>
+          <button class="mc-opt" onclick="mcClick(this,'l7','c','c')">c) Programme zur Integration in den Arbeitsmarkt</button>
+        </div>
+      </div>
+    </div>
+
+    <span class="task-label">Teil 3 — Texte zuordnen</span>
+    <div class="task-instr">Welcher Textausschnitt (A–E) passt zu welcher Überschrift? Jeder Text wird nur einmal verwendet.</div>
+
+    <div class="notice-card">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+        <div style="background:var(--bg);border-radius:8px;padding:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--blue);margin-bottom:6px;">TEXT A</div>
+          <div style="font-size:13px;line-height:1.6;">„Die Anerkennungsberatung hat mir sehr geholfen. Nach drei Monaten konnte ich als Krankenpflegerin arbeiten."</div>
+        </div>
+        <div style="background:var(--bg);border-radius:8px;padding:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--blue);margin-bottom:6px;">TEXT B</div>
+          <div style="font-size:13px;line-height:1.6;">Der Integrationskurs umfasst 700 Unterrichtsstunden: 600 Stunden Sprachkurs und 100 Stunden Orientierungskurs.</div>
+        </div>
+        <div style="background:var(--bg);border-radius:8px;padding:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--blue);margin-bottom:6px;">TEXT C</div>
+          <div style="font-size:13px;line-height:1.6;">Wer einen deutschen Berufsabschluss oder einen anerkannten ausländischen Abschluss hat, findet schneller Arbeit.</div>
+        </div>
+        <div style="background:var(--bg);border-radius:8px;padding:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--blue);margin-bottom:6px;">TEXT D</div>
+          <div style="font-size:13px;line-height:1.6;">Bei der Krankenversicherung gibt es zwei Systeme: gesetzlich (GKV) und privat (PKV). Für die meisten ist die GKV die richtige Wahl.</div>
+        </div>
+        <div style="background:var(--bg);border-radius:8px;padding:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--blue);margin-bottom:6px;">TEXT E</div>
+          <div style="font-size:13px;line-height:1.6;">Das Jobcenter unterstützt Arbeitslose mit Beratung, Vermittlung und finanzieller Hilfe (Bürgergeld).</div>
+        </div>
+      </div>
+
+      <table class="match-table">
+        <tr><th>Überschrift</th><th>Text</th></tr>
+        <tr>
+          <td>Erfahrungsbericht: Berufsanerkennung</td>
+          <td><select class="match-select" id="lm1" onchange="saveAnswer('lm1',this.value)"><option value="">Wählen...</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select></td>
+        </tr>
+        <tr>
+          <td>Aufbau des Integrationskurses</td>
+          <td><select class="match-select" id="lm2" onchange="saveAnswer('lm2',this.value)"><option value="">Wählen...</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select></td>
+        </tr>
+        <tr>
+          <td>Bedeutung von Berufsabschlüssen</td>
+          <td><select class="match-select" id="lm3" onchange="saveAnswer('lm3',this.value)"><option value="">Wählen...</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select></td>
+        </tr>
+        <tr>
+          <td>Krankenversicherung in Deutschland</td>
+          <td><select class="match-select" id="lm4" onchange="saveAnswer('lm4',this.value)"><option value="">Wählen...</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select></td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="nav-btns">
+      <button class="dw-btn dw-btn-ghost" onclick="goSection('horen')">← Zurück</button>
+      <button class="dw-btn dw-btn-primary" onclick="goSection('schreiben')">Weiter: Schreiben →</button>
+    </div>
+  </div>
+
+  <!-- ── SCHREIBEN ── -->
+  <div class="screen" id="ep-schreiben">
+    <div class="timer-bar">
+      <div class="timer-label">⏱ Schreiben · 30 Minuten</div>
+      <div class="timer-display" id="timer-schreiben">30:00</div>
+    </div>
+    <div class="sec-hdr">
+      <div class="sec-hdr-top">
+        <div class="sec-icon">✍️</div>
+        <div>
+          <div class="sec-title">Schreiben</div>
+          <div class="sec-meta">25 Punkte · Formeller Brief / E-Mail · min. 100 Wörter</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="hint-toggle" onclick="toggleHint('s-hint')">🇬🇧 English hint (click to expand)</button>
+    <div class="hint-box" id="s-hint">Write at least 100 words. Address ALL 4 bullet points — missing even one costs significant points. Use formal language: "Sehr geehrte Damen und Herren" / "Mit freundlichen Grüßen". Include Konjunktiv II for polite requests: "Ich würde mich freuen, wenn..."</div>
+
+    <div class="dw-info" style="margin-bottom:20px;">
+      <span>⚠️</span>
+      <span><strong>Wichtig:</strong> Sie müssen alle 4 Punkte ansprechen. Jeder fehlende Punkt kostet mehrere Punkte. Minimum: 100 Wörter.</span>
+    </div>
+
+    <div class="writing-task">
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;">Aufgabe</div>
+        <div class="writing-prompt">Sie möchten an einem Fortbildungskurs Ihres Arbeitgebers teilnehmen. Schreiben Sie eine formelle E-Mail an Ihre Vorgesetzte Frau Dr. Schmidt.</div>
+        <ul class="bullet-list">
+          <li>Erklären Sie, warum Sie an dem Kurs teilnehmen möchten</li>
+          <li>Fragen Sie, ob die Kosten vom Unternehmen übernommen werden</li>
+          <li>Fragen Sie, ob Sie während des Kurses frei bekommen</li>
+          <li>Fragen Sie, bis wann Sie sich anmelden müssen</li>
+        </ul>
+      </div>
+
+      <div class="dw-warn" style="margin-bottom:14px;font-size:12.5px;">
+        <span>💡</span><span>Tipp: Nutzen Sie Konnektoren wie <em>da, weil, damit, sodass</em>. Verwenden Sie Konjunktiv II für höfliche Bitten: <em>Ich würde mich freuen, wenn Sie...</em></span>
+      </div>
+
+      <textarea class="writing-area" id="s1-text" placeholder="Sehr geehrte Frau Dr. Schmidt,
+
+ich schreibe Ihnen bezüglich des Fortbildungskurses...
+
+Mit freundlichen Grüßen," oninput="updateWordCount('s1-text','wc1')" style="min-height:280px;"></textarea>
+      <div class="word-count" id="wc1">0 Wörter (Minimum: 100)</div>
+      <a href="exam-whisperer.html" class="dw-btn dw-btn-primary" style="margin-top:14px;" target="_blank">🤖 Mit KI-Prüfer bewerten lassen →</a>
+    </div>
+
+    <div class="nav-btns">
+      <button class="dw-btn dw-btn-ghost" onclick="goSection('lesen')">← Zurück</button>
+      <button class="dw-btn dw-btn-primary" onclick="goSection('sprechen')">Weiter: Sprechen →</button>
+    </div>
+  </div>
+
+  <!-- ── SPRECHEN ── -->
+  <div class="screen" id="ep-sprechen">
+    <div class="timer-bar">
+      <div class="timer-label">⏱ Sprechen · 15 Minuten</div>
+      <div class="timer-display" id="timer-sprechen">15:00</div>
+    </div>
+    <div class="sec-hdr">
+      <div class="sec-hdr-top">
+        <div class="sec-icon">🎤</div>
+        <div>
+          <div class="sec-title">Sprechen</div>
+          <div class="sec-meta">25 Punkte · 3 Aufgaben (B1 Goethe-Format)</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="hint-toggle" onclick="toggleHint('sp-hint')">🇬🇧 English hint (click to expand)</button>
+    <div class="hint-box" id="sp-hint">B1 Sprechen has 3 parts: (1) Short presentation on a topic, (2) Planning something together with a partner, (3) Expressing your opinion. Use Konjunktiv II (würde, könnte, wäre) for suggestions. Link ideas with: zunächst, dann, außerdem, schließlich.</div>
+
+    <div class="dw-info" style="margin-bottom:20px;">
+      <span>💡</span><span>Schreiben Sie vollständige Antworten auf Deutsch. In der echten Prüfung sprechen Sie mit dem Prüfer. Nutzen Sie den Sprechen-Trainer für Tonaufnahmen.</span>
+    </div>
+
+    <span class="task-label">Aufgabe 1 — Kurzpräsentation</span>
+    <div class="task-instr">Halten Sie eine kurze Präsentation (1–2 Minuten) zu dem folgenden Thema.</div>
+
+    <div class="sprechen-task">
+      <div style="background:var(--blue-light);border:2px solid var(--blue-mid);border-radius:var(--radius-sm);padding:20px;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:700;color:var(--blue);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Ihr Thema</div>
+        <div style="font-size:18px;font-weight:800;color:var(--dark);">LERNEN MIT DIGITALEN MEDIEN</div>
+        <div style="font-size:12px;color:var(--mid);margin-top:6px;">Sprechen Sie über: Was es ist · Ihre Erfahrungen · Vor- und Nachteile · Ihre Meinung</div>
+      </div>
+      <div class="question-text">Schreiben Sie Ihre Präsentation (Stichpunkte oder vollständige Sätze):</div>
+      <textarea class="writing-area" id="sp1" placeholder="Ich möchte heute über das Thema 'Lernen mit digitalen Medien' sprechen.
+
+Heutzutage nutzen immer mehr Menschen Apps und Online-Kurse...
+
+Meiner Meinung nach...
+
+Auf der einen Seite... Auf der anderen Seite..." oninput="saveAnswer('sp1',this.value)" style="min-height:160px;"></textarea>
+    </div>
+
+    <span class="task-label">Aufgabe 2 — Gemeinsam planen</span>
+    <div class="task-instr">Sie und Ihr Freund planen zusammen eine Aktivität. Machen Sie Vorschläge und reagieren Sie auf Vorschläge.</div>
+
+    <div class="sprechen-task">
+      <div style="background:var(--bg);border-radius:var(--radius-sm);padding:14px;margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:700;color:var(--mid);margin-bottom:6px;">SITUATION</div>
+        <div style="font-size:14px;color:var(--dark);line-height:1.7;">Sie und Ihr Freund Kofi möchten das Wochenende zusammen verbringen. Ihr Freund möchte ins Kino gehen. Sie schlagen vor, lieber ein Museum zu besuchen. Planen Sie gemeinsam.</div>
+      </div>
+      <div class="question-text">Ihr Vorschlag und Ihre Reaktion auf seinen Vorschlag:</div>
+      <textarea class="writing-area" id="sp2" placeholder="Kofi, ich verstehe, dass du ins Kino möchtest. Das wäre sicher schön. Aber ich würde vorschlagen, dass wir lieber...
+
+Was hältst du davon?
+
+Wir könnten auch einen Kompromiss finden: Vielleicht..." oninput="saveAnswer('sp2',this.value)" style="min-height:130px;"></textarea>
+    </div>
+
+    <span class="task-label">Aufgabe 3 — Meinung äußern</span>
+    <div class="task-instr">Lesen Sie die Aussage und äußern Sie Ihre Meinung dazu.</div>
+
+    <div class="sprechen-task">
+      <div style="background:var(--bg);border-left:4px solid var(--blue);padding:14px 16px;border-radius:0 var(--radius-sm) var(--radius-sm) 0;margin-bottom:14px;">
+        <div style="font-size:15px;font-style:italic;color:var(--dark);">„Alle Menschen sollten mindestens zwei Fremdsprachen lernen."</div>
+      </div>
+      <div class="question-text">Stimmen Sie zu oder nicht? Begründen Sie Ihre Meinung (3–5 Sätze):</div>
+      <textarea class="writing-area" id="sp3" placeholder="Ich bin der Meinung, dass...
+
+Einerseits... Andererseits...
+
+Ich würde sagen, dass..." oninput="saveAnswer('sp3',this.value)" style="min-height:130px;"></textarea>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
+      <a href="exam-whisperer.html" class="dw-btn dw-btn-secondary" target="_blank">🤖 Antworten bewerten lassen →</a>
+      <a href="sprechen-prep.html" class="dw-btn dw-btn-ghost" target="_blank">🎤 Sprechen-Trainer öffnen →</a>
+    </div>
+
+    <div class="nav-btns">
+      <button class="dw-btn dw-btn-ghost" onclick="goSection('schreiben')">← Zurück</button>
+      <button class="dw-btn dw-btn-primary" onclick="showResults()">Ergebnisse anzeigen →</button>
+    </div>
+  </div>
+
+</div><!-- /screen-exam -->
+
+<!-- ===== RESULTS ===== -->
+<div class="screen" id="screen-results">
+  <div class="results-card">
+    <div class="result-verdict" id="verdict">BESTANDEN</div>
+    <div class="result-sub" id="result-sub">Glückwunsch!</div>
+    <div class="score-grid">
+      <div class="score-cell">
+        <div class="score-cell-name">🎧 Hören</div>
+        <div class="score-cell-pts" id="sc-h-pts">—</div>
+        <div class="score-cell-pct" id="sc-h-pct">von 9 auto-Punkten</div>
+      </div>
+      <div class="score-cell">
+        <div class="score-cell-name">📖 Lesen</div>
+        <div class="score-cell-pts" id="sc-l-pts">—</div>
+        <div class="score-cell-pct" id="sc-l-pct">von 11 auto-Punkten</div>
+      </div>
+      <div class="score-cell">
+        <div class="score-cell-name">✍️ Schreiben</div>
+        <div class="score-cell-pts" id="sc-s-pts">→ KI-Prüfer</div>
+        <div class="score-cell-pct">von 25 Punkten</div>
+      </div>
+      <div class="score-cell">
+        <div class="score-cell-name">🎤 Sprechen</div>
+        <div class="score-cell-pts" id="sc-sp-pts">→ KI-Prüfer</div>
+        <div class="score-cell-pct">von 25 Punkten</div>
+      </div>
+    </div>
+    <div style="font-size:14px;color:var(--mid);margin-top:8px;" id="total-score"></div>
+  </div>
+
+  <div class="dw-label">Empfohlene Module</div>
+  <div id="rec-modules"></div>
+
+  <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;">
+    <button class="dw-btn dw-btn-secondary" onclick="restartExam()">🔄 Prüfung wiederholen</button>
+    <a href="exam-whisperer.html" class="dw-btn dw-btn-primary">🤖 Mit KI üben →</a>
+    <a href="sprechen-prep.html" class="dw-btn dw-btn-secondary">🎤 Sprechen üben →</a>
+    <a href="https://www.goethe.de" target="_blank" class="dw-btn dw-btn-ghost">📋 Echte B1 Prüfung buchen →</a>
+  </div>
+</div>
+
+</div>
+
+<script>
+var answers = {};
+var timers = {};
+var currentSection = 'horen';
+
+function saveAnswer(k,v){answers[k]=v;localStorage.setItem('dw_b1_exam',JSON.stringify(answers));}
+
+(function(){
+  var s=localStorage.getItem('dw_b1_exam');
+  if(s){answers=JSON.parse(s);Object.keys(answers).forEach(function(k){var el=document.getElementById(k);if(el&&el.tagName!=='BUTTON')el.value=answers[k];});}
+})();
+
+function startExam(){
+  document.getElementById('screen-intro').classList.remove('active');
+  document.getElementById('screen-exam').classList.add('active');
+  startTimer('horen',40);
+}
+
+function goSection(sec){
+  document.getElementById('tab-'+currentSection).classList.add('done');
+  document.getElementById('tab-'+currentSection).classList.remove('active');
+  stopTimer(currentSection);
+  document.getElementById('ep-'+currentSection).classList.remove('active');
+  currentSection=sec;
+  document.getElementById('ep-'+sec).classList.add('active');
+  document.getElementById('tab-'+sec).classList.add('active');
+  document.getElementById('tab-'+sec).classList.remove('done');
+  var mins={horen:40,lesen:45,schreiben:30,sprechen:15};
+  startTimer(sec,mins[sec]);
+  window.scrollTo(0,0);
+}
+
+function startTimer(sec,mins){
+  if(timers[sec])return;
+  var total=mins*60;
+  var el=document.getElementById('timer-'+sec);
+  timers[sec]=setInterval(function(){
+    total--;if(total<=0){stopTimer(sec);total=0;}
+    var m=Math.floor(total/60);var s=total%60;
+    el.textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+    el.className='timer-display'+(total<60?' danger':total<180?' warning':'');
+  },1000);
+}
+function stopTimer(sec){if(timers[sec]){clearInterval(timers[sec]);timers[sec]=null;}}
+
+function tfClick(btn,key,val,correct){
+  var p=btn.parentElement;p.querySelectorAll('.tf-btn').forEach(function(b){b.classList.remove('correct','wrong');});
+  if(val===correct){btn.classList.add('correct');}
+  else{btn.classList.add('wrong');p.querySelectorAll('.tf-btn').forEach(function(b){if(b.textContent.trim()===correct)b.classList.add('correct');});}
+  saveAnswer(key,val);
+}
+
+function tritClick(btn,key,val,correct){
+  var p=btn.parentElement;p.querySelectorAll('.tf-btn').forEach(function(b){b.classList.remove('correct','wrong');});
+  if(val===correct){btn.classList.add('correct');}
+  else{btn.classList.add('wrong');p.querySelectorAll('.tf-btn').forEach(function(b){if(b.textContent.trim()===correct)b.classList.add('correct');});}
+  saveAnswer(key,val);
+}
+
+function mcClick(btn,key,val,correct){
+  var p=btn.parentElement;p.querySelectorAll('.mc-opt').forEach(function(b){b.classList.remove('selected','correct','wrong');});
+  if(val===correct){btn.classList.add('correct');}
+  else{btn.classList.add('wrong');p.querySelectorAll('.mc-opt').forEach(function(b){if(b.getAttribute('onclick').indexOf("'"+correct+"'")!==-1)b.classList.add('correct');});}
+  saveAnswer(key,val);
+}
+
+function updateWordCount(id,wcId){
+  var text=document.getElementById(id).value.trim();
+  var words=text?text.split(/\s+/).length:0;
+  saveAnswer(id,document.getElementById(id).value);
+  var el=document.getElementById(wcId);
+  el.textContent=words+' Wörter'+(words<100?' (Minimum: 100 — noch '+(100-words)+' Wörter)':'  ✓ Mindestanzahl erreicht');
+  el.style.color=words>=100?'var(--green)':'var(--red)';
+}
+
+function toggleHint(id){
+  var el=document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+function calcScore(){
+  var hAnswers={h1:'F',h2:'R',h3:'F',h4:'F',h5:'R',h6:'F',h7:'b',h8:'b',h9:'c'};
+  var hScore=0;Object.keys(hAnswers).forEach(function(k){if(answers[k]===hAnswers[k])hScore++;});
+  var lAnswers={l1:'R',l2:'NiT',l3:'R',l4:'b',l5:'a',l6:'b',l7:'c'};
+  var lScore=0;Object.keys(lAnswers).forEach(function(k){if(answers[k]===lAnswers[k])lScore++;});
+  var matchAnswers={lm1:'A',lm2:'B',lm3:'C',lm4:'D'};
+  Object.keys(matchAnswers).forEach(function(k){if(answers[k]===matchAnswers[k])lScore++;});
+  return{horen:hScore,lesenAuto:lScore};
+}
+
+function showResults(){
+  stopTimer(currentSection);
+  document.getElementById('screen-exam').classList.remove('active');
+  document.getElementById('screen-results').classList.add('active');
+  localStorage.setItem('dw_mod_b1exam_done','1');
+  var sc=calcScore();
+  var hPct=Math.round(sc.horen/9*100);
+  var lPct=Math.round(sc.lesenAuto/11*100);
+  document.getElementById('sc-h-pts').textContent=sc.horen+'/9';
+  document.getElementById('sc-h-pct').textContent=hPct+'% · von 25 Punkten gesamt';
+  document.getElementById('sc-l-pts').textContent=sc.lesenAuto+'/11';
+  document.getElementById('sc-l-pct').textContent=lPct+'% · von 25 Punkten gesamt';
+  var pass=hPct>=60&&lPct>=60;
+  var vEl=document.getElementById('verdict');
+  vEl.textContent=pass?'BESTANDEN ✓':'NICHT BESTANDEN';
+  vEl.className='result-verdict '+(pass?'pass':'fail');
+  document.getElementById('result-sub').textContent=pass?'Auto-bewertete Abschnitte bestanden! Jetzt Schreiben & Sprechen mit dem KI-Prüfer überprüfen.':'Überprüfen Sie die empfohlenen Module und üben Sie weiter.';
+  document.getElementById('total-score').textContent='Auto-Score: '+(sc.horen+sc.lesenAuto)+'/20 · Schreiben & Sprechen bitte mit KI-Prüfer bewerten lassen';
+  var recs=[];
+  if(hPct<60)recs.push({name:'Hören Strategie',desc:'B1 Hörstrategien und Techniken',href:'module-b1-10-hoeren-strategie.html'});
+  if(lPct<60)recs.push({name:'Lesen Strategie',desc:'Schnell-Lesen und Schlüsselwörter',href:'module-b1-9-lesen-strategie.html'});
+  recs.push({name:'Schreiben Strategie',desc:'Formelle Briefe und E-Mails auf B1-Niveau',href:'module-b1-11-schreiben-strategie.html'});
+  recs.push({name:'Sprechen Strategie',desc:'B1 Sprechen: Präsentation und Diskussion',href:'module-b1-12-sprechen-strategie.html'});
+  recs.push({name:'Konnektoren',desc:'Satzverbindungen für bessere Texte',href:'module-b1-5-konnektoren.html'});
+  var html='';recs.forEach(function(r){html+='<div class="dw-rec-card"><div><div class="dw-rec-name">'+r.name+'</div><div class="dw-rec-desc">'+r.desc+'</div></div><a href="'+r.href+'" class="dw-rec-link">Jetzt üben →</a></div>';});
+  document.getElementById('rec-modules').innerHTML=html;
+  window.scrollTo(0,0);
+}
+
+function restartExam(){localStorage.removeItem('dw_b1_exam');answers={};location.reload();}
+</script>
+</body>
+</html>

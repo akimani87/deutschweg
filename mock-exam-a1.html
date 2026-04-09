@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Goethe A1 Mock Exam — Start Deutsch 1 | DeutschWeg</title>
+<link rel="stylesheet" href="deutschweg-theme.css">
+<style>
+.exam-wrap { max-width: 760px; margin: 0 auto; padding: 24px 20px 100px; }
+.intro-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px; margin-bottom: 24px; }
+.intro-hero { text-align: center; margin-bottom: 28px; }
+.exam-badge { display: inline-block; background: var(--blue-light); color: var(--blue); font-size: 11px; font-weight: 700; letter-spacing: 1.5px; padding: 5px 14px; border-radius: 50px; margin-bottom: 14px; text-transform: uppercase; }
+.intro-title { font-size: 26px; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
+.intro-sub { font-size: 14px; color: var(--mid); }
+.section-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-bottom: 24px; }
+.section-info { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; }
+.si-name { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+.si-pts { font-size: 22px; font-weight: 800; color: var(--dark); }
+.si-desc { font-size: 12px; color: var(--light); margin-top: 2px; }
+.rules-list { list-style: none; padding: 0; margin: 0; }
+.rules-list li { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--mid); line-height: 1.5; }
+.rules-list li:last-child { border-bottom: none; }
+.rules-list li span:first-child { color: var(--blue); font-size: 16px; flex-shrink: 0; }
+.start-btn { display: block; width: 100%; padding: 15px; background: var(--blue); color: white; font-family: inherit; font-size: 16px; font-weight: 700; border: none; border-radius: var(--radius-sm); cursor: pointer; transition: background 0.2s; margin-top: 24px; }
+.start-btn:hover { background: var(--blue-dark); }
+
+/* SECTION TABS */
+.section-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 24px; overflow-x: auto; }
+.st-tab { padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--light); border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; cursor: default; display: flex; align-items: center; gap: 6px; }
+.st-tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+.st-tab.done { color: var(--green); }
+.st-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+/* TIMER */
+.timer-bar { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 18px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
+.timer-label { font-size: 12px; font-weight: 600; color: var(--mid); }
+.timer-display { font-size: 22px; font-weight: 800; color: var(--blue); font-variant-numeric: tabular-nums; }
+.timer-display.warning { color: var(--amber); }
+.timer-display.danger { color: var(--red); }
+
+/* SECTION HEADER */
+.sec-hdr { margin-bottom: 20px; }
+.sec-hdr-top { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+.sec-icon { width: 42px; height: 42px; border-radius: 12px; background: var(--blue-light); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.sec-title { font-size: 22px; font-weight: 800; color: var(--dark); }
+.sec-meta { font-size: 13px; color: var(--mid); }
+.task-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--blue); display: block; margin: 24px 0 10px; }
+.task-instr { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 13px 16px; font-size: 13.5px; color: var(--mid); line-height: 1.6; margin-bottom: 18px; }
+
+/* CONVERSATION */
+.conv-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px 18px; margin-bottom: 16px; }
+.conv-num { font-size: 10px; font-weight: 700; color: var(--blue); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+.conv-text { font-size: 14px; line-height: 1.8; color: var(--dark); background: var(--bg); border-radius: 8px; padding: 13px 16px; margin-bottom: 14px; font-style: italic; white-space: pre-line; }
+.conv-q { font-size: 13px; color: var(--mid); margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
+.q-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.q-row:last-child { border-bottom: none; }
+.q-text { font-size: 13.5px; color: var(--dark); flex: 1; }
+.q-btns { display: flex; gap: 6px; flex-shrink: 0; }
+.tf-btn { padding: 6px 14px; font-size: 12px; font-weight: 700; border: 1.5px solid var(--border); border-radius: 8px; cursor: pointer; font-family: inherit; background: white; color: var(--mid); transition: all 0.15s; }
+.tf-btn:hover { border-color: var(--blue); color: var(--blue); }
+.tf-btn.selected-r { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
+.tf-btn.selected-f { border-color: var(--amber); background: #FFFBEB; color: #92400E; }
+.tf-btn.correct { border-color: var(--green); background: var(--green-light); color: var(--green); }
+.tf-btn.wrong { border-color: var(--red); background: var(--red-light); color: var(--red); }
+
+/* FILL BLANKS */
+.fill-text { font-size: 15px; line-height: 2.2; color: var(--dark); background: var(--bg); border-radius: var(--radius-sm); padding: 16px 18px; margin-bottom: 16px; }
+.blank-select { border: 1.5px solid var(--blue); border-radius: 6px; padding: 3px 8px; font-size: 14px; font-family: inherit; color: var(--dark); background: white; cursor: pointer; outline: none; }
+
+/* LESEN */
+.notice-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px 18px; margin-bottom: 8px; }
+.notice-header { font-size: 14px; font-weight: 700; color: var(--dark); margin-bottom: 8px; }
+.notice-body { font-size: 13.5px; line-height: 1.7; color: var(--mid); white-space: pre-line; }
+.mc-opts { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.mc-opt { padding: 11px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 13.5px; color: var(--dark); cursor: pointer; background: white; font-family: inherit; text-align: left; transition: all 0.15s; }
+.mc-opt:hover { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
+.mc-opt.selected { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
+.mc-opt.correct { border-color: var(--green); background: var(--green-light); color: var(--green); }
+.mc-opt.wrong { border-color: var(--red); background: var(--red-light); color: var(--red); }
+.trit-btn { padding: 6px 10px; font-size: 11px; font-weight: 700; border: 1.5px solid var(--border); border-radius: 8px; cursor: pointer; font-family: inherit; background: white; color: var(--mid); transition: all 0.15s; }
+.trit-btn:hover { border-color: var(--blue); color: var(--blue); }
+.trit-btn.sel { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
+.trit-btn.correct { border-color: var(--green); background: var(--green-light); color: var(--green); }
+.trit-btn.wrong { border-color: var(--red); background: var(--red-light); color: var(--red); }
+
+/* FORM TASK */
+.form-task { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 20px; margin-bottom: 16px; }
+.form-field { display: grid; grid-template-columns: 120px 1fr; gap: 10px; align-items: center; margin-bottom: 12px; }
+.form-field label { font-size: 13px; font-weight: 600; color: var(--mid); }
+.form-field input { padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; color: var(--dark); outline: none; transition: border-color 0.2s; }
+.form-field input:focus { border-color: var(--blue); }
+
+/* SCHREIBEN */
+.writing-task { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 20px; margin-bottom: 16px; }
+.writing-prompt { font-size: 14px; line-height: 1.7; color: var(--dark); margin-bottom: 14px; white-space: pre-line; }
+.bullet-list { list-style: none; padding: 0; margin: 0 0 14px; }
+.bullet-list li { padding: 6px 0 6px 20px; position: relative; font-size: 13.5px; color: var(--mid); }
+.bullet-list li::before { content: '—'; position: absolute; left: 0; color: var(--blue); }
+.writing-area { width: 100%; min-height: 130px; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; font-family: inherit; color: var(--dark); resize: vertical; outline: none; transition: border-color 0.2s; line-height: 1.7; }
+.writing-area:focus { border-color: var(--blue); }
+.ai-check-btn { margin-top: 10px; }
+
+/* SPRECHEN */
+.sprechen-task { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 20px; margin-bottom: 16px; }
+.question-row { margin-bottom: 14px; }
+.question-text { font-size: 14px; font-weight: 600; color: var(--dark); margin-bottom: 8px; }
+.answer-input { width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; color: var(--dark); outline: none; transition: border-color 0.2s; }
+.answer-input:focus { border-color: var(--blue); }
+.keyword-card { background: var(--blue-light); border: 2px solid var(--blue); border-radius: var(--radius-sm); padding: 20px; text-align: center; margin-bottom: 14px; }
+.keyword-word { font-size: 32px; font-weight: 800; color: var(--blue); }
+.keyword-label { font-size: 11px; color: var(--mid); margin-top: 4px; }
+
+/* NAV BUTTONS */
+.nav-btns { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border); }
+
+/* RESULTS */
+.results-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px; text-align: center; margin-bottom: 20px; }
+.result-verdict { font-size: 42px; font-weight: 800; margin-bottom: 8px; }
+.result-verdict.pass { color: var(--green); }
+.result-verdict.fail { color: var(--red); }
+.result-sub { font-size: 14px; color: var(--mid); margin-bottom: 24px; }
+.score-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-bottom: 20px; }
+.score-cell { background: var(--bg); border-radius: var(--radius-sm); padding: 14px; }
+.score-cell-name { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--mid); margin-bottom: 4px; }
+.score-cell-pts { font-size: 20px; font-weight: 800; color: var(--dark); }
+.score-cell-pct { font-size: 12px; color: var(--light); }
+.score-cell.pass-cell .score-cell-pts { color: var(--green); }
+.score-cell.fail-cell .score-cell-pts { color: var(--red); }
+.total-score { font-size: 15px; font-weight: 700; color: var(--dark); margin: 12px 0; }
+.rec-section { text-align: left; }
+
+.screen { display: none; }
+.screen.active { display: block; }
+@media (max-width: 600px) {
+  .section-grid { grid-template-columns: 1fr; }
+  .score-grid { grid-template-columns: 1fr; }
+  .form-field { grid-template-columns: 1fr; }
+  .q-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="dw-nav">
+  <div class="dw-nav-inner">
+    <a href="deutschweg-prototype.html" class="dw-logo">
+      <div class="dw-logo-icon">D</div>
+      <span class="dw-logo-text">Deutsch<span>Weg</span></span>
+    </a>
+    <a href="deutschweg-prototype.html" class="dw-btn dw-btn-secondary">← Back to Dashboard</a>
+  </div>
+</nav>
+
+<div class="exam-wrap">
+
+<!-- ===== SCREEN: INTRO ===== -->
+<div class="screen active" id="screen-intro">
+  <div class="intro-card">
+    <div class="intro-hero">
+      <div class="exam-badge">Goethe A1 · Start Deutsch 1</div>
+      <div class="intro-title">A1 Complete Mock Exam</div>
+      <div class="intro-sub">Full simulation of the official Goethe A1 exam — 65 minutes, 4 sections</div>
+    </div>
+
+    <div class="section-grid">
+      <div class="section-info">
+        <div class="si-name" style="color:#3B82F6;">🎧 Hören</div>
+        <div class="si-pts">20 <span style="font-size:14px;font-weight:400;color:var(--light);">Punkte</span></div>
+        <div class="si-desc">20 Minuten · Teil A + Teil B</div>
+      </div>
+      <div class="section-info">
+        <div class="si-name" style="color:#8B5CF6;">📖 Lesen</div>
+        <div class="si-pts">25 <span style="font-size:14px;font-weight:400;color:var(--light);">Punkte</span></div>
+        <div class="si-desc">25 Minuten · Teil A + B + C</div>
+      </div>
+      <div class="section-info">
+        <div class="si-name" style="color:#10B981;">✍️ Schreiben</div>
+        <div class="si-pts">25 <span style="font-size:14px;font-weight:400;color:var(--light);">Punkte</span></div>
+        <div class="si-desc">20 Minuten · 2 Aufgaben</div>
+      </div>
+      <div class="section-info">
+        <div class="si-name" style="color:#F59E0B;">🎤 Sprechen</div>
+        <div class="si-pts">30 <span style="font-size:14px;font-weight:400;color:var(--light);">Punkte</span></div>
+        <div class="si-desc">15 Minuten · 3 Teile</div>
+      </div>
+    </div>
+
+    <div class="dw-label">Prüfungsregeln</div>
+    <ul class="rules-list">
+      <li><span>⏱</span><span>65 Minuten Gesamtzeit — jeder Abschnitt hat sein eigenes Zeitlimit</span></li>
+      <li><span>✅</span><span>Bestanden: mindestens 60% in JEDEM Abschnitt (nicht nur insgesamt)</span></li>
+      <li><span>📝</span><span>Alle Antworten werden automatisch gespeichert</span></li>
+      <li><span>🤖</span><span>Schreiben und Sprechen können mit dem KI-Prüfer überprüft werden</span></li>
+      <li><span>💡</span><span>Du kannst nach einem Abschnitt nicht zurückgehen</span></li>
+    </ul>
+
+    <button class="start-btn" onclick="startExam()">Prüfung beginnen →</button>
+  </div>
+</div>
+
+<!-- ===== SCREEN: EXAM ===== -->
+<div class="screen" id="screen-exam">
+
+  <!-- TABS -->
+  <div class="section-tabs">
+    <div class="st-tab active" id="tab-horen"><span class="st-dot"></span> Hören</div>
+    <div class="st-tab" id="tab-lesen"><span class="st-dot"></span> Lesen</div>
+    <div class="st-tab" id="tab-schreiben"><span class="st-dot"></span> Schreiben</div>
+    <div class="st-tab" id="tab-sprechen"><span class="st-dot"></span> Sprechen</div>
+  </div>
+
+  <!-- ── HÖREN ── -->
+  <div class="screen active" id="ep-horen">
+    <div class="timer-bar">
+      <div class="timer-label">⏱ Hören · 20 Minuten</div>
+      <div class="timer-display" id="timer-horen">20:00</div>
+    </div>
+
+    <div class="sec-hdr">
+      <div class="sec-hdr-top">
+        <div class="sec-icon">🎧</div>
+        <div>
+          <div class="sec-title">Hören</div>
+          <div class="sec-meta">20 Punkte · Teil A: Richtig / Falsch · Teil B: Lücken füllen</div>
+        </div>
+      </div>
+    </div>
+
+    <span class="task-label">Teil A — Kurze Gespräche</span>
+    <div class="task-instr">Lesen Sie die Aussagen. Sind sie richtig (R) oder falsch (F)?</div>
+
+    <!-- Conv 1 -->
+    <div class="conv-card">
+      <div class="conv-num">Gespräch 1</div>
+      <div class="conv-text">— Guten Tag. Ich möchte ein Zimmer buchen.
+— Für wie viele Nächte?
+— Für drei Nächte bitte.
+— Und Ihr Name?
+— Kwame Mensah.</div>
+      <div class="conv-q">
+        <div class="q-row">
+          <div class="q-text">1. Kwame möchte ein Zimmer buchen.</div>
+          <div class="q-btns">
+            <button class="tf-btn" onclick="tfClick(this,'h1','R','R')">R</button>
+            <button class="tf-btn" onclick="tfClick(this,'h1','F','R')">F</button>
+          </div>
+        </div>
+        <div class="q-row">
+          <div class="q-text">2. Er bleibt zwei Nächte.</div>
+          <div class="q-btns">
+            <button class="tf-btn" onclick="tfClick(this,'h2','R','F')">R</button>
+            <button class="tf-btn" onclick="tfClick(this,'h2','F','F')">F</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conv 2 -->
+    <div class="conv-card">
+      <div class="conv-num">Gespräch 2</div>
+      <div class="conv-text">— Entschuldigung, wann fährt der nächste Zug nach Berlin?
+— Um 14:35 Uhr auf Gleis 7.
+— Und wie lange dauert die Fahrt?
+— Ungefähr zwei Stunden.</div>
+      <div class="conv-q">
+        <div class="q-row">
+          <div class="q-text">3. Der Zug fährt um 14:35 Uhr.</div>
+          <div class="q-btns">
+            <button class="tf-btn" onclick="tfClick(this,'h3','R','R')">R</button>
+            <button class="tf-btn" onclick="tfClick(this,'h3','F','R')">F</button>
+          </div>
+        </div>
+        <div class="q-row">
+          <div class="q-text">4. Die Fahrt dauert drei Stunden.</div>
+          <div class="q-btns">
+            <button class="tf-btn" onclick="tfClick(this,'h4','R','F')">R</button>
+            <button class="tf-btn" onclick="tfClick(this,'h4','F','F')">F</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conv 3 -->
+    <div class="conv-card">
+      <div class="conv-num">Gespräch 3</div>
+      <div class="conv-text">— Amina, kannst du heute Nachmittag kommen?
+— Es tut mir leid, ich muss arbeiten.
+— Und morgen?
+— Morgen geht es. Um 15 Uhr?</div>
+      <div class="conv-q">
+        <div class="q-row">
+          <div class="q-text">5. Amina kommt heute Nachmittag.</div>
+          <div class="q-btns">
+            <button class="tf-btn" onclick="tfClick(this,'h5','R','F')">R</button>
+            <button class="tf-btn" onclick="tfClick(this,'h5','F','F')">F</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <span class="task-label">Teil B — Radiosendung · Lücken füllen</span>
+    <div class="task-instr">Wählen Sie die richtige Antwort für jede Lücke.</div>
+
+    <div class="conv-card">
+      <div class="fill-text">
+        Guten Morgen! Das Wetter heute in Berlin:<br>
+        Am Vormittag ist es bewölkt mit Temperaturen von etwa
+        <select class="blank-select" id="h6" onchange="saveAnswer('h6',this.value)">
+          <option value="">__(6)__</option>
+          <option value="12">12</option>
+          <option value="15">15</option>
+          <option value="18">18</option>
+        </select> Grad.
+        Am Nachmittag gibt es
+        <select class="blank-select" id="h7" onchange="saveAnswer('h7',this.value)">
+          <option value="">__(7)__</option>
+          <option value="Sonne">Sonne</option>
+          <option value="Regen">Regen</option>
+          <option value="Schnee">Schnee</option>
+        </select>.
+        Die Nacht wird kalt, nur
+        <select class="blank-select" id="h8" onchange="saveAnswer('h8',this.value)">
+          <option value="">__(8)__</option>
+          <option value="3">3</option>
+          <option value="6">6</option>
+          <option value="9">9</option>
+        </select> Grad.
+      </div>
+    </div>
+
+    <div class="nav-btns">
+      <div></div>
+      <button class="dw-btn dw-btn-primary" onclick="goSection('lesen')">Weiter: Lesen →</button>
+    </div>
+  </div>
+
+  <!-- ── LESEN ── -->
+  <div class="screen" id="ep-lesen">
+    <div class="timer-bar">
+      <div class="timer-label">⏱ Lesen · 25 Minuten</div>
+      <div class="timer-display" id="timer-lesen">25:00</div>
+    </div>
+
+    <div class="sec-hdr">
+      <div class="sec-hdr-top">
+        <div class="sec-icon">📖</div>
+        <div>
+          <div class="sec-title">Lesen</div>
+          <div class="sec-meta">25 Punkte · Teil A: Anzeigen · Teil B: Text · Teil C: Formular</div>
+        </div>
+      </div>
+    </div>
+
+    <span class="task-label">Teil A — Anzeigen: Richtig / Falsch / Nicht im Text</span>
+    <div class="task-instr">Wählen Sie: R (Richtig), F (Falsch) oder NiT (Nicht im Text).</div>
+
+    <div class="notice-card">
+      <div class="notice-header">Anzeige 1</div>
+      <div class="notice-body">SUPERMARKT MÜLLER
+Geöffnet: Mo–Fr 8:00–20:00 Uhr
+Sa 8:00–18:00 Uhr
+Sonntags geschlossen</div>
+      <div style="margin-top:14px;">
+        <div class="q-row">
+          <div class="q-text">1. Der Supermarkt öffnet um 8 Uhr.</div>
+          <div class="q-btns">
+            <button class="trit-btn" onclick="tritClick(this,'l1','R','R')">R</button>
+            <button class="trit-btn" onclick="tritClick(this,'l1','F','R')">F</button>
+            <button class="trit-btn" onclick="tritClick(this,'l1','NiT','R')">NiT</button>
+          </div>
+        </div>
+        <div class="q-row">
+          <div class="q-text">2. Am Sonntag ist der Supermarkt geöffnet.</div>
+          <div class="q-btns">
+            <button class="trit-btn" onclick="tritClick(this,'l2','R','F')">R</button>
+            <button class="trit-btn" onclick="tritClick(this,'l2','F','F')">F</button>
+            <button class="trit-btn" onclick="tritClick(this,'l2','NiT','F')">NiT</button>
+          </div>
+        </div>
+        <div class="q-row">
+          <div class="q-text">3. Der Supermarkt heißt Müller.</div>
+          <div class="q-btns">
+            <button class="trit-btn" onclick="tritClick(this,'l3','R','R')">R</button>
+            <button class="trit-btn" onclick="tritClick(this,'l3','F','R')">F</button>
+            <button class="trit-btn" onclick="tritClick(this,'l3','NiT','R')">NiT</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notice-card">
+      <div class="notice-header">Anzeige 2</div>
+      <div class="notice-body">Wohnung zu vermieten
+2 Zimmer, Küche, Bad
+65 qm, 3. Etage
+Miete: 750 Euro + Nebenkosten
+Kontakt: Tel. 0681-234567</div>
+      <div style="margin-top:14px;">
+        <div class="q-row">
+          <div class="q-text">4. Die Wohnung hat 3 Zimmer.</div>
+          <div class="q-btns">
+            <button class="trit-btn" onclick="tritClick(this,'l4','R','F')">R</button>
+            <button class="trit-btn" onclick="tritClick(this,'l4','F','F')">F</button>
+            <button class="trit-btn" onclick="tritClick(this,'l4','NiT','F')">NiT</button>
+          </div>
+        </div>
+        <div class="q-row">
+          <div class="q-text">5. Die Miete ist 750 Euro warm.</div>
+          <div class="q-btns">
+            <button class="trit-btn" onclick="tritClick(this,'l5','R','F')">R</button>
+            <button class="trit-btn" onclick="tritClick(this,'l5','F','F')">F</button>
+            <button class="trit-btn" onclick="tritClick(this,'l5','NiT','F')">NiT</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <span class="task-label">Teil B — Kurztext · Multiple Choice</span>
+    <div class="task-instr">Lesen Sie den Text und beantworten Sie die Fragen.</div>
+
+    <div class="notice-card">
+      <div class="notice-body" style="margin-bottom:16px;">Kofi kommt aus Ghana und wohnt jetzt in Hamburg. Er arbeitet als Ingenieur bei einer deutschen Firma. Jeden Morgen fährt er mit der U-Bahn zur Arbeit. Das dauert ungefähr 30 Minuten. Nach der Arbeit lernt er Deutsch an der Volkshochschule. Er möchte bald die Goethe-Prüfung machen.</div>
+
+      <div style="margin-bottom:16px;">
+        <div class="q-text" style="font-weight:700;margin-bottom:8px;">6. Woher kommt Kofi?</div>
+        <div class="mc-opts">
+          <button class="mc-opt" onclick="mcClick(this,'l6','a','b')">a) Nigeria</button>
+          <button class="mc-opt" onclick="mcClick(this,'l6','b','b')">b) Ghana</button>
+          <button class="mc-opt" onclick="mcClick(this,'l6','c','b')">c) Kenia</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <div class="q-text" style="font-weight:700;margin-bottom:8px;">7. Was macht Kofi nach der Arbeit?</div>
+        <div class="mc-opts">
+          <button class="mc-opt" onclick="mcClick(this,'l7','a','b')">a) Er schläft.</button>
+          <button class="mc-opt" onclick="mcClick(this,'l7','b','b')">b) Er lernt Deutsch.</button>
+          <button class="mc-opt" onclick="mcClick(this,'l7','c','b')">c) Er kocht.</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="q-text" style="font-weight:700;margin-bottom:8px;">8. Wie fährt Kofi zur Arbeit?</div>
+        <div class="mc-opts">
+          <button class="mc-opt" onclick="mcClick(this,'l8','a','c')">a) Mit dem Bus</button>
+          <button class="mc-opt" onclick="mcClick(this,'l8','b','c')">b) Mit dem Auto</button>
+          <button class="mc-opt" onclick="mcClick(this,'l8','c','c')">c) Mit der U-Bahn</button>
+        </div>
+      </div>
+    </div>
+
+    <span class="task-label">Teil C — Formular ausfüllen</span>
+    <div class="task-instr">Lesen Sie den Text und füllen Sie das Formular aus.</div>
+
+    <div class="notice-card">
+      <div class="notice-body" style="margin-bottom:16px;">Fatima Diallo kommt aus Senegal. Sie ist 28 Jahre alt und wohnt in München, Leopoldstraße 45. Ihre Telefonnummer ist 089-567890. Sie ist Krankenpflegerin.</div>
+    </div>
+
+    <div class="form-task">
+      <div class="dw-label">Anmeldeformular</div>
+      <div class="form-field">
+        <label>Name:</label>
+        <input type="text" placeholder="Vollständiger Name" id="lc-name" oninput="saveAnswer('lc-name',this.value)">
+      </div>
+      <div class="form-field">
+        <label>Alter:</label>
+        <input type="text" placeholder="Jahre" id="lc-alter" oninput="saveAnswer('lc-alter',this.value)">
+      </div>
+      <div class="form-field">
+        <label>Wohnort:</label>
+        <input type="text" placeholder="Stadt" id="lc-wohnort" oninput="saveAnswer('lc-wohnort',this.value)">
+      </div>
+      <div class="form-field">
+        <label>Beruf:</label>
+        <input type="text" placeholder="Beruf" id="lc-beruf" oninput="saveAnswer('lc-beruf',this.value)">
+      </div>
+    </div>
+
+    <div class="nav-btns">
+      <button class="dw-btn dw-btn-ghost" onclick="goSection('horen')">← Zurück</button>
+      <button class="dw-btn dw-btn-primary" onclick="goSection('schreiben')">Weiter: Schreiben →</button>
+    </div>
+  </div>
+
+  <!-- ── SCHREIBEN ── -->
+  <div class="screen" id="ep-schreiben">
+    <div class="timer-bar">
+      <div class="timer-label">⏱ Schreiben · 20 Minuten</div>
+      <div class="timer-display" id="timer-schreiben">20:00</div>
+    </div>
+
+    <div class="sec-hdr">
+      <div class="sec-hdr-top">
+        <div class="sec-icon">✍️</div>
+        <div>
+          <div class="sec-title">Schreiben</div>
+          <div class="sec-meta">25 Punkte · 2 Aufgaben</div>
+        </div>
+      </div>
+    </div>
+
+    <span class="task-label">Aufgabe 1 — Persönliches Formular</span>
+    <div class="task-instr">Füllen Sie das Anmeldeformular mit Ihren eigenen Informationen aus.</div>
+
+    <div class="form-task">
+      <div class="dw-label">Kursanmeldung — Deutschkurs A1</div>
+      <div class="form-field">
+        <label>Vorname:</label>
+        <input type="text" placeholder="Ihr Vorname" id="s1-vorname" oninput="saveAnswer('s1-vorname',this.value)">
+      </div>
+      <div class="form-field">
+        <label>Nachname:</label>
+        <input type="text" placeholder="Ihr Nachname" id="s1-nachname" oninput="saveAnswer('s1-nachname',this.value)">
+      </div>
+      <div class="form-field">
+        <label>Geburtstag:</label>
+        <input type="text" placeholder="TT.MM.JJJJ" id="s1-geb" oninput="saveAnswer('s1-geb',this.value)">
+      </div>
+      <div class="form-field">
+        <label>Herkunft:</label>
+        <input type="text" placeholder="Ihr Land" id="s1-herkunft" oninput="saveAnswer('s1-herkunft',this.value)">
+      </div>
+      <div class="form-field">
+        <label>Beruf:</label>
+        <input type="text" placeholder="Ihr Beruf" id="s1-beruf" oninput="saveAnswer('s1-beruf',this.value)">
+      </div>
+    </div>
+
+    <span class="task-label">Aufgabe 2 — Kurze Nachricht schreiben</span>
+    <div class="task-instr">Schreiben Sie eine kurze Nachricht an Ihren Freund Kwame (circa 30 Wörter).</div>
+
+    <div class="writing-task">
+      <div class="writing-prompt">Sie kommen morgen nicht zum Deutschkurs. Schreiben Sie Kwame:</div>
+      <ul class="bullet-list">
+        <li>Sie kommen morgen nicht zum Deutschkurs</li>
+        <li>Warum nicht?</li>
+        <li>Wann können Sie wieder kommen?</li>
+      </ul>
+      <textarea class="writing-area" id="s2-text" placeholder="Schreiben Sie hier Ihre Nachricht..." oninput="saveAnswer('s2-text',this.value)"></textarea>
+      <a href="exam-whisperer.html" class="dw-btn dw-btn-secondary ai-check-btn" target="_blank">🤖 Mit KI-Prüfer überprüfen →</a>
+    </div>
+
+    <div class="nav-btns">
+      <button class="dw-btn dw-btn-ghost" onclick="goSection('lesen')">← Zurück</button>
+      <button class="dw-btn dw-btn-primary" onclick="goSection('sprechen')">Weiter: Sprechen →</button>
+    </div>
+  </div>
+
+  <!-- ── SPRECHEN ── -->
+  <div class="screen" id="ep-sprechen">
+    <div class="timer-bar">
+      <div class="timer-label">⏱ Sprechen · 15 Minuten</div>
+      <div class="timer-display" id="timer-sprechen">15:00</div>
+    </div>
+
+    <div class="sec-hdr">
+      <div class="sec-hdr-top">
+        <div class="sec-icon">🎤</div>
+        <div>
+          <div class="sec-title">Sprechen</div>
+          <div class="sec-meta">30 Punkte · 3 Teile</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dw-info" style="margin-bottom:20px;">
+      <span>💡</span>
+      <span>Schreiben Sie Ihre Antworten auf Deutsch. Sprechen Sie diese dann laut aus. In der echten Prüfung sprechen Sie direkt mit dem Prüfer.</span>
+    </div>
+
+    <span class="task-label">Teil 1 — Sich vorstellen</span>
+    <div class="task-instr">Beantworten Sie diese Fragen in vollständigen Sätzen.</div>
+
+    <div class="sprechen-task">
+      <div class="question-row">
+        <div class="question-text">Wie heißen Sie?</div>
+        <input class="answer-input" type="text" placeholder="Mein Name ist..." id="sp1" oninput="saveAnswer('sp1',this.value)">
+      </div>
+      <div class="question-row">
+        <div class="question-text">Woher kommen Sie?</div>
+        <input class="answer-input" type="text" placeholder="Ich komme aus..." id="sp2" oninput="saveAnswer('sp2',this.value)">
+      </div>
+      <div class="question-row">
+        <div class="question-text">Wo wohnen Sie?</div>
+        <input class="answer-input" type="text" placeholder="Ich wohne in..." id="sp3" oninput="saveAnswer('sp3',this.value)">
+      </div>
+      <div class="question-row">
+        <div class="question-text">Was machen Sie beruflich?</div>
+        <input class="answer-input" type="text" placeholder="Ich bin / Ich arbeite als..." id="sp4" oninput="saveAnswer('sp4',this.value)">
+      </div>
+      <div class="question-row" style="margin-bottom:0;">
+        <div class="question-text">Haben Sie Hobbys?</div>
+        <input class="answer-input" type="text" placeholder="Mein Hobby ist... / Ich..." id="sp5" oninput="saveAnswer('sp5',this.value)">
+      </div>
+    </div>
+
+    <span class="task-label">Teil 2 — Bildbeschreibung / Stichwort</span>
+    <div class="task-instr">Sie sehen ein Stichwort. Stellen Sie eine Frage zum Thema.</div>
+
+    <div class="sprechen-task">
+      <div class="keyword-card">
+        <div class="keyword-word">ESSEN</div>
+        <div class="keyword-label">Stichwort</div>
+      </div>
+      <div class="question-text">Stellen Sie eine Frage zum Thema "Essen":</div>
+      <input class="answer-input" type="text" placeholder="z.B. Was essen Sie gern?" id="sp6" oninput="saveAnswer('sp6',this.value)">
+    </div>
+
+    <span class="task-label">Teil 3 — Bitten und reagieren</span>
+    <div class="task-instr">Lesen Sie die Situation und schreiben Sie, was Sie sagen würden.</div>
+
+    <div class="sprechen-task">
+      <div class="writing-prompt">Situation: Sie möchten die Telefonnummer von jemandem haben. Was sagen Sie?</div>
+      <input class="answer-input" type="text" placeholder="Entschuldigung, können Sie mir..." id="sp7" oninput="saveAnswer('sp7',this.value)" style="margin-top:10px;">
+    </div>
+
+    <a href="exam-whisperer.html" class="dw-btn dw-btn-secondary" style="margin-bottom:20px;" target="_blank">🤖 Antworten mit KI-Prüfer überprüfen →</a>
+
+    <div class="nav-btns">
+      <button class="dw-btn dw-btn-ghost" onclick="goSection('schreiben')">← Zurück</button>
+      <button class="dw-btn dw-btn-primary" onclick="showResults()">Ergebnisse anzeigen →</button>
+    </div>
+  </div>
+
+</div><!-- /screen-exam -->
+
+<!-- ===== SCREEN: RESULTS ===== -->
+<div class="screen" id="screen-results">
+  <div class="results-card">
+    <div class="result-verdict" id="verdict">BESTANDEN</div>
+    <div class="result-sub" id="result-sub">Glückwunsch! Sie haben alle Abschnitte bestanden.</div>
+
+    <div class="score-grid" id="score-grid">
+      <div class="score-cell" id="sc-horen">
+        <div class="score-cell-name">🎧 Hören</div>
+        <div class="score-cell-pts" id="sc-h-pts">—</div>
+        <div class="score-cell-pct" id="sc-h-pct">von 20 Punkten</div>
+      </div>
+      <div class="score-cell" id="sc-lesen">
+        <div class="score-cell-name">📖 Lesen</div>
+        <div class="score-cell-pts" id="sc-l-pts">—</div>
+        <div class="score-cell-pct" id="sc-l-pct">von 25 Punkten</div>
+      </div>
+      <div class="score-cell" id="sc-schreiben">
+        <div class="score-cell-name">✍️ Schreiben</div>
+        <div class="score-cell-pts" id="sc-s-pts">—</div>
+        <div class="score-cell-pct">von 25 Punkten (KI-bewertet)</div>
+      </div>
+      <div class="score-cell" id="sc-sprechen">
+        <div class="score-cell-name">🎤 Sprechen</div>
+        <div class="score-cell-pts" id="sc-sp-pts">—</div>
+        <div class="score-cell-pct">von 30 Punkten (KI-bewertet)</div>
+      </div>
+    </div>
+
+    <div class="total-score" id="total-score">Gesamtpunkte (auto): — / 45</div>
+  </div>
+
+  <div class="rec-section">
+    <div class="dw-label">Empfohlene Module</div>
+    <div id="rec-modules"></div>
+  </div>
+
+  <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;">
+    <button class="dw-btn dw-btn-secondary" onclick="restartExam()">🔄 Prüfung wiederholen</button>
+    <a href="exam-whisperer.html" class="dw-btn dw-btn-primary">🤖 Mit KI üben →</a>
+    <a href="https://www.goethe.de" target="_blank" class="dw-btn dw-btn-ghost">📋 Echte Prüfung buchen →</a>
+  </div>
+</div>
+
+</div><!-- /exam-wrap -->
+
+<script>
+// ── STATE ──
+var answers = {};
+var timers = {};
+var sectionOrder = ['horen','lesen','schreiben','sprechen'];
+var currentSection = 'horen';
+var sectionDone = { horen: false, lesen: false, schreiben: false, sprechen: false };
+
+// ── SAVE ──
+function saveAnswer(k, v) {
+  answers[k] = v;
+  localStorage.setItem('dw_a1_exam', JSON.stringify(answers));
+}
+
+// ── LOAD ──
+(function loadSaved() {
+  var saved = localStorage.getItem('dw_a1_exam');
+  if (saved) {
+    answers = JSON.parse(saved);
+    Object.keys(answers).forEach(function(k) {
+      var el = document.getElementById(k);
+      if (el && el.tagName !== 'BUTTON') el.value = answers[k];
+    });
+  }
+})();
+
+// ── START ──
+function startExam() {
+  document.getElementById('screen-intro').classList.remove('active');
+  document.getElementById('screen-exam').classList.add('active');
+  startTimer('horen', 20);
+}
+
+// ── SECTION NAV ──
+function goSection(sec) {
+  sectionDone[currentSection] = true;
+  document.getElementById('tab-' + currentSection).classList.add('done');
+  document.getElementById('tab-' + currentSection).classList.remove('active');
+  stopTimer(currentSection);
+
+  document.getElementById('ep-' + currentSection).classList.remove('active');
+  currentSection = sec;
+  document.getElementById('ep-' + sec).classList.add('active');
+  document.getElementById('tab-' + sec).classList.add('active');
+  document.getElementById('tab-' + sec).classList.remove('done');
+  startTimer(sec, sec === 'horen' ? 20 : sec === 'lesen' ? 25 : sec === 'schreiben' ? 20 : 15);
+  window.scrollTo(0, 0);
+}
+
+// ── TIMER ──
+function startTimer(sec, mins) {
+  if (timers[sec]) return;
+  var total = mins * 60;
+  var el = document.getElementById('timer-' + sec);
+  timers[sec] = setInterval(function() {
+    total--;
+    if (total <= 0) { stopTimer(sec); total = 0; }
+    var m = Math.floor(total / 60);
+    var s = total % 60;
+    el.textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+    el.className = 'timer-display' + (total < 60 ? ' danger' : total < 180 ? ' warning' : '');
+  }, 1000);
+}
+function stopTimer(sec) {
+  if (timers[sec]) { clearInterval(timers[sec]); timers[sec] = null; }
+}
+
+// ── TRUE/FALSE ──
+function tfClick(btn, key, val, correct) {
+  var parent = btn.parentElement;
+  var btns = parent.querySelectorAll('.tf-btn');
+  btns.forEach(function(b) {
+    b.classList.remove('selected-r','selected-f','correct','wrong');
+    b.disabled = false;
+  });
+  if (val === correct) {
+    btn.classList.add('correct');
+  } else {
+    btn.classList.add('wrong');
+    btns.forEach(function(b) { if (b.textContent.trim() === correct) b.classList.add('correct'); });
+  }
+  saveAnswer(key, val);
+}
+
+// ── TRIT ──
+function tritClick(btn, key, val, correct) {
+  var parent = btn.parentElement;
+  var btns = parent.querySelectorAll('.trit-btn');
+  btns.forEach(function(b) { b.classList.remove('sel','correct','wrong'); });
+  if (val === correct) {
+    btn.classList.add('correct');
+  } else {
+    btn.classList.add('wrong');
+    btns.forEach(function(b) { if (b.textContent.trim() === correct) b.classList.add('correct'); });
+  }
+  saveAnswer(key, val);
+}
+
+// ── MULTIPLE CHOICE ──
+function mcClick(btn, key, val, correct) {
+  var parent = btn.parentElement;
+  var btns = parent.querySelectorAll('.mc-opt');
+  btns.forEach(function(b) { b.classList.remove('selected','correct','wrong'); });
+  if (val === correct) {
+    btn.classList.add('correct');
+  } else {
+    btn.classList.add('wrong');
+    btns.forEach(function(b) {
+      if (b.getAttribute('onclick').indexOf("'" + correct + "'") !== -1) b.classList.add('correct');
+    });
+  }
+  saveAnswer(key, val);
+}
+
+// ── SCORE ──
+function calcScore() {
+  var hAnswers = { h1:'R', h2:'F', h3:'R', h4:'F', h5:'F' };
+  var hScore = 0;
+  Object.keys(hAnswers).forEach(function(k) { if (answers[k] === hAnswers[k]) hScore++; });
+  // blanks: generous scoring for demo
+  if (answers.h6) hScore += 1;
+  if (answers.h7) hScore += 1;
+  if (answers.h8) hScore += 1;
+
+  var lAnswers = { l1:'R', l2:'F', l3:'R', l4:'F', l5:'F', l6:'b', l7:'b', l8:'c' };
+  var lScore = 0;
+  Object.keys(lAnswers).forEach(function(k) { if (answers[k] === lAnswers[k]) lScore++; });
+  // form: check keywords
+  if (answers['lc-name'] && answers['lc-name'].toLowerCase().indexOf('fatima') !== -1) lScore++;
+  if (answers['lc-alter'] && (answers['lc-alter'] === '28' || answers['lc-alter'].indexOf('28') !== -1)) lScore++;
+  if (answers['lc-wohnort'] && answers['lc-wohnort'].toLowerCase().indexOf('münchen') !== -1) lScore++;
+  if (answers['lc-beruf'] && answers['lc-beruf'].toLowerCase().indexOf('kranken') !== -1) lScore++;
+
+  return { horen: Math.min(hScore, 8), lesenAuto: Math.min(lScore, 12) };
+}
+
+// ── RESULTS ──
+function showResults() {
+  stopTimer(currentSection);
+  sectionDone[currentSection] = true;
+  document.getElementById('tab-sprechen').classList.add('done');
+
+  document.getElementById('screen-exam').classList.remove('active');
+  document.getElementById('screen-results').classList.add('active');
+  localStorage.setItem('dw_mod_a1exam_done', '1');
+
+  var sc = calcScore();
+  var hPct = Math.round(sc.horen / 8 * 100);
+  var lPct = Math.round(sc.lesenAuto / 12 * 100);
+
+  document.getElementById('sc-h-pts').textContent = sc.horen + '/8 auto';
+  document.getElementById('sc-h-pct').textContent = hPct + '% · (von 20 Punkten gesamt)';
+  document.getElementById('sc-l-pts').textContent = sc.lesenAuto + '/12 auto';
+  document.getElementById('sc-l-pct').textContent = lPct + '% · (von 25 Punkten gesamt)';
+  document.getElementById('sc-s-pts').textContent = '→ KI-Prüfer';
+  document.getElementById('sc-sp-pts').textContent = '→ KI-Prüfer';
+
+  var autoTotal = sc.horen + sc.lesenAuto;
+  document.getElementById('total-score').textContent = 'Auto-Score: ' + autoTotal + '/20 (Schreiben & Sprechen bitte mit KI-Prüfer überprüfen)';
+
+  // pass/fail on auto sections
+  var pass = hPct >= 60 && lPct >= 60;
+  var vEl = document.getElementById('verdict');
+  if (pass) {
+    vEl.textContent = 'BESTANDEN ✓';
+    vEl.className = 'result-verdict pass';
+    document.getElementById('result-sub').textContent = 'Auto-bewertete Abschnitte bestanden! Überprüfen Sie Schreiben & Sprechen mit dem KI-Prüfer.';
+  } else {
+    vEl.textContent = 'NICHT BESTANDEN';
+    vEl.className = 'result-verdict fail';
+    document.getElementById('result-sub').textContent = 'Einige Abschnitte brauchen mehr Übung. Schauen Sie die Empfehlungen unten an.';
+  }
+
+  // recommendations
+  var recs = [];
+  if (hPct < 60) recs.push({ name: 'Hören Strategie', desc: 'Üben Sie das Hörverstehen mit Transkripten', href: 'module-b1-10-hoeren-strategie.html' });
+  if (lPct < 60) recs.push({ name: 'Lesen Strategie', desc: 'Techniken für das Leseverstehen', href: 'module-b1-9-lesen-strategie.html' });
+  recs.push({ name: 'Schreiben Strategie', desc: 'Strukturieren Sie Ihre Texte besser', href: 'module-b1-11-schreiben-strategie.html' });
+  recs.push({ name: 'Sprechen Vorbereitung', desc: 'Üben Sie die Sprechen-Aufgaben', href: 'sprechen-prep.html' });
+
+  var html = '';
+  recs.forEach(function(r) {
+    html += '<div class="dw-rec-card"><div><div class="dw-rec-name">' + r.name + '</div><div class="dw-rec-desc">' + r.desc + '</div></div><a href="' + r.href + '" class="dw-rec-link">Jetzt üben →</a></div>';
+  });
+  document.getElementById('rec-modules').innerHTML = html;
+  window.scrollTo(0, 0);
+}
+
+function restartExam() {
+  localStorage.removeItem('dw_a1_exam');
+  answers = {};
+  location.reload();
+}
+</script>
+</body>
+</html>
