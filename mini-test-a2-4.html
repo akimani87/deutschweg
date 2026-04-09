@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nebensätze (Konjunktionen) — DeutschWeg</title>
+<link rel="stylesheet" href="./deutschweg-theme.css">
+<style>
+body{background:var(--bg);}
+.mt-wrap{max-width:560px;margin:0 auto;padding:20px 16px 80px;}
+.mt-header{text-align:center;margin-bottom:24px;}
+.mt-badge{display:inline-block;background:#7C3AED;color:#fff;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 12px;border-radius:20px;margin-bottom:10px;}
+.mt-title{font-size:21px;font-weight:800;color:var(--dark);margin-bottom:4px;}
+.mt-subtitle{font-size:13px;color:var(--mid);}
+.mt-dots{display:flex;justify-content:center;gap:10px;margin-bottom:20px;}
+.mt-dot{width:11px;height:11px;border-radius:50%;background:var(--border);transition:all .3s;}
+.mt-dot.active{background:#7C3AED;transform:scale(1.2);}
+.mt-dot.correct{background:var(--green);}
+.mt-dot.wrong{background:var(--red);}
+.mt-dot.done{background:#7C3AED;opacity:.4;}
+.mt-card{background:#fff;border-radius:var(--radius-md);box-shadow:var(--shadow-md);padding:28px 22px 22px;}
+.mt-qnum{font-size:12px;font-weight:700;color:#7C3AED;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
+.mt-question{font-size:17px;font-weight:700;color:var(--dark);line-height:1.5;margin-bottom:22px;}
+.mt-options{display:flex;flex-direction:column;gap:9px;}
+.mt-opt{display:flex;align-items:center;gap:12px;padding:12px 15px;border:2px solid var(--border);border-radius:12px;cursor:pointer;font-size:15px;font-weight:500;color:var(--dark);background:#fff;text-align:left;width:100%;transition:all .18s;}
+.mt-opt:hover:not(.disabled){border-color:#7C3AED;background:#f0f7ff;}
+.mt-opt.selected{border-color:#7C3AED;background:#eff6ff;color:#7C3AED;}
+.mt-opt.correct{border-color:var(--green)!important;background:var(--green-light)!important;color:#065f46!important;}
+.mt-opt.wrong{border-color:var(--red)!important;background:var(--red-light)!important;color:#991b1b!important;}
+.mt-opt.disabled{cursor:default;}
+.mt-opt-letter{width:26px;height:26px;border-radius:50%;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.mt-feedback{margin-top:14px;padding:11px 14px;border-radius:10px;font-size:13.5px;font-weight:600;display:none;line-height:1.5;}
+.mt-feedback.show{display:block;}
+.mt-feedback.ok{background:var(--green-light);color:#065f46;border:1px solid var(--green-border);}
+.mt-feedback.no{background:var(--red-light);color:#991b1b;border:1px solid #fecaca;}
+.mt-next{margin-top:16px;width:100%;padding:13px;background:#7C3AED;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;display:none;}
+.mt-next:hover{opacity:.88;}
+.mt-next.show{display:block;}
+.mt-results{background:#fff;border-radius:var(--radius-md);box-shadow:var(--shadow-md);padding:36px 24px;text-align:center;display:none;}
+.mt-results.show{display:block;}
+.mt-score-ring{width:100px;height:100px;border-radius:50%;border:6px solid #7C3AED;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 16px;}
+.mt-score-num{font-size:34px;font-weight:800;color:#7C3AED;line-height:1;}
+.mt-score-denom{font-size:13px;color:var(--mid);font-weight:600;}
+.mt-result-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mid);margin-bottom:6px;}
+.mt-result-msg{font-size:18px;font-weight:700;color:var(--dark);margin-bottom:20px;line-height:1.4;}
+.mt-rdots{display:flex;justify-content:center;gap:8px;margin-bottom:20px;}
+.mt-rdot{width:14px;height:14px;border-radius:50%;}
+.mt-actions{display:flex;flex-direction:column;gap:10px;}
+.mt-btn-p{padding:14px;background:#7C3AED;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;}
+.mt-btn-s{padding:13px;background:#fff;color:#7C3AED;border:2px solid #7C3AED;border-radius:12px;font-size:14px;font-weight:700;text-decoration:none;display:block;}
+.mt-btn-p:hover,.mt-btn-s:hover{opacity:.88;}
+.slide-in{animation:sIn .22s ease;}
+@keyframes sIn{from{opacity:0;transform:translateX(18px);}to{opacity:1;transform:translateX(0);}}
+</style>
+</head>
+<body>
+<nav class="dw-nav">
+  <div class="dw-nav-inner" style="display:flex;align-items:center;justify-content:space-between;height:56px;">
+    <a href="./deutschweg-prototype.html" class="dw-logo">DeutschWeg</a>
+    <a href="./module16-subordinate-clauses.html" class="dw-btn" style="font-size:13px;padding:7px 16px;">← Lektion</a>
+  </div>
+</nav>
+<div class="mt-wrap">
+  <div class="mt-header">
+    <div class="mt-badge">A2 · Mini-Test</div>
+    <div class="mt-title">Nebensätze (Konjunktionen)</div>
+    <div class="mt-subtitle">5 Fragen · 3–5 Min</div>
+  </div>
+  <div class="mt-dots" id="dots"></div>
+  <div class="mt-card" id="qcard">
+    <div class="mt-qnum" id="qnum"></div>
+    <div class="mt-question" id="qtext"></div>
+    <div class="mt-options" id="opts"></div>
+    <div class="mt-feedback" id="fb"></div>
+    <button class="mt-next" id="nb" onclick="nextQ()"></button>
+  </div>
+  <div class="mt-results" id="results">
+    <div class="mt-result-label">Dein Ergebnis</div>
+    <div class="mt-score-ring"><div class="mt-score-num" id="rn">0</div><div class="mt-score-denom">von 5</div></div>
+    <div class="mt-rdots" id="rd"></div>
+    <div class="mt-result-msg" id="rm"></div>
+    <div class="mt-actions">
+      <button class="mt-btn-p" onclick="restart()">Nochmal versuchen</button>
+      <a href="./deutschweg-prototype.html" class="mt-btn-s">Zum Dashboard →</a>
+    </div>
+  </div>
+</div>
+<script>
+const QS=[
+  {q:"Was passiert mit dem Verb im Nebensatz?",opts:[{text:"Es bleibt in Position 2.",val:"a"},{text:"Es geht ans Ende.",val:"b"},{text:"Es geht an den Anfang.",val:"c"},{text:"Es wird weggelassen.",val:"d"}],correct:"b",exp:"Im Nebensatz geht das Verb ans Ende: Ich komme, weil ich Zeit habe."},
+  {q:"Amina lernt Deutsch, ___ sie in Deutschland studieren möchte.",opts:[{text:"aber",val:"a"},{text:"weil",val:"b"},{text:"und",val:"c"},{text:"oder",val:"d"}],correct:"b",exp:"\"weil\" = because — leitet einen Nebensatz ein. Verb (möchte) geht ans Ende."},
+  {q:"Ich weiß, ___ der Zug um 8 Uhr abfährt.",opts:[{text:"dass",val:"a"},{text:"ob",val:"b"},{text:"weil",val:"c"},{text:"wenn",val:"d"}],correct:"a",exp:"\"dass\" verbindet einen Aussagesatz als Nebensatz. Verb (abfährt) geht ans Ende."},
+  {q:"Kofi fragt, ___ das Kino offen ist.",opts:[{text:"dass",val:"a"},{text:"weil",val:"b"},{text:"ob",val:"c"},{text:"wenn",val:"d"}],correct:"c",exp:"\"ob\" = whether — für indirekte Ja/Nein-Fragen. Verb geht ans Ende."},
+  {q:"Welcher Satz ist grammatisch richtig?",opts:[{text:"Ich lerne Deutsch, weil ich arbeiten will in Deutschland.",val:"a"},{text:"Ich lerne Deutsch, weil ich in Deutschland arbeiten will.",val:"b"},{text:"Ich lerne Deutsch, weil will ich in Deutschland arbeiten.",val:"c"},{text:"Ich lerne Deutsch, weil in Deutschland ich arbeiten will.",val:"d"}],correct:"b",exp:"Nebensatz: Verb ans Ende. Modalverb (will) kommt ganz am Ende."}
+];
+const MSGS=[[5, "Perfekt! 🎉 Du hast dieses Thema gemeistert!"], [4, "Sehr gut! 👏 Fast perfekt!"], [3, "Gut! 💪 Noch etwas Übung nötig."], [2, "Weiter üben! 📚 Schau dir die Lektion nochmal an."], [0, "Nicht aufgeben! 🌟 Versuche die Lektion erneut."]];
+let cur=0,res=[],done=false;
+
+function dots(a){
+  const el=document.getElementById('dots');
+  el.innerHTML='';
+  QS.forEach((_,i)=>{
+    const d=document.createElement('div');
+    d.className='mt-dot'+(i<a?(res[i]?' correct':' wrong'):i===a?' active':'');
+    el.appendChild(d);
+  });
+}
+
+function renderQ(){
+  done=false;
+  const q=QS[cur];
+  document.getElementById('qnum').textContent='Frage '+(cur+1)+' von 5';
+  document.getElementById('qtext').textContent=q.q;
+  document.getElementById('fb').className='mt-feedback';
+  document.getElementById('fb').textContent='';
+  const nb=document.getElementById('nb');
+  nb.className='mt-next';
+  nb.textContent=cur<4?'Nächste Frage →':'🏆 Ergebnis';
+  const opts=document.getElementById('opts');
+  opts.innerHTML='';
+  q.opts.forEach(o=>{
+    const b=document.createElement('button');
+    b.className='mt-opt';
+    b.innerHTML=`<span class="mt-opt-letter">${o.val.toUpperCase()}</span><span>${o.text}</span>`;
+    b.onclick=()=>pick(b,o.val,q.correct,q.exp);
+    opts.appendChild(b);
+  });
+  document.getElementById('qcard').classList.add('slide-in');
+  setTimeout(()=>document.getElementById('qcard').classList.remove('slide-in'),300);
+  dots(cur);
+}
+
+function pick(btn,val,correct,exp){
+  if(done)return;
+  done=true;
+  const ok=val===correct;
+  res[cur]=ok;
+  document.querySelectorAll('.mt-opt').forEach(b=>{
+    b.classList.add('disabled');
+    const v=b.querySelector('.mt-opt-letter').textContent.toLowerCase();
+    if(v===correct)b.classList.add('correct');
+    else if(b===btn&&!ok)b.classList.add('wrong');
+  });
+  const fb=document.getElementById('fb');
+  if(ok){
+    fb.className='mt-feedback show ok';
+    fb.textContent='✓ '+(exp||'Richtig!');
+  }else{
+    const ct=QS[cur].opts.find(o=>o.val===correct);
+    fb.className='mt-feedback show no';
+    fb.textContent='✗ '+(exp?exp:('Leider falsch. Richtige Antwort: '+(ct?ct.text:correct)));
+  }
+  document.getElementById('nb').classList.add('show');
+  dots(cur);
+}
+
+function nextQ(){
+  cur++;
+  if(cur>=QS.length){showResults();return;}
+  renderQ();
+}
+
+function showResults(){
+  document.getElementById('qcard').style.display='none';
+  document.getElementById('dots').style.display='none';
+  const score=res.filter(Boolean).length;
+  document.getElementById('results').classList.add('show');
+  document.getElementById('rn').textContent=score;
+  const rd=document.getElementById('rd');
+  rd.innerHTML='';
+  res.forEach(r=>{
+    const d=document.createElement('div');
+    d.className='mt-rdot';
+    d.style.background=r?'var(--green)':'var(--red)';
+    rd.appendChild(d);
+  });
+  let msg=MSGS[MSGS.length-1][1];
+  for(const[min,m]of MSGS){if(score>=min){msg=m;break;}}
+  document.getElementById('rm').textContent=msg;
+}
+
+function restart(){
+  cur=0;res=[];done=false;
+  document.getElementById('qcard').style.display='block';
+  document.getElementById('dots').style.display='flex';
+  document.getElementById('results').classList.remove('show');
+  renderQ();
+}
+
+renderQ();
+</script>
+</body>
+</html>
