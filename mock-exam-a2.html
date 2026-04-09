@@ -6,6 +6,25 @@
 <title>Goethe A2 Mock Exam — Fit in Deutsch | DeutschWeg</title>
 <link rel="stylesheet" href="deutschweg-theme.css">
 <style>
+/* ── RENDERING ISOLATION ── */
+body { background: #FFFFFF !important; }
+.exam-wrap { position: relative; z-index: 1; isolation: isolate; background: transparent; }
+.intro-card,
+.conv-card,
+.notice-card,
+.writing-task,
+.sprechen-task,
+.timer-bar,
+.section-tabs,
+.results-card { position: relative; z-index: 1; background: #FFFFFF; }
+.score-cell { position: relative; z-index: 1; background: #F8FAFC; }
+.section-info { position: relative; z-index: 1; background: #F8FAFC; }
+.dw-label { display: block; }
+.dw-label::after { content: none; display: none; }
+.intro-card::before, .intro-card::after,
+.conv-card::before, .conv-card::after,
+.notice-card::before, .notice-card::after { content: none !important; display: none !important; }
+
 .exam-wrap { max-width: 760px; margin: 0 auto; padding: 24px 20px 100px; }
 .intro-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px; margin-bottom: 24px; }
 .intro-hero { text-align: center; margin-bottom: 28px; }
