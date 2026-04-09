@@ -3,167 +3,189 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Goethe A1 Mock Exam — Start Deutsch 1 | DeutschWeg</title>
+<title>Goethe A1 · Start Deutsch 1 · Modellsatz | DeutschWeg</title>
 <link rel="stylesheet" href="deutschweg-theme.css">
 <style>
 /* ── RENDERING ISOLATION ── */
-body { background: #FFFFFF !important; }
-.exam-wrap { position: relative; z-index: 1; isolation: isolate; background: transparent; }
-.intro-card,
-.conv-card,
-.notice-card,
-.writing-task,
-.form-task,
-.sprechen-task,
-.timer-bar,
-.section-tabs,
-.results-card { position: relative; z-index: 1; background: #FFFFFF; }
-.score-cell { position: relative; z-index: 1; background: #F8FAFC; }
-.section-info { position: relative; z-index: 1; background: #F8FAFC; }
-/* Neutralise dw-label rule line inside exam pages */
+body { background: #F8FAFC !important; }
+.exam-wrap { position: relative; z-index: 1; isolation: isolate; }
+.intro-card, .conv-card, .notice-card, .writing-task,
+.form-task, .sprechen-task, .timer-bar, .results-card,
+.section-tabs, .task-card { position: relative; z-index: 1; background: #FFFFFF; }
+.score-cell, .section-info { position: relative; z-index: 1; background: #F8FAFC; }
 .dw-label { display: block; }
 .dw-label::after { content: none; display: none; }
-/* Prevent any inherited background-image from tiling */
 .intro-card::before, .intro-card::after,
 .conv-card::before, .conv-card::after,
 .notice-card::before, .notice-card::after { content: none !important; display: none !important; }
 
-.exam-wrap { max-width: 760px; margin: 0 auto; padding: 24px 20px 100px; }
-.intro-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px; margin-bottom: 24px; }
+/* ── LAYOUT ── */
+.exam-wrap { max-width: 780px; margin: 0 auto; padding: 24px 20px 100px; }
+.intro-card { border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px; margin-bottom: 24px; }
 .intro-hero { text-align: center; margin-bottom: 28px; }
-.exam-badge { display: inline-block; background: var(--blue-light); color: var(--blue); font-size: 11px; font-weight: 700; letter-spacing: 1.5px; padding: 5px 14px; border-radius: 50px; margin-bottom: 14px; text-transform: uppercase; }
-.intro-title { font-size: 26px; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
-.intro-sub { font-size: 14px; color: var(--mid); }
+.exam-badge-official { display: inline-block; background: #1D4ED8; color: white; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; padding: 5px 14px; border-radius: 50px; margin-bottom: 14px; text-transform: uppercase; }
+.intro-title { font-size: 26px; font-weight: 800; color: var(--dark); margin-bottom: 6px; }
+.intro-sub { font-size: 14px; color: var(--mid); margin-bottom: 4px; }
+.official-note { font-size: 12px; color: var(--light); font-style: italic; }
+
 .section-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-bottom: 24px; }
-.section-info { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; }
+.section-info { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; }
 .si-name { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
 .si-pts { font-size: 22px; font-weight: 800; color: var(--dark); }
 .si-desc { font-size: 12px; color: var(--light); margin-top: 2px; }
+
 .rules-list { list-style: none; padding: 0; margin: 0; }
 .rules-list li { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--mid); line-height: 1.5; }
 .rules-list li:last-child { border-bottom: none; }
-.rules-list li span:first-child { color: var(--blue); font-size: 16px; flex-shrink: 0; }
-.start-btn { display: block; width: 100%; padding: 15px; background: var(--blue); color: white; font-family: inherit; font-size: 16px; font-weight: 700; border: none; border-radius: var(--radius-sm); cursor: pointer; transition: background 0.2s; margin-top: 24px; }
-.start-btn:hover { background: var(--blue-dark); }
+.rules-list li span:first-child { flex-shrink: 0; font-size: 16px; }
+.start-btn { display: block; width: 100%; padding: 15px; background: #1D4ED8; color: white; font-family: inherit; font-size: 16px; font-weight: 700; border: none; border-radius: var(--radius-sm); cursor: pointer; margin-top: 24px; transition: background 0.2s; }
+.start-btn:hover { background: #1e40af; }
 
-/* SECTION TABS */
-.section-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 24px; overflow-x: auto; }
-.st-tab { padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--light); border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; cursor: default; display: flex; align-items: center; gap: 6px; }
-.st-tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+/* ── TABS ── */
+.section-tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 24px; overflow-x: auto; }
+.st-tab { padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--light); border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+.st-tab.active { color: #1D4ED8; border-bottom-color: #1D4ED8; }
 .st-tab.done { color: var(--green); }
 .st-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
 
-/* TIMER */
-.timer-bar { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 18px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
+/* ── TIMER ── */
+.timer-bar { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 18px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
 .timer-label { font-size: 12px; font-weight: 600; color: var(--mid); }
-.timer-display { font-size: 22px; font-weight: 800; color: var(--blue); font-variant-numeric: tabular-nums; }
+.timer-display { font-size: 22px; font-weight: 800; color: #1D4ED8; font-variant-numeric: tabular-nums; }
 .timer-display.warning { color: var(--amber); }
 .timer-display.danger { color: var(--red); }
 
-/* SECTION HEADER */
+/* ── SECTION HEADER ── */
 .sec-hdr { margin-bottom: 20px; }
 .sec-hdr-top { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
-.sec-icon { width: 42px; height: 42px; border-radius: 12px; background: var(--blue-light); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.sec-icon { width: 42px; height: 42px; border-radius: 12px; background: #EFF6FF; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
 .sec-title { font-size: 22px; font-weight: 800; color: var(--dark); }
 .sec-meta { font-size: 13px; color: var(--mid); }
-.task-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--blue); display: block; margin: 24px 0 10px; }
-.task-instr { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 13px 16px; font-size: 13.5px; color: var(--mid); line-height: 1.6; margin-bottom: 18px; }
 
-/* CONVERSATION */
-.conv-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px 18px; margin-bottom: 16px; }
-.conv-num { font-size: 10px; font-weight: 700; color: var(--blue); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
-.conv-text { font-size: 14px; line-height: 1.8; color: var(--dark); background: var(--bg); border-radius: 8px; padding: 13px 16px; margin-bottom: 14px; font-style: italic; white-space: pre-line; }
-.conv-q { font-size: 13px; color: var(--mid); margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
-.q-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
-.q-row:last-child { border-bottom: none; }
-.q-text { font-size: 13.5px; color: var(--dark); flex: 1; }
-.q-btns { display: flex; gap: 6px; flex-shrink: 0; }
-.tf-btn { padding: 6px 14px; font-size: 12px; font-weight: 700; border: 1.5px solid var(--border); border-radius: 8px; cursor: pointer; font-family: inherit; background: white; color: var(--mid); transition: all 0.15s; }
-.tf-btn:hover { border-color: var(--blue); color: var(--blue); }
-.tf-btn.selected-r { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
-.tf-btn.selected-f { border-color: var(--amber); background: #FFFBEB; color: #92400E; }
-.tf-btn.correct { border-color: var(--green); background: var(--green-light); color: var(--green); }
-.tf-btn.wrong { border-color: var(--red); background: var(--red-light); color: var(--red); }
+/* ── TASK LABELS ── */
+.task-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #1D4ED8; display: block; margin: 24px 0 10px; }
+.task-card { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px 18px; margin-bottom: 16px; }
+.task-instr { background: #EFF6FF; border: 1px solid #DBEAFE; border-radius: var(--radius-sm); padding: 13px 16px; font-size: 13.5px; color: #1e40af; line-height: 1.65; margin-bottom: 18px; }
+.official-instr { font-size: 13px; color: var(--mid); line-height: 1.7; font-style: italic; }
 
-/* FILL BLANKS */
-.fill-text { font-size: 15px; line-height: 2.2; color: var(--dark); background: var(--bg); border-radius: var(--radius-sm); padding: 16px 18px; margin-bottom: 16px; }
-.blank-select { border: 1.5px solid var(--blue); border-radius: 6px; padding: 3px 8px; font-size: 14px; font-family: inherit; color: var(--dark); background: white; cursor: pointer; outline: none; }
+/* ── TRANSCRIPT ── */
+.transcript-toggle { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 600; color: var(--mid); cursor: pointer; font-family: inherit; margin-bottom: 12px; transition: all 0.15s; }
+.transcript-toggle:hover { border-color: #1D4ED8; color: #1D4ED8; }
+.transcript-box { display: none; background: #F8FAFC; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 14px; font-size: 13.5px; line-height: 1.85; color: var(--dark); white-space: pre-line; font-style: italic; }
+.transcript-box.open { display: block; }
+.audio-note { background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; padding: 10px 14px; font-size: 12.5px; color: #92400E; margin-bottom: 14px; }
 
-/* LESEN */
-.notice-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px 18px; margin-bottom: 8px; }
-.notice-header { font-size: 14px; font-weight: 700; color: var(--dark); margin-bottom: 8px; }
-.notice-body { font-size: 13.5px; line-height: 1.7; color: var(--mid); white-space: pre-line; }
-.mc-opts { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
-.mc-opt { padding: 11px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 13.5px; color: var(--dark); cursor: pointer; background: white; font-family: inherit; text-align: left; transition: all 0.15s; }
-.mc-opt:hover { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
-.mc-opt.selected { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
-.mc-opt.correct { border-color: var(--green); background: var(--green-light); color: var(--green); }
-.mc-opt.wrong { border-color: var(--red); background: var(--red-light); color: var(--red); }
-.trit-btn { padding: 6px 10px; font-size: 11px; font-weight: 700; border: 1.5px solid var(--border); border-radius: 8px; cursor: pointer; font-family: inherit; background: white; color: var(--mid); transition: all 0.15s; }
-.trit-btn:hover { border-color: var(--blue); color: var(--blue); }
-.trit-btn.sel { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
-.trit-btn.correct { border-color: var(--green); background: var(--green-light); color: var(--green); }
-.trit-btn.wrong { border-color: var(--red); background: var(--red-light); color: var(--red); }
+/* ── QUESTIONS ── */
+.q-block { margin-bottom: 16px; }
+.q-num { font-size: 10px; font-weight: 700; color: var(--light); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+.q-text { font-size: 14px; color: var(--dark); font-weight: 600; margin-bottom: 10px; }
+.mc-opts { display: flex; flex-direction: column; gap: 7px; }
+.mc-opt { padding: 10px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 13.5px; color: var(--dark); cursor: pointer; background: white; font-family: inherit; text-align: left; transition: all 0.15s; display: flex; align-items: center; gap: 10px; }
+.mc-opt:hover { border-color: #1D4ED8; background: #EFF6FF; color: #1D4ED8; }
+.mc-opt.selected { border-color: #1D4ED8; background: #EFF6FF; color: #1D4ED8; }
+.mc-opt.correct { border-color: var(--green); background: var(--green-light); color: #065F46; }
+.mc-opt.wrong { border-color: var(--red); background: var(--red-light); color: #991B1B; }
+.opt-letter { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid currentColor; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
 
-/* FORM TASK */
-.form-task { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 20px; margin-bottom: 16px; }
-.form-field { display: grid; grid-template-columns: 120px 1fr; gap: 10px; align-items: center; margin-bottom: 12px; }
-.form-field label { font-size: 13px; font-weight: 600; color: var(--mid); }
-.form-field input { padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; color: var(--dark); outline: none; transition: border-color 0.2s; }
-.form-field input:focus { border-color: var(--blue); }
+/* ── RICHTIG / FALSCH ── */
+.rf-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); gap: 12px; }
+.rf-row:last-child { border-bottom: none; }
+.rf-q-text { font-size: 13.5px; color: var(--dark); flex: 1; line-height: 1.5; }
+.rf-btns { display: flex; gap: 6px; flex-shrink: 0; }
+.rf-btn { padding: 6px 14px; font-size: 12px; font-weight: 700; border: 1.5px solid var(--border); border-radius: 8px; cursor: pointer; font-family: inherit; background: white; color: var(--mid); transition: all 0.15s; }
+.rf-btn:hover { border-color: #1D4ED8; color: #1D4ED8; }
+.rf-btn.correct { border-color: var(--green); background: var(--green-light); color: var(--green); }
+.rf-btn.wrong { border-color: var(--red); background: var(--red-light); color: var(--red); }
 
-/* SCHREIBEN */
-.writing-task { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 20px; margin-bottom: 16px; }
-.writing-prompt { font-size: 14px; line-height: 1.7; color: var(--dark); margin-bottom: 14px; white-space: pre-line; }
+/* ── WEBSITE MATCH ── */
+.web-opts { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+.web-btn { padding: 8px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 12.5px; font-family: inherit; font-weight: 600; cursor: pointer; background: white; color: var(--mid); transition: all 0.15s; }
+.web-btn:hover { border-color: #1D4ED8; color: #1D4ED8; background: #EFF6FF; }
+.web-btn.correct { border-color: var(--green); background: var(--green-light); color: var(--green); }
+.web-btn.wrong { border-color: var(--red); background: var(--red-light); color: var(--red); }
+
+/* ── LESEN TEXTS ── */
+.lesen-text { background: #F8FAFC; border-left: 3px solid #1D4ED8; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; padding: 14px 16px; margin-bottom: 16px; font-size: 13.5px; line-height: 1.8; color: var(--dark); white-space: pre-line; }
+.notice-box { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 10px; font-size: 13.5px; line-height: 1.7; color: var(--dark); }
+.notice-box-title { font-size: 11px; font-weight: 700; color: var(--light); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+.website-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+.website-card { background: #F8FAFC; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; }
+.website-url { font-size: 11px; font-weight: 700; color: #1D4ED8; margin-bottom: 4px; }
+.website-desc { font-size: 12.5px; color: var(--mid); line-height: 1.5; }
+
+/* ── SCHREIBEN FORM ── */
+.form-task { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 20px; margin-bottom: 16px; }
+.form-header { font-size: 14px; font-weight: 700; color: var(--dark); margin-bottom: 4px; }
+.form-subheader { font-size: 12px; color: var(--mid); margin-bottom: 16px; }
+.form-grid { display: grid; gap: 12px; }
+.form-row { display: grid; grid-template-columns: 180px 1fr; gap: 10px; align-items: center; }
+.form-label { font-size: 13px; font-weight: 600; color: var(--mid); }
+.form-label .form-num { display: inline-block; width: 20px; height: 20px; background: #1D4ED8; color: white; border-radius: 50%; font-size: 10px; font-weight: 800; text-align: center; line-height: 20px; margin-right: 6px; }
+.form-pre { font-size: 13.5px; color: var(--dark); }
+.form-input { padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; color: var(--dark); outline: none; transition: border-color 0.2s; width: 100%; }
+.form-input:focus { border-color: #1D4ED8; }
+.form-input.prefilled { background: #F8FAFC; color: var(--mid); }
+.form-divider { height: 1px; background: var(--border); margin: 8px 0; }
+.form-check-row { display: flex; gap: 16px; align-items: center; }
+.form-check-opt { display: flex; align-items: center; gap: 7px; cursor: pointer; font-size: 13.5px; color: var(--dark); }
+.form-check-opt input[type="radio"] { width: 16px; height: 16px; accent-color: #1D4ED8; cursor: pointer; }
+
+/* ── WRITING ── */
+.writing-task { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 20px; margin-bottom: 16px; }
+.writing-prompt { font-size: 14px; line-height: 1.7; color: var(--dark); margin-bottom: 14px; }
 .bullet-list { list-style: none; padding: 0; margin: 0 0 14px; }
-.bullet-list li { padding: 6px 0 6px 20px; position: relative; font-size: 13.5px; color: var(--mid); }
-.bullet-list li::before { content: '—'; position: absolute; left: 0; color: var(--blue); }
-.writing-area { width: 100%; min-height: 130px; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; font-family: inherit; color: var(--dark); resize: vertical; outline: none; transition: border-color 0.2s; line-height: 1.7; }
-.writing-area:focus { border-color: var(--blue); }
-.ai-check-btn { margin-top: 10px; }
+.bullet-list li { padding: 5px 0 5px 20px; position: relative; font-size: 13.5px; color: var(--mid); }
+.bullet-list li::before { content: '–'; position: absolute; left: 0; color: #1D4ED8; }
+.writing-area { width: 100%; min-height: 140px; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; font-family: inherit; color: var(--dark); resize: vertical; outline: none; transition: border-color 0.2s; line-height: 1.7; }
+.writing-area:focus { border-color: #1D4ED8; }
+.word-count { font-size: 12px; color: var(--light); margin-top: 5px; }
 
-/* SPRECHEN */
-.sprechen-task { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 20px; margin-bottom: 16px; }
-.question-row { margin-bottom: 14px; }
-.question-text { font-size: 14px; font-weight: 600; color: var(--dark); margin-bottom: 8px; }
-.answer-input { width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; color: var(--dark); outline: none; transition: border-color 0.2s; }
-.answer-input:focus { border-color: var(--blue); }
-.keyword-card { background: var(--blue-light); border: 2px solid var(--blue); border-radius: var(--radius-sm); padding: 20px; text-align: center; margin-bottom: 14px; }
-.keyword-word { font-size: 32px; font-weight: 800; color: var(--blue); }
-.keyword-label { font-size: 11px; color: var(--mid); margin-top: 4px; }
+/* ── SPRECHEN ── */
+.sprechen-task { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 20px; margin-bottom: 16px; }
+.keyword-card { background: #EFF6FF; border: 2px solid #1D4ED8; border-radius: var(--radius-sm); padding: 16px; text-align: center; margin-bottom: 12px; }
+.keyword-main { font-size: 26px; font-weight: 800; color: #1D4ED8; }
+.keyword-sub { font-size: 11px; color: var(--mid); margin-top: 4px; }
+.sticker-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+.sticker { background: #F8FAFC; border: 1px solid var(--border); border-radius: 8px; padding: 10px; text-align: center; font-size: 13px; font-weight: 600; color: var(--mid); }
+.answer-input { width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; color: var(--dark); outline: none; transition: border-color 0.2s; margin-top: 8px; }
+.answer-input:focus { border-color: #1D4ED8; }
+.q-row-sp { margin-bottom: 14px; }
+.q-label-sp { font-size: 13px; font-weight: 600; color: var(--dark); margin-bottom: 5px; }
+.example-box { background: var(--green-light); border: 1px solid var(--green-border); border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #065F46; margin-bottom: 12px; }
 
-/* NAV BUTTONS */
+/* ── NAV BUTTONS ── */
 .nav-btns { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border); }
 
-/* RESULTS */
-.results-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px; text-align: center; margin-bottom: 20px; }
-.result-verdict { font-size: 42px; font-weight: 800; margin-bottom: 8px; }
+/* ── RESULTS ── */
+.results-card { border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px; text-align: center; margin-bottom: 20px; }
+.result-verdict { font-size: 38px; font-weight: 800; margin-bottom: 6px; }
 .result-verdict.pass { color: var(--green); }
 .result-verdict.fail { color: var(--red); }
-.result-sub { font-size: 14px; color: var(--mid); margin-bottom: 24px; }
-.score-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-bottom: 20px; }
-.score-cell { background: var(--bg); border-radius: var(--radius-sm); padding: 14px; }
+.result-sub { font-size: 14px; color: var(--mid); margin-bottom: 24px; line-height: 1.6; }
+.score-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-bottom: 16px; }
+.score-cell { border-radius: var(--radius-sm); padding: 14px; }
 .score-cell-name { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--mid); margin-bottom: 4px; }
-.score-cell-pts { font-size: 20px; font-weight: 800; color: var(--dark); }
-.score-cell-pct { font-size: 12px; color: var(--light); }
-.score-cell.pass-cell .score-cell-pts { color: var(--green); }
-.score-cell.fail-cell .score-cell-pts { color: var(--red); }
-.total-score { font-size: 15px; font-weight: 700; color: var(--dark); margin: 12px 0; }
-.rec-section { text-align: left; }
+.score-cell-pts { font-size: 22px; font-weight: 800; }
+.score-cell-pct { font-size: 12px; color: var(--light); margin-top: 2px; }
+.score-cell.pass-sec .score-cell-pts { color: var(--green); }
+.score-cell.fail-sec .score-cell-pts { color: var(--red); }
+.score-cell.neutral-sec .score-cell-pts { color: #1D4ED8; }
 
 .screen { display: none; }
 .screen.active { display: block; }
+
 @media (max-width: 600px) {
   .section-grid { grid-template-columns: 1fr; }
   .score-grid { grid-template-columns: 1fr; }
-  .form-field { grid-template-columns: 1fr; }
-  .q-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .form-row { grid-template-columns: 1fr; }
+  .website-grid { grid-template-columns: 1fr; }
+  .rf-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .sticker-grid { grid-template-columns: repeat(2,1fr); }
 }
 </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav class="dw-nav">
   <div class="dw-nav-inner">
     <a href="deutschweg-prototype.html" class="dw-logo">
@@ -176,55 +198,57 @@ body { background: #FFFFFF !important; }
 
 <div class="exam-wrap">
 
-<!-- ===== SCREEN: INTRO ===== -->
+<!-- ===== INTRO ===== -->
 <div class="screen active" id="screen-intro">
   <div class="intro-card">
     <div class="intro-hero">
-      <div class="exam-badge">Goethe A1 · Start Deutsch 1</div>
-      <div class="intro-title">A1 Complete Mock Exam</div>
-      <div class="intro-sub">Full simulation of the official Goethe A1 exam — 65 minutes, 4 sections</div>
+      <div class="exam-badge-official">Offizielle Modellprüfung</div>
+      <div class="intro-title">Goethe-Zertifikat A1</div>
+      <div class="intro-sub" style="font-size:17px;font-weight:700;color:var(--dark);">Start Deutsch 1</div>
+      <div class="official-note" style="margin-top:8px;">© Goethe-Institut · Modellsatz · Digitale Übungsversion</div>
     </div>
 
     <div class="section-grid">
       <div class="section-info">
-        <div class="si-name" style="color:#3B82F6;">🎧 Hören</div>
-        <div class="si-pts">20 <span style="font-size:14px;font-weight:400;color:var(--light);">Punkte</span></div>
-        <div class="si-desc">20 Minuten · Teil A + Teil B</div>
+        <div class="si-name" style="color:#1D4ED8;">🎧 Hören</div>
+        <div class="si-pts">15 <span style="font-size:13px;font-weight:400;color:var(--light);">Punkte</span></div>
+        <div class="si-desc">ca. 20 Minuten · 3 Teile</div>
       </div>
       <div class="section-info">
-        <div class="si-name" style="color:#8B5CF6;">📖 Lesen</div>
-        <div class="si-pts">25 <span style="font-size:14px;font-weight:400;color:var(--light);">Punkte</span></div>
-        <div class="si-desc">25 Minuten · Teil A + B + C</div>
+        <div class="si-name" style="color:#6D28D9;">📖 Lesen</div>
+        <div class="si-pts">15 <span style="font-size:13px;font-weight:400;color:var(--light);">Punkte</span></div>
+        <div class="si-desc">ca. 25 Minuten · 3 Teile</div>
       </div>
       <div class="section-info">
-        <div class="si-name" style="color:#10B981;">✍️ Schreiben</div>
-        <div class="si-pts">25 <span style="font-size:14px;font-weight:400;color:var(--light);">Punkte</span></div>
-        <div class="si-desc">20 Minuten · 2 Aufgaben</div>
+        <div class="si-name" style="color:#065F46;">✍️ Schreiben</div>
+        <div class="si-pts">20 <span style="font-size:13px;font-weight:400;color:var(--light);">Punkte</span></div>
+        <div class="si-desc">ca. 20 Minuten · 2 Teile</div>
       </div>
       <div class="section-info">
-        <div class="si-name" style="color:#F59E0B;">🎤 Sprechen</div>
-        <div class="si-pts">30 <span style="font-size:14px;font-weight:400;color:var(--light);">Punkte</span></div>
-        <div class="si-desc">15 Minuten · 3 Teile</div>
+        <div class="si-name" style="color:#92400E;">🎤 Sprechen</div>
+        <div class="si-pts">— <span style="font-size:13px;font-weight:400;color:var(--light);">Mündlich</span></div>
+        <div class="si-desc">ca. 15 Minuten · 3 Teile</div>
       </div>
     </div>
 
-    <div class="dw-label">Prüfungsregeln</div>
-    <ul class="rules-list">
-      <li><span>⏱</span><span>65 Minuten Gesamtzeit — jeder Abschnitt hat sein eigenes Zeitlimit</span></li>
-      <li><span>✅</span><span>Bestanden: mindestens 60% in JEDEM Abschnitt (nicht nur insgesamt)</span></li>
-      <li><span>📝</span><span>Alle Antworten werden automatisch gespeichert</span></li>
-      <li><span>🤖</span><span>Schreiben und Sprechen können mit dem KI-Prüfer überprüft werden</span></li>
-      <li><span>💡</span><span>Du kannst nach einem Abschnitt nicht zurückgehen</span></li>
-    </ul>
+    <div style="background:#EFF6FF;border:1px solid #DBEAFE;border-radius:var(--radius-sm);padding:13px 16px;margin-bottom:20px;font-size:13px;color:#1e40af;line-height:1.6;">
+      <strong>Über diese Prüfung:</strong> Das Goethe-Zertifikat A1: Start Deutsch 1 entspricht der ersten Stufe (A1) auf der sechsstufigen Kompetenzskala des Gemeinsamen europäischen Referenzrahmens für Sprachen (GER). Dies ist die offizielle Modellprüfung des Goethe-Instituts.
+    </div>
 
+    <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:#1D4ED8;text-transform:uppercase;margin-bottom:12px;">Prüfungshinweise</div>
+    <ul class="rules-list">
+      <li><span>⏱</span><span><strong>Hören:</strong> ca. 20 Min. — In der echten Prüfung hören Sie Texte. Hier sehen Sie die Transkripte als Übung.</span></li>
+      <li><span>📖</span><span><strong>Lesen + Schreiben:</strong> ca. 45 Min. — Wörterbücher sind nicht erlaubt.</span></li>
+      <li><span>🎤</span><span><strong>Sprechen:</strong> ca. 15 Min. — Normalerweise Gruppenprüfung. Hier üben Sie allein.</span></li>
+      <li><span>✅</span><span><strong>Bestanden:</strong> mindestens 60 % in jedem Prüfungsteil.</span></li>
+      <li><span>💾</span><span>Ihre Antworten werden automatisch gespeichert.</span></li>
+    </ul>
     <button class="start-btn" onclick="startExam()">Prüfung beginnen →</button>
   </div>
 </div>
 
-<!-- ===== SCREEN: EXAM ===== -->
+<!-- ===== EXAM ===== -->
 <div class="screen" id="screen-exam">
-
-  <!-- TABS -->
   <div class="section-tabs">
     <div class="st-tab active" id="tab-horen"><span class="st-dot"></span> Hören</div>
     <div class="st-tab" id="tab-lesen"><span class="st-dot"></span> Lesen</div>
@@ -232,10 +256,10 @@ body { background: #FFFFFF !important; }
     <div class="st-tab" id="tab-sprechen"><span class="st-dot"></span> Sprechen</div>
   </div>
 
-  <!-- ── HÖREN ── -->
+  <!-- ═══════════════════════════════ HÖREN ═══════════════════════════════ -->
   <div class="screen active" id="ep-horen">
     <div class="timer-bar">
-      <div class="timer-label">⏱ Hören · 20 Minuten</div>
+      <div class="timer-label">⏱ Hören · ca. 20 Minuten</div>
       <div class="timer-display" id="timer-horen">20:00</div>
     </div>
 
@@ -244,646 +268,958 @@ body { background: #FFFFFF !important; }
         <div class="sec-icon">🎧</div>
         <div>
           <div class="sec-title">Hören</div>
-          <div class="sec-meta">20 Punkte · Teil A: Richtig / Falsch · Teil B: Lücken füllen</div>
+          <div class="sec-meta">15 Punkte · Dieser Test hat drei Teile.</div>
+        </div>
+      </div>
+      <p class="official-instr">Sie hören kurze Gespräche und Ansagen. Zu jedem Text gibt es eine Aufgabe. Lesen Sie zuerst die Aufgabe, hören Sie dann den Text dazu. Kreuzen Sie die richtige Lösung an.</p>
+    </div>
+
+    <div class="audio-note">🎵 <strong>Hinweis:</strong> In der echten Prüfung hören Sie Audiodateien (jeden Text in Teil 1 + 3 zweimal, Teil 2 einmal). Klicken Sie auf „Transkript lesen" um den gesprochenen Text zu sehen und die Aufgabe zu üben.</div>
+
+    <!-- TEIL 1 -->
+    <span class="task-label">Teil 1 · Was ist richtig? Kreuzen Sie an: a, b oder c. Sie hören jeden Text zweimal.</span>
+
+    <!-- Q1 -->
+    <div class="task-card">
+      <div class="q-block">
+        <div class="q-num">Aufgabe 1</div>
+        <div class="q-text">Was kostet der Pullover?</div>
+        <button class="transcript-toggle" onclick="toggleTranscript('t1')">📄 Transkript lesen</button>
+        <div class="transcript-box" id="t1">Kunde: Entschuldigung, was kostet dieser Pullover jetzt? Da steht 30 Prozent billiger.
+Verkäuferin: Einen Moment bitte … neunzehn fünfundneunzig.
+Kunde: 19,95 Euro?
+Verkäuferin: Ja, Euro natürlich.
+Kunde: Hm, … ok, den nehme ich.</div>
+        <div class="mc-opts">
+          <button class="mc-opt" onclick="mcClick(this,'h1','a','b')"><span class="opt-letter">a</span> Dreißig Euro.</button>
+          <button class="mc-opt" onclick="mcClick(this,'h1','b','b')"><span class="opt-letter">b</span> Neunzehn Euro fünfundneunzig Cent.</button>
+          <button class="mc-opt" onclick="mcClick(this,'h1','c','b')"><span class="opt-letter">c</span> Fünfundneunzig Euro.</button>
         </div>
       </div>
     </div>
 
-    <span class="task-label">Teil A — Kurze Gespräche</span>
-    <div class="task-instr">Lesen Sie die Aussagen. Sind sie richtig (R) oder falsch (F)?</div>
-
-    <!-- Conv 1 -->
-    <div class="conv-card">
-      <div class="conv-num">Gespräch 1</div>
-      <div class="conv-text">— Guten Tag. Ich möchte ein Zimmer buchen.
-— Für wie viele Nächte?
-— Für drei Nächte bitte.
-— Und Ihr Name?
-— Kwame Mensah.</div>
-      <div class="conv-q">
-        <div class="q-row">
-          <div class="q-text">1. Kwame möchte ein Zimmer buchen.</div>
-          <div class="q-btns">
-            <button class="tf-btn" onclick="tfClick(this,'h1','R','R')">R</button>
-            <button class="tf-btn" onclick="tfClick(this,'h1','F','R')">F</button>
-          </div>
-        </div>
-        <div class="q-row">
-          <div class="q-text">2. Er bleibt zwei Nächte.</div>
-          <div class="q-btns">
-            <button class="tf-btn" onclick="tfClick(this,'h2','R','F')">R</button>
-            <button class="tf-btn" onclick="tfClick(this,'h2','F','F')">F</button>
-          </div>
+    <!-- Q2 -->
+    <div class="task-card">
+      <div class="q-block">
+        <div class="q-num">Aufgabe 2</div>
+        <div class="q-text">Wie spät ist es?</div>
+        <button class="transcript-toggle" onclick="toggleTranscript('t2')">📄 Transkript lesen</button>
+        <div class="transcript-box" id="t2">Passant: Ach, entschuldigen Sie bitte.
+Passantin: Ja bitte.
+Passant: Haben Sie eine Uhr? … Wie spät ist es bitte?
+Passantin: Ja – jetzt ist es gleich 5 Uhr.
+Passant: Was, schon 5. Vielen Dank, Wiedersehen.</div>
+        <div class="mc-opts">
+          <button class="mc-opt" onclick="mcClick(this,'h2','a','c')"><span class="opt-letter">a</span> 15 Uhr.</button>
+          <button class="mc-opt" onclick="mcClick(this,'h2','b','c')"><span class="opt-letter">b</span> Halb 5 Uhr.</button>
+          <button class="mc-opt" onclick="mcClick(this,'h2','c','c')"><span class="opt-letter">c</span> Gleich 5 Uhr.</button>
         </div>
       </div>
     </div>
 
-    <!-- Conv 2 -->
-    <div class="conv-card">
-      <div class="conv-num">Gespräch 2</div>
-      <div class="conv-text">— Entschuldigung, wann fährt der nächste Zug nach Berlin?
-— Um 14:35 Uhr auf Gleis 7.
-— Und wie lange dauert die Fahrt?
-— Ungefähr zwei Stunden.</div>
-      <div class="conv-q">
-        <div class="q-row">
-          <div class="q-text">3. Der Zug fährt um 14:35 Uhr.</div>
-          <div class="q-btns">
-            <button class="tf-btn" onclick="tfClick(this,'h3','R','R')">R</button>
-            <button class="tf-btn" onclick="tfClick(this,'h3','F','R')">F</button>
-          </div>
-        </div>
-        <div class="q-row">
-          <div class="q-text">4. Die Fahrt dauert drei Stunden.</div>
-          <div class="q-btns">
-            <button class="tf-btn" onclick="tfClick(this,'h4','R','F')">R</button>
-            <button class="tf-btn" onclick="tfClick(this,'h4','F','F')">F</button>
-          </div>
+    <!-- Q3 -->
+    <div class="task-card">
+      <div class="q-block">
+        <div class="q-num">Aufgabe 3</div>
+        <div class="q-text">Was isst die Frau im Restaurant?</div>
+        <button class="transcript-toggle" onclick="toggleTranscript('t3')">📄 Transkript lesen</button>
+        <div class="transcript-box" id="t3">Kellner: Was wünschen Sie bitte?
+Gast: Ich hätte gern die Salatplatte und ein …
+Kellner: Entschuldigung, die Salatplatte ist leider aus, aber die Bratwurst kann ich Ihnen empfehlen … ganz frisch heute.
+Gast: Nein danke … ich esse kein Fleisch. Gibt es etwas ohne Fleisch?
+Kellner: Ja … nicht mehr viel: Fisch oder … Pommes.
+Gast: Fisch … hm … Tja, dann wohl die Pommes.</div>
+        <div class="mc-opts">
+          <button class="mc-opt" onclick="mcClick(this,'h3','a','a')"><span class="opt-letter">a</span> Pommes.</button>
+          <button class="mc-opt" onclick="mcClick(this,'h3','b','a')"><span class="opt-letter">b</span> Wurst.</button>
+          <button class="mc-opt" onclick="mcClick(this,'h3','c','a')"><span class="opt-letter">c</span> Fisch.</button>
         </div>
       </div>
     </div>
 
-    <!-- Conv 3 -->
-    <div class="conv-card">
-      <div class="conv-num">Gespräch 3</div>
-      <div class="conv-text">— Amina, kannst du heute Nachmittag kommen?
-— Es tut mir leid, ich muss arbeiten.
-— Und morgen?
-— Morgen geht es. Um 15 Uhr?</div>
-      <div class="conv-q">
-        <div class="q-row">
-          <div class="q-text">5. Amina kommt heute Nachmittag.</div>
-          <div class="q-btns">
-            <button class="tf-btn" onclick="tfClick(this,'h5','R','F')">R</button>
-            <button class="tf-btn" onclick="tfClick(this,'h5','F','F')">F</button>
-          </div>
+    <!-- Q4 -->
+    <div class="task-card">
+      <div class="q-block">
+        <div class="q-num">Aufgabe 4</div>
+        <div class="q-text">In welche Klasse geht Frau Hegers Sohn?</div>
+        <button class="transcript-toggle" onclick="toggleTranscript('t4')">📄 Transkript lesen</button>
+        <div class="transcript-box" id="t4">Kollege: Haben Sie Kinder, Frau Heger?
+Kollegin: Ja, einen Sohn.
+Kollege: Und wie alt ist er?
+Kollegin: Neun Jahre … seit gestern.
+Kollege: Ah, dann geht er ja schon zur Schule?
+Kollegin: Ja klar, schon in die dritte Klasse.</div>
+        <div class="mc-opts">
+          <button class="mc-opt" onclick="mcClick(this,'h4','a','c')"><span class="opt-letter">a</span> In die neunte Klasse.</button>
+          <button class="mc-opt" onclick="mcClick(this,'h4','b','c')"><span class="opt-letter">b</span> In die vierte Klasse.</button>
+          <button class="mc-opt" onclick="mcClick(this,'h4','c','c')"><span class="opt-letter">c</span> In die dritte Klasse.</button>
         </div>
       </div>
     </div>
 
-    <span class="task-label">Teil B — Radiosendung · Lücken füllen</span>
-    <div class="task-instr">Wählen Sie die richtige Antwort für jede Lücke.</div>
+    <!-- Q5 -->
+    <div class="task-card">
+      <div class="q-block">
+        <div class="q-num">Aufgabe 5</div>
+        <div class="q-text">Wie kommt die Frau in den 2. Stock?</div>
+        <button class="transcript-toggle" onclick="toggleTranscript('t5')">📄 Transkript lesen</button>
+        <div class="transcript-box" id="t5">Kundin: Ach, entschuldigen Sie, wie komme ich denn hier in den zweiten Stock? Die Rolltreppe da vorn ist kaputt.
+Verkäufer: Da gehen Sie hier rechts um die Ecke und nehmen den Aufzug.
+Kundin: Um die Ecke rechts. Danke.</div>
+        <div class="mc-opts">
+          <button class="mc-opt" onclick="mcClick(this,'h5','a','a')"><span class="opt-letter">a</span> Mit dem Aufzug.</button>
+          <button class="mc-opt" onclick="mcClick(this,'h5','b','a')"><span class="opt-letter">b</span> Mit der Rolltreppe.</button>
+          <button class="mc-opt" onclick="mcClick(this,'h5','c','a')"><span class="opt-letter">c</span> Auf der Treppe um die Ecke.</button>
+        </div>
+      </div>
+    </div>
 
-    <div class="conv-card">
-      <div class="fill-text">
-        Guten Morgen! Das Wetter heute in Berlin:<br>
-        Am Vormittag ist es bewölkt mit Temperaturen von etwa
-        <select class="blank-select" id="h6" onchange="saveAnswer('h6',this.value)">
-          <option value="">__(6)__</option>
-          <option value="12">12</option>
-          <option value="15">15</option>
-          <option value="18">18</option>
-        </select> Grad.
-        Am Nachmittag gibt es
-        <select class="blank-select" id="h7" onchange="saveAnswer('h7',this.value)">
-          <option value="">__(7)__</option>
-          <option value="Sonne">Sonne</option>
-          <option value="Regen">Regen</option>
-          <option value="Schnee">Schnee</option>
-        </select>.
-        Die Nacht wird kalt, nur
-        <select class="blank-select" id="h8" onchange="saveAnswer('h8',this.value)">
-          <option value="">__(8)__</option>
-          <option value="3">3</option>
-          <option value="6">6</option>
-          <option value="9">9</option>
-        </select> Grad.
+    <!-- Q6 -->
+    <div class="task-card">
+      <div class="q-block">
+        <div class="q-num">Aufgabe 6</div>
+        <div class="q-text">Wohin fährt Herr Albers?</div>
+        <button class="transcript-toggle" onclick="toggleTranscript('t6')">📄 Transkript lesen</button>
+        <div class="transcript-box" id="t6">Kollegin: Guten Morgen, Herr Albers. So früh schon bei der Arbeit?
+Kollege: Ja, ich habe noch viel zu tun. Morgen fahre ich doch für 3 Wochen weg.
+Kollegin: Ach ja, das hab' ich vergessen. Wohin fahren Sie denn?
+Kollege: Zu meinen Verwandten nach Polen.
+Kollegin: Na dann … schöne Zeit.</div>
+        <div class="mc-opts">
+          <button class="mc-opt" onclick="mcClick(this,'h6','a','b')"><span class="opt-letter">a</span> In Urlaub ans Meer.</button>
+          <button class="mc-opt" onclick="mcClick(this,'h6','b','b')"><span class="opt-letter">b</span> Zur Familie.</button>
+          <button class="mc-opt" onclick="mcClick(this,'h6','c','b')"><span class="opt-letter">c</span> Zur Arbeit.</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEIL 2 -->
+    <span class="task-label">Teil 2 · Kreuzen Sie an: Richtig oder Falsch. Sie hören jeden Text einmal.</span>
+
+    <div class="task-card">
+      <!-- Q7 -->
+      <div class="rf-row">
+        <div>
+          <button class="transcript-toggle" style="margin-bottom:4px;" onclick="toggleTranscript('t7')">📄 Transkript 7</button>
+          <div class="transcript-box" id="t7">Liebe Kunden, zu Weihnachten bieten wir Ihnen Superpreise an … z. B. erstklassiger italienischer Weißwein für 12 Euro 78 die Flasche oder exklusiver argentinischer Rotwein für 9 Euro 68. Besuchen Sie uns im 3. Stock. Frohe Weihnachten.</div>
+          <div class="rf-q-text">7. Die Kunden sollen die Weihnachtsfeier besuchen.</div>
+        </div>
+        <div class="rf-btns">
+          <button class="rf-btn" onclick="rfClick(this,'h7','R','F')">Richtig</button>
+          <button class="rf-btn" onclick="rfClick(this,'h7','F','F')">Falsch</button>
+        </div>
+      </div>
+      <!-- Q8 -->
+      <div class="rf-row">
+        <div>
+          <button class="transcript-toggle" style="margin-bottom:4px;" onclick="toggleTranscript('t8')">📄 Transkript 8</button>
+          <div class="transcript-box" id="t8">Liebe Fahrgäste. Wir sind kurz vor Würzburg. Sicherlich haben Sie schon Hunger. An der nächsten Raststätte halten wir für eine Stunde. Wir treffen uns wieder um halb eins am Bus, aber bitte pünktlich sein.</div>
+          <div class="rf-q-text">8. Die Fahrgäste sollen sich im Restaurant treffen.</div>
+        </div>
+        <div class="rf-btns">
+          <button class="rf-btn" onclick="rfClick(this,'h8','R','F')">Richtig</button>
+          <button class="rf-btn" onclick="rfClick(this,'h8','F','F')">Falsch</button>
+        </div>
+      </div>
+      <!-- Q9 -->
+      <div class="rf-row">
+        <div>
+          <button class="transcript-toggle" style="margin-bottom:4px;" onclick="toggleTranscript('t9')">📄 Transkript 9</button>
+          <div class="transcript-box" id="t9">Liebe Fahrgäste! Bitte beachten Sie. Das ist ein außerplanmäßiger Halt. Bitte hier nicht aussteigen. In ein paar Minuten erreichen wir den Bahnhof Bonn – Bad Godesberg.</div>
+          <div class="rf-q-text">9. Die Fahrgäste sollen im Zug bleiben.</div>
+        </div>
+        <div class="rf-btns">
+          <button class="rf-btn" onclick="rfClick(this,'h9','R','R')">Richtig</button>
+          <button class="rf-btn" onclick="rfClick(this,'h9','F','R')">Falsch</button>
+        </div>
+      </div>
+      <!-- Q10 -->
+      <div class="rf-row" style="border-bottom:none;">
+        <div>
+          <button class="transcript-toggle" style="margin-bottom:4px;" onclick="toggleTranscript('t10')">📄 Transkript 10</button>
+          <div class="transcript-box" id="t10">Herr Stefan Janda gebucht auf dem Flug LH 737 nach Warschau, wird zum Schalter F7 gebeten. Der Flug wird in ein paar Minuten geschlossen. Herr Janda gebucht nach Warschau bitte nach F7.</div>
+          <div class="rf-q-text">10. Der Herr soll sofort zum Schalter kommen.</div>
+        </div>
+        <div class="rf-btns">
+          <button class="rf-btn" onclick="rfClick(this,'h10','R','R')">Richtig</button>
+          <button class="rf-btn" onclick="rfClick(this,'h10','F','R')">Falsch</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEIL 3 -->
+    <span class="task-label">Teil 3 · Was ist richtig? Kreuzen Sie an: a, b oder c. Sie hören jeden Text zweimal.</span>
+
+    <!-- Q11 -->
+    <div class="task-card">
+      <div class="q-block">
+        <div class="q-num">Aufgabe 11</div>
+        <div class="q-text">Die Nummer ist:</div>
+        <button class="transcript-toggle" onclick="toggleTranscript('t11')">📄 Transkript lesen</button>
+        <div class="transcript-box" id="t11">Telefonansagedienst der deutschen Telekom. Die Rufnummer des Teilnehmers hat sich geändert. Bitte rufen Sie die Telefon-Auskunft an unter 11 8 33.</div>
+        <div class="mc-opts">
+          <button class="mc-opt" onclick="mcClick(this,'h11','a','a')"><span class="opt-letter">a</span> 11833.</button>
+          <button class="mc-opt" onclick="mcClick(this,'h11','b','a')"><span class="opt-letter">b</span> 11883.</button>
+          <button class="mc-opt" onclick="mcClick(this,'h11','c','a')"><span class="opt-letter">c</span> 12833.</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q12 -->
+    <div class="task-card">
+      <div class="q-block">
+        <div class="q-num">Aufgabe 12</div>
+        <div class="q-text">Wo genau treffen sich die Männer?</div>
+        <button class="transcript-toggle" onclick="toggleTranscript('t12')">📄 Transkript lesen</button>
+        <div class="transcript-box" id="t12">Hallo Jan, hier ist Boris. Du, ich bin noch im Zug. Du holst mich doch vom Bahnhof ab? Ich warte an der Information auf dich.</div>
+        <div class="mc-opts">
+          <button class="mc-opt" onclick="mcClick(this,'h12','a','c')"><span class="opt-letter">a</span> Am Zug.</button>
+          <button class="mc-opt" onclick="mcClick(this,'h12','b','c')"><span class="opt-letter">b</span> Am Bahnhof.</button>
+          <button class="mc-opt" onclick="mcClick(this,'h12','c','c')"><span class="opt-letter">c</span> An der Information.</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q13 -->
+    <div class="task-card">
+      <div class="q-block">
+        <div class="q-num">Aufgabe 13</div>
+        <div class="q-text">Wie lange will der Mann noch warten?</div>
+        <button class="transcript-toggle" onclick="toggleTranscript('t13')">📄 Transkript lesen</button>
+        <div class="transcript-box" id="t13">Mensch Jan, du Penner, hier noch mal Boris. Ich bin jetzt am Bahnhof. Und du? Wo bist du denn? Ich warte schon über 20 Minuten auf dich. Zehn Minuten Zeit hast du noch … bis 2, dann nehme ich ein Taxi.</div>
+        <div class="mc-opts">
+          <button class="mc-opt" onclick="mcClick(this,'h13','a','c')"><span class="opt-letter">a</span> 20 Minuten.</button>
+          <button class="mc-opt" onclick="mcClick(this,'h13','b','c')"><span class="opt-letter">b</span> 2 Minuten.</button>
+          <button class="mc-opt" onclick="mcClick(this,'h13','c','c')"><span class="opt-letter">c</span> 10 Minuten.</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q14 -->
+    <div class="task-card">
+      <div class="q-block">
+        <div class="q-num">Aufgabe 14</div>
+        <div class="q-text">An welchem Tag will die Frau kommen?</div>
+        <button class="transcript-toggle" onclick="toggleTranscript('t14')">📄 Transkript lesen</button>
+        <div class="transcript-box" id="t14">Guten Tag, hier Rogalla. Wir können am Samstag leider nicht zu Ihnen kommen. Am Sonntag haben wir aber Zeit. Rufen Sie uns doch bitte zurück, ob Ihnen das passt. Danke.</div>
+        <div class="mc-opts">
+          <button class="mc-opt" onclick="mcClick(this,'h14','a','b')"><span class="opt-letter">a</span> Am Montag.</button>
+          <button class="mc-opt" onclick="mcClick(this,'h14','b','b')"><span class="opt-letter">b</span> Am Sonntag.</button>
+          <button class="mc-opt" onclick="mcClick(this,'h14','c','b')"><span class="opt-letter">c</span> Am Samstag.</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q15 -->
+    <div class="task-card">
+      <div class="q-block">
+        <div class="q-num">Aufgabe 15</div>
+        <div class="q-text">Was ist kaputt?</div>
+        <button class="transcript-toggle" onclick="toggleTranscript('t15')">📄 Transkript lesen</button>
+        <div class="transcript-box" id="t15">Hallo Alex. Walter hier. Kannst du schnell mal rüber kommen? Mein Computer hat einen Fehler. Ich kann nichts drucken. Melde dich doch bitte gleich, wenn du nach Hause kommst.</div>
+        <div class="mc-opts">
+          <button class="mc-opt" onclick="mcClick(this,'h15','a','b')"><span class="opt-letter">a</span> Der Fernseher.</button>
+          <button class="mc-opt" onclick="mcClick(this,'h15','b','b')"><span class="opt-letter">b</span> Der Computer.</button>
+          <button class="mc-opt" onclick="mcClick(this,'h15','c','b')"><span class="opt-letter">c</span> Das Handy.</button>
+        </div>
       </div>
     </div>
 
     <div class="nav-btns">
       <div></div>
-      <button class="dw-btn dw-btn-primary" onclick="goSection('lesen')">Weiter: Lesen →</button>
+      <button class="dw-btn dw-btn-primary" onclick="goSection('lesen')" style="background:#1D4ED8;">Weiter: Lesen →</button>
     </div>
   </div>
 
-  <!-- ── LESEN ── -->
+  <!-- ═══════════════════════════════ LESEN ═══════════════════════════════ -->
   <div class="screen" id="ep-lesen">
     <div class="timer-bar">
-      <div class="timer-label">⏱ Lesen · 25 Minuten</div>
+      <div class="timer-label">⏱ Lesen · ca. 25 Minuten</div>
       <div class="timer-display" id="timer-lesen">25:00</div>
     </div>
-
     <div class="sec-hdr">
       <div class="sec-hdr-top">
         <div class="sec-icon">📖</div>
         <div>
           <div class="sec-title">Lesen</div>
-          <div class="sec-meta">25 Punkte · Teil A: Anzeigen · Teil B: Text · Teil C: Formular</div>
+          <div class="sec-meta">15 Punkte · Dieser Test hat drei Teile.</div>
+        </div>
+      </div>
+      <p class="official-instr">Sie lesen kurze Briefe, Anzeigen etc. Zu jedem Text gibt es Aufgaben. Kreuzen Sie die richtige Lösung an.</p>
+    </div>
+
+    <!-- TEIL 1 -->
+    <span class="task-label">Teil 1 · Lesen Sie die beiden Texte und die Aufgaben 1 bis 5. Kreuzen Sie an: Richtig oder Falsch.</span>
+
+    <div class="task-card">
+      <!-- Text A: Karin an Li -->
+      <div class="lesen-text">Hallo Li,
+
+danke für deine Mail. Dein Zug kommt hier in Hannover um 12.36 Uhr an. Ich bin ab 12.15 Uhr im Hauptbahnhof und warte auf dich vor der Auskunft. Du kannst mich den ganzen Vormittag auf meinem Handy (++49 173 62 205 59) erreichen.
+
+Deine Karin</div>
+
+      <div class="rf-row">
+        <div class="rf-q-text">1. Karin wartet den ganzen Vormittag vor der Auskunft.</div>
+        <div class="rf-btns">
+          <button class="rf-btn" onclick="rfClick(this,'l1','R','R')">Richtig</button>
+          <button class="rf-btn" onclick="rfClick(this,'l1','F','R')">Falsch</button>
+        </div>
+      </div>
+      <div class="rf-row" style="margin-top:8px;">
+        <div class="rf-q-text">2. Lis Zug kommt aus Hannover.</div>
+        <div class="rf-btns">
+          <button class="rf-btn" onclick="rfClick(this,'l2','R','F')">Richtig</button>
+          <button class="rf-btn" onclick="rfClick(this,'l2','F','F')">Falsch</button>
         </div>
       </div>
     </div>
 
-    <span class="task-label">Teil A — Anzeigen: Richtig / Falsch / Nicht im Text</span>
-    <div class="task-instr">Wählen Sie: R (Richtig), F (Falsch) oder NiT (Nicht im Text).</div>
+    <div class="task-card" style="margin-top:12px;">
+      <!-- Text B: Ralf an Carmen -->
+      <div class="lesen-text">Liebe Carmen,
 
-    <div class="notice-card">
-      <div class="notice-header">Anzeige 1</div>
-      <div class="notice-body">SUPERMARKT MÜLLER
-Geöffnet: Mo–Fr 8:00–20:00 Uhr
-Sa 8:00–18:00 Uhr
-Sonntags geschlossen</div>
-      <div style="margin-top:14px;">
-        <div class="q-row">
-          <div class="q-text">1. Der Supermarkt öffnet um 8 Uhr.</div>
-          <div class="q-btns">
-            <button class="trit-btn" onclick="tritClick(this,'l1','R','R')">R</button>
-            <button class="trit-btn" onclick="tritClick(this,'l1','F','R')">F</button>
-            <button class="trit-btn" onclick="tritClick(this,'l1','NiT','R')">NiT</button>
-          </div>
+am kommenden Sonntag habe ich Geburtstag. Ich möchte gerne mit dir feiern und lade dich herzlich zu meiner Party am Samstagabend ein. Wir fangen um 21 Uhr an. Ist das okay für dich? Es werden viele Leute da sein, die du auch kennst. Kannst du vielleicht einen Salat mitbringen? Und vergiss bitte nicht einen Pullover oder eine Jacke! Wir wollen nämlich draußen im Garten feiern.
+
+Bis zum Wochenende
+Ralf</div>
+
+      <div class="rf-row">
+        <div class="rf-q-text">3. Ralf hatte am letzten Wochenende Geburtstag.</div>
+        <div class="rf-btns">
+          <button class="rf-btn" onclick="rfClick(this,'l3','R','F')">Richtig</button>
+          <button class="rf-btn" onclick="rfClick(this,'l3','F','F')">Falsch</button>
         </div>
-        <div class="q-row">
-          <div class="q-text">2. Am Sonntag ist der Supermarkt geöffnet.</div>
-          <div class="q-btns">
-            <button class="trit-btn" onclick="tritClick(this,'l2','R','F')">R</button>
-            <button class="trit-btn" onclick="tritClick(this,'l2','F','F')">F</button>
-            <button class="trit-btn" onclick="tritClick(this,'l2','NiT','F')">NiT</button>
-          </div>
+      </div>
+      <div class="rf-row">
+        <div class="rf-q-text">4. Ralf hat nur zwei oder drei Leute eingeladen.</div>
+        <div class="rf-btns">
+          <button class="rf-btn" onclick="rfClick(this,'l4','R','F')">Richtig</button>
+          <button class="rf-btn" onclick="rfClick(this,'l4','F','F')">Falsch</button>
         </div>
-        <div class="q-row">
-          <div class="q-text">3. Der Supermarkt heißt Müller.</div>
-          <div class="q-btns">
-            <button class="trit-btn" onclick="tritClick(this,'l3','R','R')">R</button>
-            <button class="trit-btn" onclick="tritClick(this,'l3','F','R')">F</button>
-            <button class="trit-btn" onclick="tritClick(this,'l3','NiT','R')">NiT</button>
-          </div>
+      </div>
+      <div class="rf-row" style="border-bottom:none;">
+        <div class="rf-q-text">5. Die Party findet draußen statt.</div>
+        <div class="rf-btns">
+          <button class="rf-btn" onclick="rfClick(this,'l5','R','R')">Richtig</button>
+          <button class="rf-btn" onclick="rfClick(this,'l5','F','R')">Falsch</button>
         </div>
       </div>
     </div>
 
-    <div class="notice-card">
-      <div class="notice-header">Anzeige 2</div>
-      <div class="notice-body">Wohnung zu vermieten
-2 Zimmer, Küche, Bad
-65 qm, 3. Etage
-Miete: 750 Euro + Nebenkosten
-Kontakt: Tel. 0681-234567</div>
-      <div style="margin-top:14px;">
-        <div class="q-row">
-          <div class="q-text">4. Die Wohnung hat 3 Zimmer.</div>
-          <div class="q-btns">
-            <button class="trit-btn" onclick="tritClick(this,'l4','R','F')">R</button>
-            <button class="trit-btn" onclick="tritClick(this,'l4','F','F')">F</button>
-            <button class="trit-btn" onclick="tritClick(this,'l4','NiT','F')">NiT</button>
-          </div>
+    <!-- TEIL 2 -->
+    <span class="task-label">Teil 2 · Lesen Sie die Texte und die Aufgaben 6 bis 10. Wo finden Sie Informationen? Kreuzen Sie an: a oder b.</span>
+
+    <div class="website-grid">
+      <div class="website-card"><div class="website-url">www.openair.de</div><div class="website-desc">Open-Air-Konzert am 30.5. — findet bei Regen in der Stadthalle statt.</div></div>
+      <div class="website-card"><div class="website-url">www.dwd.de</div><div class="website-desc">Deutscher Wetterdienst — Wetter und Klima. Warnungen, Umweltinfos, Klimadaten.</div></div>
+      <div class="website-card"><div class="website-url">www.schiff-ruedesheim.de</div><div class="website-desc">Hotel & Pension „Schiff" — Einzel- und Doppelzimmer mit Dusche/WC. Restaurant mit Rhein-Terrasse.</div></div>
+      <div class="website-card"><div class="website-url">www.bingen-ruedesheimer.de</div><div class="website-desc">Bingen-Rüdesheimer Rheinschiffe — täglich von Rüdesheim nach Koblenz. Alle Abfahrtszeiten und Preise.</div></div>
+      <div class="website-card"><div class="website-url">www.eviva.com</div><div class="website-desc">Eviva-Idiomas — Sprachkurse für Deutsche: Spanisch auf Mallorca, Englisch auf Malta.</div></div>
+      <div class="website-card"><div class="website-url">www.sprachenfuchs.de</div><div class="website-desc">Sprachinstitut Fuchs — Dresden, Prager Str. 4. Deutsch · Englisch · Französisch · Russisch.</div></div>
+      <div class="website-card"><div class="website-url">www.DER.com</div><div class="website-desc">Deutsches Reisebüro — Ticketbestellungen und Reservierungen für Flüge weltweit, Deutsche Bahn, Eurobus. 24-Stunden-Service.</div></div>
+      <div class="website-card"><div class="website-url">www.RED.com</div><div class="website-desc">Reisedienst GmbH — Ticketservice für Theater, Konzerte, Busreisen in Deutschland und nach Polen, Tschechien und Ungarn.</div></div>
+      <div class="website-card"><div class="website-url">www.bodensee.de</div><div class="website-desc">Touristeninformation Bodensee — Urlaubsorte, Ferienwohnungen, Hotelservice, Rundreisen.</div></div>
+      <div class="website-card"><div class="website-url">www.rottenmeier.de</div><div class="website-desc">Hans Rottenmeier — Ferienwohnungen am Bodensee. Häuser, Preise, Kontakt.</div></div>
+    </div>
+
+    <div class="task-card">
+      <div class="q-block" style="margin-bottom:16px;">
+        <div class="q-num">Aufgabe 6</div>
+        <div class="q-text">Sie möchten mit dem Schiff auf dem Rhein fahren.</div>
+        <div class="web-opts">
+          <button class="web-btn" onclick="webClick(this,'l6','a','b')">a) www.schiff-ruedesheim.de</button>
+          <button class="web-btn" onclick="webClick(this,'l6','b','b')">b) www.bingen-ruedesheimer.de</button>
         </div>
-        <div class="q-row">
-          <div class="q-text">5. Die Miete ist 750 Euro warm.</div>
-          <div class="q-btns">
-            <button class="trit-btn" onclick="tritClick(this,'l5','R','F')">R</button>
-            <button class="trit-btn" onclick="tritClick(this,'l5','F','F')">F</button>
-            <button class="trit-btn" onclick="tritClick(this,'l5','NiT','F')">NiT</button>
-          </div>
+      </div>
+      <div class="q-block" style="margin-bottom:16px;">
+        <div class="q-num">Aufgabe 7</div>
+        <div class="q-text">Sie möchten Deutsch in Deutschland lernen.</div>
+        <div class="web-opts">
+          <button class="web-btn" onclick="webClick(this,'l7','a','a')">a) www.sprachenfuchs.de</button>
+          <button class="web-btn" onclick="webClick(this,'l7','b','a')">b) www.eviva.com</button>
+        </div>
+      </div>
+      <div class="q-block" style="margin-bottom:16px;">
+        <div class="q-num">Aufgabe 8</div>
+        <div class="q-text">Sie möchten ein Zugticket im Internet kaufen.</div>
+        <div class="web-opts">
+          <button class="web-btn" onclick="webClick(this,'l8','a','a')">a) www.DER.com</button>
+          <button class="web-btn" onclick="webClick(this,'l8','b','a')">b) www.RED.com</button>
+        </div>
+      </div>
+      <div class="q-block" style="margin-bottom:16px;">
+        <div class="q-num">Aufgabe 9</div>
+        <div class="q-text">Sie möchten Informationen über den Bodensee.</div>
+        <div class="web-opts">
+          <button class="web-btn" onclick="webClick(this,'l9','a','a')">a) www.bodensee.de</button>
+          <button class="web-btn" onclick="webClick(this,'l9','b','a')">b) www.rottenmeier.de</button>
+        </div>
+      </div>
+      <div class="q-block">
+        <div class="q-num">Aufgabe 10</div>
+        <div class="q-text">Sie sind in Wiesbaden und möchten mit dem Zug am Mittag in Hamburg sein.</div>
+        <div style="background:#F8FAFC;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px;font-size:13px;">
+          <div style="margin-bottom:6px;"><strong>Option a)</strong> Hamburg 17.02. ab 12:18 → Wiesbaden 17.02. an 16:52 (Dauer: 4:34)</div>
+          <div><strong>Option b)</strong> Wiesbaden 17.02. ab 08:09 → Hamburg 17.02. an 12:40 (Dauer: 4:31)</div>
+        </div>
+        <div class="web-opts">
+          <button class="web-btn" onclick="webClick(this,'l10','a','b')">a) Hamburg → Wiesbaden</button>
+          <button class="web-btn" onclick="webClick(this,'l10','b','b')">b) Wiesbaden → Hamburg</button>
         </div>
       </div>
     </div>
 
-    <span class="task-label">Teil B — Kurztext · Multiple Choice</span>
-    <div class="task-instr">Lesen Sie den Text und beantworten Sie die Fragen.</div>
+    <!-- TEIL 3 -->
+    <span class="task-label">Teil 3 · Lesen Sie die Texte und die Aufgaben 11 bis 15. Kreuzen Sie an: Richtig oder Falsch.</span>
 
-    <div class="notice-card">
-      <div class="notice-body" style="margin-bottom:16px;">Kofi kommt aus Ghana und wohnt jetzt in Hamburg. Er arbeitet als Ingenieur bei einer deutschen Firma. Jeden Morgen fährt er mit der U-Bahn zur Arbeit. Das dauert ungefähr 30 Minuten. Nach der Arbeit lernt er Deutsch an der Volkshochschule. Er möchte bald die Goethe-Prüfung machen.</div>
-
-      <div style="margin-bottom:16px;">
-        <div class="q-text" style="font-weight:700;margin-bottom:8px;">6. Woher kommt Kofi?</div>
-        <div class="mc-opts">
-          <button class="mc-opt" onclick="mcClick(this,'l6','a','b')">a) Nigeria</button>
-          <button class="mc-opt" onclick="mcClick(this,'l6','b','b')">b) Ghana</button>
-          <button class="mc-opt" onclick="mcClick(this,'l6','c','b')">c) Kenia</button>
+    <div class="task-card">
+      <!-- Notice 1: Sprachzentrum -->
+      <div class="notice-box">
+        <div class="notice-box-title">An der Tür der Sprachschule</div>
+        Das Sprachzentrum ist umgezogen. Sie finden uns jetzt in der Beethovenstr. 23
+      </div>
+      <div class="rf-row">
+        <div class="rf-q-text">11. Zum Deutsch Lernen gehen Sie in die Beethovenstraße 23.</div>
+        <div class="rf-btns">
+          <button class="rf-btn" onclick="rfClick(this,'l11','R','R')">Richtig</button>
+          <button class="rf-btn" onclick="rfClick(this,'l11','F','R')">Falsch</button>
         </div>
       </div>
 
-      <div style="margin-bottom:16px;">
-        <div class="q-text" style="font-weight:700;margin-bottom:8px;">7. Was macht Kofi nach der Arbeit?</div>
-        <div class="mc-opts">
-          <button class="mc-opt" onclick="mcClick(this,'l7','a','b')">a) Er schläft.</button>
-          <button class="mc-opt" onclick="mcClick(this,'l7','b','b')">b) Er lernt Deutsch.</button>
-          <button class="mc-opt" onclick="mcClick(this,'l7','c','b')">c) Er kocht.</button>
+      <!-- Notice 2: Frühstückspaket -->
+      <div class="notice-box" style="margin-top:14px;">
+        <div class="notice-box-title">In der Sprachschule</div>
+        In der 10-Uhr-Pause bekommen Sie an der Rezeption ein Frühstückspaket: Belegte Brötchen und Getränke für 2 Euro.
+      </div>
+      <div class="rf-row">
+        <div class="rf-q-text">12 — (wird in der Prüfung nicht gestellt — Aufgabe 11 gehört zu dieser Anzeige)</div>
+        <div></div>
+      </div>
+
+      <!-- Notice 3: Post -->
+      <div class="notice-box" style="margin-top:14px;">
+        <div class="notice-box-title">An der Post</div>
+        Öffnungszeiten: montags – freitags 8.00 – 12.00 und 13.00 – 18.00 | samstags 8.00 – 12.00
+      </div>
+      <div class="rf-row">
+        <div class="rf-q-text">12. Es ist Samstagnachmittag. Sie können auf der Post Briefmarken kaufen.</div>
+        <div class="rf-btns">
+          <button class="rf-btn" onclick="rfClick(this,'l12','R','F')">Richtig</button>
+          <button class="rf-btn" onclick="rfClick(this,'l12','F','F')">Falsch</button>
         </div>
       </div>
 
-      <div>
-        <div class="q-text" style="font-weight:700;margin-bottom:8px;">8. Wie fährt Kofi zur Arbeit?</div>
-        <div class="mc-opts">
-          <button class="mc-opt" onclick="mcClick(this,'l8','a','c')">a) Mit dem Bus</button>
-          <button class="mc-opt" onclick="mcClick(this,'l8','b','c')">b) Mit dem Auto</button>
-          <button class="mc-opt" onclick="mcClick(this,'l8','c','c')">c) Mit der U-Bahn</button>
+      <!-- Notice 4: Bahnhof -->
+      <div class="notice-box" style="margin-top:14px;">
+        <div class="notice-box-title">Am Bahnhof</div>
+        Auf dem gesamten Bahnhof ist das Rauchen verboten.
+      </div>
+      <div class="rf-row">
+        <div class="rf-q-text">13. Sie können hier Zigaretten rauchen.</div>
+        <div class="rf-btns">
+          <button class="rf-btn" onclick="rfClick(this,'l13','R','F')">Richtig</button>
+          <button class="rf-btn" onclick="rfClick(this,'l13','F','F')">Falsch</button>
         </div>
       </div>
-    </div>
 
-    <span class="task-label">Teil C — Formular ausfüllen</span>
-    <div class="task-instr">Lesen Sie den Text und füllen Sie das Formular aus.</div>
+      <!-- Notice 5: Bavaria Restaurant -->
+      <div class="notice-box" style="margin-top:14px;">
+        <div class="notice-box-title">Eingang Restaurant</div>
+        Bayerischer Abend — Brezeln, Weißwürste, Sauerkraut. Volksmusik, ab 20 Uhr Tanz. Heute im Bavaria.
+      </div>
+      <div class="rf-row">
+        <div class="rf-q-text">14. Heute Abend können Sie in diesem Restaurant tanzen.</div>
+        <div class="rf-btns">
+          <button class="rf-btn" onclick="rfClick(this,'l14','R','R')">Richtig</button>
+          <button class="rf-btn" onclick="rfClick(this,'l14','F','R')">Falsch</button>
+        </div>
+      </div>
 
-    <div class="notice-card">
-      <div class="notice-body" style="margin-bottom:16px;">Fatima Diallo kommt aus Senegal. Sie ist 28 Jahre alt und wohnt in München, Leopoldstraße 45. Ihre Telefonnummer ist 089-567890. Sie ist Krankenpflegerin.</div>
-    </div>
-
-    <div class="form-task">
-      <div class="dw-label">Anmeldeformular</div>
-      <div class="form-field">
-        <label>Name:</label>
-        <input type="text" placeholder="Vollständiger Name" id="lc-name" oninput="saveAnswer('lc-name',this.value)">
+      <!-- Notice 6: Busverkehr -->
+      <div class="notice-box" style="margin-top:14px;">
+        <div class="notice-box-title">An der Haltestelle</div>
+        In der Neujahrsnacht: Busverkehr bis 23.00 Uhr und von 1.00 Uhr bis 5.00 Uhr alle 30 Minuten.
       </div>
-      <div class="form-field">
-        <label>Alter:</label>
-        <input type="text" placeholder="Jahre" id="lc-alter" oninput="saveAnswer('lc-alter',this.value)">
-      </div>
-      <div class="form-field">
-        <label>Wohnort:</label>
-        <input type="text" placeholder="Stadt" id="lc-wohnort" oninput="saveAnswer('lc-wohnort',this.value)">
-      </div>
-      <div class="form-field">
-        <label>Beruf:</label>
-        <input type="text" placeholder="Beruf" id="lc-beruf" oninput="saveAnswer('lc-beruf',this.value)">
+      <div class="rf-row" style="border-bottom:none;">
+        <div class="rf-q-text">15. Von 23 Uhr bis 1 Uhr fährt kein Bus.</div>
+        <div class="rf-btns">
+          <button class="rf-btn" onclick="rfClick(this,'l15','R','R')">Richtig</button>
+          <button class="rf-btn" onclick="rfClick(this,'l15','F','R')">Falsch</button>
+        </div>
       </div>
     </div>
 
     <div class="nav-btns">
       <button class="dw-btn dw-btn-ghost" onclick="goSection('horen')">← Zurück</button>
-      <button class="dw-btn dw-btn-primary" onclick="goSection('schreiben')">Weiter: Schreiben →</button>
+      <button class="dw-btn dw-btn-primary" onclick="goSection('schreiben')" style="background:#1D4ED8;">Weiter: Schreiben →</button>
     </div>
   </div>
 
-  <!-- ── SCHREIBEN ── -->
+  <!-- ═══════════════════════════════ SCHREIBEN ═══════════════════════════════ -->
   <div class="screen" id="ep-schreiben">
     <div class="timer-bar">
-      <div class="timer-label">⏱ Schreiben · 20 Minuten</div>
+      <div class="timer-label">⏱ Schreiben · ca. 20 Minuten</div>
       <div class="timer-display" id="timer-schreiben">20:00</div>
     </div>
-
     <div class="sec-hdr">
       <div class="sec-hdr-top">
         <div class="sec-icon">✍️</div>
         <div>
           <div class="sec-title">Schreiben</div>
-          <div class="sec-meta">25 Punkte · 2 Aufgaben</div>
+          <div class="sec-meta">20 Punkte · Dieser Test hat zwei Teile.</div>
+        </div>
+      </div>
+      <p class="official-instr">Sie füllen ein Formular aus und schreiben einen kurzen Text. Wörterbücher sind nicht erlaubt.</p>
+    </div>
+
+    <!-- TEIL 1 -->
+    <span class="task-label">Teil 1 · Formular ausfüllen (10 Punkte)</span>
+
+    <div class="task-instr">
+      Ihre Freundin, Eva Kadavy, macht mit ihrem Mann und ihren beiden Söhnen (8 und 11 Jahre alt) Urlaub in Seeheim. Im Reisebüro bucht sie für den nächsten Sonntag eine Busfahrt um den Bodensee. Frau Kadavy hat keine Kreditkarte. In dem Formular fehlen fünf Informationen. Helfen Sie Ihrer Freundin und schreiben Sie die fünf fehlenden Informationen in das Formular.
+    </div>
+
+    <div class="form-task">
+      <div class="form-header">Anmeldung</div>
+      <div class="form-subheader">Bodensee-Busfahrt · Reisebüro</div>
+      <div class="form-grid">
+        <div class="form-row">
+          <div class="form-label">Familienname, Vorname:</div>
+          <div class="form-pre">Kadavy, Eva</div>
+        </div>
+        <div class="form-divider"></div>
+        <div class="form-row">
+          <div class="form-label"><span class="form-num">1</span>Anzahl der Personen:</div>
+          <input class="form-input" type="text" id="s1f1" placeholder="Anzahl eingeben..." oninput="saveAnswer('s1f1',this.value)" autocomplete="off">
+        </div>
+        <div class="form-row">
+          <div class="form-label"><span class="form-num">2</span>Davon Kinder:</div>
+          <input class="form-input" type="text" id="s1f2" placeholder="Anzahl der Kinder..." oninput="saveAnswer('s1f2',this.value)" autocomplete="off">
+        </div>
+        <div class="form-divider"></div>
+        <div class="form-row">
+          <div class="form-label">Urlaubsadresse – Straße:</div>
+          <div class="form-pre">Burgstraße 34</div>
+        </div>
+        <div class="form-row">
+          <div class="form-label"><span class="form-num">3</span>PLZ, Urlaubsort:</div>
+          <input class="form-input" type="text" id="s1f3" placeholder="Ort eingeben..." oninput="saveAnswer('s1f3',this.value)" autocomplete="off">
+        </div>
+        <div class="form-divider"></div>
+        <div class="form-row">
+          <div class="form-label">Der Reisepreis ist mit der Anmeldung zu bezahlen.</div>
+          <div></div>
+        </div>
+        <div class="form-row">
+          <div class="form-label"><span class="form-num">4</span>Zahlungsweise:</div>
+          <div class="form-check-row">
+            <label class="form-check-opt"><input type="radio" name="zahlung" value="Bar" id="s1f4_bar" onchange="saveAnswer('s1f4','Bar')"> Bar</label>
+            <label class="form-check-opt"><input type="radio" name="zahlung" value="Kreditkarte" id="s1f4_kk" onchange="saveAnswer('s1f4','Kreditkarte')"> Kreditkarte</label>
+          </div>
+        </div>
+        <div class="form-divider"></div>
+        <div class="form-row">
+          <div class="form-label"><span class="form-num">5</span>Reisetermin:</div>
+          <input class="form-input" type="text" id="s1f5" placeholder="Datum / Tag..." oninput="saveAnswer('s1f5',this.value)" autocomplete="off">
+        </div>
+        <div class="form-row">
+          <div class="form-label">Unterschrift:</div>
+          <div class="form-pre">Eva Kadavy</div>
         </div>
       </div>
     </div>
 
-    <span class="task-label">Aufgabe 1 — Persönliches Formular</span>
-    <div class="task-instr">Füllen Sie das Anmeldeformular mit Ihren eigenen Informationen aus.</div>
-
-    <div class="form-task">
-      <div class="dw-label">Kursanmeldung — Deutschkurs A1</div>
-      <div class="form-field">
-        <label>Vorname:</label>
-        <input type="text" placeholder="Ihr Vorname" id="s1-vorname" oninput="saveAnswer('s1-vorname',this.value)">
-      </div>
-      <div class="form-field">
-        <label>Nachname:</label>
-        <input type="text" placeholder="Ihr Nachname" id="s1-nachname" oninput="saveAnswer('s1-nachname',this.value)">
-      </div>
-      <div class="form-field">
-        <label>Geburtstag:</label>
-        <input type="text" placeholder="TT.MM.JJJJ" id="s1-geb" oninput="saveAnswer('s1-geb',this.value)">
-      </div>
-      <div class="form-field">
-        <label>Herkunft:</label>
-        <input type="text" placeholder="Ihr Land" id="s1-herkunft" oninput="saveAnswer('s1-herkunft',this.value)">
-      </div>
-      <div class="form-field">
-        <label>Beruf:</label>
-        <input type="text" placeholder="Ihr Beruf" id="s1-beruf" oninput="saveAnswer('s1-beruf',this.value)">
+    <div class="task-card" style="background:#EFF6FF;border-color:#DBEAFE;">
+      <div style="font-size:12px;font-weight:700;color:#1D4ED8;margin-bottom:8px;">✅ Lösungsschlüssel (Teil 1):</div>
+      <div style="font-size:13px;color:#1e40af;line-height:1.8;">
+        (1) Anzahl der Personen: <strong>4</strong> &nbsp;·&nbsp;
+        (2) Davon Kinder: <strong>2</strong> &nbsp;·&nbsp;
+        (3) Urlaubsort: <strong>Seeheim</strong> &nbsp;·&nbsp;
+        (4) Zahlungsweise: <strong>Bar</strong> &nbsp;·&nbsp;
+        (5) Reisetermin: <strong>nächsten Sonntag</strong> (oder das aktuelle Datum des nächsten Sonntags)
       </div>
     </div>
 
-    <span class="task-label">Aufgabe 2 — Kurze Nachricht schreiben</span>
-    <div class="task-instr">Schreiben Sie eine kurze Nachricht an Ihren Freund Kwame (circa 30 Wörter).</div>
+    <!-- TEIL 2 -->
+    <span class="task-label">Teil 2 · Kurze Mitteilung schreiben (10 Punkte)</span>
+
+    <div class="task-instr">
+      Schreiben Sie zu jedem Punkt ein bis zwei Sätze (circa 30 Wörter). Schreiben Sie auch eine Anrede und einen Gruß.
+    </div>
 
     <div class="writing-task">
-      <div class="writing-prompt">Sie kommen morgen nicht zum Deutschkurs. Schreiben Sie Kwame:</div>
+      <div class="writing-prompt">Sie möchten im August Dresden besuchen. Schreiben Sie an die Touristeninformation:</div>
       <ul class="bullet-list">
-        <li>Sie kommen morgen nicht zum Deutschkurs</li>
-        <li>Warum nicht?</li>
-        <li>Wann können Sie wieder kommen?</li>
+        <li>Warum schreiben Sie?</li>
+        <li>Bitten Sie: Informationen über Filme, Museen usw. (Kulturprogramm).</li>
+        <li>Fragen Sie: Hoteladressen?</li>
       </ul>
-      <textarea class="writing-area" id="s2-text" placeholder="Schreiben Sie hier Ihre Nachricht..." oninput="saveAnswer('s2-text',this.value)"></textarea>
-      <a href="exam-whisperer.html" class="dw-btn dw-btn-secondary ai-check-btn" target="_blank">🤖 Mit KI-Prüfer überprüfen →</a>
+      <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12.5px;color:#92400E;">
+        💡 Denken Sie an: Anrede (z.B. „Sehr geehrte Damen und Herren,") · circa 30 Wörter · Gruß (z.B. „Mit freundlichen Grüßen")
+      </div>
+      <textarea class="writing-area" id="s2-text" placeholder="Sehr geehrte Damen und Herren,
+
+ich ..." oninput="updateWC('s2-text','s2-wc')"></textarea>
+      <div class="word-count" id="s2-wc">0 Wörter (Ziel: ca. 30)</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+        <a href="exam-whisperer.html" class="dw-btn dw-btn-primary" target="_blank" style="background:#1D4ED8;">🤖 Mit KI-Prüfer bewerten →</a>
+      </div>
+    </div>
+
+    <div class="task-card" style="background:#EFF6FF;border-color:#DBEAFE;">
+      <div style="font-size:12px;font-weight:700;color:#1D4ED8;margin-bottom:8px;">✅ Bewertungskriterien (Teil 2) — 10 Punkte:</div>
+      <div style="font-size:13px;color:#1e40af;line-height:1.8;">
+        · <strong>Inhalt (3 × 3 Punkte):</strong> Alle drei Punkte angesprochen?<br>
+        · <strong>Kommunikation (1 Punkt):</strong> Anrede und Gruß vorhanden?<br>
+        · <strong>Volle Punktzahl:</strong> Aufgabe voll erfüllt und verständlich.<br>
+        · <strong>Halbe Punktzahl:</strong> Aufgabe wegen sprachlicher/inhaltlicher Mängel nur teilweise erfüllt.
+      </div>
     </div>
 
     <div class="nav-btns">
       <button class="dw-btn dw-btn-ghost" onclick="goSection('lesen')">← Zurück</button>
-      <button class="dw-btn dw-btn-primary" onclick="goSection('sprechen')">Weiter: Sprechen →</button>
+      <button class="dw-btn dw-btn-primary" onclick="goSection('sprechen')" style="background:#1D4ED8;">Weiter: Sprechen →</button>
     </div>
   </div>
 
-  <!-- ── SPRECHEN ── -->
+  <!-- ═══════════════════════════════ SPRECHEN ═══════════════════════════════ -->
   <div class="screen" id="ep-sprechen">
     <div class="timer-bar">
-      <div class="timer-label">⏱ Sprechen · 15 Minuten</div>
+      <div class="timer-label">⏱ Sprechen · ca. 15 Minuten</div>
       <div class="timer-display" id="timer-sprechen">15:00</div>
     </div>
-
     <div class="sec-hdr">
       <div class="sec-hdr-top">
         <div class="sec-icon">🎤</div>
         <div>
           <div class="sec-title">Sprechen</div>
-          <div class="sec-meta">30 Punkte · 3 Teile</div>
+          <div class="sec-meta">Dieser Test hat drei Teile. Sprechen Sie bitte in der Gruppe.</div>
         </div>
       </div>
+      <p class="official-instr">In der echten Prüfung sprechen Sie mit anderen Prüfungsteilnehmenden (Gruppenprüfung, max. 4 Personen). Hier üben Sie allein und schreiben Ihre Antworten.</p>
     </div>
 
-    <div class="dw-info" style="margin-bottom:20px;">
-      <span>💡</span>
-      <span>Schreiben Sie Ihre Antworten auf Deutsch. Sprechen Sie diese dann laut aus. In der echten Prüfung sprechen Sie direkt mit dem Prüfer.</span>
+    <div style="background:#EFF6FF;border:1px solid #DBEAFE;border-radius:var(--radius-sm);padding:13px 16px;margin-bottom:20px;font-size:13px;color:#1e40af;">
+      💡 <strong>Tipp:</strong> Schreiben Sie Ihre Antworten auf Deutsch. Sprechen Sie diese dann laut aus — das ist die beste Prüfungsvorbereitung. Nutzen Sie den Sprechen-Trainer für Feedback.
     </div>
 
-    <span class="task-label">Teil 1 — Sich vorstellen</span>
-    <div class="task-instr">Beantworten Sie diese Fragen in vollständigen Sätzen.</div>
+    <!-- TEIL 1 -->
+    <span class="task-label">Teil 1 · Sich vorstellen</span>
+
+    <div class="task-instr">
+      <strong>Prüfungsziel:</strong> Sie geben einfache Informationen zur eigenen Person.<br>
+      <strong>Ansage:</strong> „Wir möchten uns kennen lernen. Erzählen Sie uns: Wer sind Sie? Hier sind ein paar Wörter als Hilfe."
+    </div>
 
     <div class="sprechen-task">
-      <div class="question-row">
-        <div class="question-text">Wie heißen Sie?</div>
-        <input class="answer-input" type="text" placeholder="Mein Name ist..." id="sp1" oninput="saveAnswer('sp1',this.value)">
+      <div style="font-size:12px;font-weight:700;color:var(--mid);margin-bottom:10px;letter-spacing:1px;text-transform:uppercase;">Stichwörter zur Hilfe:</div>
+      <div class="sticker-grid">
+        <div class="sticker">Name</div>
+        <div class="sticker">Herkunft</div>
+        <div class="sticker">Wohnort</div>
+        <div class="sticker">Sprachen</div>
+        <div class="sticker">Hobby / Hobbies</div>
+        <div class="sticker">Beruf</div>
       </div>
-      <div class="question-row">
-        <div class="question-text">Woher kommen Sie?</div>
-        <input class="answer-input" type="text" placeholder="Ich komme aus..." id="sp2" oninput="saveAnswer('sp2',this.value)">
+      <div class="q-row-sp">
+        <div class="q-label-sp">Wie heißen Sie? (Vorname, Familienname — bitte buchstabieren)</div>
+        <input class="answer-input" type="text" id="sp1a" placeholder="Mein Name ist ... Ich buchstabiere: ..." oninput="saveAnswer('sp1a',this.value)">
       </div>
-      <div class="question-row">
-        <div class="question-text">Wo wohnen Sie?</div>
-        <input class="answer-input" type="text" placeholder="Ich wohne in..." id="sp3" oninput="saveAnswer('sp3',this.value)">
+      <div class="q-row-sp">
+        <div class="q-label-sp">Woher kommen Sie?</div>
+        <input class="answer-input" type="text" id="sp1b" placeholder="Ich komme aus ..." oninput="saveAnswer('sp1b',this.value)">
       </div>
-      <div class="question-row">
-        <div class="question-text">Was machen Sie beruflich?</div>
-        <input class="answer-input" type="text" placeholder="Ich bin / Ich arbeite als..." id="sp4" oninput="saveAnswer('sp4',this.value)">
+      <div class="q-row-sp">
+        <div class="q-label-sp">Wo leben Sie? (Straße / Stadt — bitte buchstabieren)</div>
+        <input class="answer-input" type="text" id="sp1c" placeholder="Ich lebe in ..." oninput="saveAnswer('sp1c',this.value)">
       </div>
-      <div class="question-row" style="margin-bottom:0;">
-        <div class="question-text">Haben Sie Hobbys?</div>
-        <input class="answer-input" type="text" placeholder="Mein Hobby ist... / Ich..." id="sp5" oninput="saveAnswer('sp5',this.value)">
+      <div class="q-row-sp">
+        <div class="q-label-sp">Welche Sprachen sprechen Sie?</div>
+        <input class="answer-input" type="text" id="sp1d" placeholder="Ich spreche Deutsch und ..." oninput="saveAnswer('sp1d',this.value)">
+      </div>
+      <div class="q-row-sp" style="margin-bottom:0;">
+        <div class="q-label-sp">Was ist Ihr Hobby / Was sind Ihre Hobbies?</div>
+        <input class="answer-input" type="text" id="sp1e" placeholder="Mein Hobby ist ... / Ich ..." oninput="saveAnswer('sp1e',this.value)">
       </div>
     </div>
 
-    <span class="task-label">Teil 2 — Bildbeschreibung / Stichwort</span>
-    <div class="task-instr">Sie sehen ein Stichwort. Stellen Sie eine Frage zum Thema.</div>
+    <!-- TEIL 2 -->
+    <span class="task-label">Teil 2 · Um Informationen bitten und Informationen geben</span>
+
+    <div class="task-instr">
+      <strong>Prüfungsziel:</strong> Sie erfragen und geben einfache Informationen zu bekannten Alltagsthemen (z. B. Einkaufen, Wochenende).<br>
+      <strong>Ablauf:</strong> Jeder zieht eine Karte und stellt eine Frage. Der/Die nächste antwortet und stellt eine neue Frage.
+    </div>
 
     <div class="sprechen-task">
-      <div class="keyword-card">
-        <div class="keyword-word">ESSEN</div>
-        <div class="keyword-label">Stichwort</div>
+      <div style="background:#F8FAFC;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px;font-size:13px;color:var(--mid);">
+        <strong>Thema 1: Einkaufen</strong> — Beispiel der Prüfenden: „Wo kann ich einen Stadtplan bekommen?" → Antwort: „An der Information im Bahnhof."
       </div>
-      <div class="question-text">Stellen Sie eine Frage zum Thema "Essen":</div>
-      <input class="answer-input" type="text" placeholder="z.B. Was essen Sie gern?" id="sp6" oninput="saveAnswer('sp6',this.value)">
+      <div class="q-row-sp">
+        <div class="q-label-sp">Stellen Sie eine Frage zum Thema „Einkaufen":</div>
+        <input class="answer-input" type="text" id="sp2a" placeholder="z.B. Wo kann ich ... kaufen? / Was kostet ...?" oninput="saveAnswer('sp2a',this.value)">
+      </div>
+      <div class="q-row-sp" style="margin-bottom:0;">
+        <div class="q-label-sp">Stellen Sie eine Frage zum Thema „Wochenende":</div>
+        <input class="answer-input" type="text" id="sp2b" placeholder="z.B. Was machen Sie am Wochenende? / Wohin fahren Sie?" oninput="saveAnswer('sp2b',this.value)">
+      </div>
     </div>
 
-    <span class="task-label">Teil 3 — Bitten und reagieren</span>
-    <div class="task-instr">Lesen Sie die Situation und schreiben Sie, was Sie sagen würden.</div>
+    <!-- TEIL 3 -->
+    <span class="task-label">Teil 3 · Bitten formulieren und darauf reagieren</span>
+
+    <div class="task-instr">
+      <strong>Prüfungsziel:</strong> Sie formulieren eine Bitte oder Frage und reagieren auf Bitten.<br>
+      <strong>Beispiel der Prüfenden:</strong> „Ein Glas Wasser, bitte!" → Reaktion: „Ja, natürlich. Bitte."
+    </div>
 
     <div class="sprechen-task">
-      <div class="writing-prompt">Situation: Sie möchten die Telefonnummer von jemandem haben. Was sagen Sie?</div>
-      <input class="answer-input" type="text" placeholder="Entschuldigung, können Sie mir..." id="sp7" oninput="saveAnswer('sp7',this.value)" style="margin-top:10px;">
+      <div class="example-box">📌 Beispiel: „Ein Glas Wasser, bitte!" → „Ja, natürlich. Bitte."</div>
+      <div class="q-row-sp">
+        <div class="q-label-sp">Bitte 1 — Formulieren Sie eine Bitte (zu einem Alltagsgegenstand):</div>
+        <input class="answer-input" type="text" id="sp3a" placeholder="z.B. Können Sie mir bitte ... geben? / Ich brauche ..." oninput="saveAnswer('sp3a',this.value)">
+      </div>
+      <div class="q-row-sp" style="margin-bottom:0;">
+        <div class="q-label-sp">Bitte 2 — Reagieren Sie auf diese Bitte: „Entschuldigung, können Sie mir Ihre Telefonnummer geben?"</div>
+        <input class="answer-input" type="text" id="sp3b" placeholder="Ja, natürlich. Meine Nummer ist ..." oninput="saveAnswer('sp3b',this.value)">
+      </div>
     </div>
 
-    <a href="exam-whisperer.html" class="dw-btn dw-btn-secondary" style="margin-bottom:20px;" target="_blank">🤖 Antworten mit KI-Prüfer überprüfen →</a>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px;">
+      <a href="sprechen-prep.html" class="dw-btn dw-btn-primary" target="_blank" style="background:#1D4ED8;">🎤 Sprechen-Trainer öffnen →</a>
+      <a href="exam-whisperer.html" class="dw-btn dw-btn-secondary" target="_blank">🤖 Antworten mit KI überprüfen →</a>
+    </div>
 
     <div class="nav-btns">
       <button class="dw-btn dw-btn-ghost" onclick="goSection('schreiben')">← Zurück</button>
-      <button class="dw-btn dw-btn-primary" onclick="showResults()">Ergebnisse anzeigen →</button>
+      <button class="dw-btn dw-btn-primary" onclick="showResults()" style="background:#1D4ED8;">Ergebnisse anzeigen →</button>
     </div>
   </div>
-
 </div><!-- /screen-exam -->
 
-<!-- ===== SCREEN: RESULTS ===== -->
+<!-- ===== RESULTS ===== -->
 <div class="screen" id="screen-results">
   <div class="results-card">
     <div class="result-verdict" id="verdict">BESTANDEN</div>
-    <div class="result-sub" id="result-sub">Glückwunsch! Sie haben alle Abschnitte bestanden.</div>
+    <div class="result-sub" id="result-sub">Glückwunsch!</div>
 
-    <div class="score-grid" id="score-grid">
+    <div class="score-grid">
       <div class="score-cell" id="sc-horen">
         <div class="score-cell-name">🎧 Hören</div>
         <div class="score-cell-pts" id="sc-h-pts">—</div>
-        <div class="score-cell-pct" id="sc-h-pct">von 20 Punkten</div>
+        <div class="score-cell-pct" id="sc-h-pct">von 15 Punkten</div>
       </div>
       <div class="score-cell" id="sc-lesen">
         <div class="score-cell-name">📖 Lesen</div>
         <div class="score-cell-pts" id="sc-l-pts">—</div>
-        <div class="score-cell-pct" id="sc-l-pct">von 25 Punkten</div>
+        <div class="score-cell-pct" id="sc-l-pct">von 15 Punkten</div>
       </div>
-      <div class="score-cell" id="sc-schreiben">
+      <div class="score-cell neutral-sec" id="sc-schreiben">
         <div class="score-cell-name">✍️ Schreiben</div>
-        <div class="score-cell-pts" id="sc-s-pts">—</div>
-        <div class="score-cell-pct">von 25 Punkten (KI-bewertet)</div>
+        <div class="score-cell-pts" id="sc-s-pts">→ KI-Prüfer</div>
+        <div class="score-cell-pct">von 20 Punkten</div>
       </div>
-      <div class="score-cell" id="sc-sprechen">
+      <div class="score-cell neutral-sec" id="sc-sprechen">
         <div class="score-cell-name">🎤 Sprechen</div>
-        <div class="score-cell-pts" id="sc-sp-pts">—</div>
-        <div class="score-cell-pct">von 30 Punkten (KI-bewertet)</div>
+        <div class="score-cell-pts">Mündlich</div>
+        <div class="score-cell-pct">Prüferbewertung</div>
       </div>
     </div>
 
-    <div class="total-score" id="total-score">Gesamtpunkte (auto): — / 45</div>
+    <div style="font-size:13px;color:var(--mid);margin-top:4px;" id="total-score"></div>
   </div>
 
-  <div class="rec-section">
-    <div class="dw-label">Empfohlene Module</div>
-    <div id="rec-modules"></div>
-  </div>
+  <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:#1D4ED8;text-transform:uppercase;margin-bottom:12px;">Empfohlene Module</div>
+  <div id="rec-modules"></div>
 
   <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;">
     <button class="dw-btn dw-btn-secondary" onclick="restartExam()">🔄 Prüfung wiederholen</button>
-    <a href="exam-whisperer.html" class="dw-btn dw-btn-primary">🤖 Mit KI üben →</a>
-    <a href="https://www.goethe.de" target="_blank" class="dw-btn dw-btn-ghost">📋 Echte Prüfung buchen →</a>
+    <a href="exam-whisperer.html" class="dw-btn dw-btn-primary" style="background:#1D4ED8;">🤖 Schreiben bewerten lassen →</a>
+    <a href="https://www.goethe.de/de/spr/kup/prf/prf/sd1.html" target="_blank" class="dw-btn dw-btn-ghost">📋 Echte Prüfung buchen →</a>
   </div>
 </div>
 
 </div><!-- /exam-wrap -->
 
 <script>
-// ── STATE ──
 var answers = {};
 var timers = {};
-var sectionOrder = ['horen','lesen','schreiben','sprechen'];
 var currentSection = 'horen';
-var sectionDone = { horen: false, lesen: false, schreiben: false, sprechen: false };
 
-// ── SAVE ──
-function saveAnswer(k, v) {
-  answers[k] = v;
-  localStorage.setItem('dw_a1_exam', JSON.stringify(answers));
+function saveAnswer(k,v){
+  answers[k]=v;
+  localStorage.setItem('dw_a1_official',JSON.stringify(answers));
 }
 
-// ── LOAD ──
-(function loadSaved() {
-  var saved = localStorage.getItem('dw_a1_exam');
-  if (saved) {
-    answers = JSON.parse(saved);
-    Object.keys(answers).forEach(function(k) {
-      var el = document.getElementById(k);
-      if (el && el.tagName !== 'BUTTON') el.value = answers[k];
+(function load(){
+  var s=localStorage.getItem('dw_a1_official');
+  if(s){
+    answers=JSON.parse(s);
+    Object.keys(answers).forEach(function(k){
+      var el=document.getElementById(k);
+      if(!el)return;
+      if(el.tagName==='INPUT'||el.tagName==='TEXTAREA') el.value=answers[k];
+      if(el.type==='radio'&&el.value===answers[k]) el.checked=true;
     });
   }
 })();
 
-// ── START ──
-function startExam() {
+function startExam(){
   document.getElementById('screen-intro').classList.remove('active');
   document.getElementById('screen-exam').classList.add('active');
-  startTimer('horen', 20);
+  startTimer('horen',20);
 }
 
-// ── SECTION NAV ──
-function goSection(sec) {
-  sectionDone[currentSection] = true;
-  document.getElementById('tab-' + currentSection).classList.add('done');
-  document.getElementById('tab-' + currentSection).classList.remove('active');
+function goSection(sec){
+  document.getElementById('tab-'+currentSection).classList.add('done');
+  document.getElementById('tab-'+currentSection).classList.remove('active');
   stopTimer(currentSection);
-
-  document.getElementById('ep-' + currentSection).classList.remove('active');
-  currentSection = sec;
-  document.getElementById('ep-' + sec).classList.add('active');
-  document.getElementById('tab-' + sec).classList.add('active');
-  document.getElementById('tab-' + sec).classList.remove('done');
-  startTimer(sec, sec === 'horen' ? 20 : sec === 'lesen' ? 25 : sec === 'schreiben' ? 20 : 15);
-  window.scrollTo(0, 0);
+  document.getElementById('ep-'+currentSection).classList.remove('active');
+  currentSection=sec;
+  document.getElementById('ep-'+sec).classList.add('active');
+  document.getElementById('tab-'+sec).classList.add('active');
+  document.getElementById('tab-'+sec).classList.remove('done');
+  var mins={horen:20,lesen:25,schreiben:20,sprechen:15};
+  startTimer(sec,mins[sec]);
+  window.scrollTo(0,0);
 }
 
-// ── TIMER ──
-function startTimer(sec, mins) {
-  if (timers[sec]) return;
-  var total = mins * 60;
-  var el = document.getElementById('timer-' + sec);
-  timers[sec] = setInterval(function() {
+function startTimer(sec,mins){
+  if(timers[sec])return;
+  var total=mins*60;
+  var el=document.getElementById('timer-'+sec);
+  if(!el)return;
+  timers[sec]=setInterval(function(){
     total--;
-    if (total <= 0) { stopTimer(sec); total = 0; }
-    var m = Math.floor(total / 60);
-    var s = total % 60;
-    el.textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
-    el.className = 'timer-display' + (total < 60 ? ' danger' : total < 180 ? ' warning' : '');
-  }, 1000);
+    if(total<=0){stopTimer(sec);total=0;}
+    var m=Math.floor(total/60);var s=total%60;
+    el.textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+    el.className='timer-display'+(total<60?' danger':total<180?' warning':'');
+  },1000);
 }
-function stopTimer(sec) {
-  if (timers[sec]) { clearInterval(timers[sec]); timers[sec] = null; }
+function stopTimer(sec){if(timers[sec]){clearInterval(timers[sec]);timers[sec]=null;}}
+
+function toggleTranscript(id){
+  var el=document.getElementById(id);
+  el.classList.toggle('open');
 }
 
-// ── TRUE/FALSE ──
-function tfClick(btn, key, val, correct) {
-  var parent = btn.parentElement;
-  var btns = parent.querySelectorAll('.tf-btn');
-  btns.forEach(function(b) {
-    b.classList.remove('selected-r','selected-f','correct','wrong');
-    b.disabled = false;
-  });
-  if (val === correct) {
-    btn.classList.add('correct');
-  } else {
+function mcClick(btn,key,val,correct){
+  var p=btn.parentElement;
+  p.querySelectorAll('.mc-opt').forEach(function(b){b.classList.remove('selected','correct','wrong');});
+  if(val===correct){btn.classList.add('correct');}
+  else{
     btn.classList.add('wrong');
-    btns.forEach(function(b) { if (b.textContent.trim() === correct) b.classList.add('correct'); });
-  }
-  saveAnswer(key, val);
-}
-
-// ── TRIT ──
-function tritClick(btn, key, val, correct) {
-  var parent = btn.parentElement;
-  var btns = parent.querySelectorAll('.trit-btn');
-  btns.forEach(function(b) { b.classList.remove('sel','correct','wrong'); });
-  if (val === correct) {
-    btn.classList.add('correct');
-  } else {
-    btn.classList.add('wrong');
-    btns.forEach(function(b) { if (b.textContent.trim() === correct) b.classList.add('correct'); });
-  }
-  saveAnswer(key, val);
-}
-
-// ── MULTIPLE CHOICE ──
-function mcClick(btn, key, val, correct) {
-  var parent = btn.parentElement;
-  var btns = parent.querySelectorAll('.mc-opt');
-  btns.forEach(function(b) { b.classList.remove('selected','correct','wrong'); });
-  if (val === correct) {
-    btn.classList.add('correct');
-  } else {
-    btn.classList.add('wrong');
-    btns.forEach(function(b) {
-      if (b.getAttribute('onclick').indexOf("'" + correct + "'") !== -1) b.classList.add('correct');
+    p.querySelectorAll('.mc-opt').forEach(function(b){
+      if(b.getAttribute('onclick')&&b.getAttribute('onclick').indexOf("'"+correct+"'")!==-1)
+        b.classList.add('correct');
     });
   }
-  saveAnswer(key, val);
+  saveAnswer(key,val);
 }
 
-// ── SCORE ──
-function calcScore() {
-  var hAnswers = { h1:'R', h2:'F', h3:'R', h4:'F', h5:'F' };
-  var hScore = 0;
-  Object.keys(hAnswers).forEach(function(k) { if (answers[k] === hAnswers[k]) hScore++; });
-  // blanks: generous scoring for demo
-  if (answers.h6) hScore += 1;
-  if (answers.h7) hScore += 1;
-  if (answers.h8) hScore += 1;
-
-  var lAnswers = { l1:'R', l2:'F', l3:'R', l4:'F', l5:'F', l6:'b', l7:'b', l8:'c' };
-  var lScore = 0;
-  Object.keys(lAnswers).forEach(function(k) { if (answers[k] === lAnswers[k]) lScore++; });
-  // form: check keywords
-  if (answers['lc-name'] && answers['lc-name'].toLowerCase().indexOf('fatima') !== -1) lScore++;
-  if (answers['lc-alter'] && (answers['lc-alter'] === '28' || answers['lc-alter'].indexOf('28') !== -1)) lScore++;
-  if (answers['lc-wohnort'] && answers['lc-wohnort'].toLowerCase().indexOf('münchen') !== -1) lScore++;
-  if (answers['lc-beruf'] && answers['lc-beruf'].toLowerCase().indexOf('kranken') !== -1) lScore++;
-
-  return { horen: Math.min(hScore, 8), lesenAuto: Math.min(lScore, 12) };
+function rfClick(btn,key,val,correct){
+  var p=btn.parentElement;
+  p.querySelectorAll('.rf-btn').forEach(function(b){b.classList.remove('correct','wrong');});
+  if(val===correct){btn.classList.add('correct');}
+  else{
+    btn.classList.add('wrong');
+    p.querySelectorAll('.rf-btn').forEach(function(b){
+      if(b.textContent.trim().charAt(0)===correct.charAt(0)) b.classList.add('correct');
+    });
+  }
+  saveAnswer(key,val);
 }
 
-// ── RESULTS ──
-function showResults() {
+function webClick(btn,key,val,correct){
+  var p=btn.parentElement;
+  p.querySelectorAll('.web-btn').forEach(function(b){b.classList.remove('correct','wrong');});
+  if(val===correct){btn.classList.add('correct');}
+  else{
+    btn.classList.add('wrong');
+    p.querySelectorAll('.web-btn').forEach(function(b){
+      if(b.getAttribute('onclick')&&b.getAttribute('onclick').indexOf("'"+correct+"'")!==-1)
+        b.classList.add('correct');
+    });
+  }
+  saveAnswer(key,val);
+}
+
+function updateWC(id,wcId){
+  var text=document.getElementById(id).value.trim();
+  var words=text?text.split(/\s+/).length:0;
+  saveAnswer(id,document.getElementById(id).value);
+  var el=document.getElementById(wcId);
+  el.textContent=words+' Wörter (Ziel: ca. 30)';
+  el.style.color=words>=20&&words<=40?'var(--green)':'var(--light)';
+}
+
+function calcScore(){
+  // Hören answers
+  var ha={h1:'b',h2:'c',h3:'a',h4:'c',h5:'a',h6:'b',h7:'F',h8:'F',h9:'R',h10:'R',h11:'a',h12:'c',h13:'c',h14:'b',h15:'b'};
+  var hScore=0;
+  Object.keys(ha).forEach(function(k){if(answers[k]===ha[k])hScore++;});
+
+  // Lesen answers
+  var la={l1:'R',l2:'F',l3:'F',l4:'F',l5:'R',l6:'b',l7:'a',l8:'a',l9:'a',l10:'b',l11:'R',l12:'F',l13:'F',l14:'R',l15:'R'};
+  var lScore=0;
+  Object.keys(la).forEach(function(k){if(answers[k]===la[k])lScore++;});
+
+  return {horen:hScore, lesen:lScore};
+}
+
+function showResults(){
   stopTimer(currentSection);
-  sectionDone[currentSection] = true;
-  document.getElementById('tab-sprechen').classList.add('done');
-
+  document.getElementById('tab-'+currentSection).classList.add('done');
   document.getElementById('screen-exam').classList.remove('active');
   document.getElementById('screen-results').classList.add('active');
-  localStorage.setItem('dw_mod_a1exam_done', '1');
+  localStorage.setItem('dw_mod_a1official_done','1');
 
-  var sc = calcScore();
-  var hPct = Math.round(sc.horen / 8 * 100);
-  var lPct = Math.round(sc.lesenAuto / 12 * 100);
+  var sc=calcScore();
+  var hPct=Math.round(sc.horen/15*100);
+  var lPct=Math.round(sc.lesen/15*100);
 
-  document.getElementById('sc-h-pts').textContent = sc.horen + '/8 auto';
-  document.getElementById('sc-h-pct').textContent = hPct + '% · (von 20 Punkten gesamt)';
-  document.getElementById('sc-l-pts').textContent = sc.lesenAuto + '/12 auto';
-  document.getElementById('sc-l-pct').textContent = lPct + '% · (von 25 Punkten gesamt)';
-  document.getElementById('sc-s-pts').textContent = '→ KI-Prüfer';
-  document.getElementById('sc-sp-pts').textContent = '→ KI-Prüfer';
+  document.getElementById('sc-h-pts').textContent=sc.horen+'/15';
+  document.getElementById('sc-h-pct').textContent=hPct+'% (mind. 60% = Bestanden)';
+  document.getElementById('sc-l-pts').textContent=sc.lesen+'/15';
+  document.getElementById('sc-l-pct').textContent=lPct+'% (mind. 60% = Bestanden)';
 
-  var autoTotal = sc.horen + sc.lesenAuto;
-  document.getElementById('total-score').textContent = 'Auto-Score: ' + autoTotal + '/20 (Schreiben & Sprechen bitte mit KI-Prüfer überprüfen)';
+  var hPass=hPct>=60, lPass=lPct>=60;
 
-  // pass/fail on auto sections
-  var pass = hPct >= 60 && lPct >= 60;
-  var vEl = document.getElementById('verdict');
-  if (pass) {
-    vEl.textContent = 'BESTANDEN ✓';
-    vEl.className = 'result-verdict pass';
-    document.getElementById('result-sub').textContent = 'Auto-bewertete Abschnitte bestanden! Überprüfen Sie Schreiben & Sprechen mit dem KI-Prüfer.';
+  document.getElementById('sc-horen').className='score-cell '+(hPass?'pass-sec':'fail-sec');
+  document.getElementById('sc-lesen').className='score-cell '+(lPass?'pass-sec':'fail-sec');
+
+  var autoTotal=sc.horen+sc.lesen;
+  var vEl=document.getElementById('verdict');
+  if(hPass&&lPass){
+    vEl.textContent='AUTO-BEREICHE: BESTANDEN ✓';
+    vEl.className='result-verdict pass';
+    document.getElementById('result-sub').textContent='Hören und Lesen bestanden! Lassen Sie Schreiben mit dem KI-Prüfer bewerten.';
   } else {
-    vEl.textContent = 'NICHT BESTANDEN';
-    vEl.className = 'result-verdict fail';
-    document.getElementById('result-sub').textContent = 'Einige Abschnitte brauchen mehr Übung. Schauen Sie die Empfehlungen unten an.';
+    vEl.textContent='EINIGE BEREICHE: ÜBERARBEITEN';
+    vEl.className='result-verdict fail';
+    document.getElementById('result-sub').textContent='Schauen Sie die rot markierten Abschnitte an und üben Sie mit den empfohlenen Modulen.';
   }
+  document.getElementById('total-score').textContent='Auto-Score (Hören + Lesen): '+autoTotal+'/30 · Schreiben (20 Pkt.) bitte mit dem KI-Prüfer bewerten lassen.';
 
-  // recommendations
-  var recs = [];
-  if (hPct < 60) recs.push({ name: 'Hören Strategie', desc: 'Üben Sie das Hörverstehen mit Transkripten', href: 'module-b1-10-hoeren-strategie.html' });
-  if (lPct < 60) recs.push({ name: 'Lesen Strategie', desc: 'Techniken für das Leseverstehen', href: 'module-b1-9-lesen-strategie.html' });
-  recs.push({ name: 'Schreiben Strategie', desc: 'Strukturieren Sie Ihre Texte besser', href: 'module-b1-11-schreiben-strategie.html' });
-  recs.push({ name: 'Sprechen Vorbereitung', desc: 'Üben Sie die Sprechen-Aufgaben', href: 'sprechen-prep.html' });
+  var recs=[];
+  if(!hPass) recs.push({name:'Hören Strategie',desc:'Transkript-basierte Hörverstehen-Techniken',href:'module-b1-10-hoeren-strategie.html'});
+  if(!lPass) recs.push({name:'Lesen Strategie',desc:'Lesestrategien für Kurztexte und Anzeigen',href:'module-b1-9-lesen-strategie.html'});
+  recs.push({name:'Schreiben Strategie',desc:'Formulare ausfüllen und kurze Texte schreiben',href:'module-b1-11-schreiben-strategie.html'});
+  recs.push({name:'Sprechen Vorbereitung',desc:'Sich vorstellen und Bitten formulieren',href:'sprechen-prep.html'});
 
-  var html = '';
-  recs.forEach(function(r) {
-    html += '<div class="dw-rec-card"><div><div class="dw-rec-name">' + r.name + '</div><div class="dw-rec-desc">' + r.desc + '</div></div><a href="' + r.href + '" class="dw-rec-link">Jetzt üben →</a></div>';
+  var html='';
+  recs.forEach(function(r){
+    html+='<div class="dw-rec-card" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#F8FAFC;border-radius:10px;border-left:3px solid #1D4ED8;gap:12px;margin-bottom:8px;"><div><div style="font-size:13.5px;font-weight:700;color:#1F2937;margin-bottom:3px;">'+r.name+'</div><div style="font-size:12.5px;color:#4B5563;">'+r.desc+'</div></div><a href="'+r.href+'" style="font-size:13px;font-weight:700;color:#1D4ED8;text-decoration:none;white-space:nowrap;flex-shrink:0;">Jetzt üben →</a></div>';
   });
-  document.getElementById('rec-modules').innerHTML = html;
-  window.scrollTo(0, 0);
+  document.getElementById('rec-modules').innerHTML=html;
+  window.scrollTo(0,0);
 }
 
-function restartExam() {
-  localStorage.removeItem('dw_a1_exam');
-  answers = {};
+function restartExam(){
+  localStorage.removeItem('dw_a1_official');
+  answers={};
   location.reload();
 }
 </script>
