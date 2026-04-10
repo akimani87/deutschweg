@@ -81,36 +81,17 @@
   @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
 
 
-  /* ===== UEBUNGSAUFGABEN ===== */
-  .ubq-wrap{margin-top:32px;}
-  .ubq-qnum{font-family:'DM Mono',monospace;font-size:11px;color:var(--blue);letter-spacing:2px;margin-bottom:8px;}
-  .ubq-dots{display:flex;gap:6px;margin-bottom:16px;}
-  .ubq-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all 0.3s;}
-  .ubq-dot.active{background:var(--blue);width:20px;border-radius:4px;}
-  .ubq-dot.done{background:var(--green);}
-  .ubq-dot.wrong-dot{background:var(--red);}
-  .ubq-q{font-family:'Playfair Display',serif;font-size:19px;margin-bottom:14px;line-height:1.45;white-space:pre-line;}
-  .ubq-opts{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
-  .ubq-opt{padding:13px 18px;border:1px solid var(--border);border-radius:12px;cursor:pointer;transition:all 0.2s;font-size:14px;background:transparent;color:var(--white);font-family:'DM Sans',sans-serif;text-align:left;display:flex;align-items:center;gap:12px;width:100%;}
-  .ubq-opt:hover:not([disabled]){border-color:var(--blue);background:rgba(52,152,219,0.08);}
-  .ubq-opt.correct{border-color:var(--green)!important;background:rgba(39,174,96,0.1)!important;}
-  .ubq-opt.wrong{border-color:var(--red)!important;background:rgba(192,57,43,0.1)!important;}
-  .ubq-letter{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'DM Mono',monospace;flex-shrink:0;}
-  .ubq-opt.correct .ubq-letter{background:var(--green);color:#fff;}
-  .ubq-opt.wrong .ubq-letter{background:var(--red);color:#fff;}
-  .ubq-fb{display:none;padding:14px 16px;border-radius:12px;margin-bottom:12px;}
-  .ubq-fb.show{display:block;animation:fadeUp 0.3s ease both;}
-  .ubq-fb.ok{background:rgba(39,174,96,0.1);border:1px solid rgba(39,174,96,0.3);}
-  .ubq-fb.no{background:rgba(192,57,43,0.08);border:1px solid rgba(192,57,43,0.3);}
-  .ubq-fbt{font-weight:700;font-size:14px;margin-bottom:5px;}
-  .ubq-fbt.ok{color:var(--green);}
-  .ubq-fbt.no{color:#e74c3c;}
-  .ubq-fbd{font-size:13px;color:var(--cream);line-height:1.7;}
-  .ubq-nx{display:none;margin-top:8px;}
-  .ubq-nx.show{display:block;}
-  .ubq-score-num{font-family:'Playfair Display',serif;font-size:48px;color:var(--blue);margin-bottom:6px;}
-  .ubq-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px;}
-  .ubq-btns .btn{width:auto;padding:12px 28px;}
+
+  /* ===== OBQ: Overview Quiz ===== */
+  .obq-wrap{margin-top:32px;}
+  .obq-dots{display:flex;gap:6px;margin-bottom:16px;}
+  .obq-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all 0.3s;}
+  .obq-dot.active{background:var(--blue);width:20px;border-radius:4px;}
+  .obq-dot.done{background:var(--green);}
+  .obq-dot.wrong{background:var(--red);}
+  .obq-score{font-family:'Playfair Display',serif;font-size:48px;color:var(--blue);line-height:1;}
+  .obq-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px;}
+  .obq-btns .btn{width:auto;padding:12px 28px;}
 
 </style>
 <style>
@@ -130,9 +111,6 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
 .lesson-card { background:#F8FAFC; border:1px solid #E5E7EB; }
 .ex-card { background:#F8FAFC; border:1px solid #E5E7EB; }
 
-  .ubq-opt{border:1px solid #E5E7EB;background:white;color:#1F2937;}
-  .ubq-opt:hover:not([disabled]){border-color:#3B82F6;background:#EFF6FF;}
-  .ubq-letter{background:#F3F4F6;color:#374151;}
 </style>
 </head>
 <body>
@@ -164,9 +142,14 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
       <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">🔨</div><div><div class="lc-title">Lektion 5 — Wortbildung meistern</div><div class="lc-desc">Präfixe (ver-, be-, ent-), Suffixe (-ung, -heit, -lich), Komposita dekodieren.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
     </div>
     <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
-    <!-- UEBUNGSAUFGABEN -->
-    <div class="card ubq-wrap" id="ubqWrap">
+    <!-- OBQ: OVERVIEW QUIZ -->
+    <div class="card obq-wrap" id="obqWrap">
       <div class="concept-tag">&#220;BUNGSAUFGABEN</div>
+      <h2 class="lesson-h" style="font-size:22px;margin-bottom:4px;">Teste dein Wissen</h2>
+      <p style="font-size:13px;color:var(--gray);margin-bottom:20px;font-family:'DM Mono',monospace;">5 Fragen zum Modul</p>
+      <div id="obqContainer"></div>
+    </div>
+
       <h2 class="lesson-h" style="font-size:22px;margin-bottom:4px;">Teste dein Wissen</h2>
       <p style="font-size:13px;color:var(--gray);margin-bottom:20px;font-family:'DM Mono',monospace;">5 Fragen zum Modul</p>
       <div id="ubqMain"></div>
@@ -413,85 +396,90 @@ function xpDisp(){$('xpDisp').textContent='⚡ '+xp+' XP';}
 document.body.classList.add('ready');
 
 
-  // ===== UEBUNGSAUFGABEN =====
-  var UBQ_DATA = [{"q": "\"Die Nachhaltigkeit\" bedeutet:", "opts": ["Schnelles Wachstum", "Langfristig umweltvertr\u00e4gliches Handeln", "Wirtschaftlicher Gewinn", "Technologischer Fortschritt"], "ans": 1, "exp": "Nachhaltigkeit = Ressourcen so nutzen, dass sie f\u00fcr k\u00fcnftige Generationen erhalten bleiben."}, {"q": "\"Integration\" im gesellschaftlichen Kontext bedeutet:", "opts": ["Mathematische Berechnung", "Eingliederung in die Gesellschaft", "Computerprogrammierung", "Sprachkurs besuchen"], "ans": 1, "exp": "Gesellschaftliche Integration = Menschen werden Teil der Gesellschaft."}, {"q": "\"Die Fachkraft\" bedeutet:", "opts": ["Ein Werkzeug", "Eine qualifizierte Person in einem Berufsfeld", "Ein Unternehmen", "Eine Beh\u00f6rde"], "ans": 1, "exp": "Fachkraft = eine Person mit spezifischer Berufsausbildung (z.B. Fachkraft f\u00fcr IT)."}, {"q": "\"Globalisierung\" beschreibt:", "opts": ["Lokale Entwicklungen", "Weltweite Vernetzung von Wirtschaft und Gesellschaft", "Einen Computerbegriff", "Einen geografischen Begriff"], "ans": 1, "exp": "Globalisierung = weltweite wirtschaftliche, kulturelle und politische Vernetzung."}, {"q": "\"Die Beh\u00f6rde\" ist:", "opts": ["Ein privates Unternehmen", "Eine staatliche Verwaltungseinrichtung", "Eine Schule", "Ein Krankenhaus"], "ans": 1, "exp": "Beh\u00f6rde = staatliche/\u00f6ffentliche Verwaltungsstelle, z.B. Ausl\u00e4nderamt, Finanzamt."}];
-  var ubqIdx=0, ubqScore=0, ubqAnswered=false, ubqResults=[], ubqNextHref='module-b2-12-schreiben-b2.html';
-  function ubqInit(){ubqIdx=0;ubqScore=0;ubqAnswered=false;ubqResults=[];ubqRender();}
-  function ubqRender(){
-    var d=UBQ_DATA[ubqIdx];
-    var dots='<div class="ubq-dots">';
+
+  // ===== OBQ: OVERVIEW QUIZ =====
+  var OBQ_DATA = [{"q": "\"Die Nachhaltigkeit\" bedeutet:", "opts": ["Schnelles Wachstum", "Langfristig umweltvertr\u00e4gliches Handeln", "Wirtschaftlicher Gewinn", "Technologischer Fortschritt"], "ans": 1, "hint": "'Nachhalt-' \u2192 nachhalten = langfristig bestehen bleiben", "exp": "Nachhaltigkeit = Ressourcen so nutzen, dass sie f\u00fcr k\u00fcnftige Generationen erhalten bleiben.", "rule": "Nachhaltigkeit: langfristig, umweltfreundlich, zukunftsorientiert"}, {"q": "\"Integration\" im gesellschaftlichen Kontext bedeutet:", "opts": ["Mathematische Berechnung", "Eingliederung in die Gesellschaft", "Computerprogrammierung", "Sprachkurs besuchen"], "ans": 1, "hint": "'Integrieren' = eingliedern. In welchen Kontext?", "exp": "Gesellschaftliche Integration = Menschen werden gleichberechtigter Teil der Gesellschaft.", "rule": "Integration (gesellschaftlich): Eingliederung, Teilhabe, Chancengleichheit"}, {"q": "\"Die Fachkraft\" bedeutet:", "opts": ["Ein Werkzeug", "Eine qualifizierte Person in einem Berufsfeld", "Ein Unternehmen", "Eine Beh\u00f6rde"], "ans": 1, "hint": "Fach = Bereich, Kraft = Person. Was ergibt das zusammen?", "exp": "Fachkraft = eine Person mit spezifischer Berufsausbildung (z.B. IT-Fachkraft).", "rule": "Fachkraft = qualifizierter Berufst\u00e4tiger | Fachmann/-frau = \u00e4hnlich, gender-spezifisch"}, {"q": "\"Globalisierung\" beschreibt:", "opts": ["Lokale Entwicklungen", "Weltweite Vernetzung von Wirtschaft und Gesellschaft", "Einen Computerbegriff", "Einen geografischen Begriff"], "ans": 1, "hint": "Global = weltweit. -isierung = Prozess. Also?", "exp": "Globalisierung = weltweite wirtschaftliche, kulturelle und politische Vernetzung.", "rule": "Globalisierung: Vernetzung, Welthandel, Migration, kultureller Austausch"}, {"q": "\"Die Beh\u00f6rde\" ist:", "opts": ["Ein privates Unternehmen", "Eine staatliche Verwaltungseinrichtung", "Eine Schule", "Ein Krankenhaus"], "ans": 1, "hint": "'Beh\u00f6rde' kommt von 'geh\u00f6ren' (dem Staat). Was ist das?", "exp": "Beh\u00f6rde = staatliche/\u00f6ffentliche Verwaltungsstelle, z.B. Ausl\u00e4nderamt, Finanzamt.", "rule": "Beh\u00f6rde = \u00f6ffentliche Verwaltung (nicht privat!): Amt, Beh\u00f6rde, Ministerium"}];
+  var obqIdx=0, obqScore=0, obqAnswered=false, obqResults=[], obqNextHref='module-b2-12-schreiben-b2.html';
+  function obqInit(){obqIdx=0;obqScore=0;obqAnswered=false;obqResults=[];obqRender();}
+  function obqRender(){
+    var d=OBQ_DATA[obqIdx];
+    var dots='<div class="obq-dots">';
     for(var i=0;i<5;i++){
-      var c='ubq-dot';
-      if(i<ubqIdx){c+=ubqResults[i]?' done':' wrong-dot';}
-      else if(i===ubqIdx){c+=' active';}
+      var c='obq-dot';
+      if(i<obqIdx){c+=obqResults[i]?' done':' wrong';}
+      else if(i===obqIdx){c+=' active';}
       dots+='<div class="'+c+'"></div>';
     }
     dots+='</div>';
+    var letters=['A','B','C','D'];
     var opts=d.opts.map(function(o,i){
-      return '<button class="ubq-opt" id="ubqO'+i+'" onclick="ubqPick('+i+')">'
-        +'<span class="ubq-letter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';
+      return '<button class="qopt" id="obqO'+i+'" onclick="obqPick('+i+')">'
+        +'<span class="qletter">'+letters[i]+'</span>'+o+'</button>';
     }).join('');
-    document.getElementById('ubqMain').innerHTML=
-      '<div class="ubq-qnum">FRAGE '+(ubqIdx+1)+' VON 5</div>'
+    document.getElementById('obqContainer').innerHTML=
+      '<div class="quiz-qnum">FRAGE '+(obqIdx+1)+' VON 5</div>'
       +dots
-      +'<div class="ubq-q">'+d.q+'</div>'
-      +'<div class="ubq-opts">'+opts+'</div>'
-      +'<div class="ubq-fb" id="ubqFb"><div class="ubq-fbt" id="ubqFbt"></div><div class="ubq-fbd" id="ubqFbd"></div></div>'
-      +'<div class="ubq-nx" id="ubqNx"><button class="btn btn-primary" onclick="ubqAdv()">'
-      +(ubqIdx<4?'N\u00e4chste Frage \u2192':'Ergebnis anzeigen \u2192')+'</button></div>';
-    ubqAnswered=false;
-  }
-  function ubqPick(idx){
-    if(ubqAnswered)return;
-    ubqAnswered=true;
-    var d=UBQ_DATA[ubqIdx];
-    var ok=(idx===d.ans);
-    if(ok){ubqScore++;ubqResults[ubqIdx]=true;}else{ubqResults[ubqIdx]=false;}
-    for(var i=0;i<4;i++){
-      var b=document.getElementById('ubqO'+i);
-      if(b){b.disabled=true;if(i===d.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}
-    }
-    var fbt=document.getElementById('ubqFbt');
-    var fbd=document.getElementById('ubqFbd');
-    var fb=document.getElementById('ubqFb');
-    if(ok){
-      fbt.className='ubq-fbt ok';
-      fbt.textContent='\u2705 Richtig!';
-      fbd.textContent=d.exp;
-    }else{
-      fbt.className='ubq-fbt no';
-      fbt.textContent='\ud83d\udcaa Nicht ganz.';
-      fbd.textContent='Die richtige Antwort ist: '+d.opts[d.ans]+'. '+d.exp;
-    }
-    fb.className='ubq-fb show '+(ok?'ok':'no');
-    document.getElementById('ubqNx').className='ubq-nx show';
-  }
-  function ubqAdv(){
-    if(ubqIdx<4){ubqIdx++;ubqRender();}else{ubqShowResult();}
-  }
-  function ubqShowResult(){
-    var msgs=[
-      'Nicht aufgeben! \ud83c\udf1f\nDu schaffst das!',
-      'Nicht aufgeben! \ud83c\udf1f\nDu schaffst das!',
-      'Weiter \u00fcben! \ud83d\udcda\nLies die Lektion nochmal.',
-      'Gut gemacht! \ud83d\udcaa\nNoch etwas \u00fcben!',
-      'Sehr gut! \ud83d\udc4f\nFast perfekt!',
-      'Ausgezeichnet! \ud83c\udf89\nDu hast alles verstanden!'
-    ];
-    document.getElementById('ubqMain').innerHTML=
-      '<div style="text-align:center;padding:16px 0;">'
-      +'<div style="font-size:52px;margin-bottom:10px;">'
-      +(ubqScore===5?'\ud83c\udf89':ubqScore>=4?'\ud83d\udc4f':ubqScore>=3?'\ud83d\udcaa':'\ud83d\udcda')
+      +'<div class="quiz-q" style="white-space:pre-line;margin-bottom:6px;">'+d.q+'</div>'
+      +'<div class="quiz-hint" style="font-family:\'DM Mono\',monospace;margin-bottom:16px;">💡 '+d.hint+'</div>'
+      +'<div class="quiz-opts">'+opts+'</div>'
+      +'<div class="qfeedback" id="obqFb">'
+        +'<div class="qft" id="obqFt"></div>'
+        +'<div class="qfb" id="obqFb2"></div>'
+        +'<div class="qfr" id="obqFr"></div>'
       +'</div>'
-      +'<div class="ubq-score-num">'+ubqScore+'/5</div>'
-      +'<div style="font-size:18px;margin-bottom:4px;white-space:pre-line;">'+msgs[ubqScore]+'</div>'
-      +'<div class="ubq-btns">'
-      +'<button class="btn btn-outline" onclick="ubqReset()">Nochmal versuchen</button>'
-      +'<button class="btn btn-primary" onclick="window.location.href=ubqNextHref">N\u00e4chstes Modul \u2192</button>'
+      +'<div class="qnext" id="obqNx">'
+        +'<button class="btn btn-primary" onclick="obqAdv()">'
+        +(obqIdx<4?'N\u00e4chste Frage \u2192':'Ergebnis anzeigen \u2192')
+        +'</button></div>';
+    obqAnswered=false;
+  }
+  function obqPick(idx){
+    if(obqAnswered)return;
+    obqAnswered=true;
+    var d=OBQ_DATA[obqIdx];
+    var ok=(idx===d.ans);
+    if(ok){obqScore++;obqResults[obqIdx]=true;}else{obqResults[obqIdx]=false;}
+    var opts=document.querySelectorAll('#obqContainer .qopt');
+    opts.forEach(function(b,i){
+      b.disabled=true;
+      if(i===d.ans) b.classList.add('correct');
+      if(i===idx&&!ok) b.classList.add('wrong');
+    });
+    var ft=document.getElementById('obqFt');
+    var fb2=document.getElementById('obqFb2');
+    var fr=document.getElementById('obqFr');
+    var fb=document.getElementById('obqFb');
+    ft.className='qft '+(ok?'ok':'no');
+    ft.textContent=ok?'\u2713 Richtig!':'\u2717 Nicht ganz';
+    fb2.textContent=d.exp;
+    fr.textContent='\ud83d\udccc Regel: '+d.rule;
+    fb.classList.add('show',ok?'ok':'no');
+    document.getElementById('obqNx').classList.add('show');
+  }
+  function obqAdv(){
+    if(obqIdx<4){obqIdx++;obqRender();}else{obqShowResult();}
+  }
+  function obqShowResult(){
+    var pct=Math.round(obqScore/5*100);
+    var emoji=pct===100?'\ud83c\udf1f':pct>=80?'\ud83d\udc4f':pct>=60?'\ud83d\udc4d':'\ud83d\udcaa';
+    var msg=pct===100?'Ausgezeichnet! \ud83c\udf89 Du hast alles verstanden!'
+      :pct>=80?'Sehr gut! \ud83d\udc4f Fast perfekt!'
+      :pct>=60?'Gut gemacht! \ud83d\udcaa Noch etwas \u00fcben!'
+      :pct>=40?'Weiter \u00fcben! \ud83d\udcda Lies die Lektion nochmal.'
+      :'Nicht aufgeben! \ud83c\udf1f Du schaffst das!';
+    document.getElementById('obqContainer').innerHTML=
+      '<div style="text-align:center;padding:16px 0;">'
+      +'<div style="font-size:52px;margin-bottom:10px;">'+emoji+'</div>'
+      +'<div class="obq-score">'+obqScore+'/5</div>'
+      +'<div style="font-size:16px;margin:10px 0 20px;color:var(--cream);">'+msg+'</div>'
+      +'<div style="display:inline-flex;align-items:center;gap:8px;background:rgba(52,152,219,0.12);border:1px solid var(--blue);border-radius:50px;padding:9px 22px;color:var(--blue);font-weight:700;margin-bottom:20px;">\u26a1 +'+obqScore*20+' XP</div>'
+      +'<div class="obq-btns">'
+      +'<button class="btn btn-outline" onclick="obqReset()">Nochmal versuchen</button>'
+      +'<button class="btn btn-primary" onclick="window.location.href=obqNextHref">N\u00e4chstes Modul \u2192</button>'
       +'</div></div>';
   }
-  function ubqReset(){ubqIdx=0;ubqScore=0;ubqAnswered=false;ubqResults=[];ubqRender();}
-  document.addEventListener('DOMContentLoaded',function(){ubqInit();});
+  function obqReset(){obqIdx=0;obqScore=0;obqAnswered=false;obqResults=[];obqRender();}
+  document.addEventListener('DOMContentLoaded',function(){obqInit();});
 
 </script>
 </body>
