@@ -85,7 +85,6 @@
 
 
 
-  /* ===== OBQ: Overview Quiz ===== */
   .obq-wrap{margin-top:32px;}
   .obq-dots{display:flex;gap:6px;margin-bottom:16px;}
   .obq-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all 0.3s;}
@@ -96,6 +95,9 @@
   .obq-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px;}
   .obq-btns .btn{width:auto;padding:12px 28px;}
 
+
+  /* module5 pattern */
+  .nav-row{display:flex;gap:12px;margin-top:20px;}
 </style>
 <style>
 /* LIGHT THEME OVERRIDE */
@@ -147,13 +149,6 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
       <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">🏆</div><div><div class="lc-title">Lektion 5 — B2-Prüfungsgespräch simulieren</div><div class="lc-desc">Typische Themen, Bewertungskriterien, häufige Fehler und Strategien für die Prüfung.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
     </div>
     <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
-    <!-- OBQ: OVERVIEW QUIZ -->
-    <div class="card obq-wrap" id="obqWrap">
-      <div class="concept-tag">&#220;BUNGSAUFGABEN</div>
-      <h2 class="lesson-h" style="font-size:22px;margin-bottom:4px;">Teste dein Wissen</h2>
-      <p style="font-size:13px;color:var(--gray);margin-bottom:20px;font-family:'DM Mono',monospace;">5 Fragen zum Modul</p>
-      <div id="obqContainer"></div>
-    </div>
 
   </div>
 </div>
@@ -194,13 +189,13 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
         </details>
         <button class="btn btn-primary" onclick="nextStep(0,0)">Weiter →</button>
       </div></div>
-      <div class="step" id="l0-s1"><div class="card">
-        <div class="quiz-qnum">QUIZ · LEKTION 1 · FRAGE <span id="l0-qnum">1</span> VON 2</div>
-        <div class="quiz-q" id="l0-q"></div>
-        <div class="quiz-hint" id="l0-hint"></div>
-        <div class="quiz-opts" id="l0-opts"></div>
-        <div class="qfeedback" id="l0-fb"><div class="qft" id="l0-fbt"></div><div class="qfb" id="l0-fbb"></div><div class="qfr" id="l0-fbr"></div></div>
-        <button class="btn btn-primary qnext" id="l0-next" onclick="advQ(0)">Nächste Frage →</button>
+      <div class="step" id="l0-s1">
+        <div class="card" style="border-color:var(--green);background:rgba(39,174,96,0.04);">
+          <div class="concept-tag" style="color:var(--green);">LEKTION 1 — QUIZ</div>
+          <h2 class="lesson-h">Übungsaufgaben</h2>
+          <div id="qz-0"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Zurück</button></div>
       </div></div>
     </div>
 
@@ -228,13 +223,13 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
         </details>
         <button class="btn btn-primary" onclick="nextStep(1,0)">Weiter →</button>
       </div></div>
-      <div class="step" id="l1-s1"><div class="card">
-        <div class="quiz-qnum">QUIZ · LEKTION 2 · FRAGE <span id="l1-qnum">1</span> VON 2</div>
-        <div class="quiz-q" id="l1-q"></div>
-        <div class="quiz-hint" id="l1-hint"></div>
-        <div class="quiz-opts" id="l1-opts"></div>
-        <div class="qfeedback" id="l1-fb"><div class="qft" id="l1-fbt"></div><div class="qfb" id="l1-fbb"></div><div class="qfr" id="l1-fbr"></div></div>
-        <button class="btn btn-primary qnext" id="l1-next" onclick="advQ(1)">Nächste Frage →</button>
+      <div class="step" id="l1-s1">
+        <div class="card" style="border-color:var(--green);background:rgba(39,174,96,0.04);">
+          <div class="concept-tag" style="color:var(--green);">LEKTION 2 — QUIZ</div>
+          <h2 class="lesson-h">Übungsaufgaben</h2>
+          <div id="qz-1"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Zurück</button></div>
       </div></div>
     </div>
 
@@ -262,13 +257,13 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
         </details>
         <button class="btn btn-primary" onclick="nextStep(2,0)">Weiter →</button>
       </div></div>
-      <div class="step" id="l2-s1"><div class="card">
-        <div class="quiz-qnum">QUIZ · LEKTION 3 · FRAGE <span id="l2-qnum">1</span> VON 2</div>
-        <div class="quiz-q" id="l2-q"></div>
-        <div class="quiz-hint" id="l2-hint"></div>
-        <div class="quiz-opts" id="l2-opts"></div>
-        <div class="qfeedback" id="l2-fb"><div class="qft" id="l2-fbt"></div><div class="qfb" id="l2-fbb"></div><div class="qfr" id="l2-fbr"></div></div>
-        <button class="btn btn-primary qnext" id="l2-next" onclick="advQ(2)">Nächste Frage →</button>
+      <div class="step" id="l2-s1">
+        <div class="card" style="border-color:var(--green);background:rgba(39,174,96,0.04);">
+          <div class="concept-tag" style="color:var(--green);">LEKTION 3 — QUIZ</div>
+          <h2 class="lesson-h">Übungsaufgaben</h2>
+          <div id="qz-2"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Zurück</button></div>
       </div></div>
     </div>
 
@@ -298,13 +293,13 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
         </details>
         <button class="btn btn-primary" onclick="nextStep(3,0)">Weiter →</button>
       </div></div>
-      <div class="step" id="l3-s1"><div class="card">
-        <div class="quiz-qnum">QUIZ · LEKTION 4 · FRAGE <span id="l3-qnum">1</span> VON 2</div>
-        <div class="quiz-q" id="l3-q"></div>
-        <div class="quiz-hint" id="l3-hint"></div>
-        <div class="quiz-opts" id="l3-opts"></div>
-        <div class="qfeedback" id="l3-fb"><div class="qft" id="l3-fbt"></div><div class="qfb" id="l3-fbb"></div><div class="qfr" id="l3-fbr"></div></div>
-        <button class="btn btn-primary qnext" id="l3-next" onclick="advQ(3)">Nächste Frage →</button>
+      <div class="step" id="l3-s1">
+        <div class="card" style="border-color:var(--green);background:rgba(39,174,96,0.04);">
+          <div class="concept-tag" style="color:var(--green);">LEKTION 4 — QUIZ</div>
+          <h2 class="lesson-h">Übungsaufgaben</h2>
+          <div id="qz-3"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Zurück</button></div>
       </div></div>
     </div>
 
@@ -332,13 +327,13 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
         </details>
         <button class="btn btn-primary" onclick="nextStep(4,0)">Quiz starten →</button>
       </div></div>
-      <div class="step" id="l4-s1"><div class="card">
-        <div class="quiz-qnum">QUIZ · LEKTION 5 · FRAGE <span id="l4-qnum">1</span> VON 2</div>
-        <div class="quiz-q" id="l4-q"></div>
-        <div class="quiz-hint" id="l4-hint"></div>
-        <div class="quiz-opts" id="l4-opts"></div>
-        <div class="qfeedback" id="l4-fb"><div class="qft" id="l4-fbt"></div><div class="qfb" id="l4-fbb"></div><div class="qfr" id="l4-fbr"></div></div>
-        <button class="btn btn-primary qnext" id="l4-next" onclick="advQ(4)">Ergebnis sehen →</button>
+      <div class="step" id="l4-s1">
+        <div class="card" style="border-color:var(--green);background:rgba(39,174,96,0.04);">
+          <div class="concept-tag" style="color:var(--green);">LEKTION 5 — QUIZ</div>
+          <h2 class="lesson-h">Übungsaufgaben</h2>
+          <div id="qz-4"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Zurück</button></div>
       </div></div>
       <div class="step" id="l4-s2">
         <div class="complete-wrap">
@@ -361,7 +356,6 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
 </div>
 
 <script>
-var lessonSteps=[2,2,2,2,3];
 var QD={
   0:[
     {q:"Welche Phrase drückt eine starke, überzeugte Meinung aus?",hint:"Denk an Gewissheit und Überzeugung",opts:["Ich würde sagen, dass…","Ich bin fest davon überzeugt, dass…","Es könnte sein, dass…","Ich bin mir nicht sicher, ob…"],ans:1,exp:"'Ich bin fest davon überzeugt' drückt starke Überzeugung aus — stärker als 'Ich würde sagen' oder 'Es könnte sein'.",rule:"Stärke der Meinung: überzeugt > denke > würde sagen > nicht sicher"},
@@ -384,108 +378,102 @@ var QD={
     {q:"Welcher Tipp ist für das B2-Sprechen FALSCH?",hint:"Was sollte man NICHT tun?",opts:["Immer eine klare Position einnehmen","Antworten durch 'weil' und 'was bedeutet, dass' erweitern","Sagen: 'Ich habe keine Meinung zu diesem Thema'","Zustimmung und Ablehnung differenziert ausdrücken"],ans:2,exp:"'Ich habe keine Meinung' ist ein häufiger Fehler! Der Prüfer bewertet Kommunikationsfähigkeit — man muss immer eine Position vertreten, auch wenn man nicht sehr überzeugt ist.",rule:"Prüfungsstrategie: Immer eine Position einnehmen und begründen"}
   ]
 };
-var curLesson=0,xp=0,qIdx={},qDone={};
-function $(id){return document.getElementById(id);}
-function showOverview(){$('screen-lesson').classList.remove('active');$('screen-overview').classList.add('active');}
-function goLesson(li){curLesson=li;$('screen-overview').classList.remove('active');$('screen-lesson').classList.add('active');var panes=document.querySelectorAll('.lesson-pane');panes.forEach(function(p){p.style.display='none';});$('lesson-'+li).style.display='block';var steps=$('lesson-'+li).querySelectorAll('.step');steps.forEach(function(s){s.classList.remove('active');});steps[0].classList.add('active');renderDots(li);updateProg(li,0);if(!qIdx[li]){initQuiz(li);}xpDisp();}
-function initQuiz(li){qIdx[li]=0;qDone[li]=false;renderQ(li);}
-function renderQ(li){var d=QD[li][qIdx[li]];if(!d)return;$(  'l'+li+'-q').textContent=d.q;$('l'+li+'-hint').textContent=d.hint;$('l'+li+'-qnum').textContent=(qIdx[li]+1);var opts=$('l'+li+'-opts');opts.innerHTML='';var ltrs=['A','B','C','D'];d.opts.forEach(function(o,i){var b=document.createElement('button');b.className='qopt';b.innerHTML='<span class="qletter">'+ltrs[i]+'</span>'+o;b.onclick=function(){pickQ(li,i);};opts.appendChild(b);});$('l'+li+'-fb').className='qfeedback';$('l'+li+'-next').className='btn btn-primary qnext';}
-function pickQ(li,idx){var d=QD[li][qIdx[li]];var opts=$('l'+li+'-opts').querySelectorAll('.qopt');opts.forEach(function(b){b.disabled=true;});opts[idx].classList.add(idx===d.ans?'correct':'wrong');opts[d.ans].classList.add('correct');var ok=idx===d.ans;if(ok)xp+=20;var fb=$('l'+li+'-fb');fb.className='qfeedback '+(ok?'ok':'no')+' show';$('l'+li+'-fbt').className='qft '+(ok?'ok':'no');$('l'+li+'-fbt').textContent=ok?'Richtig! ✓':'Falsch ✗';$('l'+li+'-fbb').textContent=d.exp;$('l'+li+'-fbr').textContent='Regel: '+d.rule;$('l'+li+'-next').className='btn btn-primary qnext show';xpDisp();}
-function advQ(li){if(qIdx[li]<QD[li].length-1){qIdx[li]++;renderQ(li);}else{if(li===4){showResult(4);}else{goLesson(li+1);}}}
-function showResult(li){var steps=$('lesson-4').querySelectorAll('.step');steps.forEach(function(s){s.classList.remove('active');});steps[2].classList.add('active');localStorage.setItem('dw_mod_b2_9_done','1');var tot=parseInt(localStorage.getItem('dw_xp')||'0');localStorage.setItem('dw_xp',tot+xp);}
-function renderDots(li){var row=$('dotRow');row.innerHTML='';var total=lessonSteps[li];for(var i=0;i<total;i++){var d=document.createElement('div');d.className='dot';row.appendChild(d);}row.children[0].classList.add('active');}
-function updateProg(li,si){var pct=Math.round(((li*2+si)/(lessonSteps.reduce(function(a,b){return a+b;},0)))*100);$('progFill').style.width=pct+'%';}
-function nextStep(li,si){var steps=$('lesson-'+li).querySelectorAll('.step');steps[si].classList.remove('active');steps[si+1].classList.add('active');updateProg(li,si+1);var dots=$('dotRow').children;if(dots[si])dots[si].classList.replace('active','done');if(dots[si+1])dots[si+1].classList.add('active');if(si+1===1){initQuiz(li);}}
-function xpDisp(){$('xpDisp').textContent='⚡ '+xp+' XP';}
-function speakSentence(btn,text){if('speechSynthesis' in window){window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=0.9;btn.classList.add('speaking');u.onend=function(){btn.classList.remove('speaking');};window.speechSynthesis.speak(u);}}
-document.body.classList.add('ready');
 
 
-
-  // ===== OBQ: OVERVIEW QUIZ =====
-  var OBQ_DATA = [{"q": "Wie widerspricht man h\u00f6flich?", "opts": ["Das ist falsch!", "Ich sehe das etwas anders, weil...", "Nein!", "Du hast keine Ahnung."], "ans": 1, "hint": "H\u00f6flicher Widerspruch beginnt mit einer Abschw\u00e4chung.", "exp": "'Ich sehe das etwas anders' signalisiert H\u00f6flichkeit und l\u00e4dt zur Diskussion ein.", "rule": "H\u00f6flicher Widerspruch: Ich sehe das anders / Da m\u00f6chte ich widersprechen..."}, {"q": "\"Ich bin der Meinung, dass...\" ist ein Ausdruck f\u00fcr:", "opts": ["Zustimmung", "Meinungs\u00e4u\u00dferung", "Widerspruch", "Zusammenfassung"], "ans": 1, "hint": "Der Satz beginnt mit 'Ich bin...' \u2014 was teilt man damit mit?", "exp": "'Ich bin der Meinung...' ist eine typische Formel zur Meinungs\u00e4u\u00dferung im B2-Sprechen.", "rule": "Meinungs\u00e4u\u00dferung: Ich bin der Meinung / Ich finde / Meiner Ansicht nach..."}, {"q": "Bei einer B2-Diskussion sollte man:", "opts": ["Nur die eigene Meinung sagen", "Argumente mit Beispielen belegen", "Sehr schnell sprechen", "Keine Fragen stellen"], "ans": 1, "hint": "Was macht ein Argument \u00fcberzeugend?", "exp": "Argumente mit Beispielen zu belegen macht sie \u00fcberzeugender und zeigt Sprachkompetenz.", "rule": "Diskussion B2: These + Argument + Beispiel (TAES-Struktur auch im Sprechen)"}, {"q": "\"Einerseits... andererseits...\" zeigt:", "opts": ["Chronologie", "Zwei Perspektiven/Gegen\u00fcberstellung", "Ursache und Wirkung", "Zusammenfassung"], "ans": 1, "hint": "Zwei Seiten einer Sache \u2014 welche Beziehung ist das?", "exp": "'Einerseits... andererseits...' stellt zwei Perspektiven oder Argumente gegen\u00fcber.", "rule": "einerseits...andererseits = Gegen\u00fcberstellung (balanced argument)"}, {"q": "Um Zeit beim Sprechen zu gewinnen, sagt man:", "opts": ["Nichts \u2014 einfach schweigen", "Das ist eine gute Frage, ich \u00fcberlege kurz...", "Ich wei\u00df es nicht.", "N\u00e4chste Frage bitte."], "ans": 1, "hint": "Zeitgewinner klingen nat\u00fcrlich und zeigen Sprachkompetenz.", "exp": "Solche Phrasen geben Zeit zum Nachdenken ohne unangenehme Pausen.", "rule": "Zeitgewinner: Das ist eine interessante Frage / Ich m\u00f6chte kurz \u00fcberlegen..."}];
-  var obqIdx=0, obqScore=0, obqAnswered=false, obqResults=[], obqNextHref='module-b2-10-hoeren-lesen-b2.html';
-  function obqInit(){obqIdx=0;obqScore=0;obqAnswered=false;obqResults=[];obqRender();}
-  function obqRender(){
-    var d=OBQ_DATA[obqIdx];
-    var dots='<div class="obq-dots">';
-    for(var i=0;i<5;i++){
-      var c='obq-dot';
-      if(i<obqIdx){c+=obqResults[i]?' done':' wrong';}
-      else if(i===obqIdx){c+=' active';}
-      dots+='<div class="'+c+'"></div>';
-    }
-    dots+='</div>';
-    var letters=['A','B','C','D'];
-    var opts=d.opts.map(function(o,i){
-      return '<button class="qopt" id="obqO'+i+'" onclick="obqPick('+i+')">'
-        +'<span class="qletter">'+letters[i]+'</span>'+o+'</button>';
-    }).join('');
-    document.getElementById('obqContainer').innerHTML=
-      '<div class="quiz-qnum">FRAGE '+(obqIdx+1)+' VON 5</div>'
-      +dots
-      +'<div class="quiz-q" style="white-space:pre-line;margin-bottom:6px;">'+d.q+'</div>'
-      +'<div class="quiz-hint" style="font-family:\'DM Mono\',monospace;margin-bottom:16px;">💡 '+d.hint+'</div>'
-      +'<div class="quiz-opts">'+opts+'</div>'
-      +'<div class="qfeedback" id="obqFb">'
-        +'<div class="qft" id="obqFt"></div>'
-        +'<div class="qfb" id="obqFb2"></div>'
-        +'<div class="qfr" id="obqFr"></div>'
-      +'</div>'
-      +'<div class="qnext" id="obqNx">'
-        +'<button class="btn btn-primary" onclick="obqAdv()">'
-        +(obqIdx<4?'N\u00e4chste Frage \u2192':'Ergebnis anzeigen \u2192')
-        +'</button></div>';
-    obqAnswered=false;
-  }
-  function obqPick(idx){
-    if(obqAnswered)return;
-    obqAnswered=true;
-    var d=OBQ_DATA[obqIdx];
-    var ok=(idx===d.ans);
-    if(ok){obqScore++;obqResults[obqIdx]=true;}else{obqResults[obqIdx]=false;}
-    var opts=document.querySelectorAll('#obqContainer .qopt');
-    opts.forEach(function(b,i){
-      b.disabled=true;
-      if(i===d.ans) b.classList.add('correct');
-      if(i===idx&&!ok) b.classList.add('wrong');
-    });
-    var ft=document.getElementById('obqFt');
-    var fb2=document.getElementById('obqFb2');
-    var fr=document.getElementById('obqFr');
-    var fb=document.getElementById('obqFb');
-    ft.className='qft '+(ok?'ok':'no');
-    ft.textContent=ok?'\u2713 Richtig!':'\u2717 Nicht ganz';
-    fb2.textContent=d.exp;
-    fr.textContent='\ud83d\udccc Regel: '+d.rule;
-    fb.classList.add('show',ok?'ok':'no');
-    document.getElementById('obqNx').classList.add('show');
-  }
-  function obqAdv(){
-    if(obqIdx<4){obqIdx++;obqRender();}else{obqShowResult();}
-  }
-  function obqShowResult(){
-    var pct=Math.round(obqScore/5*100);
-    var emoji=pct===100?'\ud83c\udf1f':pct>=80?'\ud83d\udc4f':pct>=60?'\ud83d\udc4d':'\ud83d\udcaa';
-    var msg=pct===100?'Ausgezeichnet! \ud83c\udf89 Du hast alles verstanden!'
-      :pct>=80?'Sehr gut! \ud83d\udc4f Fast perfekt!'
-      :pct>=60?'Gut gemacht! \ud83d\udcaa Noch etwas \u00fcben!'
-      :pct>=40?'Weiter \u00fcben! \ud83d\udcda Lies die Lektion nochmal.'
-      :'Nicht aufgeben! \ud83c\udf1f Du schaffst das!';
-    document.getElementById('obqContainer').innerHTML=
-      '<div style="text-align:center;padding:16px 0;">'
-      +'<div style="font-size:52px;margin-bottom:10px;">'+emoji+'</div>'
-      +'<div class="obq-score">'+obqScore+'/5</div>'
-      +'<div style="font-size:16px;margin:10px 0 20px;color:var(--cream);">'+msg+'</div>'
-      +'<div style="display:inline-flex;align-items:center;gap:8px;background:rgba(52,152,219,0.12);border:1px solid var(--blue);border-radius:50px;padding:9px 22px;color:var(--blue);font-weight:700;margin-bottom:20px;">\u26a1 +'+obqScore*20+' XP</div>'
-      +'<div class="obq-btns">'
-      +'<button class="btn btn-outline" onclick="obqReset()">Nochmal versuchen</button>'
-      +'<button class="btn btn-primary" onclick="window.location.href=obqNextHref">N\u00e4chstes Modul \u2192</button>'
-      +'</div></div>';
-  }
-  function obqReset(){obqIdx=0;obqScore=0;obqAnswered=false;obqResults=[];obqRender();}
-  document.addEventListener('DOMContentLoaded',function(){obqInit();});
-
+var currentLesson=0,xp=0,TOTAL=5,qSt={};
+function initQuiz(li){
+  var el=document.getElementById('qz-'+li);
+  if(!el||el.dataset.ready)return;
+  el.dataset.ready='1';
+  qSt[li]={cur:0,correct:0};
+  renderQ(li);
+}
+function renderQ(li){
+  var el=document.getElementById('qz-'+li);if(!el)return;
+  var s=qSt[li],qs=QD[li];if(!s||s.cur>=qs.length){showResult(li);return;}
+  var q=qs[s.cur];
+  el.innerHTML='<div class="quiz-qnum">FRAGE '+(s.cur+1)+' VON '+qs.length+'</div>'+
+    '<div class="quiz-q" style="white-space:pre-line;">'+q.q+'</div>'+
+    '<div class="quiz-hint">'+q.hint+'</div>'+
+    '<div class="quiz-opts">'+q.opts.map(function(o,i){
+      return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')"><span class="qletter">'+('ABCD'[i])+'</span>'+o+'</button>';
+    }).join('')+'</div>'+
+    '<div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div>'+
+    '<div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'N\u00e4chste Frage \u2192':'Ergebnis anzeigen \u2192')+'</button></div>';
+}
+function pickQ(li,idx){
+  var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans;
+  if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='\u26a1 '+xp+' XP';}
+  document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){
+    b.disabled=true;
+    if(i===q.ans)b.classList.add('correct');
+    if(i===idx&&!ok)b.classList.add('wrong');
+  });
+  var fb=document.getElementById('qz'+li+'-fb');
+  fb.classList.add('show',ok?'ok':'no');
+  var fbt=document.getElementById('qz'+li+'-fbt');
+  fbt.className='qft '+(ok?'ok':'no');
+  fbt.textContent=ok?'\u2713 Richtig!':'\u2717 Leider nicht';
+  document.getElementById('qz'+li+'-fbb').textContent=q.exp;
+  document.getElementById('qz'+li+'-fbr').textContent='\U0001F4CC '+q.rule;
+  document.getElementById('qz'+li+'-nx').classList.add('show');
+}
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){
+  var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length;
+  var pct=Math.round(s.correct/total*100),isLast=(li===TOTAL-1);
+  el.innerHTML='<div style="text-align:center;padding:16px 0;">'+
+    '<div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'\U0001F31F':pct>=60?'\U0001F44D':'\U0001F4AA')+'</div>'+
+    '<div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' richtig</div>'+
+    '<div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfekt!':pct>=60?'Sehr gut!':'Nochmal \u00fcben.')+'</div>'+
+    '<div style="display:inline-flex;align-items:center;gap:8px;background:rgba(52,152,219,0.12);border:1px solid var(--blue);border-radius:50px;padding:9px 22px;color:var(--blue);font-weight:700;margin-bottom:20px;">\u26a1 +'+(s.correct*20)+' XP</div><br>'+
+    (isLast?
+      '<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goStep(4,2)">Modul abschlie\u00dfen \u2192</button>':
+      '<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">N\u00e4chste Lektion \u2192</button>')+
+    '</div>';
+}
+function showOverview(){
+  document.getElementById('screen-overview').classList.add('active');
+  document.getElementById('screen-lesson').classList.remove('active');
+  window.scrollTo(0,0);
+}
+function goLesson(idx){
+  currentLesson=idx;
+  document.getElementById('screen-overview').classList.remove('active');
+  document.getElementById('screen-lesson').classList.add('active');
+  document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';});
+  var pane=document.getElementById('lesson-'+idx);
+  if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});}
+  renderDots();updateProg(idx,0);window.scrollTo(0,0);
+}
+function goStep(li,si){
+  var steps=document.querySelectorAll('#lesson-'+li+' .step');
+  steps.forEach(function(s,i){s.classList.toggle('active',i===si);});
+  document.querySelectorAll('#dotRow .dot').forEach(function(d,i){d.classList.toggle('active',i===si);d.classList.toggle('done',i<si);});
+  if(si===2&&li===TOTAL-1){var stored=parseInt(localStorage.getItem('dw_xp')||'0');localStorage.setItem('dw_xp',stored+xp);}
+  updateProg(li,si);window.scrollTo(0,0);
+}
+function nextStep(li,si){
+  var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1;
+  if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===1)initQuiz(li);}
+  else{if(li+1<TOTAL)goLesson(li+1);else goStep(TOTAL-1,2);}
+}
+function prevStep(li,si){
+  if(si===0){showOverview();return;}
+  var steps=document.getElementById('lesson-'+li).querySelectorAll('.step');
+  steps[si].classList.remove('active');steps[si-1].classList.add('active');
+  updateProg(li,si-1);window.scrollTo(0,0);
+}
+function renderDots(){
+  var row=document.getElementById('dotRow');row.innerHTML='';
+  for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);}
+}
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){
+  document.body.classList.add('ready');
+  xp=0;document.getElementById('xpDisp').textContent='\u26a1 0 XP';
+});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
 </script>
 </body>
 </html>

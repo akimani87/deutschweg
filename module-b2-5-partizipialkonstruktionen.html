@@ -91,7 +91,6 @@
 
 
 
-  /* ===== OBQ: Overview Quiz ===== */
   .obq-wrap{margin-top:32px;}
   .obq-dots{display:flex;gap:6px;margin-bottom:16px;}
   .obq-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all 0.3s;}
@@ -102,6 +101,9 @@
   .obq-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px;}
   .obq-btns .btn{width:auto;padding:12px 28px;}
 
+
+  /* module5 pattern */
+  .nav-row{display:flex;gap:12px;margin-top:20px;}
 </style>
 <style>
 /* LIGHT THEME OVERRIDE */
@@ -154,13 +156,6 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
       <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">✍️</div><div><div class="lc-title">Lektion 5 — Partizipialkonstruktionen schreiben</div><div class="lc-desc">Wann einsetzen? Häufige Fehler. Stilistische Wirkung. B2-Schreibtraining.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
     </div>
     <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
-    <!-- OBQ: OVERVIEW QUIZ -->
-    <div class="card obq-wrap" id="obqWrap">
-      <div class="concept-tag">&#220;BUNGSAUFGABEN</div>
-      <h2 class="lesson-h" style="font-size:22px;margin-bottom:4px;">Teste dein Wissen</h2>
-      <p style="font-size:13px;color:var(--gray);margin-bottom:20px;font-family:'DM Mono',monospace;">5 Fragen zum Modul</p>
-      <div id="obqContainer"></div>
-    </div>
 
   </div>
 </div>
@@ -211,10 +206,13 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
           <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(0,0)">Weiter →</button>
         </div>
       </div>
-      <div class="step" id="l0-s1"><div class="card">
-        <div class="quiz-qnum" id="l0-qnum">FRAGE 1 VON 2</div><div class="quiz-q" id="l0-q"></div><div class="quiz-hint" id="l0-hint"></div><div class="quiz-opts" id="l0-opts"></div>
-        <div class="qfeedback" id="l0-fb"><div class="qft" id="l0-ft"></div><div class="qfb" id="l0-fbe"></div><div class="qfr" id="l0-rule"></div></div>
-        <div class="qnext" id="l0-next"><button class="btn btn-primary" onclick="advQ(0)">Weiter →</button></div>
+      <div class="step" id="l0-s1">
+        <div class="card" style="border-color:var(--green);background:rgba(39,174,96,0.04);">
+          <div class="concept-tag" style="color:var(--green);">LEKTION 1 — QUIZ</div>
+          <h2 class="lesson-h">Übungsaufgaben</h2>
+          <div id="qz-0"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(0,1)">← Zurück</button></div>
       </div></div>
     </div>
 
@@ -244,10 +242,13 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
           <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(1,0)">Weiter →</button>
         </div>
       </div>
-      <div class="step" id="l1-s1"><div class="card">
-        <div class="quiz-qnum" id="l1-qnum">FRAGE 1 VON 2</div><div class="quiz-q" id="l1-q"></div><div class="quiz-hint" id="l1-hint"></div><div class="quiz-opts" id="l1-opts"></div>
-        <div class="qfeedback" id="l1-fb"><div class="qft" id="l1-ft"></div><div class="qfb" id="l1-fbe"></div><div class="qfr" id="l1-rule"></div></div>
-        <div class="qnext" id="l1-next"><button class="btn btn-primary" onclick="advQ(1)">Weiter →</button></div>
+      <div class="step" id="l1-s1">
+        <div class="card" style="border-color:var(--green);background:rgba(39,174,96,0.04);">
+          <div class="concept-tag" style="color:var(--green);">LEKTION 2 — QUIZ</div>
+          <h2 class="lesson-h">Übungsaufgaben</h2>
+          <div id="qz-1"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(1,1)">← Zurück</button></div>
       </div></div>
     </div>
 
@@ -285,10 +286,13 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
           <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(2,0)">Weiter →</button>
         </div>
       </div>
-      <div class="step" id="l2-s1"><div class="card">
-        <div class="quiz-qnum" id="l2-qnum">FRAGE 1 VON 2</div><div class="quiz-q" id="l2-q"></div><div class="quiz-hint" id="l2-hint"></div><div class="quiz-opts" id="l2-opts"></div>
-        <div class="qfeedback" id="l2-fb"><div class="qft" id="l2-ft"></div><div class="qfb" id="l2-fbe"></div><div class="qfr" id="l2-rule"></div></div>
-        <div class="qnext" id="l2-next"><button class="btn btn-primary" onclick="advQ(2)">Weiter →</button></div>
+      <div class="step" id="l2-s1">
+        <div class="card" style="border-color:var(--green);background:rgba(39,174,96,0.04);">
+          <div class="concept-tag" style="color:var(--green);">LEKTION 3 — QUIZ</div>
+          <h2 class="lesson-h">Übungsaufgaben</h2>
+          <div id="qz-2"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(2,1)">← Zurück</button></div>
       </div></div>
     </div>
 
@@ -324,10 +328,13 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
           <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(3,0)">Weiter →</button>
         </div>
       </div>
-      <div class="step" id="l3-s1"><div class="card">
-        <div class="quiz-qnum" id="l3-qnum">FRAGE 1 VON 2</div><div class="quiz-q" id="l3-q"></div><div class="quiz-hint" id="l3-hint"></div><div class="quiz-opts" id="l3-opts"></div>
-        <div class="qfeedback" id="l3-fb"><div class="qft" id="l3-ft"></div><div class="qfb" id="l3-fbe"></div><div class="qfr" id="l3-rule"></div></div>
-        <div class="qnext" id="l3-next"><button class="btn btn-primary" onclick="advQ(3)">Weiter →</button></div>
+      <div class="step" id="l3-s1">
+        <div class="card" style="border-color:var(--green);background:rgba(39,174,96,0.04);">
+          <div class="concept-tag" style="color:var(--green);">LEKTION 4 — QUIZ</div>
+          <h2 class="lesson-h">Übungsaufgaben</h2>
+          <div id="qz-3"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(3,1)">← Zurück</button></div>
       </div></div>
     </div>
 
@@ -357,10 +364,13 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
           <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(4,0)">Weiter →</button>
         </div>
       </div>
-      <div class="step" id="l4-s1"><div class="card">
-        <div class="quiz-qnum" id="l4-qnum">FRAGE 1 VON 2</div><div class="quiz-q" id="l4-q"></div><div class="quiz-hint" id="l4-hint"></div><div class="quiz-opts" id="l4-opts"></div>
-        <div class="qfeedback" id="l4-fb"><div class="qft" id="l4-ft"></div><div class="qfb" id="l4-fbe"></div><div class="qfr" id="l4-rule"></div></div>
-        <div class="qnext" id="l4-next"><button class="btn btn-primary" onclick="advQ(4)">Weiter →</button></div>
+      <div class="step" id="l4-s1">
+        <div class="card" style="border-color:var(--green);background:rgba(39,174,96,0.04);">
+          <div class="concept-tag" style="color:var(--green);">LEKTION 5 — QUIZ</div>
+          <h2 class="lesson-h">Übungsaufgaben</h2>
+          <div id="qz-4"></div>
+        </div>
+        <div class="nav-row"><button class="btn btn-outline" onclick="prevStep(4,1)">← Zurück</button></div>
       </div></div>
       <div class="step" id="l4-s2"><div class="complete-wrap">
         <div class="complete-icon">🌿</div>
@@ -406,107 +416,102 @@ var QD={
     {q:'„Ngozi zitierte einen von Wissenschaftlern untersuchten Befund." Was zeigt die Endung -en?',hint:'Kasus: „einen" → welcher Fall?',opts:['Nominativ Maskulinum','Akkusativ Maskulinum','Dativ Maskulinum','Genitiv Maskulinum'],ans:1,exp:'„einen" ist der unbestimmte Artikel Akkusativ Maskulinum. Partizipialattribute folgen der Adjektivdeklination: Akkusativ Mask. nach unbestimmtem Artikel → -en.',rule:'Partizipialattribute deklinieren wie Adjektive: nach Kasus und Artikel'}
   ]
 };
-var curLesson=0,curStep=0,curQ={},qIdx=0,xp=0,lessonSteps=[2,2,2,2,3];
-function speakSentence(btn,text){if(!window.speechSynthesis)return;window.speechSynthesis.cancel();if(btn.classList.contains('speaking')){btn.classList.remove('speaking');return;}var u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=0.9;u.onend=()=>btn.classList.remove('speaking');btn.classList.add('speaking');window.speechSynthesis.speak(u);}
-function showOverview(){document.getElementById('screen-lesson').classList.remove('active');document.getElementById('screen-overview').classList.add('active');window.scrollTo(0,0);}
-function goLesson(li){curLesson=li;curStep=0;qIdx=0;document.getElementById('screen-overview').classList.remove('active');document.getElementById('screen-lesson').classList.add('active');document.querySelectorAll('.lesson-pane').forEach(p=>p.style.display='none');document.getElementById('lesson-'+li).style.display='block';document.querySelectorAll('#lesson-'+li+' .step').forEach((s,i)=>s.classList.toggle('active',i===0));renderDots(li);updateProgress(li,0);window.scrollTo(0,0);}
-function renderDots(li){var n=lessonSteps[li],row=document.getElementById('dotRow');row.innerHTML='';for(var i=0;i<n;i++){var d=document.createElement('div');d.className='dot'+(i===0?' active':'');(function(idx){d.onclick=function(){if(idx<=curStep)goStep(curLesson,idx);};})(i);row.appendChild(d);}}
-function goStep(li,si){curStep=si;document.querySelectorAll('#lesson-'+li+' .step').forEach((s,i)=>s.classList.toggle('active',i===si));document.querySelectorAll('#dotRow .dot').forEach((d,i)=>{d.classList.toggle('active',i===si);d.classList.toggle('done',i<si);});updateProgress(li,si);window.scrollTo(0,0);}
-function updateProgress(li,si){document.getElementById('progFill').style.width=Math.round((si/(lessonSteps[li]-1))*100)+'%';}
-function nextStep(li,si){var nsi=si+1;if(nsi>=lessonSteps[li])return;initQuiz(li);goStep(li,nsi);}
-function initQuiz(li){qIdx=0;renderQ(li);}
-function renderQ(li){var qs=QD[li];if(!qs||qIdx>=qs.length){showResult(li);return;}var q=qs[qIdx];document.getElementById('l'+li+'-qnum').textContent='FRAGE '+(qIdx+1)+' VON '+qs.length;document.getElementById('l'+li+'-q').textContent=q.q;document.getElementById('l'+li+'-hint').textContent=q.hint;var opts=document.getElementById('l'+li+'-opts');opts.innerHTML='';['A','B','C','D'].forEach(function(l,i){var btn=document.createElement('button');btn.className='qopt';btn.innerHTML='<span class="qletter">'+l+'</span>'+q.opts[i];btn.onclick=function(){pickQ(li,i);};opts.appendChild(btn);});document.getElementById('l'+li+'-fb').className='qfeedback';document.getElementById('l'+li+'-next').className='qnext';}
-function pickQ(li,idx){var q=QD[li][qIdx];var opts=document.querySelectorAll('#l'+li+'-opts .qopt');opts.forEach(b=>b.disabled=true);opts[idx].classList.add(idx===q.ans?'correct':'wrong');if(idx!==q.ans)opts[q.ans].classList.add('correct');var ok=idx===q.ans;if(ok){xp+=10;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';}var fb=document.getElementById('l'+li+'-fb');fb.className='qfeedback show '+(ok?'ok':'no');document.getElementById('l'+li+'-ft').textContent=ok?'✓ Richtig!':'✗ Leider falsch.';document.getElementById('l'+li+'-ft').className='qft '+(ok?'ok':'no');document.getElementById('l'+li+'-fbe').textContent=q.exp;document.getElementById('l'+li+'-rule').textContent='📌 '+q.rule;document.getElementById('l'+li+'-next').className='qnext show';}
-function advQ(li){qIdx++;if(qIdx>=QD[li].length)showResult(li);else renderQ(li);}
-function showResult(li){if(li===4){goStep(li,2);localStorage.setItem('dw_xp',parseInt(localStorage.getItem('dw_xp')||'0')+xp);localStorage.setItem('dw_mod_b2_5_done','1');}else goLesson(li+1);}
-document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');xp=0;document.getElementById('xpDisp').textContent='⚡ 0 XP';});
 
 
-
-  // ===== OBQ: OVERVIEW QUIZ =====
-  var OBQ_DATA = [{"q": "Partizip I von \"schlafen\":", "opts": ["geschlafen", "schlafend", "geschlafend", "schl\u00e4fend"], "ans": 1, "hint": "Partizip I = Infinitiv + -d. Kein ge-!", "exp": "Partizip I: Infinitiv + -d \u2192 schlafen + d = schlafend.", "rule": "Partizip I: Infinitiv + -d (gleichzeitig, aktiv): lachend, laufend, schlafend"}, {"q": "Wandle in Partizipialkonstruktion um:\n\"Der Mann, der im B\u00fcro arbeitet\"", "opts": ["Der arbeitende Mann im B\u00fcro", "Der gearbeitete Mann im B\u00fcro", "Der Arbeitsmann im B\u00fcro", "Der Mann arbeitend im B\u00fcro"], "ans": 0, "hint": "Gleichzeitige aktive Handlung \u2192 Partizip I + Adjektivendung", "exp": "Partizip I (arbeitend) + Adjektivendung (-e) ersetzt den Relativsatz: der arbeitende Mann.", "rule": "Relativsatz (Gegenwart, aktiv) \u2192 Partizip I + Adjektivendung"}, {"q": "Partizip II als Adjektiv:\n\"die _____ Pr\u00fcfung\" (bestehen)", "opts": ["bestandene", "bestandende", "bestehenende", "begehende"], "ans": 0, "hint": "bestehen ist unregelm\u00e4\u00dfig. Partizip II + Adjektivendung.", "exp": "bestehen \u2192 bestanden (unregelm\u00e4\u00dfig). bestanden + -e = die bestandene Pr\u00fcfung.", "rule": "Partizip II als Adjektiv: abgeschlossen, passiv (die bestandene Pr\u00fcfung, das gelesene Buch)"}, {"q": "Wof\u00fcr werden Partizipialkonstruktionen verwendet?", "opts": ["Um Relativs\u00e4tze zu ersetzen", "Um Modalverben zu ersetzen", "Um Passiv zu bilden", "Um Futur auszudr\u00fccken"], "ans": 0, "hint": "Was kann man durch 'der laufende Mann' ersetzen?", "exp": "Partizipialkonstruktionen ersetzen Relativs\u00e4tze kompakter, typisch in Schriftsprache.", "rule": "Partizipialkonstr. = kompakterer Relativsatz (typisch: formelle Schriftsprache)"}, {"q": "\"Die von Kwame geschriebene Email...\"\nDas Partizip II ist hier:", "opts": ["Attributiv", "Pr\u00e4dikativ", "Adverbial", "Nominal"], "ans": 0, "hint": "Es steht VOR dem Nomen und wird gebeugt \u2014 wie ein Adjektiv.", "exp": "Attributives Partizip: steht vor dem Nomen, wird wie Adjektiv gebeugt (geschriebene).", "rule": "Attributiv = vor dem Nomen + Endung | Pr\u00e4dikativ = nach sein/werden (ohne Endung)"}];
-  var obqIdx=0, obqScore=0, obqAnswered=false, obqResults=[], obqNextHref='module-b2-6-modalpartikeln.html';
-  function obqInit(){obqIdx=0;obqScore=0;obqAnswered=false;obqResults=[];obqRender();}
-  function obqRender(){
-    var d=OBQ_DATA[obqIdx];
-    var dots='<div class="obq-dots">';
-    for(var i=0;i<5;i++){
-      var c='obq-dot';
-      if(i<obqIdx){c+=obqResults[i]?' done':' wrong';}
-      else if(i===obqIdx){c+=' active';}
-      dots+='<div class="'+c+'"></div>';
-    }
-    dots+='</div>';
-    var letters=['A','B','C','D'];
-    var opts=d.opts.map(function(o,i){
-      return '<button class="qopt" id="obqO'+i+'" onclick="obqPick('+i+')">'
-        +'<span class="qletter">'+letters[i]+'</span>'+o+'</button>';
-    }).join('');
-    document.getElementById('obqContainer').innerHTML=
-      '<div class="quiz-qnum">FRAGE '+(obqIdx+1)+' VON 5</div>'
-      +dots
-      +'<div class="quiz-q" style="white-space:pre-line;margin-bottom:6px;">'+d.q+'</div>'
-      +'<div class="quiz-hint" style="font-family:\'DM Mono\',monospace;margin-bottom:16px;">💡 '+d.hint+'</div>'
-      +'<div class="quiz-opts">'+opts+'</div>'
-      +'<div class="qfeedback" id="obqFb">'
-        +'<div class="qft" id="obqFt"></div>'
-        +'<div class="qfb" id="obqFb2"></div>'
-        +'<div class="qfr" id="obqFr"></div>'
-      +'</div>'
-      +'<div class="qnext" id="obqNx">'
-        +'<button class="btn btn-primary" onclick="obqAdv()">'
-        +(obqIdx<4?'N\u00e4chste Frage \u2192':'Ergebnis anzeigen \u2192')
-        +'</button></div>';
-    obqAnswered=false;
-  }
-  function obqPick(idx){
-    if(obqAnswered)return;
-    obqAnswered=true;
-    var d=OBQ_DATA[obqIdx];
-    var ok=(idx===d.ans);
-    if(ok){obqScore++;obqResults[obqIdx]=true;}else{obqResults[obqIdx]=false;}
-    var opts=document.querySelectorAll('#obqContainer .qopt');
-    opts.forEach(function(b,i){
-      b.disabled=true;
-      if(i===d.ans) b.classList.add('correct');
-      if(i===idx&&!ok) b.classList.add('wrong');
-    });
-    var ft=document.getElementById('obqFt');
-    var fb2=document.getElementById('obqFb2');
-    var fr=document.getElementById('obqFr');
-    var fb=document.getElementById('obqFb');
-    ft.className='qft '+(ok?'ok':'no');
-    ft.textContent=ok?'\u2713 Richtig!':'\u2717 Nicht ganz';
-    fb2.textContent=d.exp;
-    fr.textContent='\ud83d\udccc Regel: '+d.rule;
-    fb.classList.add('show',ok?'ok':'no');
-    document.getElementById('obqNx').classList.add('show');
-  }
-  function obqAdv(){
-    if(obqIdx<4){obqIdx++;obqRender();}else{obqShowResult();}
-  }
-  function obqShowResult(){
-    var pct=Math.round(obqScore/5*100);
-    var emoji=pct===100?'\ud83c\udf1f':pct>=80?'\ud83d\udc4f':pct>=60?'\ud83d\udc4d':'\ud83d\udcaa';
-    var msg=pct===100?'Ausgezeichnet! \ud83c\udf89 Du hast alles verstanden!'
-      :pct>=80?'Sehr gut! \ud83d\udc4f Fast perfekt!'
-      :pct>=60?'Gut gemacht! \ud83d\udcaa Noch etwas \u00fcben!'
-      :pct>=40?'Weiter \u00fcben! \ud83d\udcda Lies die Lektion nochmal.'
-      :'Nicht aufgeben! \ud83c\udf1f Du schaffst das!';
-    document.getElementById('obqContainer').innerHTML=
-      '<div style="text-align:center;padding:16px 0;">'
-      +'<div style="font-size:52px;margin-bottom:10px;">'+emoji+'</div>'
-      +'<div class="obq-score">'+obqScore+'/5</div>'
-      +'<div style="font-size:16px;margin:10px 0 20px;color:var(--cream);">'+msg+'</div>'
-      +'<div style="display:inline-flex;align-items:center;gap:8px;background:rgba(52,152,219,0.12);border:1px solid var(--blue);border-radius:50px;padding:9px 22px;color:var(--blue);font-weight:700;margin-bottom:20px;">\u26a1 +'+obqScore*20+' XP</div>'
-      +'<div class="obq-btns">'
-      +'<button class="btn btn-outline" onclick="obqReset()">Nochmal versuchen</button>'
-      +'<button class="btn btn-primary" onclick="window.location.href=obqNextHref">N\u00e4chstes Modul \u2192</button>'
-      +'</div></div>';
-  }
-  function obqReset(){obqIdx=0;obqScore=0;obqAnswered=false;obqResults=[];obqRender();}
-  document.addEventListener('DOMContentLoaded',function(){obqInit();});
-
+var currentLesson=0,xp=0,TOTAL=5,qSt={};
+function initQuiz(li){
+  var el=document.getElementById('qz-'+li);
+  if(!el||el.dataset.ready)return;
+  el.dataset.ready='1';
+  qSt[li]={cur:0,correct:0};
+  renderQ(li);
+}
+function renderQ(li){
+  var el=document.getElementById('qz-'+li);if(!el)return;
+  var s=qSt[li],qs=QD[li];if(!s||s.cur>=qs.length){showResult(li);return;}
+  var q=qs[s.cur];
+  el.innerHTML='<div class="quiz-qnum">FRAGE '+(s.cur+1)+' VON '+qs.length+'</div>'+
+    '<div class="quiz-q" style="white-space:pre-line;">'+q.q+'</div>'+
+    '<div class="quiz-hint">'+q.hint+'</div>'+
+    '<div class="quiz-opts">'+q.opts.map(function(o,i){
+      return '<button class="qopt" id="qz'+li+'-o'+i+'" onclick="pickQ('+li+','+i+')"><span class="qletter">'+('ABCD'[i])+'</span>'+o+'</button>';
+    }).join('')+'</div>'+
+    '<div class="qfeedback" id="qz'+li+'-fb"><div class="qft" id="qz'+li+'-fbt"></div><div class="qfb" id="qz'+li+'-fbb"></div><div class="qfr" id="qz'+li+'-fbr"></div></div>'+
+    '<div class="qnext" id="qz'+li+'-nx"><button class="btn btn-primary" onclick="advQ('+li+')">'+(s.cur<qs.length-1?'N\u00e4chste Frage \u2192':'Ergebnis anzeigen \u2192')+'</button></div>';
+}
+function pickQ(li,idx){
+  var s=qSt[li],q=QD[li][s.cur],ok=idx===q.ans;
+  if(ok){s.correct++;xp+=20;document.getElementById('xpDisp').textContent='\u26a1 '+xp+' XP';}
+  document.querySelectorAll('#qz-'+li+' .qopt').forEach(function(b,i){
+    b.disabled=true;
+    if(i===q.ans)b.classList.add('correct');
+    if(i===idx&&!ok)b.classList.add('wrong');
+  });
+  var fb=document.getElementById('qz'+li+'-fb');
+  fb.classList.add('show',ok?'ok':'no');
+  var fbt=document.getElementById('qz'+li+'-fbt');
+  fbt.className='qft '+(ok?'ok':'no');
+  fbt.textContent=ok?'\u2713 Richtig!':'\u2717 Leider nicht';
+  document.getElementById('qz'+li+'-fbb').textContent=q.exp;
+  document.getElementById('qz'+li+'-fbr').textContent='\U0001F4CC '+q.rule;
+  document.getElementById('qz'+li+'-nx').classList.add('show');
+}
+function advQ(li){qSt[li].cur++;renderQ(li);}
+function showResult(li){
+  var el=document.getElementById('qz-'+li),s=qSt[li],total=QD[li].length;
+  var pct=Math.round(s.correct/total*100),isLast=(li===TOTAL-1);
+  el.innerHTML='<div style="text-align:center;padding:16px 0;">'+
+    '<div style="font-size:44px;margin-bottom:10px;">'+(pct===100?'\U0001F31F':pct>=60?'\U0001F44D':'\U0001F4AA')+'</div>'+
+    '<div style="font-family:\'Playfair Display\',serif;font-size:24px;margin-bottom:6px;">'+s.correct+'/'+total+' richtig</div>'+
+    '<div style="color:var(--gray);font-size:13px;margin-bottom:18px;">'+(pct===100?'Perfekt!':pct>=60?'Sehr gut!':'Nochmal \u00fcben.')+'</div>'+
+    '<div style="display:inline-flex;align-items:center;gap:8px;background:rgba(52,152,219,0.12);border:1px solid var(--blue);border-radius:50px;padding:9px 22px;color:var(--blue);font-weight:700;margin-bottom:20px;">\u26a1 +'+(s.correct*20)+' XP</div><br>'+
+    (isLast?
+      '<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goStep(4,2)">Modul abschlie\u00dfen \u2192</button>':
+      '<button class="btn btn-primary" style="max-width:340px;margin-top:8px;" onclick="goLesson('+(li+1)+')">N\u00e4chste Lektion \u2192</button>')+
+    '</div>';
+}
+function showOverview(){
+  document.getElementById('screen-overview').classList.add('active');
+  document.getElementById('screen-lesson').classList.remove('active');
+  window.scrollTo(0,0);
+}
+function goLesson(idx){
+  currentLesson=idx;
+  document.getElementById('screen-overview').classList.remove('active');
+  document.getElementById('screen-lesson').classList.add('active');
+  document.querySelectorAll('.lesson-pane').forEach(function(p){p.style.display='none';});
+  var pane=document.getElementById('lesson-'+idx);
+  if(pane){pane.style.display='block';pane.querySelectorAll('.step').forEach(function(s,i){s.classList.toggle('active',i===0);});}
+  renderDots();updateProg(idx,0);window.scrollTo(0,0);
+}
+function goStep(li,si){
+  var steps=document.querySelectorAll('#lesson-'+li+' .step');
+  steps.forEach(function(s,i){s.classList.toggle('active',i===si);});
+  document.querySelectorAll('#dotRow .dot').forEach(function(d,i){d.classList.toggle('active',i===si);d.classList.toggle('done',i<si);});
+  if(si===2&&li===TOTAL-1){var stored=parseInt(localStorage.getItem('dw_xp')||'0');localStorage.setItem('dw_xp',stored+xp);}
+  updateProg(li,si);window.scrollTo(0,0);
+}
+function nextStep(li,si){
+  var steps=document.getElementById('lesson-'+li).querySelectorAll('.step'),nx=si+1;
+  if(nx<steps.length){steps[si].classList.remove('active');steps[nx].classList.add('active');updateProg(li,nx);window.scrollTo(0,0);if(nx===1)initQuiz(li);}
+  else{if(li+1<TOTAL)goLesson(li+1);else goStep(TOTAL-1,2);}
+}
+function prevStep(li,si){
+  if(si===0){showOverview();return;}
+  var steps=document.getElementById('lesson-'+li).querySelectorAll('.step');
+  steps[si].classList.remove('active');steps[si-1].classList.add('active');
+  updateProg(li,si-1);window.scrollTo(0,0);
+}
+function renderDots(){
+  var row=document.getElementById('dotRow');row.innerHTML='';
+  for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='dot'+(i<currentLesson?' done':i===currentLesson?' active':'');(function(x){d.onclick=function(){goLesson(x);};})(i);row.appendChild(d);}
+}
+function updateProg(li,si){document.getElementById('progFill').style.width=((li*2+si)/(TOTAL*2)*100)+'%';}
+document.addEventListener('DOMContentLoaded',function(){
+  document.body.classList.add('ready');
+  xp=0;document.getElementById('xpDisp').textContent='\u26a1 0 XP';
+});
+if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
 </script>
 </body>
 </html>
