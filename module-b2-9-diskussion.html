@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — B2 Modul 9: Diskutieren und Debattieren</title>
+<link rel="stylesheet" href="deutschweg-theme.css">
+<style>
+  :root { --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc; --gold:#c9a84c; --red:#c0392b; --green:#27ae60; --blue:#3498db; --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a; --border:rgba(201,168,76,0.2); --ki:#e67e22; --kii:#9b59b6; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); position:sticky; top:0; z-index:50; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-size:13px; }
+  .back-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--blue); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); } .dot.active { background:var(--blue); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; } .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; font-family:'DM Sans',sans-serif; }
+  .btn-primary { background:var(--blue); color:var(--white); width:100%; }
+  .btn-primary:hover { background:#2980b9; }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn.speaking { background:var(--blue); color:var(--white); }
+  .en-help { background:rgba(52,152,219,0.05); border:1px dashed rgba(52,152,219,0.25); border-radius:10px; margin:12px 0; }
+  .en-help summary { padding:10px 16px; cursor:pointer; font-size:13px; color:var(--blue); font-family:'DM Mono',monospace; list-style:none; display:flex; align-items:center; gap:8px; }
+  .en-help summary::-webkit-details-marker { display:none; }
+  .en-help[open] summary { border-bottom:1px dashed rgba(52,152,219,0.2); }
+  .en-help-body { padding:12px 16px; font-size:13px; color:rgba(245,240,232,.7); line-height:1.8; }
+  .en-help-body p { margin-bottom:8px; }
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-note { font-size:12px; color:var(--gray); line-height:1.6; }
+  .comp-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .comp-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:10px 14px; text-align:left; border-bottom:2px solid rgba(255,255,255,0.1); }
+  .comp-table td { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'DM Mono',monospace; font-size:13px; vertical-align:top; }
+  .comp-table tr:last-child td { border-bottom:none; }
+  .comp-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+  .kh { color:var(--ki); font-weight:700; } .fh { color:var(--kii); font-weight:700; }
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Mono',monospace; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--blue); background:rgba(52,152,219,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; } .qft.ok { color:var(--green); } .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(52,152,219,0.1); border-radius:8px; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; }
+  .qnext { display:none; } .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(52,152,219,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.2); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(52,152,219,0.12); border:1px solid var(--blue); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--blue); font-size:18px; margin:18px 0; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+</style>
+<style>
+/* LIGHT THEME OVERRIDE */
+:root { --black:#F8FAFC; --white:#1F2937; --cream:#4B5563; --gold:#3B82F6; --red:#EF4444; --green:#10B981; --blue:#3B82F6; --gray:#9CA3AF; --card-bg:#FFFFFF; --card2-bg:#F8FAFC; --border:#E5E7EB; --ki:#F59E0B; --kii:#8B5CF6; }
+body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-serif; }
+.top-nav { background:white; border-bottom:1px solid #E5E7EB; backdrop-filter:none; }
+.btn-primary { background:#3B82F6; color:white; } .btn-outline { background:transparent; border:1px solid #3B82F6; color:#3B82F6; }
+.card { background:#FFFFFF; border:1px solid #E5E7EB; box-shadow:0 1px 3px rgba(0,0,0,0.07); }
+.info-box { background:#EFF6FF; border-left:3px solid #3B82F6; color:#1D4ED8; }
+.warn-box { background:#EFF6FF; border-left:3px solid #3B82F6; color:#1D4ED8; }
+.danger-box { background:#FEF2F2; border-left:3px solid #EF4444; color:#991B1B; }
+.success-box { background:#ECFDF5; border-left:3px solid #10B981; color:#065F46; }
+.qopt { border:1px solid #E5E7EB; background:white; color:#1F2937; }
+.qopt:hover:not([disabled]) { border-color:#3B82F6; background:#EFF6FF; }
+.xp-badge { background:#EFF6FF; border:1px solid #3B82F6; color:#3B82F6; }
+.speak-btn { background:#EFF6FF; border-color:#DBEAFE; color:#3B82F6; }
+.speak-btn.speaking { background:#3B82F6; color:white; }
+.lesson-card { background:#F8FAFC; border:1px solid #E5E7EB; }
+.ex-card { background:#F8FAFC; border:1px solid #E5E7EB; }
+</style>
+</head>
+<body>
+<div id="screen-overview" class="screen active">
+  <nav class="dw-nav"><div class="dw-nav-inner">
+    <a href="deutschweg-prototype.html" class="dw-logo"><div class="dw-logo-icon">D</div><span class="dw-logo-text">Deutsch<span>Weg</span></span></a>
+    <a href="exam-vault.html" style="font-size:13px;font-weight:600;color:#1D4ED8;text-decoration:none;margin-right:8px;">📝 Exams</a>
+    <a href="deutschweg-prototype.html" class="dw-btn dw-btn-secondary">← Back to Dashboard</a>
+  </div></nav>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">B2 · Sprechen · Modul 9</div>
+    <h1 class="lesson-h" style="font-size:36px;">Diskutieren und <span style="color:var(--blue)">Debattieren</span></h1>
+    <p class="body-text">Meinungen ausdrücken, Gegenargumente entkräften, Kompromisse finden — die Kernkompetenzen mündlicher B2-Kommunikation. Du lernst die Sprache der Diskussion systematisch kennen.</p>
+    <details class="en-help"><summary>🇬🇧 What will I learn here?</summary>
+      <div class="en-help-body"><p>B2 speaking tasks require expressing opinions, agreeing/disagreeing, presenting arguments, conceding points, and redirecting discussions. This module teaches you fixed phrases and strategies for each function, essential for the Goethe B2 speaking exam.</p></div>
+    </details>
+    <div class="info-box"><strong>Lernziele:</strong><br><br>
+      ✦ Meinungen strukturiert ausdrücken<br>
+      ✦ Zustimmen, ablehnen, differenzieren<br>
+      ✦ Argumente aufbauen und entkräften<br>
+      ✦ Diskussionen leiten und moderieren<br>
+      ✦ Kompromissbereitschaft sprachlich zeigen
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">💬</div><div><div class="lc-title">Lektion 1 — Meinungen ausdrücken</div><div class="lc-desc">Ich bin der Meinung…, meiner Ansicht nach…, Ich halte es für… Differenzierte Positionierung.</div></div><div class="lc-tag" style="color:var(--blue);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">✅</div><div><div class="lc-title">Lektion 2 — Zustimmen und Ablehnen</div><div class="lc-desc">Da stimme ich zu / Da bin ich anderer Meinung. Nuanciert zustimmen und widersprechen.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">⚔️</div><div><div class="lc-title">Lektion 3 — Argumente und Gegenargumente</div><div class="lc-desc">Einerseits…andererseits. Einwände formulieren. Zwar…aber. Konzessionen machen.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">🎤</div><div><div class="lc-title">Lektion 4 — Diskussionsleitung</div><div class="lc-desc">Moderationsphrasen. Das Wort erteilen, zusammenfassen, zum nächsten Punkt übergehen.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">🏆</div><div><div class="lc-title">Lektion 5 — B2-Prüfungsgespräch simulieren</div><div class="lc-desc">Typische Themen, Bewertungskriterien, häufige Fehler und Strategien für die Prüfung.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
+  </div>
+</div>
+
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lektionen</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--blue);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- LESSON 0 -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0"><div class="card">
+        <div class="concept-tag">B2 · Modul 9 · Lektion 1 von 5</div>
+        <h2 class="lesson-h">Meinungen ausdrücken</h2>
+        <p class="body-text">Im Deutschen gibt es viele Möglichkeiten, eine Meinung zu äußern — von vorsichtig bis entschlossen. B2 verlangt Differenzierung.</p>
+        <div class="sec-label">STARKE MEINUNG</div>
+        <div class="ex-list">
+          <div class="ex-card"><div><div class="ex-de">Ich bin fest davon überzeugt, dass Bildung kostenlos sein sollte.</div><div class="ex-note">Kwame — starke, klare Überzeugung</div></div></div>
+          <div class="ex-card"><div><div class="ex-de">Für mich steht außer Frage, dass wir handeln müssen.</div><div class="ex-note">Amina — kaum Zweifel</div></div></div>
+        </div>
+        <div class="sec-label">VORSICHTIGE MEINUNG</div>
+        <div class="ex-list">
+          <div class="ex-card"><div><div class="ex-de">Ich tendiere dazu zu glauben, dass…</div><div class="ex-note">Kofi — unsicher, offen für Diskussion</div></div></div>
+          <div class="ex-card"><div><div class="ex-de">Soweit ich das beurteilen kann, scheint es so, dass…</div><div class="ex-note">Fatima — epistemische Bescheidenheit</div></div></div>
+        </div>
+        <div class="comp-wrap"><table class="comp-table">
+          <tr><th>REGISTER</th><th>AUSDRUCK</th></tr>
+          <tr><td class="kh">Stark</td><td>Ich bin überzeugt, dass… / Ich halte X für unerlässlich</td></tr>
+          <tr><td style="color:var(--blue)">Neutral</td><td>Meiner Meinung nach… / Ich denke, dass…</td></tr>
+          <tr><td class="fh">Vorsichtig</td><td>Es scheint mir, dass… / Ich würde sagen…</td></tr>
+        </table></div>
+        <details class="en-help"><summary>🇬🇧 English safety net</summary>
+          <div class="en-help-body"><p><strong>Expressing opinions:</strong> German has a spectrum from strong conviction to hedging. For B2 exams, show range — don't always use <em>Ich denke</em>. Use <em>Ich bin überzeugt</em> for strong views, <em>Es scheint mir</em> for tentative ones. The key phrase pattern: <em>Meiner Meinung/Ansicht nach + verb</em> inverts word order after the adverbial.</p></div>
+        </details>
+        <button class="btn btn-primary" onclick="nextStep(0,0)">Weiter →</button>
+      </div></div>
+      <div class="step" id="l0-s1"><div class="card">
+        <div class="quiz-qnum">QUIZ · LEKTION 1 · FRAGE <span id="l0-qnum">1</span> VON 2</div>
+        <div class="quiz-q" id="l0-q"></div>
+        <div class="quiz-hint" id="l0-hint"></div>
+        <div class="quiz-opts" id="l0-opts"></div>
+        <div class="qfeedback" id="l0-fb"><div class="qft" id="l0-fbt"></div><div class="qfb" id="l0-fbb"></div><div class="qfr" id="l0-fbr"></div></div>
+        <button class="btn btn-primary qnext" id="l0-next" onclick="advQ(0)">Nächste Frage →</button>
+      </div></div>
+    </div>
+
+    <!-- LESSON 1 -->
+    <div id="lesson-1" class="lesson-pane" style="display:none">
+      <div class="step active" id="l1-s0"><div class="card">
+        <div class="concept-tag">B2 · Modul 9 · Lektion 2 von 5</div>
+        <h2 class="lesson-h">Zustimmen und Ablehnen</h2>
+        <p class="body-text">Zustimmung und Widerspruch sind selten absolut. B2 erfordert, Nuancen wie teilweise Zustimmung oder bedingten Widerspruch auszudrücken.</p>
+        <div class="sec-label">ZUSTIMMUNG</div>
+        <div class="ex-list">
+          <div class="ex-card"><div><div class="ex-de">Da stimme ich Ihnen vollkommen zu.</div><div class="ex-note">Ngozi — volle Zustimmung</div></div></div>
+          <div class="ex-card"><div><div class="ex-de">Das sehe ich genauso. / Da haben Sie vollkommen Recht.</div><div class="ex-note">Chidi — Bestätigung</div></div></div>
+          <div class="ex-card"><div><div class="ex-de">Im Großen und Ganzen teile ich Ihre Meinung, obwohl…</div><div class="ex-note">teilweise Zustimmung mit Einschränkung</div></div></div>
+        </div>
+        <div class="sec-label">ABLEHNUNG</div>
+        <div class="ex-list">
+          <div class="ex-card"><div><div class="ex-de">Da bin ich anderer Meinung. Ich sehe das etwas anders.</div><div class="ex-note">Kwame — respektvoller Widerspruch</div></div></div>
+          <div class="ex-card"><div><div class="ex-de">Das stimmt zwar, aber man sollte auch bedenken, dass…</div><div class="ex-note">Amina — Konzession vor Gegenargument</div></div></div>
+          <div class="ex-card"><div><div class="ex-de">Mit Verlaub, ich halte diesen Ansatz für problematisch, weil…</div><div class="ex-note">höfliche aber klare Ablehnung</div></div></div>
+        </div>
+        <div class="warn-box"><strong>Tipp!</strong> Direkter Widerspruch ohne Begründung wirkt unhöflich. Immer: <em>Das stimmt zwar, aber…</em> oder <em>Ich sehe das anders, denn…</em></div>
+        <details class="en-help"><summary>🇬🇧 English safety net</summary>
+          <div class="en-help-body"><p><strong>Agreeing/Disagreeing:</strong> Full agreement: <em>Da stimme ich zu / Das sehe ich genauso</em>. Partial agreement: <em>Im Großen und Ganzen…, obwohl</em>. Disagreement: <em>Da bin ich anderer Meinung / Ich sehe das anders</em>. Always soften disagreement with a concession (<em>Das stimmt zwar, aber…</em>) for a polite tone.</p></div>
+        </details>
+        <button class="btn btn-primary" onclick="nextStep(1,0)">Weiter →</button>
+      </div></div>
+      <div class="step" id="l1-s1"><div class="card">
+        <div class="quiz-qnum">QUIZ · LEKTION 2 · FRAGE <span id="l1-qnum">1</span> VON 2</div>
+        <div class="quiz-q" id="l1-q"></div>
+        <div class="quiz-hint" id="l1-hint"></div>
+        <div class="quiz-opts" id="l1-opts"></div>
+        <div class="qfeedback" id="l1-fb"><div class="qft" id="l1-fbt"></div><div class="qfb" id="l1-fbb"></div><div class="qfr" id="l1-fbr"></div></div>
+        <button class="btn btn-primary qnext" id="l1-next" onclick="advQ(1)">Nächste Frage →</button>
+      </div></div>
+    </div>
+
+    <!-- LESSON 2 -->
+    <div id="lesson-2" class="lesson-pane" style="display:none">
+      <div class="step active" id="l2-s0"><div class="card">
+        <div class="concept-tag">B2 · Modul 9 · Lektion 3 von 5</div>
+        <h2 class="lesson-h">Argumente und Gegenargumente</h2>
+        <p class="body-text">Ein gut strukturiertes Argument hat drei Teile: These (Behauptung) → Begründung → Beleg/Beispiel. Gegenargumente entkräftet man durch Konzession + Widerlegung.</p>
+        <div class="sec-label">ARGUMENT AUFBAUEN</div>
+        <div class="comp-wrap"><table class="comp-table">
+          <tr><th>SCHRITT</th><th>PHRASE</th></tr>
+          <tr><td class="kh">These</td><td>Ich bin der Ansicht, dass Homeoffice die Produktivität steigert.</td></tr>
+          <tr><td style="color:var(--blue)">Begründung</td><td>Denn Mitarbeiter haben weniger Ablenkungen und können flexibler arbeiten.</td></tr>
+          <tr><td class="fh">Beleg</td><td>Eine Studie der Universität Stanford belegt, dass…</td></tr>
+        </table></div>
+        <div class="sec-label">GEGENARGUMENT ENTKRÄFTEN</div>
+        <div class="ex-list">
+          <div class="ex-card"><div><div class="ex-de">Zwar ist es richtig, dass Homeoffice soziale Kontakte reduziert, aber dennoch überwiegen die Vorteile.</div><div class="ex-note">Kofi — Zwar…aber-Struktur</div></div></div>
+          <div class="ex-card"><div><div class="ex-de">Auch wenn man einwendet, dass Kontrolle schwieriger wird, lässt sich dagegen anführen, dass Vertrauen produktiver ist.</div><div class="ex-note">Fatima — auch wenn…lässt sich anführen</div></div></div>
+        </div>
+        <div class="info-box"><strong>Merke!</strong> Struktur für B2-Diskussion:<br>1. Position klar nennen<br>2. Stärkstes Argument zuerst<br>3. Gegenargument zugeben (Konzession)<br>4. Gegenargument entkräften<br>5. Schlussfolgerung ziehen</div>
+        <details class="en-help"><summary>🇬🇧 English safety net</summary>
+          <div class="en-help-body"><p><strong>Argumentation structure:</strong> Thesis → Reason → Evidence. To rebut: <em>Zwar…aber</em> = "While it's true that…, nevertheless". <em>Auch wenn…lässt sich anführen</em> = "Even if…one can argue". Always concede something before you rebut — it sounds more sophisticated and is rewarded in B2 exams.</p></div>
+        </details>
+        <button class="btn btn-primary" onclick="nextStep(2,0)">Weiter →</button>
+      </div></div>
+      <div class="step" id="l2-s1"><div class="card">
+        <div class="quiz-qnum">QUIZ · LEKTION 3 · FRAGE <span id="l2-qnum">1</span> VON 2</div>
+        <div class="quiz-q" id="l2-q"></div>
+        <div class="quiz-hint" id="l2-hint"></div>
+        <div class="quiz-opts" id="l2-opts"></div>
+        <div class="qfeedback" id="l2-fb"><div class="qft" id="l2-fbt"></div><div class="qfb" id="l2-fbb"></div><div class="qfr" id="l2-fbr"></div></div>
+        <button class="btn btn-primary qnext" id="l2-next" onclick="advQ(2)">Nächste Frage →</button>
+      </div></div>
+    </div>
+
+    <!-- LESSON 3 -->
+    <div id="lesson-3" class="lesson-pane" style="display:none">
+      <div class="step active" id="l3-s0"><div class="card">
+        <div class="concept-tag">B2 · Modul 9 · Lektion 4 von 5</div>
+        <h2 class="lesson-h">Diskussionsleitung</h2>
+        <p class="body-text">Bei Gruppenaufgaben im B2-Sprechen kann man die Moderation übernehmen — das zeigt Selbstständigkeit und Sprachkompetenz gleichzeitig.</p>
+        <div class="sec-label">DISKUSSION ERÖFFNEN</div>
+        <div class="ex-list">
+          <div class="ex-card"><div><div class="ex-de">Ich schlage vor, dass wir mit dem ersten Punkt beginnen.</div><div class="ex-note">Ngozi — Initiative ergreifen</div></div></div>
+          <div class="ex-card"><div><div class="ex-de">Sollen wir uns zunächst über X einigen und dann zu Y übergehen?</div><div class="ex-note">Struktur vorschlagen</div></div></div>
+        </div>
+        <div class="sec-label">DAS WORT ÜBERGEBEN</div>
+        <div class="ex-list">
+          <div class="ex-card"><div><div class="ex-de">Was meinen Sie dazu, Chidi?</div><div class="ex-note">andere einbeziehen</div></div></div>
+          <div class="ex-card"><div><div class="ex-de">Ich würde gerne Kwames Meinung dazu hören.</div><div class="ex-note">höflich übergeben</div></div></div>
+        </div>
+        <div class="sec-label">ZUSAMMENFASSEN UND ABSCHLIESSEN</div>
+        <div class="ex-list">
+          <div class="ex-card"><div><div class="ex-de">Fassen wir kurz zusammen: Wir sind uns einig, dass…, aber bei… gibt es noch unterschiedliche Meinungen.</div><div class="ex-note">Amina — Zusammenfassung</div></div></div>
+          <div class="ex-card"><div><div class="ex-de">Ich denke, wir haben alle wichtigen Aspekte besprochen. Kommen wir zum Ergebnis…</div><div class="ex-note">Abschluss</div></div></div>
+        </div>
+        <details class="en-help"><summary>🇬🇧 English safety net</summary>
+          <div class="en-help-body"><p><strong>Moderating a discussion:</strong> Opening: <em>Ich schlage vor, wir beginnen mit…</em>. Involving others: <em>Was meinen Sie dazu?</em> / <em>Ich würde gerne X's Meinung hören</em>. Summarizing: <em>Fassen wir zusammen…</em>. Closing: <em>Kommen wir zum Ergebnis</em>. In Goethe B2 speaking tasks (Part 2), showing moderating skills is explicitly rewarded.</p></div>
+        </details>
+        <button class="btn btn-primary" onclick="nextStep(3,0)">Weiter →</button>
+      </div></div>
+      <div class="step" id="l3-s1"><div class="card">
+        <div class="quiz-qnum">QUIZ · LEKTION 4 · FRAGE <span id="l3-qnum">1</span> VON 2</div>
+        <div class="quiz-q" id="l3-q"></div>
+        <div class="quiz-hint" id="l3-hint"></div>
+        <div class="quiz-opts" id="l3-opts"></div>
+        <div class="qfeedback" id="l3-fb"><div class="qft" id="l3-fbt"></div><div class="qfb" id="l3-fbb"></div><div class="qfr" id="l3-fbr"></div></div>
+        <button class="btn btn-primary qnext" id="l3-next" onclick="advQ(3)">Nächste Frage →</button>
+      </div></div>
+    </div>
+
+    <!-- LESSON 4 -->
+    <div id="lesson-4" class="lesson-pane" style="display:none">
+      <div class="step active" id="l4-s0"><div class="card">
+        <div class="concept-tag">B2 · Modul 9 · Lektion 5 von 5</div>
+        <h2 class="lesson-h">B2-Prüfungsgespräch simulieren</h2>
+        <p class="body-text">Der Sprechteil der Goethe B2 Prüfung besteht aus drei Teilen. Wer die typischen Phrasen kennt und Strategien anwendet, punktet deutlich mehr.</p>
+        <div class="comp-wrap"><table class="comp-table">
+          <tr><th>PRÜFUNGSTEIL</th><th>AUFGABE</th><th>STRATEGIE</th></tr>
+          <tr><td class="kh">Teil 1</td><td>Thema vorstellen</td><td>These + 2 Argumente + Schluss</td></tr>
+          <tr><td style="color:var(--blue)">Teil 2</td><td>Diskussion + Einigung</td><td>Zuhören, Konzession, Kompromiss</td></tr>
+          <tr><td class="fh">Teil 3</td><td>Bildbeschreibung</td><td>Ich sehe… / Das könnte… bedeuten</td></tr>
+        </table></div>
+        <div class="sec-label">HÄUFIGE FEHLER</div>
+        <div class="danger-box">❌ <em>Ich habe keine Meinung</em> — Prüfer bewertet Kommunikation, nicht Inhalt. Nimm immer eine Position ein!<br><br>❌ Nur kurze Antworten geben — Elaboriere immer: <em>…weil… / …was bedeutet, dass…</em></div>
+        <div class="success-box">✅ Wenn du ein Wort nicht weißt: Umschreib es! <em>Das Ding, mit dem man…</em> / <em>Eine Art von…</em> — Kommunikationsstrategie zeigt Kompetenz.</div>
+        <div class="sec-label">TYPISCHE B2-THEMEN</div>
+        <div class="ex-list">
+          <div class="ex-card"><div><div class="ex-de">Digitalisierung in der Schule • Homeoffice • Klimawandel und persönliche Verantwortung • Migration und Integration • Gesundheitssystem</div><div class="ex-note">Kofi — diese Themen erscheinen regelmäßig in Goethe B2</div></div></div>
+        </div>
+        <details class="en-help"><summary>🇬🇧 English safety net</summary>
+          <div class="en-help-body"><p><strong>B2 Speaking exam tips:</strong> Always take a position — examiners grade communication, not correct opinions. If stuck on a word, paraphrase: <em>Das Ding, mit dem man…</em> (the thing you use to…). Use connectors to extend answers: <em>…weil…, was bedeutet, dass…, obwohl…</em>. Practice 2-minute monologues on typical topics like digitalization, environment, health.</p></div>
+        </details>
+        <button class="btn btn-primary" onclick="nextStep(4,0)">Quiz starten →</button>
+      </div></div>
+      <div class="step" id="l4-s1"><div class="card">
+        <div class="quiz-qnum">QUIZ · LEKTION 5 · FRAGE <span id="l4-qnum">1</span> VON 2</div>
+        <div class="quiz-q" id="l4-q"></div>
+        <div class="quiz-hint" id="l4-hint"></div>
+        <div class="quiz-opts" id="l4-opts"></div>
+        <div class="qfeedback" id="l4-fb"><div class="qft" id="l4-fbt"></div><div class="qfb" id="l4-fbb"></div><div class="qfr" id="l4-fbr"></div></div>
+        <button class="btn btn-primary qnext" id="l4-next" onclick="advQ(4)">Ergebnis sehen →</button>
+      </div></div>
+      <div class="step" id="l4-s2">
+        <div class="complete-wrap">
+          <div class="complete-icon">🎤</div>
+          <h2 class="lesson-h">Modul abgeschlossen!</h2>
+          <p class="body-text">Du beherrschst jetzt die Sprache der Diskussion auf B2-Niveau. Mit diesen Phrasen und Strategien bist du für das Goethe B2 Sprechen gut vorbereitet.</p>
+          <div class="xp-badge">⚡ +200 XP</div>
+          <button class="btn btn-primary" style="margin-top:16px;" onclick="window.location.href='module-b2-10-hoeren-lesen-b2.html'">Weiter zu Modul 10 →</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="dw-next-step-bar">
+  <a href="module-b2-8-wissenschaftlich.html" class="dw-next-step-link">← Modul 8</a>
+  <a href="deutschweg-prototype.html" class="dw-next-step-link">🏠 Dashboard</a>
+  <a href="module-b2-10-hoeren-lesen-b2.html" class="dw-next-step-link dw-next-step-primary">Modul 10 →</a>
+</div>
+
+<script>
+var lessonSteps=[2,2,2,2,3];
+var QD={
+  0:[
+    {q:"Welche Phrase drückt eine starke, überzeugte Meinung aus?",hint:"Denk an Gewissheit und Überzeugung",opts:["Ich würde sagen, dass…","Ich bin fest davon überzeugt, dass…","Es könnte sein, dass…","Ich bin mir nicht sicher, ob…"],ans:1,exp:"'Ich bin fest davon überzeugt' drückt starke Überzeugung aus — stärker als 'Ich würde sagen' oder 'Es könnte sein'.",rule:"Stärke der Meinung: überzeugt > denke > würde sagen > nicht sicher"},
+    {q:"Welche Konstruktion zeigt epistemische Vorsicht (hedging)?",hint:"Der Sprecher ist unsicher oder vorsichtig",opts:["Für mich steht außer Frage, dass…","Ich bin der festen Überzeugung, dass…","Soweit ich das beurteilen kann, scheint es…","Ich halte X für unerlässlich"],ans:2,exp:"'Soweit ich das beurteilen kann, scheint es…' ist typisches Hedging — der Sprecher schränkt seine Aussage bewusst ein.",rule:"Hedging = Einschränkung des Wahrheitsanspruchs durch Modalverben und Einschränkungsformeln"}
+  ],
+  1:[
+    {q:"Kwame stimmt einer Aussage teilweise zu, hat aber eine Einschränkung. Welche Phrase passt?",hint:"Zustimmung + Einschränkung kombiniert",opts:["Da bin ich anderer Meinung.","Im Großen und Ganzen teile ich Ihre Meinung, obwohl…","Das stimmt überhaupt nicht.","Ich lehne das vollständig ab."],ans:1,exp:"'Im Großen und Ganzen…, obwohl' drückt partielle Zustimmung mit Einschränkung aus — typisch für differenzierte B2-Kommunikation.",rule:"Partielle Zustimmung: Im Großen und Ganzen + Einschränkung mit obwohl/allerdings"},
+    {q:"Wie beginnt man einen respektvollen Widerspruch?",hint:"Höflich, aber klar anderer Meinung sein",opts:["Das ist völliger Unsinn!","Da bin ich anderer Meinung. Ich sehe das etwas anders.","Schweigen und nicken","Ja, natürlich, Sie haben Recht."],ans:1,exp:"'Da bin ich anderer Meinung. Ich sehe das etwas anders.' ist respektvoll und klar — ideal für B2-Diskussionen.",rule:"Respektvoller Widerspruch: Da bin ich anderer Meinung + Begründung"}
+  ],
+  2:[
+    {q:"Welche Struktur ist typisch für ein Gegenargument mit Konzession?",hint:"Erst zugeben, dann widerlegen",opts:["Nein, das ist falsch.","Zwar ist X richtig, aber dennoch überwiegen die Vorteile von Y.","Ich stimme dem völlig zu.","Das hat nichts mit dem Thema zu tun."],ans:1,exp:"'Zwar…aber dennoch' ist die klassische Konzessionsstruktur: Erst das Gegenargument zugeben, dann die eigene Position bekräftigen.",rule:"Zwar (Konzession) + aber/dennoch (Widerlegung) — zeigt Differenzierungsfähigkeit"},
+    {q:"In welcher Reihenfolge baut man ein Argument auf?",hint:"Denk an These → Begründung → Beleg",opts:["Beleg → These → Begründung","These → Begründung → Beleg/Beispiel","Begründung → Beleg → These","Beispiel → These → Begründung"],ans:1,exp:"Die Standardstruktur: These (Was ich behaupte) → Begründung (Warum) → Beleg/Beispiel (Beweis). Diese Reihenfolge wird in B2 erwartet.",rule:"TBB-Struktur: These → Begründung → Beleg"}
+  ],
+  3:[
+    {q:"Wie übergibt man das Wort an eine andere Person in der Diskussion?",hint:"Einbeziehen, nicht ignorieren",opts:["Ich rede weiter.","Was meinen Sie dazu, Amina?","Bitte schweigen Sie.","Das Thema ist unwichtig."],ans:1,exp:"'Was meinen Sie dazu?' ist die direkte, höfliche Methode, jemanden in die Diskussion einzubeziehen. Im B2-Sprechen wird das ausdrücklich bewertet.",rule:"Einbeziehen: Was meinen Sie dazu? / Ich würde gerne X's Meinung hören"},
+    {q:"Wie fasst man eine Diskussion zusammen?",hint:"Ergebnisse benennen, Unterschiede anerkennen",opts:["Das war langweilig.","Fassen wir zusammen: Wir sind uns einig, dass…, aber bei… gibt es unterschiedliche Meinungen.","Wir sind uns in allem einig.","Ich habe keine Zeit mehr."],ans:1,exp:"Eine gute Zusammenfassung nennt Einigungspunkte UND verbleibende Unterschiede — das zeigt, dass die Diskussion differenziert war.",rule:"Zusammenfassung: Konsens benennen + Differenzen anerkennen"}
+  ],
+  4:[
+    {q:"Was soll man tun, wenn man ein Wort auf Deutsch nicht kennt?",hint:"Kommunikationsstrategien für die Prüfung",opts:["Schweigen und auf die nächste Frage warten","Das Wort auf Englisch sagen","Das Wort umschreiben: 'Das Ding, mit dem man…'","Den Prüfer um Übersetzung bitten"],ans:2,exp:"Umschreiben zeigt Kommunikationskompetenz! 'Das Ding, mit dem man…' oder 'Eine Art von…' demonstriert aktive Sprachverwendung, die im B2 explizit bewertet wird.",rule:"Kommunikationsstrategie: Umschreibung statt Schweigen"},
+    {q:"Welcher Tipp ist für das B2-Sprechen FALSCH?",hint:"Was sollte man NICHT tun?",opts:["Immer eine klare Position einnehmen","Antworten durch 'weil' und 'was bedeutet, dass' erweitern","Sagen: 'Ich habe keine Meinung zu diesem Thema'","Zustimmung und Ablehnung differenziert ausdrücken"],ans:2,exp:"'Ich habe keine Meinung' ist ein häufiger Fehler! Der Prüfer bewertet Kommunikationsfähigkeit — man muss immer eine Position vertreten, auch wenn man nicht sehr überzeugt ist.",rule:"Prüfungsstrategie: Immer eine Position einnehmen und begründen"}
+  ]
+};
+var curLesson=0,xp=0,qIdx={},qDone={};
+function $(id){return document.getElementById(id);}
+function showOverview(){$('screen-lesson').classList.remove('active');$('screen-overview').classList.add('active');}
+function goLesson(li){curLesson=li;$('screen-overview').classList.remove('active');$('screen-lesson').classList.add('active');var panes=document.querySelectorAll('.lesson-pane');panes.forEach(function(p){p.style.display='none';});$('lesson-'+li).style.display='block';var steps=$('lesson-'+li).querySelectorAll('.step');steps.forEach(function(s){s.classList.remove('active');});steps[0].classList.add('active');renderDots(li);updateProg(li,0);if(!qIdx[li]){initQuiz(li);}xpDisp();}
+function initQuiz(li){qIdx[li]=0;qDone[li]=false;renderQ(li);}
+function renderQ(li){var d=QD[li][qIdx[li]];if(!d)return;$(  'l'+li+'-q').textContent=d.q;$('l'+li+'-hint').textContent=d.hint;$('l'+li+'-qnum').textContent=(qIdx[li]+1);var opts=$('l'+li+'-opts');opts.innerHTML='';var ltrs=['A','B','C','D'];d.opts.forEach(function(o,i){var b=document.createElement('button');b.className='qopt';b.innerHTML='<span class="qletter">'+ltrs[i]+'</span>'+o;b.onclick=function(){pickQ(li,i);};opts.appendChild(b);});$('l'+li+'-fb').className='qfeedback';$('l'+li+'-next').className='btn btn-primary qnext';}
+function pickQ(li,idx){var d=QD[li][qIdx[li]];var opts=$('l'+li+'-opts').querySelectorAll('.qopt');opts.forEach(function(b){b.disabled=true;});opts[idx].classList.add(idx===d.ans?'correct':'wrong');opts[d.ans].classList.add('correct');var ok=idx===d.ans;if(ok)xp+=20;var fb=$('l'+li+'-fb');fb.className='qfeedback '+(ok?'ok':'no')+' show';$('l'+li+'-fbt').className='qft '+(ok?'ok':'no');$('l'+li+'-fbt').textContent=ok?'Richtig! ✓':'Falsch ✗';$('l'+li+'-fbb').textContent=d.exp;$('l'+li+'-fbr').textContent='Regel: '+d.rule;$('l'+li+'-next').className='btn btn-primary qnext show';xpDisp();}
+function advQ(li){if(qIdx[li]<QD[li].length-1){qIdx[li]++;renderQ(li);}else{if(li===4){showResult(4);}else{goLesson(li+1);}}}
+function showResult(li){var steps=$('lesson-4').querySelectorAll('.step');steps.forEach(function(s){s.classList.remove('active');});steps[2].classList.add('active');localStorage.setItem('dw_mod_b2_9_done','1');var tot=parseInt(localStorage.getItem('dw_xp')||'0');localStorage.setItem('dw_xp',tot+xp);}
+function renderDots(li){var row=$('dotRow');row.innerHTML='';var total=lessonSteps[li];for(var i=0;i<total;i++){var d=document.createElement('div');d.className='dot';row.appendChild(d);}row.children[0].classList.add('active');}
+function updateProg(li,si){var pct=Math.round(((li*2+si)/(lessonSteps.reduce(function(a,b){return a+b;},0)))*100);$('progFill').style.width=pct+'%';}
+function nextStep(li,si){var steps=$('lesson-'+li).querySelectorAll('.step');steps[si].classList.remove('active');steps[si+1].classList.add('active');updateProg(li,si+1);var dots=$('dotRow').children;if(dots[si])dots[si].classList.replace('active','done');if(dots[si+1])dots[si+1].classList.add('active');if(si+1===1){initQuiz(li);}}
+function xpDisp(){$('xpDisp').textContent='⚡ '+xp+' XP';}
+function speakSentence(btn,text){if('speechSynthesis' in window){window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=0.9;btn.classList.add('speaking');u.onend=function(){btn.classList.remove('speaking');};window.speechSynthesis.speak(u);}}
+document.body.classList.add('ready');
+</script>
+</body>
+</html>

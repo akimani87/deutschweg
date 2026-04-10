@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — B2 Modul 12: Schreiben auf B2</title>
+<link rel="stylesheet" href="deutschweg-theme.css">
+<style>
+  :root { --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc; --gold:#c9a84c; --red:#c0392b; --green:#27ae60; --blue:#3498db; --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a; --border:rgba(201,168,76,0.2); --ki:#e67e22; --kii:#9b59b6; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); position:sticky; top:0; z-index:50; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-size:13px; }
+  .back-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--blue); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); } .dot.active { background:var(--blue); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; } .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; font-family:'DM Sans',sans-serif; }
+  .btn-primary { background:var(--blue); color:var(--white); width:100%; }
+  .btn-primary:hover { background:#2980b9; }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .en-help { background:rgba(52,152,219,0.05); border:1px dashed rgba(52,152,219,0.25); border-radius:10px; margin:12px 0; }
+  .en-help summary { padding:10px 16px; cursor:pointer; font-size:13px; color:var(--blue); font-family:'DM Mono',monospace; list-style:none; display:flex; align-items:center; gap:8px; }
+  .en-help summary::-webkit-details-marker { display:none; }
+  .en-help[open] summary { border-bottom:1px dashed rgba(52,152,219,0.2); }
+  .en-help-body { padding:12px 16px; font-size:13px; color:rgba(245,240,232,.7); line-height:1.8; }
+  .en-help-body p { margin-bottom:8px; }
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-note { font-size:12px; color:var(--gray); line-height:1.6; }
+  .comp-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .comp-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:10px 14px; text-align:left; border-bottom:2px solid rgba(255,255,255,0.1); }
+  .comp-table td { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'DM Mono',monospace; font-size:13px; vertical-align:top; }
+  .comp-table tr:last-child td { border-bottom:none; }
+  .comp-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+  .kh { color:var(--ki); font-weight:700; } .fh { color:var(--kii); font-weight:700; }
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Mono',monospace; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--blue); background:rgba(52,152,219,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; } .qft.ok { color:var(--green); } .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(52,152,219,0.1); border-radius:8px; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; }
+  .qnext { display:none; } .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(52,152,219,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.2); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(52,152,219,0.12); border:1px solid var(--blue); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--blue); font-size:18px; margin:18px 0; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+</style>
+<style>
+/* LIGHT THEME OVERRIDE */
+:root { --black:#F8FAFC; --white:#1F2937; --cream:#4B5563; --gold:#3B82F6; --red:#EF4444; --green:#10B981; --blue:#3B82F6; --gray:#9CA3AF; --card-bg:#FFFFFF; --card2-bg:#F8FAFC; --border:#E5E7EB; --ki:#F59E0B; --kii:#8B5CF6; }
+body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-serif; }
+.top-nav { background:white; border-bottom:1px solid #E5E7EB; }
+.btn-primary { background:#3B82F6; color:white; }
+.card { background:#FFFFFF; border:1px solid #E5E7EB; box-shadow:0 1px 3px rgba(0,0,0,0.07); }
+.info-box { background:#EFF6FF; border-left:3px solid #3B82F6; color:#1D4ED8; }
+.warn-box { background:#EFF6FF; border-left:3px solid #3B82F6; color:#1D4ED8; }
+.danger-box { background:#FEF2F2; border-left:3px solid #EF4444; color:#991B1B; }
+.success-box { background:#ECFDF5; border-left:3px solid #10B981; color:#065F46; }
+.qopt { border:1px solid #E5E7EB; background:white; color:#1F2937; }
+.qopt:hover:not([disabled]) { border-color:#3B82F6; background:#EFF6FF; }
+.xp-badge { background:#EFF6FF; border:1px solid #3B82F6; color:#3B82F6; }
+.lesson-card { background:#F8FAFC; border:1px solid #E5E7EB; }
+.ex-card { background:#F8FAFC; border:1px solid #E5E7EB; }
+</style>
+</head>
+<body>
+<div id="screen-overview" class="screen active">
+  <nav class="dw-nav"><div class="dw-nav-inner">
+    <a href="deutschweg-prototype.html" class="dw-logo"><div class="dw-logo-icon">D</div><span class="dw-logo-text">Deutsch<span>Weg</span></span></a>
+    <a href="exam-vault.html" style="font-size:13px;font-weight:600;color:#1D4ED8;text-decoration:none;margin-right:8px;">📝 Exams</a>
+    <a href="deutschweg-prototype.html" class="dw-btn dw-btn-secondary">← Back to Dashboard</a>
+  </div></nav>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">B2 · Schreiben · Modul 12</div>
+    <h1 class="lesson-h" style="font-size:36px;">Schreiben auf <span style="color:var(--blue)">B2-Niveau</span></h1>
+    <p class="body-text">Der Schreibteil der Goethe B2 Prüfung verlangt einen strukturierten, argumentativen Text (Erörterung) und einen formellen Brief. Du lernst beide Formate systematisch.</p>
+    <details class="en-help"><summary>🇬🇧 What will I learn here?</summary>
+      <div class="en-help-body"><p>B2 writing tasks: (1) Erörterung — an argumentative essay with a clear structure (intro, pros, cons, conclusion). (2) Formeller Brief — complaint letter, application, or formal request. Both require formal register, correct structure, and B2-level vocabulary/grammar.</p></div>
+    </details>
+    <div class="info-box"><strong>Lernziele:</strong><br><br>
+      ✦ Die Erörterung: Struktur und Aufbau<br>
+      ✦ Einleitung: Thema einführen, These formulieren<br>
+      ✦ Hauptteil: Pro/Kontra, Belege, Übergänge<br>
+      ✦ Schluss: Zusammenfassung, persönliche Stellungnahme<br>
+      ✦ Formeller Brief: Aufbau und typische Phrasen
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">📝</div><div><div class="lc-title">Lektion 1 — Die Erörterung: Überblick</div><div class="lc-desc">Was ist eine Erörterung? Textsortenmerkmale. Bewertungskriterien.</div></div><div class="lc-tag" style="color:var(--blue);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">🚀</div><div><div class="lc-title">Lektion 2 — Einleitung schreiben</div><div class="lc-desc">Thema einführen, Kontext geben, These formulieren. Nie mit 'Ich' beginnen.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">⚖️</div><div><div class="lc-title">Lektion 3 — Hauptteil: Argumente und Gegenargumente</div><div class="lc-desc">Pros und Kontras strukturiert darstellen. Übergänge. Zwar…aber, einerseits…andererseits.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">🎯</div><div><div class="lc-title">Lektion 4 — Schluss und formeller Brief</div><div class="lc-desc">Fazit ziehen, Empfehlung geben. Formeller Brief: Struktur, Anrede, Grußformel.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">🏆</div><div><div class="lc-title">Lektion 5 — Häufige Fehler und Bewertung</div><div class="lc-desc">Was Prüfer sehen wollen. Typische Fehler vermeiden. Checkliste vor der Abgabe.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
+  </div>
+</div>
+
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lektionen</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--blue);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- LESSON 0 -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0"><div class="card">
+        <div class="concept-tag">B2 · Modul 12 · Lektion 1 von 5</div>
+        <h2 class="lesson-h">Die Erörterung</h2>
+        <p class="body-text">Die Erörterung ist die wichtigste Textsorte im B2-Schreiben. Sie ist ein argumentativer Text, der ein Thema sachlich und ausgewogen diskutiert.</p>
+        <div class="comp-wrap"><table class="comp-table">
+          <tr><th>TEIL</th><th>FUNKTION</th><th>LÄNGE</th></tr>
+          <tr><td class="kh">Einleitung</td><td>Thema einführen, These aufstellen</td><td>~20% des Textes</td></tr>
+          <tr><td style="color:var(--blue)">Hauptteil</td><td>Argumente, Gegenargumente, Belege</td><td>~60% des Textes</td></tr>
+          <tr><td class="fh">Schluss</td><td>Zusammenfassung, Stellungnahme</td><td>~20% des Textes</td></tr>
+        </table></div>
+        <div class="info-box"><strong>Bewertungskriterien Goethe B2 Schreiben:</strong><br>
+          ✦ Inhalt (aufgabengerecht, vollständig)<br>
+          ✦ Kommunikative Gestaltung (Struktur, Kohäsion)<br>
+          ✦ Formale Richtigkeit (Grammatik, Wortschatz)
+        </div>
+        <div class="warn-box"><strong>Tipp!</strong> Mindestanzahl Wörter einhalten! Bei Goethe B2: ca. 150-200 Wörter für den Schreibteil. Zu kurz = Punktabzug.</div>
+        <details class="en-help"><summary>🇬🇧 English safety net</summary>
+          <div class="en-help-body"><p><strong>Erörterung:</strong> A structured argumentative essay. Intro (20%): introduce topic, state thesis. Main body (60%): develop arguments with evidence, address counter-arguments. Conclusion (20%): summarize and give your personal stance. Graded on: content (relevant, complete), coherence (logical flow, connectors), accuracy (grammar, vocabulary). Minimum word count matters — stay within stated limits.</p></div>
+        </details>
+        <button class="btn btn-primary" onclick="nextStep(0,0)">Weiter →</button>
+      </div></div>
+      <div class="step" id="l0-s1"><div class="card">
+        <div class="quiz-qnum">QUIZ · LEKTION 1 · FRAGE <span id="l0-qnum">1</span> VON 2</div>
+        <div class="quiz-q" id="l0-q"></div><div class="quiz-hint" id="l0-hint"></div>
+        <div class="quiz-opts" id="l0-opts"></div>
+        <div class="qfeedback" id="l0-fb"><div class="qft" id="l0-fbt"></div><div class="qfb" id="l0-fbb"></div><div class="qfr" id="l0-fbr"></div></div>
+        <button class="btn btn-primary qnext" id="l0-next" onclick="advQ(0)">Nächste Frage →</button>
+      </div></div>
+    </div>
+
+    <!-- LESSON 1 -->
+    <div id="lesson-1" class="lesson-pane" style="display:none">
+      <div class="step active" id="l1-s0"><div class="card">
+        <div class="concept-tag">B2 · Modul 12 · Lektion 2 von 5</div>
+        <h2 class="lesson-h">Einleitung schreiben</h2>
+        <p class="body-text">Die Einleitung hat zwei Aufgaben: das Thema einführen und die eigene Position ankündigen (These).</p>
+        <div class="sec-label">EINLEITUNGSFORMELN</div>
+        <div class="ex-list">
+          <div class="ex-card"><div class="ex-de">In der heutigen Gesellschaft wird das Thema X zunehmend diskutiert.</div><div class="ex-note">Kwame — klassische Einleitung mit Aktualitätsbezug</div></div>
+          <div class="ex-card"><div class="ex-de">Die Frage, ob X oder Y, ist seit Jahren Gegenstand kontroverser Debatten.</div><div class="ex-note">Amina — Problemdarstellung als Fragestellung</div></div>
+          <div class="ex-card"><div class="ex-de">Laut einer aktuellen Studie… — dies zeigt, dass das Thema X relevant ist.</div><div class="ex-note">Kofi — mit Statistik/Zitat einleiten</div></div>
+        </div>
+        <div class="sec-label">THESE FORMULIEREN</div>
+        <div class="ex-list">
+          <div class="ex-card"><div class="ex-de">Im Folgenden möchte ich darlegen, dass X trotz seiner Nachteile insgesamt als positiv zu bewerten ist.</div><div class="ex-note">Fatima — These ankündigen (= Roadmap für den Leser)</div></div>
+        </div>
+        <div class="danger-box">❌ Nie mit 'Ich' beginnen: <em>Ich schreibe über…</em><br>✓ Stattdessen: <em>In der heutigen Zeit…</em> / <em>Das Thema X ist…</em></div>
+        <details class="en-help"><summary>🇬🇧 English safety net</summary>
+          <div class="en-help-body"><p><strong>Writing an introduction:</strong> Never start with "Ich" (I) — this is a common mistake. Instead: contextualize (current debate, statistics, question), then state your thesis (Im Folgenden möchte ich darlegen, dass…). The intro should be ~3-4 sentences and tell the reader what to expect.</p></div>
+        </details>
+        <button class="btn btn-primary" onclick="nextStep(1,0)">Weiter →</button>
+      </div></div>
+      <div class="step" id="l1-s1"><div class="card">
+        <div class="quiz-qnum">QUIZ · LEKTION 2 · FRAGE <span id="l1-qnum">1</span> VON 2</div>
+        <div class="quiz-q" id="l1-q"></div><div class="quiz-hint" id="l1-hint"></div>
+        <div class="quiz-opts" id="l1-opts"></div>
+        <div class="qfeedback" id="l1-fb"><div class="qft" id="l1-fbt"></div><div class="qfb" id="l1-fbb"></div><div class="qfr" id="l1-fbr"></div></div>
+        <button class="btn btn-primary qnext" id="l1-next" onclick="advQ(1)">Nächste Frage →</button>
+      </div></div>
+    </div>
+
+    <!-- LESSON 2 -->
+    <div id="lesson-2" class="lesson-pane" style="display:none">
+      <div class="step active" id="l2-s0"><div class="card">
+        <div class="concept-tag">B2 · Modul 12 · Lektion 3 von 5</div>
+        <h2 class="lesson-h">Hauptteil: Argumente strukturieren</h2>
+        <p class="body-text">Der Hauptteil ist der Kern der Erörterung. Jedes Argument folgt dem TBB-Muster: These → Begründung → Beleg.</p>
+        <div class="sec-label">ÜBERGÄNGE ZWISCHEN ARGUMENTEN</div>
+        <div class="comp-wrap"><table class="comp-table">
+          <tr><th>FUNKTION</th><th>KONNEKTOREN</th></tr>
+          <tr><td class="kh">Erstens / Zweitens</td><td>Zunächst… / Darüber hinaus… / Schließlich…</td></tr>
+          <tr><td style="color:var(--blue)">Gegenargument</td><td>Zwar…, jedoch… / Einerseits…, andererseits…</td></tr>
+          <tr><td class="fh">Beispiel</td><td>So zeigt beispielsweise… / Ein Beleg dafür ist…</td></tr>
+          <tr><td style="color:var(--green)">Schlussfolgerung</td><td>Daraus lässt sich schließen… / Folglich…</td></tr>
+        </table></div>
+        <div class="sec-label">BEISPIEL-ABSATZ</div>
+        <div class="ex-list">
+          <div class="ex-card"><div class="ex-de">Ein wesentlicher Vorteil des Homeoffice ist die Flexibilität. [THESE] Mitarbeiter können ihre Arbeitszeit freier einteilen, was die Vereinbarkeit von Familie und Beruf erleichtert. [BEGRÜNDUNG] So zeigt eine Studie der Universität Hamburg, dass die Zufriedenheit im Homeoffice um 30% gestiegen ist. [BELEG]</div><div class="ex-note">Ngozi — vollständiger TBB-Absatz</div></div>
+        </div>
+        <details class="en-help"><summary>🇬🇧 English safety net</summary>
+          <div class="en-help-body"><p><strong>Main body structure:</strong> Each argument = TBB: Thesis (claim) + Begründung (reason/why) + Beleg (evidence/example). Transitions: Zunächst/Erstens (first), Darüber hinaus (moreover), Zwar…jedoch (although…nevertheless), Einerseits…andererseits (on one hand…on the other). Aim for 2-3 well-developed arguments rather than 5 weak ones.</p></div>
+        </details>
+        <button class="btn btn-primary" onclick="nextStep(2,0)">Weiter →</button>
+      </div></div>
+      <div class="step" id="l2-s1"><div class="card">
+        <div class="quiz-qnum">QUIZ · LEKTION 3 · FRAGE <span id="l2-qnum">1</span> VON 2</div>
+        <div class="quiz-q" id="l2-q"></div><div class="quiz-hint" id="l2-hint"></div>
+        <div class="quiz-opts" id="l2-opts"></div>
+        <div class="qfeedback" id="l2-fb"><div class="qft" id="l2-fbt"></div><div class="qfb" id="l2-fbb"></div><div class="qfr" id="l2-fbr"></div></div>
+        <button class="btn btn-primary qnext" id="l2-next" onclick="advQ(2)">Nächste Frage →</button>
+      </div></div>
+    </div>
+
+    <!-- LESSON 3 -->
+    <div id="lesson-3" class="lesson-pane" style="display:none">
+      <div class="step active" id="l3-s0"><div class="card">
+        <div class="concept-tag">B2 · Modul 12 · Lektion 4 von 5</div>
+        <h2 class="lesson-h">Schluss und formeller Brief</h2>
+        <p class="body-text">Der Schluss fasst zusammen und gibt eine persönliche Stellungnahme. Beim formellen Brief gelten strikte Konventionen.</p>
+        <div class="sec-label">SCHLUSSFORMELN</div>
+        <div class="ex-list">
+          <div class="ex-card"><div class="ex-de">Zusammenfassend lässt sich sagen, dass… / Abschließend möchte ich betonen, dass…</div><div class="ex-note">Fazit einleiten</div></div>
+          <div class="ex-card"><div class="ex-de">Meiner Meinung nach überwiegen die Vorteile, da… / Es bleibt zu hoffen, dass…</div><div class="ex-note">Chidi — persönliche Stellungnahme</div></div>
+        </div>
+        <div class="sec-label">FORMELLER BRIEF — AUFBAU</div>
+        <div class="comp-wrap"><table class="comp-table">
+          <tr><th>ELEMENT</th><th>BEISPIEL</th></tr>
+          <tr><td class="kh">Anrede</td><td>Sehr geehrte Damen und Herren, / Sehr geehrter Herr Müller,</td></tr>
+          <tr><td style="color:var(--blue)">Betreff</td><td>Betreff: Beschwerde bezüglich…</td></tr>
+          <tr><td style="color:var(--blue)">Einleitung</td><td>Mit großem Bedauern teile ich Ihnen mit, dass…</td></tr>
+          <tr><td class="fh">Kern</td><td>Ich möchte Sie daher bitten, … zu veranlassen.</td></tr>
+          <tr><td class="fh">Schluss</td><td>Ich freue mich auf Ihre baldige Antwort.</td></tr>
+          <tr><td style="color:var(--green)">Grußformel</td><td>Mit freundlichen Grüßen, [Name]</td></tr>
+        </table></div>
+        <details class="en-help"><summary>🇬🇧 English safety net</summary>
+          <div class="en-help-body"><p><strong>Conclusion:</strong> Summarize main points, then give your personal opinion clearly. Phrases: Zusammenfassend lässt sich sagen (in summary), Meiner Meinung nach (in my opinion), Es bleibt zu hoffen (it remains to be hoped). <strong>Formal letter:</strong> Sehr geehrte Damen und Herren (Dear Sir/Madam), Mit freundlichen Grüßen (Yours sincerely). Note: comma after salutation, not exclamation mark.</p></div>
+        </details>
+        <button class="btn btn-primary" onclick="nextStep(3,0)">Weiter →</button>
+      </div></div>
+      <div class="step" id="l3-s1"><div class="card">
+        <div class="quiz-qnum">QUIZ · LEKTION 4 · FRAGE <span id="l3-qnum">1</span> VON 2</div>
+        <div class="quiz-q" id="l3-q"></div><div class="quiz-hint" id="l3-hint"></div>
+        <div class="quiz-opts" id="l3-opts"></div>
+        <div class="qfeedback" id="l3-fb"><div class="qft" id="l3-fbt"></div><div class="qfb" id="l3-fbb"></div><div class="qfr" id="l3-fbr"></div></div>
+        <button class="btn btn-primary qnext" id="l3-next" onclick="advQ(3)">Nächste Frage →</button>
+      </div></div>
+    </div>
+
+    <!-- LESSON 4 -->
+    <div id="lesson-4" class="lesson-pane" style="display:none">
+      <div class="step active" id="l4-s0"><div class="card">
+        <div class="concept-tag">B2 · Modul 12 · Lektion 5 von 5</div>
+        <h2 class="lesson-h">Häufige Fehler und Checkliste</h2>
+        <p class="body-text">Die meisten Punkte beim Schreiben gehen durch vermeidbare Fehler verloren. Diese Checkliste hilft, die häufigsten zu vermeiden.</p>
+        <div class="danger-box">❌ <strong>TOP-FEHLER:</strong><br>
+          1. Mit "Ich" beginnen<br>
+          2. Zu kurzer Text (unter Mindestwortzahl)<br>
+          3. Keine Struktur (alles in einem Absatz)<br>
+          4. Umgangssprachlicher Wortschatz<br>
+          5. Konnektor-Fehler: <em>Trotzdem</em> statt <em>dennoch</em>/<em>jedoch</em>
+        </div>
+        <div class="success-box">✅ <strong>CHECKLISTE VOR DER ABGABE:</strong><br>
+          ☐ Mindestwortzahl erreicht?<br>
+          ☐ Einleitung, Hauptteil, Schluss erkennbar?<br>
+          ☐ Jedes Argument mit Begründung und Beleg?<br>
+          ☐ Formelles Register durchgehend?<br>
+          ☐ Konjunktiv I bei indirekter Rede?<br>
+          ☐ Keine Rechtschreibfehler in bekannten Wörtern?
+        </div>
+        <div class="warn-box"><strong>Tipp!</strong> 5 Minuten am Ende für Revision einplanen. Gängige Fehler: fehlendes Komma vor <em>dass</em>, falscher Kasus nach Präpositionen, <em>worden</em> statt <em>geworden</em> im Passiv Perfekt.</div>
+        <details class="en-help"><summary>🇬🇧 English safety net</summary>
+          <div class="en-help-body"><p><strong>Common mistakes in B2 writing:</strong> Starting with "Ich", falling below minimum word count, writing everything in one paragraph, informal vocabulary, using trotzdem instead of dennoch/jedoch in formal contexts. Always check: structure visible? Register formal? Konjunktiv I used for indirect speech? Komma before <em>dass</em>? <em>worden</em> (not geworden) in passive perfect?</p></div>
+        </details>
+        <button class="btn btn-primary" onclick="nextStep(4,0)">Quiz starten →</button>
+      </div></div>
+      <div class="step" id="l4-s1"><div class="card">
+        <div class="quiz-qnum">QUIZ · LEKTION 5 · FRAGE <span id="l4-qnum">1</span> VON 2</div>
+        <div class="quiz-q" id="l4-q"></div><div class="quiz-hint" id="l4-hint"></div>
+        <div class="quiz-opts" id="l4-opts"></div>
+        <div class="qfeedback" id="l4-fb"><div class="qft" id="l4-fbt"></div><div class="qfb" id="l4-fbb"></div><div class="qfr" id="l4-fbr"></div></div>
+        <button class="btn btn-primary qnext" id="l4-next" onclick="advQ(4)">Ergebnis sehen →</button>
+      </div></div>
+      <div class="step" id="l4-s2">
+        <div class="complete-wrap">
+          <div class="complete-icon">✍️</div>
+          <h2 class="lesson-h">Modul abgeschlossen!</h2>
+          <p class="body-text">Du kennst jetzt die komplette Struktur der B2-Erörterung und des formellen Briefes. Mit der Checkliste und den richtigen Konnektoren bist du für den Schreibteil bestens gerüstet.</p>
+          <div class="xp-badge">⚡ +200 XP</div>
+          <button class="btn btn-primary" style="margin-top:16px;" onclick="window.location.href='module-b2-13-sprechen-b2.html'">Weiter zu Modul 13 →</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="dw-next-step-bar">
+  <a href="module-b2-11-wortschatz-b2.html" class="dw-next-step-link">← Modul 11</a>
+  <a href="deutschweg-prototype.html" class="dw-next-step-link">🏠 Dashboard</a>
+  <a href="module-b2-13-sprechen-b2.html" class="dw-next-step-link dw-next-step-primary">Modul 13 →</a>
+</div>
+
+<script>
+var lessonSteps=[2,2,2,2,3];
+var QD={
+  0:[
+    {q:"Welcher Anteil des Textes sollte der Hauptteil einer Erörterung ausmachen?",hint:"Der größte Teil — wo die Argumente stehen",opts:["~20%","~40%","~60%","~80%"],ans:2,exp:"Der Hauptteil macht ~60% des Textes aus. Einleitung und Schluss je ~20%. Der Hauptteil enthält alle Argumente, Gegenargumente und Belege.",rule:"Erörterung: Einleitung 20% / Hauptteil 60% / Schluss 20%"},
+    {q:"Welche drei Kriterien werden beim Goethe B2 Schreiben bewertet?",hint:"Inhalt, Gestaltung, Richtigkeit",opts:["Handschrift, Länge, Originalität","Inhalt, kommunikative Gestaltung, formale Richtigkeit","Wortschatz, Grammatik, Aussprache","Struktur, Kreativität, Thema"],ans:1,exp:"Goethe B2 Schreiben: Inhalt (aufgabengerecht, vollständig), Kommunikative Gestaltung (Struktur, Kohäsion, Übergänge), Formale Richtigkeit (Grammatik, Orthographie, Wortschatz).",rule:"3 Bewertungskriterien: Inhalt + kommunikative Gestaltung + formale Richtigkeit"}
+  ],
+  1:[
+    {q:"Wie soll man eine B2-Erörterung NICHT beginnen?",hint:"Was ist zu direkt/umgangssprachlich?",opts:["In der heutigen Gesellschaft wird…","Laut einer aktuellen Studie…","Ich schreibe heute über das Thema…","Die Frage, ob X oder Y, ist…"],ans:2,exp:"Mit 'Ich schreibe über…' beginnen ist zu direkt und umgangssprachlich für eine Erörterung. Stattdessen mit einem Kontext, einer Frage oder einem Bezug auf aktuelle Debatten beginnen.",rule:"Erörterung: Nie mit 'Ich' beginnen — Kontext, Frage oder Aktualität als Einstieg"},
+    {q:"Was ist die Funktion der These in der Einleitung?",hint:"Der Leser soll wissen, was kommt",opts:["Eine Frage stellen","Die eigene Position ankündigen und dem Leser zeigen, was folgt","Das Thema zusammenfassen","Den Schluss vorwegnehmen"],ans:1,exp:"Die These in der Einleitung kündigt die Position an, die im Hauptteil belegt wird. Sie ist die Roadmap für den Leser — 'Im Folgenden möchte ich darlegen, dass...'",rule:"These = Position ankündigen + dem Leser die Struktur signalisieren"}
+  ],
+  2:[
+    {q:"Welche Satzstruktur ist typisch für ein Gegenargument in einer Erörterung?",hint:"Erst zugeben, dann widerlegen",opts:["Weil…, deshalb…","Zwar ist X ein Argument, jedoch…","Erstens, zweitens, drittens","Ich bin der Meinung, dass…"],ans:1,exp:"'Zwar…, jedoch…' ist die klassische Konzessionsstruktur für Gegenargumente: Erst das Gegenargument zugeben (zwar), dann die eigene Position bekräftigen (jedoch/dennoch).",rule:"Gegenargument-Struktur: Zwar (Konzession) + jedoch/dennoch (Widerlegung)"},
+    {q:"Was ist die richtige Reihenfolge eines Argumentationsabsatzes (TBB)?",hint:"T = These, B = Begründung, B = Beleg",opts:["Beleg → These → Begründung","These → Begründung → Beleg","Begründung → Beleg → These","Schluss → These → Beispiel"],ans:1,exp:"TBB: These (Behauptung/Argument) → Begründung (Warum ist es so?) → Beleg (Beispiel/Statistik/Studie). Diese Reihenfolge zeigt logisches Denken.",rule:"Argumentationsabsatz: TBB = These → Begründung → Beleg"}
+  ],
+  3:[
+    {q:"Wie lautet die korrekte Anrede in einem formellen Brief, wenn man den Namen nicht kennt?",hint:"Neutrale, formelle Anrede für unbekannte Empfänger",opts:["Hallo!","Liebe Damen und Herren,","Sehr geehrte Damen und Herren,","Guten Tag,"],ans:2,exp:"'Sehr geehrte Damen und Herren,' ist die korrekte formelle Anrede bei unbekanntem Empfänger. 'Liebe' ist zu informell. Wichtig: Komma nach der Anrede, nicht Ausrufezeichen!",rule:"Formeller Brief: 'Sehr geehrte Damen und Herren,' — Komma, nicht Ausrufezeichen"},
+    {q:"Wie leitet man den Schluss einer Erörterung ein?",hint:"Signalisiert, dass der Text zu Ende kommt",opts:["Ich schreibe jetzt den Schluss.","Zusammenfassend lässt sich sagen, dass…","Also, ich denke halt…","Und zum Schluss:"],ans:1,exp:"'Zusammenfassend lässt sich sagen' ist eine klare, formelle Schlussformel. Weitere: 'Abschließend möchte ich betonen', 'Insgesamt lässt sich festhalten'. Keine informellen Ausdrücke wie 'also, halt, ich denke'.",rule:"Schluss einleiten: Zusammenfassend / Abschließend / Insgesamt lässt sich festhalten"}
+  ],
+  4:[
+    {q:"Welcher Fehler ist beim B2-Schreiben am häufigsten und soll vermieden werden?",hint:"Der erste Satz der Einleitung",opts:["Zu langer Text","Mit 'Ich' beginnen","Zu viele Argumente","Passiv vermeiden"],ans:1,exp:"Mit 'Ich' beginnen ist einer der häufigsten Fehler. Es wirkt umgangssprachlich und verletzt die Konvention formellen Schreibens. Stattdessen mit einem Kontext oder einer Frage einsteigen.",rule:"Einleitungsfehler #1: Mit 'Ich' beginnen — stattdessen Kontext/Frage/Aktualität"},
+    {q:"Welches ist die korrekte Grußformel am Ende eines formellen Briefes?",hint:"Standard-Abschluss in Geschäftsbriefen",opts:["Tschüss!","Bis bald,","Mit freundlichen Grüßen,","Liebe Grüße,"],ans:2,exp:"'Mit freundlichen Grüßen,' ist die Standard-Grußformel im formellen Brief. 'Liebe Grüße' ist informell (für Bekannte), 'Tschüss' und 'Bis bald' sind umgangssprachlich.",rule:"Formeller Brief: 'Mit freundlichen Grüßen,' — 'Liebe Grüße' nur informell"}
+  ]
+};
+var curLesson=0,xp=0,qIdx={},qDone={};
+function $(id){return document.getElementById(id);}
+function showOverview(){$('screen-lesson').classList.remove('active');$('screen-overview').classList.add('active');}
+function goLesson(li){curLesson=li;$('screen-overview').classList.remove('active');$('screen-lesson').classList.add('active');var panes=document.querySelectorAll('.lesson-pane');panes.forEach(function(p){p.style.display='none';});$('lesson-'+li).style.display='block';var steps=$('lesson-'+li).querySelectorAll('.step');steps.forEach(function(s){s.classList.remove('active');});steps[0].classList.add('active');renderDots(li);updateProg(li,0);if(!qIdx[li]){initQuiz(li);}xpDisp();}
+function initQuiz(li){qIdx[li]=0;qDone[li]=false;renderQ(li);}
+function renderQ(li){var d=QD[li][qIdx[li]];if(!d)return;$('l'+li+'-q').textContent=d.q;$('l'+li+'-hint').textContent=d.hint;$('l'+li+'-qnum').textContent=(qIdx[li]+1);var opts=$('l'+li+'-opts');opts.innerHTML='';var ltrs=['A','B','C','D'];d.opts.forEach(function(o,i){var b=document.createElement('button');b.className='qopt';b.innerHTML='<span class="qletter">'+ltrs[i]+'</span>'+o;b.onclick=function(){pickQ(li,i);};opts.appendChild(b);});$('l'+li+'-fb').className='qfeedback';$('l'+li+'-next').className='btn btn-primary qnext';}
+function pickQ(li,idx){var d=QD[li][qIdx[li]];var opts=$('l'+li+'-opts').querySelectorAll('.qopt');opts.forEach(function(b){b.disabled=true;});opts[idx].classList.add(idx===d.ans?'correct':'wrong');opts[d.ans].classList.add('correct');var ok=idx===d.ans;if(ok)xp+=20;var fb=$('l'+li+'-fb');fb.className='qfeedback '+(ok?'ok':'no')+' show';$('l'+li+'-fbt').className='qft '+(ok?'ok':'no');$('l'+li+'-fbt').textContent=ok?'Richtig! ✓':'Falsch ✗';$('l'+li+'-fbb').textContent=d.exp;$('l'+li+'-fbr').textContent='Regel: '+d.rule;$('l'+li+'-next').className='btn btn-primary qnext show';xpDisp();}
+function advQ(li){if(qIdx[li]<QD[li].length-1){qIdx[li]++;renderQ(li);}else{if(li===4){showResult(4);}else{goLesson(li+1);}}}
+function showResult(li){var steps=$('lesson-4').querySelectorAll('.step');steps.forEach(function(s){s.classList.remove('active');});steps[2].classList.add('active');localStorage.setItem('dw_mod_b2_12_done','1');var tot=parseInt(localStorage.getItem('dw_xp')||'0');localStorage.setItem('dw_xp',tot+xp);}
+function renderDots(li){var row=$('dotRow');row.innerHTML='';var total=lessonSteps[li];for(var i=0;i<total;i++){var d=document.createElement('div');d.className='dot';row.appendChild(d);}row.children[0].classList.add('active');}
+function updateProg(li,si){var pct=Math.round(((li*2+si)/(lessonSteps.reduce(function(a,b){return a+b;},0)))*100);$('progFill').style.width=pct+'%';}
+function nextStep(li,si){var steps=$('lesson-'+li).querySelectorAll('.step');steps[si].classList.remove('active');steps[si+1].classList.add('active');updateProg(li,si+1);var dots=$('dotRow').children;if(dots[si])dots[si].classList.replace('active','done');if(dots[si+1])dots[si+1].classList.add('active');if(si+1===1){initQuiz(li);}}
+function xpDisp(){$('xpDisp').textContent='⚡ '+xp+' XP';}
+document.body.classList.add('ready');
+</script>
+</body>
+</html>

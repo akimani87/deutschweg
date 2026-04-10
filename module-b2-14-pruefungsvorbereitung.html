@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — B2 Modul 14: Prüfungsvorbereitung</title>
+<link rel="stylesheet" href="deutschweg-theme.css">
+<style>
+  :root { --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc; --gold:#c9a84c; --red:#c0392b; --green:#27ae60; --blue:#3498db; --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a; --border:rgba(201,168,76,0.2); --ki:#e67e22; --kii:#9b59b6; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); position:sticky; top:0; z-index:50; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-size:13px; }
+  .back-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--blue); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); } .dot.active { background:var(--blue); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; } .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; font-family:'DM Sans',sans-serif; }
+  .btn-primary { background:var(--blue); color:var(--white); width:100%; }
+  .btn-primary:hover { background:#2980b9; }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .en-help { background:rgba(52,152,219,0.05); border:1px dashed rgba(52,152,219,0.25); border-radius:10px; margin:12px 0; }
+  .en-help summary { padding:10px 16px; cursor:pointer; font-size:13px; color:var(--blue); font-family:'DM Mono',monospace; list-style:none; display:flex; align-items:center; gap:8px; }
+  .en-help summary::-webkit-details-marker { display:none; }
+  .en-help[open] summary { border-bottom:1px dashed rgba(52,152,219,0.2); }
+  .en-help-body { padding:12px 16px; font-size:13px; color:rgba(245,240,232,.7); line-height:1.8; }
+  .en-help-body p { margin-bottom:8px; }
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-note { font-size:12px; color:var(--gray); line-height:1.6; }
+  .comp-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .comp-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:10px 14px; text-align:left; border-bottom:2px solid rgba(255,255,255,0.1); }
+  .comp-table td { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'DM Mono',monospace; font-size:13px; vertical-align:top; }
+  .comp-table tr:last-child td { border-bottom:none; }
+  .comp-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+  .kh { color:var(--ki); font-weight:700; } .fh { color:var(--kii); font-weight:700; }
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Mono',monospace; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--blue); background:rgba(52,152,219,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; } .qft.ok { color:var(--green); } .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(52,152,219,0.1); border-radius:8px; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; }
+  .qnext { display:none; } .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(52,152,219,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.2); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(52,152,219,0.12); border:1px solid var(--blue); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--blue); font-size:18px; margin:18px 0; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+</style>
+<style>
+/* LIGHT THEME OVERRIDE */
+:root { --black:#F8FAFC; --white:#1F2937; --cream:#4B5563; --gold:#3B82F6; --red:#EF4444; --green:#10B981; --blue:#3B82F6; --gray:#9CA3AF; --card-bg:#FFFFFF; --card2-bg:#F8FAFC; --border:#E5E7EB; --ki:#F59E0B; --kii:#8B5CF6; }
+body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-serif; }
+.top-nav { background:white; border-bottom:1px solid #E5E7EB; }
+.btn-primary { background:#3B82F6; color:white; }
+.card { background:#FFFFFF; border:1px solid #E5E7EB; box-shadow:0 1px 3px rgba(0,0,0,0.07); }
+.info-box { background:#EFF6FF; border-left:3px solid #3B82F6; color:#1D4ED8; }
+.warn-box { background:#EFF6FF; border-left:3px solid #3B82F6; color:#1D4ED8; }
+.danger-box { background:#FEF2F2; border-left:3px solid #EF4444; color:#991B1B; }
+.success-box { background:#ECFDF5; border-left:3px solid #10B981; color:#065F46; }
+.qopt { border:1px solid #E5E7EB; background:white; color:#1F2937; }
+.qopt:hover:not([disabled]) { border-color:#3B82F6; background:#EFF6FF; }
+.xp-badge { background:#EFF6FF; border:1px solid #3B82F6; color:#3B82F6; }
+.lesson-card { background:#F8FAFC; border:1px solid #E5E7EB; }
+.ex-card { background:#F8FAFC; border:1px solid #E5E7EB; }
+</style>
+</head>
+<body>
+<div id="screen-overview" class="screen active">
+  <nav class="dw-nav"><div class="dw-nav-inner">
+    <a href="deutschweg-prototype.html" class="dw-logo"><div class="dw-logo-icon">D</div><span class="dw-logo-text">Deutsch<span>Weg</span></span></a>
+    <a href="exam-vault.html" style="font-size:13px;font-weight:600;color:#1D4ED8;text-decoration:none;margin-right:8px;">📝 Exams</a>
+    <a href="deutschweg-prototype.html" class="dw-btn dw-btn-secondary">← Back to Dashboard</a>
+  </div></nav>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">B2 · Prüfung · Modul 14</div>
+    <h1 class="lesson-h" style="font-size:36px;">B2 <span style="color:var(--blue)">Prüfungsvorbereitung</span></h1>
+    <p class="body-text">Das finale Modul des B2-Kurses. Du bekommst einen vollständigen Überblick über die Goethe B2 Prüfung, die häufigsten Fehler und eine gezielte Wiederholung der wichtigsten Strukturen.</p>
+    <details class="en-help"><summary>🇬🇧 What will I learn here?</summary>
+      <div class="en-help-body"><p>The final B2 module covers: the complete Goethe B2 exam structure (all 4 skills), a grammar review of the most-tested B2 structures, common mistakes to avoid, a 30-minute study plan for the week before the exam, and motivational prep for exam day.</p></div>
+    </details>
+    <div class="info-box"><strong>Lernziele:</strong><br><br>
+      ✦ Vollständiger Überblick: Goethe B2 Prüfungsformat<br>
+      ✦ Grammatik-Review: die 5 wichtigsten B2-Strukturen<br>
+      ✦ Häufigste Fehler in allen 4 Fertigkeiten<br>
+      ✦ Lernplan für die letzte Woche vor der Prüfung<br>
+      ✦ Prüfungstag: Tipps und mentale Vorbereitung
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">📋</div><div><div class="lc-title">Lektion 1 — Prüfungsformat im Überblick</div><div class="lc-desc">Alle 4 Teile: Lesen, Hören, Schreiben, Sprechen. Punkte, Zeiten, Bestehensgrenze.</div></div><div class="lc-tag" style="color:var(--blue);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">🔁</div><div><div class="lc-title">Lektion 2 — Grammatik-Review B2</div><div class="lc-desc">Konjunktiv I, Passiv, EPA, Konzessivsätze, Nominalisierung. Schnellreferenz.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">⚠️</div><div><div class="lc-title">Lektion 3 — Häufigste Fehler</div><div class="lc-desc">Top-10-Fehler in B2-Prüfungen. Was Prüfer wirklich abwertet.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">📅</div><div><div class="lc-title">Lektion 4 — Lernplan letzte Woche</div><div class="lc-desc">7-Tage-Plan: Was wann üben. Effizienz statt Panik.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">🌟</div><div><div class="lc-title">Lektion 5 — Prüfungstag und finales Quiz</div><div class="lc-desc">Am Tag der Prüfung. Abschluss-Quiz über alle B2-Themen.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
+  </div>
+</div>
+
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lektionen</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--blue);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- LESSON 0 -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0"><div class="card">
+        <div class="concept-tag">B2 · Modul 14 · Lektion 1 von 5</div>
+        <h2 class="lesson-h">Prüfungsformat im Überblick</h2>
+        <div class="comp-wrap"><table class="comp-table">
+          <tr><th>TEIL</th><th>INHALT</th><th>DAUER</th><th>PUNKTE</th></tr>
+          <tr><td class="kh">Lesen</td><td>3 Aufgaben (Zuordnung, MC, kurze Texte)</td><td>65 Min</td><td>75</td></tr>
+          <tr><td style="color:var(--blue)">Hören</td><td>2 Aufgaben (Radiobeitrag, Interview)</td><td>30 Min</td><td>50</td></tr>
+          <tr><td class="fh">Schreiben</td><td>1 Aufgabe (Erörterung oder Brief)</td><td>60 Min</td><td>75</td></tr>
+          <tr><td style="color:var(--green)">Sprechen</td><td>3 Teile (Monolog, Diskussion, Bild)</td><td>15 Min</td><td>100</td></tr>
+        </table></div>
+        <div class="info-box"><strong>Bestehensgrenze:</strong> 60% in jedem Prüfungsteil separat. Einen Teil nicht bestanden = Gesamtprüfung nicht bestanden, auch wenn andere Teile sehr gut sind.<br><br><strong>Gesamt: 300 Punkte möglich</strong></div>
+        <div class="warn-box"><strong>Tipp!</strong> Der Sprechteil hat mit 100 Punkten die meisten Punkte. Investiere dort besonders viel Vorbereitungszeit!</div>
+        <details class="en-help"><summary>🇬🇧 English safety net</summary>
+          <div class="en-help-body"><p><strong>Goethe B2 exam:</strong> 4 modules: Reading (65 min, 75pts), Listening (30 min, 50pts), Writing (60 min, 75pts), Speaking (15 min, 100pts). Total: 300 pts. You need 60% in EACH module to pass. Failing one module = failing the whole exam. The speaking module has the most points — prioritize it.</p></div>
+        </details>
+        <button class="btn btn-primary" onclick="nextStep(0,0)">Weiter →</button>
+      </div></div>
+      <div class="step" id="l0-s1"><div class="card">
+        <div class="quiz-qnum">QUIZ · LEKTION 1 · FRAGE <span id="l0-qnum">1</span> VON 2</div>
+        <div class="quiz-q" id="l0-q"></div><div class="quiz-hint" id="l0-hint"></div>
+        <div class="quiz-opts" id="l0-opts"></div>
+        <div class="qfeedback" id="l0-fb"><div class="qft" id="l0-fbt"></div><div class="qfb" id="l0-fbb"></div><div class="qfr" id="l0-fbr"></div></div>
+        <button class="btn btn-primary qnext" id="l0-next" onclick="advQ(0)">Nächste Frage →</button>
+      </div></div>
+    </div>
+
+    <!-- LESSON 1 -->
+    <div id="lesson-1" class="lesson-pane" style="display:none">
+      <div class="step active" id="l1-s0"><div class="card">
+        <div class="concept-tag">B2 · Modul 14 · Lektion 2 von 5</div>
+        <h2 class="lesson-h">Grammatik-Review B2</h2>
+        <p class="body-text">Schnellreferenz der 5 wichtigsten B2-Grammatikstrukturen — alle in einem Überblick.</p>
+        <div class="comp-wrap"><table class="comp-table">
+          <tr><th>STRUKTUR</th><th>BEISPIEL</th><th>REGEL</th></tr>
+          <tr><td class="kh">Konjunktiv I</td><td>Er sagt, er habe Zeit.</td><td>3.Sg: regulär; sein: er sei</td></tr>
+          <tr><td class="kh">Passiv Perfekt</td><td>Das Gesetz ist verabschiedet worden.</td><td>WORDEN nicht geworden!</td></tr>
+          <tr><td style="color:var(--blue)">EPA</td><td>Die von der Regierung angekündigte Reform</td><td>Artikel + [Erg+Part] + Nomen</td></tr>
+          <tr><td style="color:var(--blue)">Konzessivsatz</td><td>Obwohl es teuer ist, lohnt es sich.</td><td>obwohl → V2 im HS; dennoch → V2 Inversion</td></tr>
+          <tr><td class="fh">Nominalisierung</td><td>bei Ankunft = als er ankam</td><td>-ung (f), nominaliz. Inf. (n)</td></tr>
+        </table></div>
+        <div class="success-box">✅ Lernstrategie: Für jede Struktur 3 eigene Beispielsätze schreiben und auswendig lernen. Eigene Beispiele bleiben besser im Gedächtnis als Beispiele aus Büchern.</div>
+        <details class="en-help"><summary>🇬🇧 English safety net</summary>
+          <div class="en-help-body"><p><strong>B2 grammar quick review:</strong> (1) Konjunktiv I: indirect speech — 3rd sg regular; sein → sei (irregular). (2) Passive perfect: worden NOT geworden. (3) EPA: extended participial phrase — article + [complements+participle] + noun. (4) Concessive clauses: obwohl + SOV; dennoch → subject-verb inversion. (5) Nominalization: -ung (feminine), nominalized infinitive (neuter).</p></div>
+        </details>
+        <button class="btn btn-primary" onclick="nextStep(1,0)">Weiter →</button>
+      </div></div>
+      <div class="step" id="l1-s1"><div class="card">
+        <div class="quiz-qnum">QUIZ · LEKTION 2 · FRAGE <span id="l1-qnum">1</span> VON 2</div>
+        <div class="quiz-q" id="l1-q"></div><div class="quiz-hint" id="l1-hint"></div>
+        <div class="quiz-opts" id="l1-opts"></div>
+        <div class="qfeedback" id="l1-fb"><div class="qft" id="l1-fbt"></div><div class="qfb" id="l1-fbb"></div><div class="qfr" id="l1-fbr"></div></div>
+        <button class="btn btn-primary qnext" id="l1-next" onclick="advQ(1)">Nächste Frage →</button>
+      </div></div>
+    </div>
+
+    <!-- LESSON 2 -->
+    <div id="lesson-2" class="lesson-pane" style="display:none">
+      <div class="step active" id="l2-s0"><div class="card">
+        <div class="concept-tag">B2 · Modul 14 · Lektion 3 von 5</div>
+        <h2 class="lesson-h">Häufigste Fehler in B2</h2>
+        <div class="danger-box"><strong>TOP 10 FEHLER in B2-Prüfungen:</strong><br><br>
+          1. ❌ <em>geworden</em> statt <em>worden</em> im Passiv Perfekt<br>
+          2. ❌ Konjunktiv I nur bilden können, aber nicht wissen wann<br>
+          3. ❌ EPA nicht erkennen → Satz missverständlich<br>
+          4. ❌ Obwohl + V2 (statt Verb-End): <em>Obwohl es ist teuer…</em><br>
+          5. ❌ Erörterung mit "Ich schreibe über…" beginnen<br>
+          6. ❌ Umgangssprachliche Konnektoren im Aufsatz (trotzdem statt dennoch)<br>
+          7. ❌ Beim Hören: alles verstehen wollen → Anschluss verlieren<br>
+          8. ❌ Multiple Choice: Erste plausible Option wählen ohne alle zu lesen<br>
+          9. ❌ Sprechen: Schweigen statt Umschreiben<br>
+          10. ❌ "Nicht im Text" zu selten wählen aus Unsicherheit
+        </div>
+        <div class="success-box">✅ Diese 10 Fehler kennen = sofort 10-20 Punkte mehr in der Prüfung. Nicht wegen besseren Deutschs — sondern wegen besserer Prüfungsstrategie.</div>
+        <details class="en-help"><summary>🇬🇧 English safety net</summary>
+          <div class="en-help-body"><p><strong>Top mistakes summary:</strong> Grammar: worden not geworden (passive perfect), obwohl + verb-final (not V2). Writing: don't start with "Ich", use formal register, use dennoch not trotzdem in essays. Listening: global understanding first, not word-for-word. Reading: "Not in text" when info isn't explicitly stated. Speaking: paraphrase don't go silent. MC: read ALL options before choosing.</p></div>
+        </details>
+        <button class="btn btn-primary" onclick="nextStep(2,0)">Weiter →</button>
+      </div></div>
+      <div class="step" id="l2-s1"><div class="card">
+        <div class="quiz-qnum">QUIZ · LEKTION 3 · FRAGE <span id="l2-qnum">1</span> VON 2</div>
+        <div class="quiz-q" id="l2-q"></div><div class="quiz-hint" id="l2-hint"></div>
+        <div class="quiz-opts" id="l2-opts"></div>
+        <div class="qfeedback" id="l2-fb"><div class="qft" id="l2-fbt"></div><div class="qfb" id="l2-fbb"></div><div class="qfr" id="l2-fbr"></div></div>
+        <button class="btn btn-primary qnext" id="l2-next" onclick="advQ(2)">Nächste Frage →</button>
+      </div></div>
+    </div>
+
+    <!-- LESSON 3 -->
+    <div id="lesson-3" class="lesson-pane" style="display:none">
+      <div class="step active" id="l3-s0"><div class="card">
+        <div class="concept-tag">B2 · Modul 14 · Lektion 4 von 5</div>
+        <h2 class="lesson-h">7-Tage-Lernplan</h2>
+        <p class="body-text">Eine Woche vor der Prüfung: gezieltes Wiederholen statt Panik. Jeden Tag maximal 45-60 Minuten.</p>
+        <div class="comp-wrap"><table class="comp-table">
+          <tr><th>TAG</th><th>FOKUS</th><th>AUFGABE</th></tr>
+          <tr><td class="kh">Tag 7</td><td>Grammatik</td><td>Konjunktiv I, Passiv, EPA — je 5 Beispielsätze</td></tr>
+          <tr><td class="kh">Tag 6</td><td>Wortschatz</td><td>Kollokationen + Registerübungen</td></tr>
+          <tr><td style="color:var(--blue)">Tag 5</td><td>Lesen</td><td>1 kompletten Lesetest unter Zeitdruck</td></tr>
+          <tr><td style="color:var(--blue)">Tag 4</td><td>Hören</td><td>Authentische Podcasts/Interviews auf Deutsch</td></tr>
+          <tr><td class="fh">Tag 3</td><td>Schreiben</td><td>Komplette Erörterung in 60 Min. schreiben</td></tr>
+          <tr><td class="fh">Tag 2</td><td>Sprechen</td><td>2-Minuten-Monologe laut üben (aufnehmen!)</td></tr>
+          <tr><td style="color:var(--green)">Tag 1</td><td>Wiederholung</td><td>Fehler der letzten 6 Tage nochmals durchgehen</td></tr>
+        </table></div>
+        <div class="warn-box"><strong>Tipp!</strong> Tag 1 (Prüfungstag selbst): Kein intensives Lernen mehr! Entspannen, gut schlafen, früh aufstehen.</div>
+        <details class="en-help"><summary>🇬🇧 English safety net</summary>
+          <div class="en-help-body"><p><strong>7-day plan:</strong> Day 7: grammar review (KI, passive, EPA). Day 6: vocabulary (collocations, register). Day 5: reading practice test timed. Day 4: listening (podcasts, news). Day 3: write a full essay in 60 min. Day 2: speak aloud, record yourself. Day 1 (day before exam): review errors from the week, then rest. Exam day: no new learning, eat well, arrive early.</p></div>
+        </details>
+        <button class="btn btn-primary" onclick="nextStep(3,0)">Weiter →</button>
+      </div></div>
+      <div class="step" id="l3-s1"><div class="card">
+        <div class="quiz-qnum">QUIZ · LEKTION 4 · FRAGE <span id="l3-qnum">1</span> VON 2</div>
+        <div class="quiz-q" id="l3-q"></div><div class="quiz-hint" id="l3-hint"></div>
+        <div class="quiz-opts" id="l3-opts"></div>
+        <div class="qfeedback" id="l3-fb"><div class="qft" id="l3-fbt"></div><div class="qfb" id="l3-fbb"></div><div class="qfr" id="l3-fbr"></div></div>
+        <button class="btn btn-primary qnext" id="l3-next" onclick="advQ(3)">Nächste Frage →</button>
+      </div></div>
+    </div>
+
+    <!-- LESSON 4 -->
+    <div id="lesson-4" class="lesson-pane" style="display:none">
+      <div class="step active" id="l4-s0"><div class="card">
+        <div class="concept-tag">B2 · Modul 14 · Lektion 5 von 5</div>
+        <h2 class="lesson-h">Prüfungstag und finales Quiz</h2>
+        <p class="body-text">Du hast alle 14 B2-Module abgeschlossen. Hier sind die letzten Tipps für den Prüfungstag — und ein Abschluss-Quiz über alle wichtigen B2-Themen.</p>
+        <div class="success-box">✅ <strong>AM PRÜFUNGSTAG:</strong><br>
+          ☐ Früh aufstehen, gut frühstücken<br>
+          ☐ Alle Dokumente eingepackt (Ausweis, Anmeldebestätigung)<br>
+          ☐ 15 Minuten vor Beginn anwesend sein<br>
+          ☐ Tief atmen — du bist vorbereitet!<br>
+          ☐ Bei Nervosität: Fragen lesen → das beruhigt
+        </div>
+        <div class="info-box"><strong>Du hast abgeschlossen:</strong><br><br>
+          ✦ B2.1: Module 1–7 (Grammatik &amp; Strukturen)<br>
+          ✦ B2.2: Module 8–14 (Fertigkeiten &amp; Prüfung)<br><br>
+          Ngozi: „Ich habe alle Module gemacht — jetzt bin ich bereit!"<br>
+          Kwame: „14 Module, 140 Quiz-Fragen. Chapeau!"
+        </div>
+        <div class="warn-box"><strong>Wichtig:</strong> Du kannst so viele Prüfungsübungen wie du willst im Exam Vault machen — das ist der nächste Schritt!</div>
+        <details class="en-help"><summary>🇬🇧 English safety net</summary>
+          <div class="en-help-body"><p><strong>Exam day tips:</strong> Sleep well the night before. Bring ID and registration confirmation. Arrive 15 minutes early. If nervous: start by reading all questions — it gives your brain a task and reduces anxiety. You've done 14 modules and 140 quiz questions. You're ready. Viel Erfolg!</p></div>
+        </details>
+        <button class="btn btn-primary" onclick="nextStep(4,0)">Abschluss-Quiz starten →</button>
+      </div></div>
+      <div class="step" id="l4-s1"><div class="card">
+        <div class="quiz-qnum">ABSCHLUSS-QUIZ · FRAGE <span id="l4-qnum">1</span> VON 2</div>
+        <div class="quiz-q" id="l4-q"></div><div class="quiz-hint" id="l4-hint"></div>
+        <div class="quiz-opts" id="l4-opts"></div>
+        <div class="qfeedback" id="l4-fb"><div class="qft" id="l4-fbt"></div><div class="qfb" id="l4-fbb"></div><div class="qfr" id="l4-fbr"></div></div>
+        <button class="btn btn-primary qnext" id="l4-next" onclick="advQ(4)">Kurs abschließen →</button>
+      </div></div>
+      <div class="step" id="l4-s2">
+        <div class="complete-wrap">
+          <div class="complete-icon">🏆</div>
+          <h2 class="lesson-h" style="font-size:32px;">B2-Kurs abgeschlossen!</h2>
+          <p class="body-text">Herzlichen Glückwunsch! Du hast alle 14 B2-Module erfolgreich abgeschlossen. Du bist jetzt bereit für die Goethe B2 Prüfung.</p>
+          <div class="xp-badge">⚡ +300 XP · B2 KOMPLETT</div>
+          <p class="body-text" style="margin-top:20px;">Nächster Schritt: Mache Übungsprüfungen im Exam Vault, um dich auf den echten Test vorzubereiten.</p>
+          <button class="btn btn-primary" style="margin-top:16px;" onclick="window.location.href='exam-vault.html'">Zum Exam Vault →</button>
+          <button class="btn" style="margin-top:10px;background:transparent;border:1px solid var(--blue);color:var(--blue);width:100%;" onclick="window.location.href='deutschweg-prototype.html'">Zurück zum Dashboard</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="dw-next-step-bar">
+  <a href="module-b2-13-sprechen-b2.html" class="dw-next-step-link">← Modul 13</a>
+  <a href="deutschweg-prototype.html" class="dw-next-step-link">🏠 Dashboard</a>
+  <a href="exam-vault.html" class="dw-next-step-link dw-next-step-primary">Exam Vault →</a>
+</div>
+
+<script>
+var lessonSteps=[2,2,2,2,3];
+var QD={
+  0:[
+    {q:"Welcher Prüfungsteil hat bei Goethe B2 die meisten Punkte?",hint:"Mündliche Kommunikation",opts:["Lesen (75 Punkte)","Hören (50 Punkte)","Schreiben (75 Punkte)","Sprechen (100 Punkte)"],ans:3,exp:"Sprechen hat 100 Punkte — die meisten aller Prüfungsteile. Das macht es zum wichtigsten Teil für die Gesamtpunktzahl. Lesen und Schreiben haben je 75, Hören 50 Punkte.",rule:"Goethe B2: Sprechen (100) > Lesen/Schreiben (75) > Hören (50)"},
+    {q:"Was bedeutet es, wenn man den Hörteil nicht besteht (unter 60%)?",hint:"Jeder Teil muss separat bestanden werden",opts:["Man kann trotzdem insgesamt bestehen, wenn andere Teile gut sind","Man muss nur den Hörteil wiederholen","Man besteht die gesamte Prüfung nicht, auch wenn andere Teile gut sind","Man bekommt einen Teilschein"],ans:2,exp:"Bei Goethe B2 muss jeder Teil separat mit mindestens 60% bestanden werden. Einen Teil nicht bestanden = gesamte Prüfung nicht bestanden. Kein Ausgleich durch andere Teile möglich.",rule:"Bestehensregel: 60% in JEDEM Teil — kein Ausgleich zwischen Teilen"}
+  ],
+  1:[
+    {q:"Welches ist der häufigste Fehler beim Passiv Perfekt auf B2-Niveau?",hint:"Hilfsverb im Partizip: worden oder geworden?",opts:["sein statt werden verwenden","geworden statt worden schreiben","das Partizip II vergessen","Aktiv statt Passiv benutzen"],ans:1,exp:"'geworden' statt 'worden' ist der häufigste Fehler beim Passiv Perfekt. Richtig: 'Das Gesetz ist verabschiedet worden.' Falsch: '...geworden'. 'Worden' ist die Passiv-Form, 'geworden' ist das Partizip von 'werden' (Zustandsänderung).",rule:"Passiv Perfekt: ist/sind + PII + WORDEN (nicht geworden)"},
+    {q:"Welche Struktur ist ein EPA (Erweitertes Partizipialattribut)?",hint:"Artikel + [?] + Nomen",opts:["Das ist ein schönes Haus.","Die von der Regierung angekündigte Reform","Eine Reform, die von der Regierung angekündigt wurde","Man kündigt die Reform an."],ans:1,exp:"'Die von der Regierung angekündigte Reform' ist ein EPA: Artikel (Die) + [von der Regierung angekündigt] + Nomen (Reform). Das Relativsatz-Äquivalent wäre: 'Die Reform, die von der Regierung angekündigt wurde.'",rule:"EPA: Artikel + [Ergänzungen + Partizip] + Nomen — vor dem Nomen"}
+  ],
+  2:[
+    {q:"Welcher Satz enthält den häufigsten obwohl-Fehler?",hint:"obwohl + Wortstellung",opts:["Obwohl es teuer ist, lohnt es sich.","Obwohl es ist teuer, lohnt es sich.","Obwohl es teuer war, haben wir es gekauft.","Obwohl die Kosten hoch sind, bleibt die Nachfrage stabil."],ans:1,exp:"'Obwohl es ist teuer' ist falsch — nach 'obwohl' (Nebensatz) muss das Verb ans Ende: 'Obwohl es teuer ist'. Das ist der Verb-End-Fehler, der in B2 sehr häufig gemacht wird.",rule:"obwohl → Nebensatz → Verb-Ende! Nicht V2 nach obwohl"},
+    {q:"In welchem Kontext benutzt man Konjunktiv I?",hint:"Wessen Meinung gibt man wieder?",opts:["Für eigene Wünsche und Träume","Für indirekte Rede — die Aussage einer anderen Person wiedergeben","Für höfliche Bitten","Für vergangene irreale Situationen"],ans:1,exp:"Konjunktiv I ist der Modus der indirekten Rede — man gibt die Aussage einer anderen Person wieder, ohne Stellung zu nehmen. 'Er sagt, er habe keine Zeit.' = Er sagt das, aber ob es stimmt, ist ungewiss.",rule:"Konjunktiv I = indirekte Rede, fremde Aussage ohne eigene Wertung"}
+  ],
+  3:[
+    {q:"Was soll man am Tag VOR der Prüfung tun?",hint:"Tag 1 im 7-Tage-Plan",opts:["Nochmals alle 14 Module durcharbeiten","Einen neuen Wortschatz auswendig lernen","Fehler der letzten Tage wiederholen, dann ausruhen","Eine Übungsprüfung unter Zeitdruck schreiben"],ans:2,exp:"Am Tag vor der Prüfung: Fehler der letzten Tage nochmals ansehen, dann AUSRUHEN. Intensives Lernen am Vortag ist kontraproduktiv — das Gehirn braucht Zeit, um Gelerntes zu konsolidieren.",rule:"Prüfungsvorbereitung: Fehlerreview → dann Ruhe. Kein Intensivlernen am Vortag"},
+    {q:"Welche Aktivität ist für Tag 2 (2 Tage vor Prüfung) geplant?",hint:"Mündliche Produktion üben",opts:["Lesen üben","Grammatik wiederholen","2-Minuten-Monologe laut üben und aufnehmen","Einen formellen Brief schreiben"],ans:2,exp:"Tag 2 ist für Sprechen reserviert: 2-Minuten-Monologe laut üben und sich dabei aufnehmen. Das eigene Gehör zu schärfen und die Fähigkeit, 2 Minuten flüssig zu sprechen, braucht Praxis.",rule:"7-Tage-Plan: Tag 2 = Sprechen (Monologe laut üben, aufnehmen)"}
+  ],
+  4:[
+    {q:"Auf welche Regel ist beim Passiv Perfekt zu achten?",hint:"Das Hilfsverb-Partizip",opts:["haben als Hilfsverb benutzen","geworden statt worden","worden statt geworden","sein als Hilfsverb mit Aktivverben"],ans:2,exp:"Im Passiv Perfekt: sein + Partizip II + WORDEN. Beispiel: 'Das Gesetz ist verabschiedet worden.' NICHT 'geworden' — 'geworden' ist das Partizip II des Verbs 'werden' in Zustandsveränderungen (Er ist Lehrer geworden).",rule:"Passiv Perfekt: sein + PII + worden (nicht geworden)"},
+    {q:"Was ist das Wichtigste, das du aus diesem B2-Kurs mitgenommen hast?",hint:"Prüfungsstrategie — die wichtigste Erkenntnis",opts:["Deutsch ist zu schwer","Grammatik ist alles, Kommunikation ist unwichtig","Struktur + Strategie + Übung = Erfolg in der B2-Prüfung","Man braucht keinen Kurs, nur Glück"],ans:2,exp:"Struktur + Strategie + Übung = Erfolg. Du hast 14 Module, 140 Quizfragen und alle 4 Fertigkeiten systematisch erarbeitet. Mit diesem Fundament bist du bereit für die Goethe B2 Prüfung. Viel Erfolg!",rule:"B2-Erfolgsformel: Struktur (Wissen) + Strategie (Prüfungsklugheit) + Übung (Praxis)"}
+  ]
+};
+var curLesson=0,xp=0,qIdx={},qDone={};
+function $(id){return document.getElementById(id);}
+function showOverview(){$('screen-lesson').classList.remove('active');$('screen-overview').classList.add('active');}
+function goLesson(li){curLesson=li;$('screen-overview').classList.remove('active');$('screen-lesson').classList.add('active');var panes=document.querySelectorAll('.lesson-pane');panes.forEach(function(p){p.style.display='none';});$('lesson-'+li).style.display='block';var steps=$('lesson-'+li).querySelectorAll('.step');steps.forEach(function(s){s.classList.remove('active');});steps[0].classList.add('active');renderDots(li);updateProg(li,0);if(!qIdx[li]){initQuiz(li);}xpDisp();}
+function initQuiz(li){qIdx[li]=0;qDone[li]=false;renderQ(li);}
+function renderQ(li){var d=QD[li][qIdx[li]];if(!d)return;$('l'+li+'-q').textContent=d.q;$('l'+li+'-hint').textContent=d.hint;$('l'+li+'-qnum').textContent=(qIdx[li]+1);var opts=$('l'+li+'-opts');opts.innerHTML='';var ltrs=['A','B','C','D'];d.opts.forEach(function(o,i){var b=document.createElement('button');b.className='qopt';b.innerHTML='<span class="qletter">'+ltrs[i]+'</span>'+o;b.onclick=function(){pickQ(li,i);};opts.appendChild(b);});$('l'+li+'-fb').className='qfeedback';$('l'+li+'-next').className='btn btn-primary qnext';}
+function pickQ(li,idx){var d=QD[li][qIdx[li]];var opts=$('l'+li+'-opts').querySelectorAll('.qopt');opts.forEach(function(b){b.disabled=true;});opts[idx].classList.add(idx===d.ans?'correct':'wrong');opts[d.ans].classList.add('correct');var ok=idx===d.ans;if(ok)xp+=20;var fb=$('l'+li+'-fb');fb.className='qfeedback '+(ok?'ok':'no')+' show';$('l'+li+'-fbt').className='qft '+(ok?'ok':'no');$('l'+li+'-fbt').textContent=ok?'Richtig! ✓':'Falsch ✗';$('l'+li+'-fbb').textContent=d.exp;$('l'+li+'-fbr').textContent='Regel: '+d.rule;$('l'+li+'-next').className='btn btn-primary qnext show';xpDisp();}
+function advQ(li){if(qIdx[li]<QD[li].length-1){qIdx[li]++;renderQ(li);}else{if(li===4){showResult(4);}else{goLesson(li+1);}}}
+function showResult(li){var steps=$('lesson-4').querySelectorAll('.step');steps.forEach(function(s){s.classList.remove('active');});steps[2].classList.add('active');localStorage.setItem('dw_mod_b2_14_done','1');localStorage.setItem('dw_b2_complete','1');var tot=parseInt(localStorage.getItem('dw_xp')||'0');localStorage.setItem('dw_xp',tot+xp+100);}
+function renderDots(li){var row=$('dotRow');row.innerHTML='';var total=lessonSteps[li];for(var i=0;i<total;i++){var d=document.createElement('div');d.className='dot';row.appendChild(d);}row.children[0].classList.add('active');}
+function updateProg(li,si){var pct=Math.round(((li*2+si)/(lessonSteps.reduce(function(a,b){return a+b;},0)))*100);$('progFill').style.width=pct+'%';}
+function nextStep(li,si){var steps=$('lesson-'+li).querySelectorAll('.step');steps[si].classList.remove('active');steps[si+1].classList.add('active');updateProg(li,si+1);var dots=$('dotRow').children;if(dots[si])dots[si].classList.replace('active','done');if(dots[si+1])dots[si+1].classList.add('active');if(si+1===1){initQuiz(li);}}
+function xpDisp(){$('xpDisp').textContent='⚡ '+xp+' XP';}
+document.body.classList.add('ready');
+</script>
+</body>
+</html>
