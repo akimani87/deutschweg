@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — B2 Modul 3: Nominalisierung</title>
+<link rel="stylesheet" href="deutschweg-theme.css">
+<style>
+  :root { --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc; --gold:#c9a84c; --red:#c0392b; --green:#27ae60; --blue:#3498db; --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a; --border:rgba(201,168,76,0.2); --dir:#c9a84c; --ki:#e67e22; --kii:#9b59b6; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--blue); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--blue); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; font-family:'DM Sans',sans-serif; }
+  .btn-primary { background:var(--blue); color:var(--white); width:100%; }
+  .btn-primary:hover { background:#2980b9; transform:translateY(-2px); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn.speaking { background:var(--blue); color:var(--white); }
+  .en-help { background:rgba(52,152,219,0.05); border:1px dashed rgba(52,152,219,0.25); border-radius:10px; margin:12px 0; }
+  .en-help summary { padding:10px 16px; cursor:pointer; font-size:13px; color:var(--blue); font-family:'DM Mono',monospace; list-style:none; display:flex; align-items:center; gap:8px; }
+  .en-help summary::-webkit-details-marker { display:none; }
+  .en-help[open] summary { border-bottom:1px dashed rgba(52,152,219,0.2); }
+  .en-help-body { padding:12px 16px; font-size:13px; color:rgba(245,240,232,.7); line-height:1.8; }
+  .en-help-body p { margin-bottom:8px; }
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-note { font-size:12px; color:var(--gray); line-height:1.6; }
+  .comp-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .comp-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:10px 14px; text-align:left; border-bottom:2px solid rgba(255,255,255,0.1); }
+  .comp-table td { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'DM Mono',monospace; font-size:13px; vertical-align:top; }
+  .comp-table tr:last-child td { border-bottom:none; }
+  .comp-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+  .transform-box { background:var(--card2-bg); border:1px solid rgba(52,152,219,0.15); border-radius:14px; padding:18px 20px; margin:12px 0; }
+  .trn-row { display:flex; align-items:flex-start; gap:12px; margin-bottom:10px; }
+  .trn-row:last-child { margin-bottom:0; }
+  .trn-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; flex-shrink:0; width:70px; padding-top:2px; }
+  .trn-text { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); line-height:1.7; }
+  .trn-arrow { text-align:center; color:var(--blue); font-size:18px; margin:4px 0; padding-left:82px; }
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.0; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+  .kh { color:var(--ki); font-weight:700; }
+  .fh { color:var(--kii); font-weight:700; }
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Mono',monospace; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--blue); background:rgba(52,152,219,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(52,152,219,0.1); border-radius:8px; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(52,152,219,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.2); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(52,152,219,0.12); border:1px solid var(--blue); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--blue); font-size:18px; margin:18px 0; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .lesson-h{font-size:22px;} .wr-grid{grid-template-columns:1fr;} }
+
+  /* ===== STANDALONE QUIZ ===== */
+  .sq-wrap{background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:28px;margin-top:32px;}
+  .sq-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:6px;}
+  .sq-sub{font-size:13px;color:var(--gray);margin-bottom:20px;}
+  .sq-dots{display:flex;gap:8px;margin-bottom:20px;}
+  .sq-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all 0.3s;}
+  .sq-dot.active{background:var(--blue);width:22px;border-radius:4px;}
+  .sq-dot.done{background:var(--green);}
+  .sq-dot.wrong{background:var(--red);}
+  .sq-q{font-size:16px;font-weight:600;margin-bottom:16px;line-height:1.5;}
+  .sq-opts{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+  .sq-opt{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:12px 16px;cursor:pointer;font-size:14px;transition:all 0.2s;text-align:left;}
+  .sq-opt:hover:not(.disabled){background:rgba(52,152,219,0.12);border-color:var(--blue);}
+  .sq-opt.selected{background:rgba(52,152,219,0.15);border-color:var(--blue);}
+  .sq-opt.correct{background:rgba(39,174,96,0.15);border-color:var(--green);color:var(--green);}
+  .sq-opt.wrong{background:rgba(192,57,43,0.15);border-color:var(--red);color:var(--red);}
+  .sq-opt.disabled{cursor:default;pointer-events:none;}
+  .sq-fb{font-size:14px;padding:12px 16px;border-radius:10px;margin-bottom:16px;display:none;}
+  .sq-fb.show{display:block;}
+  .sq-fb.ok{background:rgba(39,174,96,0.12);border:1px solid rgba(39,174,96,0.3);color:var(--green);}
+  .sq-fb.ko{background:rgba(192,57,43,0.12);border:1px solid rgba(192,57,43,0.3);color:#e07070;}
+  .sq-next{display:none;}
+  .sq-next.show{display:inline-block;}
+  .sq-result{display:none;text-align:center;padding:20px 0;}
+  .sq-result.show{display:block;}
+  .sq-score-num{font-family:'Playfair Display',serif;font-size:48px;color:var(--blue);margin-bottom:8px;}
+  .sq-score-msg{font-size:20px;margin-bottom:24px;}
+  .sq-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+  .sq-btns .btn{width:auto;padding:12px 28px;}
+
+</style>
+<style>
+/* LIGHT THEME OVERRIDE */
+:root { --black:#F8FAFC; --white:#1F2937; --cream:#4B5563; --gold:#3B82F6; --red:#EF4444; --green:#10B981; --blue:#3B82F6; --gray:#9CA3AF; --card-bg:#FFFFFF; --card2-bg:#F8FAFC; --border:#E5E7EB; --ki:#F59E0B; --kii:#8B5CF6; }
+body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-serif; }
+.top-nav { background:white; border-bottom:1px solid #E5E7EB; backdrop-filter:none; }
+.btn-primary { background:#3B82F6; color:white; }
+.btn-primary:hover { background:#2563EB; }
+.btn-outline { background:transparent; border:1px solid #3B82F6; color:#3B82F6; }
+.card { background:#FFFFFF; border:1px solid #E5E7EB; box-shadow:0 1px 3px rgba(0,0,0,0.07); }
+.info-box { background:#EFF6FF; border-left:3px solid #3B82F6; color:#1D4ED8; }
+.warn-box { background:#EFF6FF; border-left:3px solid #3B82F6; color:#1D4ED8; }
+.danger-box { background:#FEF2F2; border-left:3px solid #EF4444; color:#991B1B; }
+.success-box { background:#ECFDF5; border-left:3px solid #10B981; color:#065F46; }
+.qopt { border:1px solid #E5E7EB; background:white; color:#1F2937; }
+.qopt:hover:not([disabled]) { border-color:#3B82F6; background:#EFF6FF; }
+.xp-badge { background:#EFF6FF; border:1px solid #3B82F6; color:#3B82F6; }
+.speak-btn { background:#EFF6FF; border-color:#DBEAFE; color:#3B82F6; }
+.speak-btn.speaking { background:#3B82F6; color:white; }
+.lesson-card { background:#F8FAFC; border:1px solid #E5E7EB; }
+.ex-card { background:#F8FAFC; border:1px solid #E5E7EB; }
+</style>
+</head>
+<body>
+
+<div id="screen-overview" class="screen active">
+  <nav class="dw-nav">
+    <div class="dw-nav-inner">
+      <a href="deutschweg-prototype.html" class="dw-logo">
+        <div class="dw-logo-icon">D</div>
+        <span class="dw-logo-text">Deutsch<span>Weg</span></span>
+      </a>
+      <a href="exam-vault.html" style="font-size:13px;font-weight:600;color:#1D4ED8;text-decoration:none;margin-right:8px;">📝 Exams</a>
+      <a href="deutschweg-prototype.html" class="dw-btn dw-btn-secondary">← Back to Dashboard</a>
+    </div>
+  </nav>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">B2 · Grammatik · Modul 3</div>
+    <h1 class="lesson-h" style="font-size:36px;">Nominalisierung &amp; <span style="color:var(--blue)">Verbalisierung</span></h1>
+    <p class="body-text">Akademische und formelle Texte auf Deutsch sind geprägt von Nominalkonstruktionen — Verben und Adjektive werden zu Substantiven. Diese „Nominalstil" klingt professionell, ist aber ohne Training schwer zu verstehen und zu produzieren.</p>
+
+    <details class="en-help">
+      <summary>🇬🇧 What will I learn here?</summary>
+      <div class="en-help-body">
+        <p>German formal/academic writing heavily favors nouns over verbs (Nominalstil). Instead of "we discuss this" you get "the discussion of this." Learning to convert between verb-style (Verbalstil) and noun-style (Nominalstil) is essential for B2 reading comprehension and formal writing tasks.</p>
+      </div>
+    </details>
+
+    <div class="info-box"><strong>Lernziele:</strong><br><br>
+      ✦ Verben zu Substantiven nominalisieren (Suffixe: -ung, -heit, -keit, -nis, -ion…)<br>
+      ✦ Adjektive zu Substantiven umformen<br>
+      ✦ Nominalkonstruktionen in Verbalsätze auflösen<br>
+      ✦ Nominalisierung mit Präpositionalphrasen (bei der Analyse, nach der Prüfung…)<br>
+      ✦ Nominalstil vs. Verbalstil — wann was?<br>
+      ✦ B2-Lesetexte mit komplexen Nominalkonstruktionen verstehen
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">🔤</div><div><div class="lc-title">Lektion 1 — Verb → Substantiv: die Suffixe</div><div class="lc-desc">-ung, -heit, -keit, -nis, -ion, -schaft. Regeln und Ausnahmen. Genus bestimmen.</div></div><div class="lc-tag" style="color:var(--blue);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">↔️</div><div><div class="lc-title">Lektion 2 — Nominalstil auflösen</div><div class="lc-desc">Komplexe Nominalkonstruktionen in einfache Verbalsätze umformen. Präpositionen.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">📊</div><div><div class="lc-title">Lektion 3 — Adjektiv-Nominalisierung</div><div class="lc-desc">das Gute, das Wichtige, das Neue. Nominalisierte Adjektive und Partizipien.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">📰</div><div><div class="lc-title">Lektion 4 — Nominalkonstruktionen in B2-Texten</div><div class="lc-desc">Authentische Beispiele, Strategien zum Leseverstehen, typische Präpositionen.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">✍️</div><div><div class="lc-title">Lektion 5 — Schreiben im Nominalstil</div><div class="lc-desc">Wann Nominalstil verwenden? Häufige Fehler. B2-Schreiben professionell gestalten.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
+    <!-- STANDALONE QUIZ -->
+    <div class="sq-wrap" id="sqWrap">
+      <div id="sqQuestion">
+        <div class="sq-title">Wissenstest</div>
+        <div class="sq-sub">5 Fragen &mdash; teste dein Wissen!</div>
+        <div class="sq-dots" id="sqDots"></div>
+        <div class="sq-q" id="sqQText"></div>
+        <div class="sq-opts" id="sqOpts"></div>
+        <div class="sq-fb" id="sqFb"></div>
+        <button class="btn btn-primary sq-next" id="sqNext" onclick="sqAdvance()">Weiter &#x2192;</button>
+      </div>
+      <div class="sq-result" id="sqResult">
+        <div class="sq-score-num" id="sqScoreNum">0/5</div>
+        <div class="sq-score-msg" id="sqScoreMsg"></div>
+        <div class="sq-btns">
+          <button class="btn btn-outline" onclick="sqReset()">Nochmal versuchen</button>
+          <button class="btn btn-primary" id="sqNextMod">N&#xE4;chstes Modul &#x2192;</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lektionen</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--blue);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- LEKTION 1 -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">B2 · Modul 3 · Lektion 1 von 5</div>
+          <h2 class="lesson-h">Verb → Substantiv: <span style="color:var(--ki)">die Suffixe</span></h2>
+          <p class="body-text">Die meisten Nominalisierungen entstehen durch Anhängen von Suffixen an Verbstämme oder Adjektive. Die Suffixe bestimmen auch das <span class="kh">Genus</span> des neuen Substantivs.</p>
+          <details class="en-help">
+            <summary>🇬🇧 Nominalization explained</summary>
+            <div class="en-help-body">
+              <p>Nominalization = turning verbs or adjectives into nouns. German has predictable suffixes: -ung (always feminine), -heit/-keit (always feminine), -nis (neuter), -ion (feminine), -schaft (feminine).</p>
+              <p>The simplest nominalization: capitalize the infinitive → das Lernen, das Schreiben (always neuter).</p>
+            </div>
+          </details>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Suffix</th><th>Genus</th><th>Bildung</th><th>Beispiele</th></tr>
+              <tr><td class="kh">-ung</td><td>die (f)</td><td>Verbstamm + -ung</td><td>lösen → die Lösung<br>forsch(en) → die Forschung</td></tr>
+              <tr><td class="kh">-heit</td><td>die (f)</td><td>Adjektiv + -heit</td><td>frei → die Freiheit<br>gesund → die Gesundheit</td></tr>
+              <tr><td class="kh">-keit</td><td>die (f)</td><td>Adj. + -keit</td><td>möglich → die Möglichkeit<br>fähig → die Fähigkeit</td></tr>
+              <tr><td class="kh">-nis</td><td>das/die</td><td>Verb/Adj. + -nis</td><td>erkennen → das Erkenntnis<br>ergeben → das Ergebnis</td></tr>
+              <tr><td class="kh">-ion</td><td>die (f)</td><td>meist Fremdwort</td><td>diskutieren → die Diskussion<br>produzieren → die Produktion</td></tr>
+              <tr><td class="kh">Infinitiv</td><td>das (n)</td><td>Infinitiv großgeschr.</td><td>lernen → das Lernen<br>schreiben → das Schreiben</td></tr>
+            </table>
+          </div>
+          <div class="warn-box"><strong>Merke!</strong> Nominalisierte Infinitive sind immer <em>das</em> (Neutrum) und immer großgeschrieben. Sie können mit Attributen erweitert werden: das intensive Lernen, das schnelle Schreiben.</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Kofi sprach über <span class="kh">die Wichtigkeit</span> regelmäßigen Übens.</div>
+                <div class="ex-note">wichtig → die Wichtigkeit (-keit, feminin)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Kofi sprach über die Wichtigkeit regelmäßigen Übens.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Amina beschrieb <span class="kh">die Entwicklung</span> neuer Technologien.</div>
+                <div class="ex-note">entwickeln → die Entwicklung (-ung, feminin)</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Ngozi betonte <span class="kh">das Erkennen</span> von Mustern als Schlüsselkompetenz.</div>
+                <div class="ex-note">erkennen → das Erkennen (nominalisierter Infinitiv, neutrum)</div>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(0,0)">Weiter →</button>
+        </div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card">
+          <div class="quiz-qnum" id="l0-qnum">FRAGE 1 VON 2</div>
+          <div class="quiz-q" id="l0-q"></div>
+          <div class="quiz-hint" id="l0-hint"></div>
+          <div class="quiz-opts" id="l0-opts"></div>
+          <div class="qfeedback" id="l0-fb"><div class="qft" id="l0-ft"></div><div class="qfb" id="l0-fbe"></div><div class="qfr" id="l0-rule"></div></div>
+          <div class="qnext" id="l0-next"><button class="btn btn-primary" onclick="advQ(0)">Weiter →</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEKTION 2 -->
+    <div id="lesson-1" class="lesson-pane">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">B2 · Modul 3 · Lektion 2 von 5</div>
+          <h2 class="lesson-h"><span style="color:var(--blue)">Nominalstil</span> auflösen</h2>
+          <p class="body-text">Komplexe Nominalkonstruktionen können als Verbalsätze umformuliert werden. Das ist für das Leseverstehen entscheidend: Erkenne die versteckten Verben hinter Substantiven.</p>
+          <details class="en-help">
+            <summary>🇬🇧 Breaking down noun phrases</summary>
+            <div class="en-help-body">
+              <p>Academic German often hides verbs as nouns: "Die Verbesserung der Ergebnisse" = "Die Ergebnisse werden/wurden verbessert." To decode these, find the hidden verb in the noun, then reconstruct the sentence.</p>
+              <p>Prepositional phrases are key: bei → wenn/als; nach → nachdem; vor → bevor; wegen → weil.</p>
+            </div>
+          </details>
+          <div class="sec-label">Nominalkonstruktion → Verbalsatz</div>
+          <div class="transform-box">
+            <div class="trn-row"><div class="trn-label" style="color:var(--ki);">NOMINAL</div><div class="trn-text">bei der <span class="kh">Analyse</span> der Daten</div></div>
+            <div class="trn-arrow">↓ bei + Nominalisierung → als/wenn + Verbalsatz</div>
+            <div class="trn-row"><div class="trn-label" style="color:var(--blue);">VERBAL</div><div class="trn-text">als die Daten <span style="color:var(--blue);">analysiert wurden</span></div></div>
+          </div>
+          <div class="transform-box">
+            <div class="trn-row"><div class="trn-label" style="color:var(--ki);">NOMINAL</div><div class="trn-text">nach der <span class="kh">Einführung</span> des Gesetzes</div></div>
+            <div class="trn-arrow">↓ nach + Nom. → nachdem + Verb</div>
+            <div class="trn-row"><div class="trn-label" style="color:var(--blue);">VERBAL</div><div class="trn-text">nachdem das Gesetz <span style="color:var(--blue);">eingeführt worden war</span></div></div>
+          </div>
+          <div class="transform-box">
+            <div class="trn-row"><div class="trn-label" style="color:var(--ki);">NOMINAL</div><div class="trn-text">wegen des <span class="kh">Scheiterns</span> des Projekts</div></div>
+            <div class="trn-arrow">↓ wegen + Nom. → weil + Verb</div>
+            <div class="trn-row"><div class="trn-label" style="color:var(--blue);">VERBAL</div><div class="trn-text">weil das Projekt <span style="color:var(--blue);">scheiterte</span></div></div>
+          </div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Präposition</th><th>→ Konjunktion</th><th>Zeitbezug</th></tr>
+              <tr><td>bei + Nom.</td><td>als / wenn</td><td>gleichzeitig</td></tr>
+              <tr><td>nach + Nom.</td><td>nachdem</td><td>Vorzeitigkeit</td></tr>
+              <tr><td>vor + Nom.</td><td>bevor / ehe</td><td>Nachzeitigkeit</td></tr>
+              <tr><td>wegen + Gen.</td><td>weil / da</td><td>Grund</td></tr>
+              <tr><td>trotz + Gen.</td><td>obwohl / obschon</td><td>Konzessiv</td></tr>
+              <tr><td>durch + Akk.</td><td>indem / dadurch, dass</td><td>Mittel</td></tr>
+            </table>
+          </div>
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(1,0)">Weiter →</button>
+        </div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card">
+          <div class="quiz-qnum" id="l1-qnum">FRAGE 1 VON 2</div>
+          <div class="quiz-q" id="l1-q"></div>
+          <div class="quiz-hint" id="l1-hint"></div>
+          <div class="quiz-opts" id="l1-opts"></div>
+          <div class="qfeedback" id="l1-fb"><div class="qft" id="l1-ft"></div><div class="qfb" id="l1-fbe"></div><div class="qfr" id="l1-rule"></div></div>
+          <div class="qnext" id="l1-next"><button class="btn btn-primary" onclick="advQ(1)">Weiter →</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEKTION 3 -->
+    <div id="lesson-2" class="lesson-pane">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">B2 · Modul 3 · Lektion 3 von 5</div>
+          <h2 class="lesson-h">Adjektiv-<span style="color:var(--blue)">Nominalisierung</span></h2>
+          <p class="body-text">Adjektive und Partizipien können ebenfalls nominalisiert werden. Sie werden großgeschrieben und nach dem unbestimmten/bestimmten Artikel dekliniert — wie ein normales Adjektivattribut.</p>
+          <details class="en-help">
+            <summary>🇬🇧 Adjective nominalization</summary>
+            <div class="en-help-body">
+              <p>In German, adjectives can be used as nouns: "das Gute" (the good/good things), "ein Neues" (something new). They follow adjective declension rules, not noun declension. This is very common in B2 formal and literary texts.</p>
+              <p>Participial adjectives work the same way: "das Geschriebene" (what was written), "der Reisende" (the traveler).</p>
+            </div>
+          </details>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de"><span class="kh">Das Wichtigste</span> ist die Vorbereitung.</div>
+                <div class="ex-note">wichtig (Adj.) → das Wichtigste (nominalisiert, superlativ)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das Wichtigste ist die Vorbereitung.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Fatima brachte <span class="kh">etwas Neues</span> in die Diskussion.</div>
+                <div class="ex-note">neu → etwas Neues (nach „etwas" → Adjektivdeklination stark)</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de"><span class="kh">Der Reisende</span> fragte nach dem Weg.</div>
+                <div class="ex-note">reisend (Partizip I) → der Reisende (nominalisiert)</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Chidi las <span class="kh">das Geschriebene</span> noch einmal durch.</div>
+                <div class="ex-note">geschrieben (Partizip II) → das Geschriebene</div>
+              </div>
+            </div>
+          </div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Kontext</th><th>Endung</th><th>Beispiel</th></tr>
+              <tr><td>nach dem/ein</td><td>wie schwaches Adj.</td><td>das Neue, ein Neues</td></tr>
+              <tr><td>nach kein/mein</td><td>wie schwach</td><td>mein Liebes</td></tr>
+              <tr><td>ohne Artikel</td><td>stark</td><td>Neues entdecken</td></tr>
+              <tr><td>nach alles/nichts</td><td>stark</td><td>alles Gute, nichts Wichtiges</td></tr>
+            </table>
+          </div>
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(2,0)">Weiter →</button>
+        </div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card">
+          <div class="quiz-qnum" id="l2-qnum">FRAGE 1 VON 2</div>
+          <div class="quiz-q" id="l2-q"></div>
+          <div class="quiz-hint" id="l2-hint"></div>
+          <div class="quiz-opts" id="l2-opts"></div>
+          <div class="qfeedback" id="l2-fb"><div class="qft" id="l2-ft"></div><div class="qfb" id="l2-fbe"></div><div class="qfr" id="l2-rule"></div></div>
+          <div class="qnext" id="l2-next"><button class="btn btn-primary" onclick="advQ(2)">Weiter →</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEKTION 4 -->
+    <div id="lesson-3" class="lesson-pane">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">B2 · Modul 3 · Lektion 4 von 5</div>
+          <h2 class="lesson-h">Nominalkonstruktionen in <span style="color:var(--blue)">B2-Texten</span></h2>
+          <p class="body-text">Authentische B2-Texte (Zeitungsartikel, wissenschaftliche Berichte, offizielle Dokumente) enthalten komplexe Nominalkonstruktionen mit Genitivattributen und Präpositionalphrasen. Diese Lektion zeigt dir, wie du sie schnell entschlüsselst.</p>
+          <details class="en-help">
+            <summary>🇬🇧 Reading strategy for complex noun phrases</summary>
+            <div class="en-help-body">
+              <p>Strategy: 1. Find the core noun (the "head noun"). 2. Find what modifies it (adjectives, genitive attributes, prepositional phrases). 3. Reconstruct the verbal equivalent to understand meaning. 4. In B2 reading, don't stop at each noun phrase — use context to infer meaning if needed.</p>
+            </div>
+          </details>
+          <div class="warn-box" style="font-style:italic;">„Die zunehmende Digitalisierung des Bildungswesens und die damit verbundene Notwendigkeit einer grundlegenden Neugestaltung der Lehrpläne stellt Schulen vor große Herausforderungen."</div>
+          <div class="info-box"><strong>Analyse dieses Satzes:</strong><br><br>
+            • <strong>die zunehmende Digitalisierung</strong> = es wird zunehmend digitalisiert<br>
+            • <strong>des Bildungswesens</strong> = Genitivattribut: im Bereich Bildung<br>
+            • <strong>die damit verbundene Notwendigkeit</strong> = es ist damit notwendig geworden<br>
+            • <strong>einer grundlegenden Neugestaltung</strong> = die Lehrpläne müssen grundlegend neu gestaltet werden
+          </div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de"><span class="kh">Die Einführung</span> neuer Regeln führte zu Diskussionen.</div>
+                <div class="ex-note">= Als neue Regeln eingeführt wurden, entstanden Diskussionen.</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de"><span class="kh">Die Verbesserung</span> der Lebensqualität ist ein zentrales Ziel.</div>
+                <div class="ex-note">= Das Leben besser zu gestalten, ist ein zentrales Ziel.</div>
+              </div>
+            </div>
+          </div>
+          <div class="success-box"><strong>Lesetipp:</strong> Bei unbekannten Nominalkonstruktionen: Suche das Verb, das im Substantiv versteckt ist (Entwicklung → entwickeln, Beurteilung → beurteilen). Das ergibt den Kernsinn.</div>
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(3,0)">Weiter →</button>
+        </div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card">
+          <div class="quiz-qnum" id="l3-qnum">FRAGE 1 VON 2</div>
+          <div class="quiz-q" id="l3-q"></div>
+          <div class="quiz-hint" id="l3-hint"></div>
+          <div class="quiz-opts" id="l3-opts"></div>
+          <div class="qfeedback" id="l3-fb"><div class="qft" id="l3-ft"></div><div class="qfb" id="l3-fbe"></div><div class="qfr" id="l3-rule"></div></div>
+          <div class="qnext" id="l3-next"><button class="btn btn-primary" onclick="advQ(3)">Weiter →</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEKTION 5 -->
+    <div id="lesson-4" class="lesson-pane">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">B2 · Modul 3 · Lektion 5 von 5</div>
+          <h2 class="lesson-h">Schreiben im <span style="color:var(--blue)">Nominalstil</span></h2>
+          <p class="body-text">Der Nominalstil signalisiert Formalität und Kompetenz in akademischen und offiziellen Texten. Aber: Zu viel Nominalstil macht Texte schwer lesbar. Das richtige Gleichgewicht ist der Schlüssel.</p>
+          <details class="en-help">
+            <summary>🇬🇧 When to use Nominalstil</summary>
+            <div class="en-help-body">
+              <p>Use Nominalstil in: academic writing, official reports, formal letters, newspapers. Avoid it in: casual conversation, personal emails, creative writing. The golden rule: mix both styles for readability.</p>
+            </div>
+          </details>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">ZU VERBAL</div>
+              <div class="wr-word">Wir haben die Daten analysiert und dann haben wir diskutiert und dann haben wir die Ergebnisse präsentiert.</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">AUSGEWOGEN</div>
+              <div class="wr-word">Nach der Analyse der Daten fand eine Diskussion statt, die in der Präsentation der Ergebnisse mündete.</div>
+            </div>
+          </div>
+          <div class="info-box"><strong>Nützliche Verben für den Nominalstil:</strong><br><br>
+            <strong>führen zu</strong> + Dat. — Die Maßnahme führte zu einer Verbesserung.<br>
+            <strong>stattfinden</strong> — Eine Diskussion fand statt.<br>
+            <strong>erfolgen</strong> — Die Einführung erfolgte schrittweise.<br>
+            <strong>ergeben</strong> — Die Analyse ergab folgendes Ergebnis.<br>
+            <strong>darstellen</strong> — Dies stellt ein Problem dar.
+          </div>
+          <div class="success-box"><strong>B2-Schreibtipp:</strong> Für den formellen Brief oder Aufsatz: Verwende Nominalkonstruktionen an Satzanfängen (z.B. „Die Verbesserung der Situation erfordert…") und Verbalkonstruktionen in den Hauptaussagen. Das schafft einen professionellen, aber lesbaren Stil.</div>
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(4,0)">Weiter →</button>
+        </div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card">
+          <div class="quiz-qnum" id="l4-qnum">FRAGE 1 VON 2</div>
+          <div class="quiz-q" id="l4-q"></div>
+          <div class="quiz-hint" id="l4-hint"></div>
+          <div class="quiz-opts" id="l4-opts"></div>
+          <div class="qfeedback" id="l4-fb"><div class="qft" id="l4-ft"></div><div class="qfb" id="l4-fbe"></div><div class="qfr" id="l4-rule"></div></div>
+          <div class="qnext" id="l4-next"><button class="btn btn-primary" onclick="advQ(4)">Weiter →</button></div>
+        </div>
+      </div>
+      <div class="step" id="l4-s2">
+        <div class="complete-wrap">
+          <div class="complete-icon">📚</div>
+          <h2 class="lesson-h">Modul abgeschlossen!</h2>
+          <p class="body-text">Du beherrschst jetzt Nominalisierung und Verbalisierung auf B2-Niveau — die Suffixe, das Auflösen von Nominalkonstruktionen, Adjektiv-Nominalisierungen und den professionellen Nominalstil.</p>
+          <div class="xp-badge">⚡ +120 XP</div>
+          <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:12px;">
+            <button class="btn btn-outline" onclick="showOverview()">Lektionen ansehen</button>
+            <a href="deutschweg-prototype.html" class="btn btn-primary" style="text-decoration:none;display:inline-flex;align-items:center;">← Dashboard</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="dw-next-step-bar">
+  <a href="module-b2-2-passiv-erweitert.html" class="dw-nsb-link">← Modul 2</a>
+  <a href="deutschweg-prototype.html#b2" class="dw-nsb-link">B2 Übersicht</a>
+  <a href="module-b2-4-konzessivsaetze.html" class="dw-nsb-cta">Modul 4: Konzessivsätze →</a>
+</div>
+
+<script>
+var QD = {
+  0:[
+    {q:'Welches Genus hat ein nominalisierter Infinitiv?',hint:'z.B. das Lernen, das Schreiben',opts:['maskulin (der)','feminin (die)','neutrum (das)','hängt vom Verb ab'],ans:2,exp:'Nominalisierte Infinitive sind immer neutrum (das) und immer großgeschrieben: das Lernen, das Schreiben, das Verstehen.',rule:'Nominalisierter Infinitiv → immer neutrum (das)'},
+    {q:'Welche Nominalisierung von „entwickeln" ist korrekt?',hint:'Suffix -ung → Genus?',opts:['der Entwicklung','die Entwicklung','das Entwicklung','die Entwickel'],ans:1,exp:'entwickeln → die Entwicklung. Suffix -ung ergibt immer ein feminines Substantiv.',rule:'-ung Nominalisierungen → immer feminin (die)'}
+  ],
+  1:[
+    {q:'„Trotz des schlechten Wetters" entspricht welchem Verbalsatz?',hint:'trotz → welche Konjunktion?',opts:['weil das Wetter schlecht war','obwohl das Wetter schlecht war','als das Wetter schlecht war','wenn das Wetter schlecht ist'],ans:1,exp:'„trotz" (Konzessiv-Präposition) → obwohl/obschon. Trotz des schlechten Wetters = obwohl das Wetter schlecht war.',rule:'trotz + Gen. → obwohl/obschon + Verb'},
+    {q:'„Nach der Einführung der neuen Regeln" entspricht:',hint:'nach + Nominalisierung → welche Konjunktion?',opts:['bevor neue Regeln eingeführt wurden','weil neue Regeln eingeführt wurden','nachdem neue Regeln eingeführt worden waren','als neue Regeln eingeführt werden'],ans:2,exp:'„nach" + Nominalisierung → „nachdem" + Verb. Da es Vorzeitigkeit ausdrückt, steht das Verb im Plusquamperfekt Passiv.',rule:'nach + Nom. → nachdem + Verb (Plusquamperf.)'}
+  ],
+  2:[
+    {q:'Welche Form ist korrekt nach „alles"?',hint:'Nach alles: starke Adjektivdeklination',opts:['alles Gutes','alles Gute','alles Gut','das alles Gute'],ans:1,exp:'Nach „alles" steht die starke Adjektivdeklination: alles Gute (Nominativ), alles Wichtige, alles Neue.',rule:'Nach alles/nichts/etwas: starke Adjektivdeklination'},
+    {q:'„der Reisende" ist ein Beispiel für:',hint:'Partizip I nominalisiert',opts:['einen nominalisierten Infinitiv','ein nominalisiertes Partizip I','ein nominalisiertes Adjektiv im Superlativ','eine -ung Nominalisierung'],ans:1,exp:'„reisend" ist das Partizip I von „reisen". Nominalisiert: der Reisende (Person, die reist). Partizip I Nominalisierungen beschreiben oft Personen durch ihre Tätigkeit.',rule:'Partizip I nominalisiert → Beschreibung einer handelnden Person'}
+  ],
+  3:[
+    {q:'Was bedeutet „die Verbesserung der Ergebnisse"?',hint:'Suche das Verb hinter der Nominalisierung',opts:['Die Ergebnisse sind gut.','Die Ergebnisse wurden/werden verbessert.','Wir haben neue Ergebnisse.','Die Ergebnisse wurden bewertet.'],ans:1,exp:'Nominalisierung auflösen: Verbesserung → verbessern. „die Verbesserung der Ergebnisse" = die Ergebnisse werden (wurden) verbessert.',rule:'Nominalisierung auflösen: Substantiv → Verb suchen; Genitivattribut → Subjekt/Objekt'},
+    {q:'Welche Konjunktion ersetzt „bei der Analyse"?',hint:'bei + Nominalisierung → Gleichzeitigkeit',opts:['nachdem','bevor','als/wenn','weil'],ans:2,exp:'„bei" + Nominalisierung drückt Gleichzeitigkeit aus → als (einmalig, Vergangenheit) oder wenn (wiederholend/Gegenwart).',rule:'bei + Nom. → als/wenn (Gleichzeitigkeit)'}
+  ],
+  4:[
+    {q:'Welches Verb passt für den Nominalstil: „Die Diskussion ___ zu einem Ergebnis"?',hint:'Nominalkonstruktion mit Ergebnis',opts:['macht','sagt','führte','geht'],ans:2,exp:'„führen zu" ist ein typisches Verb des Nominalstils: Die Diskussion führte zu einem Ergebnis. Andere: stattfinden, erfolgen, ergeben.',rule:'Nominalstil-Verben: führen zu, stattfinden, erfolgen, ergeben, darstellen'},
+    {q:'„Das schnelle Lernen neuer Vokabeln erfordert Ausdauer." Wie lautet die verbale Form?',hint:'Nominalkonstruktion als Subjekt auflösen',opts:['Das Lernen ist schnell.','Wenn man neue Vokabeln schnell lernt, braucht man Ausdauer.','Neue Vokabeln sind schnell.','Lernen erfordert Vokabeln.'],ans:1,exp:'„Das schnelle Lernen neuer Vokabeln" = Subjekt-Nominalkonstruktion → wenn-Satz: Wenn man neue Vokabeln schnell lernt, braucht man Ausdauer.',rule:'Nominalkonstruktion als Subjekt → wenn/wer-Satz auflösen'}
+  ]
+};
+var curLesson=0,curStep=0,curQ={},qIdx=0,xp=0;
+var lessonSteps=[2,2,2,2,3];
+function speakSentence(btn,text){if(!window.speechSynthesis)return;window.speechSynthesis.cancel();if(btn.classList.contains('speaking')){btn.classList.remove('speaking');return;}document.querySelectorAll('.speak-btn.speaking').forEach(b=>b.classList.remove('speaking'));var u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=0.9;u.onend=()=>btn.classList.remove('speaking');btn.classList.add('speaking');window.speechSynthesis.speak(u);}
+function showOverview(){document.getElementById('screen-lesson').classList.remove('active');document.getElementById('screen-overview').classList.add('active');window.scrollTo(0,0);}
+function goLesson(li){curLesson=li;curStep=0;qIdx=0;document.getElementById('screen-overview').classList.remove('active');document.getElementById('screen-lesson').classList.add('active');document.querySelectorAll('.lesson-pane').forEach(p=>p.style.display='none');document.getElementById('lesson-'+li).style.display='block';document.querySelectorAll('#lesson-'+li+' .step').forEach((s,i)=>s.classList.toggle('active',i===0));renderDots(li);updateProgress(li,0);window.scrollTo(0,0);}
+function renderDots(li){var n=lessonSteps[li],row=document.getElementById('dotRow');row.innerHTML='';for(var i=0;i<n;i++){var d=document.createElement('div');d.className='dot'+(i===0?' active':'');(function(idx){d.onclick=function(){if(idx<=curStep)goStep(curLesson,idx);};})(i);row.appendChild(d);}}
+function goStep(li,si){curStep=si;document.querySelectorAll('#lesson-'+li+' .step').forEach((s,i)=>s.classList.toggle('active',i===si));document.querySelectorAll('#dotRow .dot').forEach((d,i)=>{d.classList.toggle('active',i===si);d.classList.toggle('done',i<si);});updateProgress(li,si);window.scrollTo(0,0);}
+function updateProgress(li,si){document.getElementById('progFill').style.width=Math.round((si/(lessonSteps[li]-1))*100)+'%';}
+function nextStep(li,si){var nsi=si+1;if(nsi>=lessonSteps[li])return;initQuiz(li);goStep(li,nsi);}
+function initQuiz(li){qIdx=0;renderQ(li);}
+function renderQ(li){var qs=QD[li];if(!qs||qIdx>=qs.length){showResult(li);return;}var q=qs[qIdx];curQ=q;document.getElementById('l'+li+'-qnum').textContent='FRAGE '+(qIdx+1)+' VON '+qs.length;document.getElementById('l'+li+'-q').textContent=q.q;document.getElementById('l'+li+'-hint').textContent=q.hint;var opts=document.getElementById('l'+li+'-opts');opts.innerHTML='';['A','B','C','D'].forEach(function(l,i){var btn=document.createElement('button');btn.className='qopt';btn.innerHTML='<span class="qletter">'+l+'</span>'+qs[qIdx].opts[i];btn.onclick=function(){pickQ(li,i);};opts.appendChild(btn);});document.getElementById('l'+li+'-fb').className='qfeedback';document.getElementById('l'+li+'-next').className='qnext';}
+function pickQ(li,idx){var q=QD[li][qIdx];var opts=document.querySelectorAll('#l'+li+'-opts .qopt');opts.forEach(b=>b.disabled=true);opts[idx].classList.add(idx===q.ans?'correct':'wrong');if(idx!==q.ans)opts[q.ans].classList.add('correct');var ok=idx===q.ans;if(ok){xp+=10;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';}var fb=document.getElementById('l'+li+'-fb');fb.className='qfeedback show '+(ok?'ok':'no');document.getElementById('l'+li+'-ft').textContent=ok?'✓ Richtig!':'✗ Leider falsch.';document.getElementById('l'+li+'-ft').className='qft '+(ok?'ok':'no');document.getElementById('l'+li+'-fbe').textContent=q.exp;document.getElementById('l'+li+'-rule').textContent='📌 '+q.rule;document.getElementById('l'+li+'-next').className='qnext show';}
+function advQ(li){qIdx++;if(qIdx>=QD[li].length)showResult(li);else renderQ(li);}
+function showResult(li){if(li===4){goStep(li,2);localStorage.setItem('dw_xp',parseInt(localStorage.getItem('dw_xp')||'0')+xp);localStorage.setItem('dw_mod_b2_3_done','1');}else goLesson(li+1);}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');xp=0;document.getElementById('xpDisp').textContent='⚡ 0 XP';});
+
+  // ===== STANDALONE QUIZ =====
+  var SQ_DATA = [
+  {
+    "q": "Was ist Nominalisierung?",
+    "opts": [
+      "Ein Verb in eine Frage umwandeln",
+      "Ein Verb oder Adjektiv in ein Substantiv umwandeln",
+      "Ein Substantiv durch ein Pronomen ersetzen",
+      "Einen Satz kuerzen"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Nominalisierung wandelt Verben oder Adjektive in Substantive um.",
+    "fb_ko": "Falsch. Bei der Nominalisierung wird z.B. ein Verb in ein Substantiv umgewandelt."
+  },
+  {
+    "q": "Welches Suffix bildet haeufig Nominalisierungen aus Adjektiven?",
+    "opts": [
+      "-lich",
+      "-heit / -keit",
+      "-isch",
+      "-bar"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Suffixe wie -heit und -keit bilden Substantive aus Adjektiven.",
+    "fb_ko": "Falsch. -heit und -keit sind typische Suffixe fuer Nominalisierungen aus Adjektiven."
+  },
+  {
+    "q": "Was ist die nominalisierte Form von 'verhandeln'?",
+    "opts": [
+      "die Verhandlung",
+      "das Verhandeln",
+      "der Verhandler",
+      "die Verhandlerei"
+    ],
+    "ans": 0,
+    "fb_ok": "Richtig! 'Die Verhandlung' ist die uebliche nominalisierte Form.",
+    "fb_ko": "Falsch. Die gebraeuchliche Nominalisierung von 'verhandeln' ist 'die Verhandlung'."
+  },
+  {
+    "q": "Warum wird Nominalisierung im deutschen akademischen Stil bevorzugt?",
+    "opts": [
+      "Sie macht Texte kuerzer",
+      "Sie klingt formeller und verdichtet Information",
+      "Sie ist leichter zu verstehen",
+      "Sie vermeidet Passivformen"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Nominalisierung verleiht Texten Formalikaet und Informationsdichte.",
+    "fb_ko": "Falsch. Im akademischen Stil verdichtet Nominalisierung Informationen und klingt formeller."
+  },
+  {
+    "q": "Welches Wort ist KEIN nominalisierter Infinitiv?",
+    "opts": [
+      "das Lesen",
+      "das Schreiben",
+      "die Schrift",
+      "das Lernen"
+    ],
+    "ans": 2,
+    "fb_ok": "Richtig! 'die Schrift' ist kein nominalisierter Infinitiv, sondern ein eigenes Substantiv.",
+    "fb_ko": "Falsch. 'die Schrift' ist ein eigenstaendiges Substantiv, kein nominalisierter Infinitiv."
+  }
+];
+  var sqIdx=0, sqScore=0, sqAnswered=false;
+  var sqResults=[];
+  function sqInit(){sqIdx=0;sqScore=0;sqAnswered=false;sqResults=[];sqRender();}
+  function sqRender(){
+    var d=SQ_DATA[sqIdx];
+    document.getElementById('sqQuestion').style.display='block';
+    document.getElementById('sqResult').classList.remove('show');
+    document.getElementById('sqQText').textContent=(sqIdx+1)+'. '+d.q;
+    var dots=document.getElementById('sqDots');
+    dots.innerHTML='';
+    for(var i=0;i<5;i++){
+      var dot=document.createElement('div');
+      var cls='sq-dot';
+      if(i<sqIdx){ cls+= sqResults[i]?' done':' wrong'; }
+      else if(i===sqIdx){ cls+=' active'; }
+      dot.className=cls;
+      dots.appendChild(dot);
+    }
+    var opts=document.getElementById('sqOpts');
+    opts.innerHTML='';
+    d.opts.forEach(function(o,i){
+      var b=document.createElement('button');
+      b.className='sq-opt';
+      b.textContent=o;
+      (function(idx){b.onclick=function(){sqPick(idx);};})(i);
+      opts.appendChild(b);
+    });
+    var fb=document.getElementById('sqFb');
+    fb.className='sq-fb';
+    fb.textContent='';
+    document.getElementById('sqNext').className='btn btn-primary sq-next';
+    sqAnswered=false;
+  }
+  function sqPick(idx){
+    if(sqAnswered)return;
+    sqAnswered=true;
+    var d=SQ_DATA[sqIdx];
+    var opts=document.getElementById('sqOpts').querySelectorAll('.sq-opt');
+    opts.forEach(function(b){b.classList.add('disabled');});
+    var ok=(idx===d.ans);
+    if(ok){sqScore++;sqResults[sqIdx]=true;}else{sqResults[sqIdx]=false;}
+    opts[idx].classList.add(ok?'correct':'wrong');
+    if(!ok) opts[d.ans].classList.add('correct');
+    var fb=document.getElementById('sqFb');
+    fb.textContent=ok?d.fb_ok:d.fb_ko;
+    fb.className='sq-fb show '+(ok?'ok':'ko');
+    document.getElementById('sqNext').className='btn btn-primary sq-next show';
+  }
+  function sqAdvance(){
+    if(sqIdx<4){sqIdx++;sqRender();}else{sqShowResult();}
+  }
+  function sqShowResult(){
+    document.getElementById('sqQuestion').style.display='none';
+    var res=document.getElementById('sqResult');
+    res.className='sq-result show';
+    document.getElementById('sqScoreNum').textContent=sqScore+'/5';
+    var msgs=['Nicht aufgeben! \u{1F31F}','Nicht aufgeben! \u{1F31F}','Weiter üben! \u{1F4DA}','Gut gemacht! \u{1F4AA}','Sehr gut! \u{1F44F}','Ausgezeichnet! \u{1F389}'];
+    document.getElementById('sqScoreMsg').textContent=msgs[sqScore];
+  }
+  function sqReset(){
+    sqIdx=0;sqScore=0;sqAnswered=false;sqResults=[];
+    document.getElementById('sqResult').className='sq-result';
+    document.getElementById('sqQuestion').style.display='block';
+    sqRender();
+  }
+  document.addEventListener('DOMContentLoaded',function(){sqInit();});
+
+  document.addEventListener('DOMContentLoaded',function(){
+    var nb=document.getElementById('sqNextMod');
+    if(nb){ nb.onclick=function(){ window.location.href='module-b2-4-konzessivsaetze.html'; }; }
+  });
+
+</script>
+</body>
+</html>

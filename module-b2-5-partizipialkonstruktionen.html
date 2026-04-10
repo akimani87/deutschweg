@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — B2 Modul 5: Partizipialkonstruktionen</title>
+<link rel="stylesheet" href="deutschweg-theme.css">
+<style>
+  :root { --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc; --gold:#c9a84c; --red:#c0392b; --green:#27ae60; --blue:#3498db; --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a; --border:rgba(201,168,76,0.2); --ki:#e67e22; --kii:#9b59b6; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); position:sticky; top:0; z-index:50; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--blue); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); } .dot.active { background:var(--blue); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; } .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; font-family:'DM Sans',sans-serif; }
+  .btn-primary { background:var(--blue); color:var(--white); width:100%; }
+  .btn-primary:hover { background:#2980b9; transform:translateY(-2px); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn.speaking { background:var(--blue); color:var(--white); }
+  .en-help { background:rgba(52,152,219,0.05); border:1px dashed rgba(52,152,219,0.25); border-radius:10px; margin:12px 0; }
+  .en-help summary { padding:10px 16px; cursor:pointer; font-size:13px; color:var(--blue); font-family:'DM Mono',monospace; list-style:none; display:flex; align-items:center; gap:8px; }
+  .en-help summary::-webkit-details-marker { display:none; }
+  .en-help[open] summary { border-bottom:1px dashed rgba(52,152,219,0.2); }
+  .en-help-body { padding:12px 16px; font-size:13px; color:rgba(245,240,232,.7); line-height:1.8; }
+  .en-help-body p { margin-bottom:8px; }
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-note { font-size:12px; color:var(--gray); line-height:1.6; }
+  .comp-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .comp-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:10px 14px; text-align:left; border-bottom:2px solid rgba(255,255,255,0.1); }
+  .comp-table td { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'DM Mono',monospace; font-size:13px; vertical-align:top; }
+  .comp-table tr:last-child td { border-bottom:none; }
+  .comp-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+  .transform-box { background:var(--card2-bg); border:1px solid rgba(52,152,219,0.15); border-radius:14px; padding:18px 20px; margin:12px 0; }
+  .trn-row { display:flex; align-items:flex-start; gap:12px; margin-bottom:10px; }
+  .trn-row:last-child { margin-bottom:0; }
+  .trn-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; flex-shrink:0; width:70px; padding-top:2px; }
+  .trn-text { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); line-height:1.7; }
+  .trn-arrow { text-align:center; color:var(--blue); font-size:18px; margin:4px 0; padding-left:82px; }
+  .kh { color:var(--ki); font-weight:700; } .fh { color:var(--kii); font-weight:700; }
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Mono',monospace; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--blue); background:rgba(52,152,219,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; } .qft.ok { color:var(--green); } .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(52,152,219,0.1); border-radius:8px; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; }
+  .qnext { display:none; } .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(52,152,219,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.2); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(52,152,219,0.12); border:1px solid var(--blue); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--blue); font-size:18px; margin:18px 0; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+
+  /* ===== STANDALONE QUIZ ===== */
+  .sq-wrap{background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:28px;margin-top:32px;}
+  .sq-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:6px;}
+  .sq-sub{font-size:13px;color:var(--gray);margin-bottom:20px;}
+  .sq-dots{display:flex;gap:8px;margin-bottom:20px;}
+  .sq-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all 0.3s;}
+  .sq-dot.active{background:var(--blue);width:22px;border-radius:4px;}
+  .sq-dot.done{background:var(--green);}
+  .sq-dot.wrong{background:var(--red);}
+  .sq-q{font-size:16px;font-weight:600;margin-bottom:16px;line-height:1.5;}
+  .sq-opts{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+  .sq-opt{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:12px 16px;cursor:pointer;font-size:14px;transition:all 0.2s;text-align:left;}
+  .sq-opt:hover:not(.disabled){background:rgba(52,152,219,0.12);border-color:var(--blue);}
+  .sq-opt.selected{background:rgba(52,152,219,0.15);border-color:var(--blue);}
+  .sq-opt.correct{background:rgba(39,174,96,0.15);border-color:var(--green);color:var(--green);}
+  .sq-opt.wrong{background:rgba(192,57,43,0.15);border-color:var(--red);color:var(--red);}
+  .sq-opt.disabled{cursor:default;pointer-events:none;}
+  .sq-fb{font-size:14px;padding:12px 16px;border-radius:10px;margin-bottom:16px;display:none;}
+  .sq-fb.show{display:block;}
+  .sq-fb.ok{background:rgba(39,174,96,0.12);border:1px solid rgba(39,174,96,0.3);color:var(--green);}
+  .sq-fb.ko{background:rgba(192,57,43,0.12);border:1px solid rgba(192,57,43,0.3);color:#e07070;}
+  .sq-next{display:none;}
+  .sq-next.show{display:inline-block;}
+  .sq-result{display:none;text-align:center;padding:20px 0;}
+  .sq-result.show{display:block;}
+  .sq-score-num{font-family:'Playfair Display',serif;font-size:48px;color:var(--blue);margin-bottom:8px;}
+  .sq-score-msg{font-size:20px;margin-bottom:24px;}
+  .sq-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+  .sq-btns .btn{width:auto;padding:12px 28px;}
+
+</style>
+<style>
+/* LIGHT THEME OVERRIDE */
+:root { --black:#F8FAFC; --white:#1F2937; --cream:#4B5563; --gold:#3B82F6; --red:#EF4444; --green:#10B981; --blue:#3B82F6; --gray:#9CA3AF; --card-bg:#FFFFFF; --card2-bg:#F8FAFC; --border:#E5E7EB; --ki:#F59E0B; --kii:#8B5CF6; }
+body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-serif; }
+.top-nav { background:white; border-bottom:1px solid #E5E7EB; backdrop-filter:none; }
+.btn-primary { background:#3B82F6; color:white; } .btn-outline { background:transparent; border:1px solid #3B82F6; color:#3B82F6; }
+.card { background:#FFFFFF; border:1px solid #E5E7EB; box-shadow:0 1px 3px rgba(0,0,0,0.07); }
+.info-box { background:#EFF6FF; border-left:3px solid #3B82F6; color:#1D4ED8; }
+.warn-box { background:#EFF6FF; border-left:3px solid #3B82F6; color:#1D4ED8; }
+.danger-box { background:#FEF2F2; border-left:3px solid #EF4444; color:#991B1B; }
+.success-box { background:#ECFDF5; border-left:3px solid #10B981; color:#065F46; }
+.qopt { border:1px solid #E5E7EB; background:white; color:#1F2937; }
+.qopt:hover:not([disabled]) { border-color:#3B82F6; background:#EFF6FF; }
+.xp-badge { background:#EFF6FF; border:1px solid #3B82F6; color:#3B82F6; }
+.speak-btn { background:#EFF6FF; border-color:#DBEAFE; color:#3B82F6; }
+.speak-btn.speaking { background:#3B82F6; color:white; }
+.lesson-card { background:#F8FAFC; border:1px solid #E5E7EB; }
+.ex-card { background:#F8FAFC; border:1px solid #E5E7EB; }
+</style>
+</head>
+<body>
+<div id="screen-overview" class="screen active">
+  <nav class="dw-nav"><div class="dw-nav-inner">
+    <a href="deutschweg-prototype.html" class="dw-logo"><div class="dw-logo-icon">D</div><span class="dw-logo-text">Deutsch<span>Weg</span></span></a>
+    <a href="exam-vault.html" style="font-size:13px;font-weight:600;color:#1D4ED8;text-decoration:none;margin-right:8px;">📝 Exams</a>
+    <a href="deutschweg-prototype.html" class="dw-btn dw-btn-secondary">← Back to Dashboard</a>
+  </div></nav>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">B2 · Grammatik · Modul 5</div>
+    <h1 class="lesson-h" style="font-size:36px;"><span style="color:var(--blue)">Partizipialkonstruktionen</span></h1>
+    <p class="body-text">Partizipialkonstruktionen sind komprimierte Nebensätze — ein Merkmal gehobener Schriftsprache. Auf B2-Niveau musst du erweiterte Partizipialattribute lesen und selbst schreiben können.</p>
+    <details class="en-help"><summary>🇬🇧 What will I learn here?</summary>
+      <div class="en-help-body"><p>Participial constructions replace relative clauses or adverbial clauses in a compressed form. Instead of "der Mann, der im Park läuft" → "der im Park laufende Mann". Partizip I (laufend) and Partizip II (geschrieben) behave differently. Extended participial attributes can be very long — key skill for B2 reading.</p></div>
+    </details>
+    <div class="info-box"><strong>Lernziele:</strong><br><br>
+      ✦ Partizip I (Gegenwart) und Partizip II (Vergangenheit) bilden und unterscheiden<br>
+      ✦ Partizip I als Adjektivattribut: der singende Vogel<br>
+      ✦ Partizip II als Adjektivattribut: das geschriebene Buch<br>
+      ✦ Erweiterte Partizipialattribute (EPA) verstehen und bilden<br>
+      ✦ Partizipialkonstruktionen in Relativsätze auflösen (und umgekehrt)<br>
+      ✦ B2-Lesetexte mit langen EPAs entschlüsseln
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">📖</div><div><div class="lc-title">Lektion 1 — Partizip I vs. Partizip II</div><div class="lc-desc">Bildung, Bedeutung und Verwendung als Adjektiv. Aktiv vs. Passiv, gleichzeitig vs. vorzeitig.</div></div><div class="lc-tag" style="color:var(--blue);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">🔄</div><div><div class="lc-title">Lektion 2 — Relativsatz ↔ Partizipialattribut</div><div class="lc-desc">Umformung von Relativsätzen in Partizipialattribute. Regeln und Einschränkungen.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">📐</div><div><div class="lc-title">Lektion 3 — Erweiterte Partizipialattribute (EPA)</div><div class="lc-desc">Der im letzten Jahr von der Regierung verabschiedete Gesetzentwurf… Struktur und Entschlüsselung.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">📰</div><div><div class="lc-title">Lektion 4 — EPA in B2-Texten lesen</div><div class="lc-desc">Strategie zum schnellen Verstehen langer Partizipialattribute. Authentische Beispiele.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">✍️</div><div><div class="lc-title">Lektion 5 — Partizipialkonstruktionen schreiben</div><div class="lc-desc">Wann einsetzen? Häufige Fehler. Stilistische Wirkung. B2-Schreibtraining.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
+    <!-- STANDALONE QUIZ -->
+    <div class="sq-wrap" id="sqWrap">
+      <div id="sqQuestion">
+        <div class="sq-title">Wissenstest</div>
+        <div class="sq-sub">5 Fragen &mdash; teste dein Wissen!</div>
+        <div class="sq-dots" id="sqDots"></div>
+        <div class="sq-q" id="sqQText"></div>
+        <div class="sq-opts" id="sqOpts"></div>
+        <div class="sq-fb" id="sqFb"></div>
+        <button class="btn btn-primary sq-next" id="sqNext" onclick="sqAdvance()">Weiter &#x2192;</button>
+      </div>
+      <div class="sq-result" id="sqResult">
+        <div class="sq-score-num" id="sqScoreNum">0/5</div>
+        <div class="sq-score-msg" id="sqScoreMsg"></div>
+        <div class="sq-btns">
+          <button class="btn btn-outline" onclick="sqReset()">Nochmal versuchen</button>
+          <button class="btn btn-primary" id="sqNextMod">N&#xE4;chstes Modul &#x2192;</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lektionen</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--blue);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">B2 · Modul 5 · Lektion 1 von 5</div>
+          <h2 class="lesson-h">Partizip I vs. <span style="color:var(--ki)">Partizip II</span></h2>
+          <p class="body-text">Das <span class="kh">Partizip I</span> (Präsenspartizip) drückt Gleichzeitigkeit und aktive Handlung aus. Das <span class="fh">Partizip II</span> (Perfektpartizip) drückt Vorzeitigkeit und bei transitiven Verben passive Bedeutung aus.</p>
+          <details class="en-help"><summary>🇬🇧 Participles explained</summary>
+            <div class="en-help-body">
+              <p><strong>Partizip I</strong> = Infinitiv + -d. Active, simultaneous: der singende Mann = the man who is singing (simultaneously).</p>
+              <p><strong>Partizip II</strong> = Perfect participle (gemacht, gegangen). Passive/completed: das geschriebene Buch = the book that was written. With intransitive verbs: der eingeschlafene Mann = the man who fell asleep.</p>
+            </div>
+          </details>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Typ</th><th>Bildung</th><th>Bedeutung</th><th>Beispiel</th></tr>
+              <tr><td class="kh">Partizip I</td><td>Infinitiv + -d</td><td>aktiv, gleichzeitig</td><td>der schreibende Student</td></tr>
+              <tr><td class="fh">Partizip II</td><td>ge-...-t/en</td><td>passiv/abgeschlossen</td><td>das geschriebene Dokument</td></tr>
+            </table>
+          </div>
+          <div class="ex-list">
+            <div class="ex-card"><div style="flex:1;">
+              <div class="ex-de"><span class="kh">Die weinende</span> Frau saß im Park.</div>
+              <div class="ex-note">PI: = die Frau, die weinte (aktiv, gleichzeitig)</div>
+            </div></div>
+            <div class="ex-card"><div style="flex:1;">
+              <div class="ex-de"><span class="fh">Das unterschriebene</span> Dokument liegt auf dem Tisch.</div>
+              <div class="ex-note">PII: = das Dokument, das unterschrieben wurde (passiv, abgeschlossen)</div>
+            </div></div>
+            <div class="ex-card"><div style="flex:1;">
+              <div class="ex-de"><span class="fh">Der eingeschlafene</span> Kofi schnarchte laut.</div>
+              <div class="ex-note">PII intransitiv: = Kofi, der eingeschlafen war (aktiv, abgeschlossen)</div>
+            </div></div>
+          </div>
+          <div class="warn-box"><strong>Merke!</strong> Partizip I als Attribut erhält immer Adjektivendungen: der singend<em>e</em> Mann, die singende Frau, das singend<em>e</em> Kind.</div>
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(0,0)">Weiter →</button>
+        </div>
+      </div>
+      <div class="step" id="l0-s1"><div class="card">
+        <div class="quiz-qnum" id="l0-qnum">FRAGE 1 VON 2</div><div class="quiz-q" id="l0-q"></div><div class="quiz-hint" id="l0-hint"></div><div class="quiz-opts" id="l0-opts"></div>
+        <div class="qfeedback" id="l0-fb"><div class="qft" id="l0-ft"></div><div class="qfb" id="l0-fbe"></div><div class="qfr" id="l0-rule"></div></div>
+        <div class="qnext" id="l0-next"><button class="btn btn-primary" onclick="advQ(0)">Weiter →</button></div>
+      </div></div>
+    </div>
+
+    <div id="lesson-1" class="lesson-pane">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">B2 · Modul 5 · Lektion 2 von 5</div>
+          <h2 class="lesson-h">Relativsatz ↔ <span style="color:var(--blue)">Partizipialattribut</span></h2>
+          <p class="body-text">Viele Relativsätze können durch Partizipialattribute ersetzt werden — das macht Sätze kürzer und formeller. Aber nicht immer ist die Umformung möglich.</p>
+          <details class="en-help"><summary>🇬🇧 Relative clause → participial attribute</summary>
+            <div class="en-help-body">
+              <p>Only possible when the relative clause expresses: simultaneous action (PI) or completed action/state (PII). Not possible with: modal verbs in relative clauses, negation, or future meaning.</p>
+            </div>
+          </details>
+          <div class="transform-box">
+            <div class="trn-row"><div class="trn-label" style="color:var(--ki);">RELATIV</div><div class="trn-text">der Mann, der singt</div></div>
+            <div class="trn-arrow">↓ gleichzeitig + aktiv → Partizip I</div>
+            <div class="trn-row"><div class="trn-label" style="color:var(--blue);">PARTIZ.</div><div class="trn-text">der singende Mann</div></div>
+          </div>
+          <div class="transform-box">
+            <div class="trn-row"><div class="trn-label" style="color:var(--ki);">RELATIV</div><div class="trn-text">das Dokument, das unterschrieben wurde</div></div>
+            <div class="trn-arrow">↓ abgeschlossen + passiv → Partizip II</div>
+            <div class="trn-row"><div class="trn-label" style="color:var(--blue);">PARTIZ.</div><div class="trn-text">das unterschriebene Dokument</div></div>
+          </div>
+          <div class="danger-box"><strong>Nicht möglich:</strong> Relativsätze mit Modalverb, Negation oder Zukunftsbezug können nicht in Partizipialattribute umgewandelt werden.<br>
+          ❌ „das Buch, das nicht gelesen werden soll" → kein einfaches Partizipialattribut möglich</div>
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(1,0)">Weiter →</button>
+        </div>
+      </div>
+      <div class="step" id="l1-s1"><div class="card">
+        <div class="quiz-qnum" id="l1-qnum">FRAGE 1 VON 2</div><div class="quiz-q" id="l1-q"></div><div class="quiz-hint" id="l1-hint"></div><div class="quiz-opts" id="l1-opts"></div>
+        <div class="qfeedback" id="l1-fb"><div class="qft" id="l1-ft"></div><div class="qfb" id="l1-fbe"></div><div class="qfr" id="l1-rule"></div></div>
+        <div class="qnext" id="l1-next"><button class="btn btn-primary" onclick="advQ(1)">Weiter →</button></div>
+      </div></div>
+    </div>
+
+    <div id="lesson-2" class="lesson-pane">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">B2 · Modul 5 · Lektion 3 von 5</div>
+          <h2 class="lesson-h">Erweiterte <span style="color:var(--blue)">Partizipialattribute (EPA)</span></h2>
+          <p class="body-text">Das erweiterte Partizipialattribut (EPA) enthält ein Partizip mit zusätzlichen Ergänzungen — Adverbien, Objekte, Präpositionalphrasen — alles zwischen Artikel und Nomen eingeklemmt.</p>
+          <details class="en-help"><summary>🇬🇧 Extended participial attributes</summary>
+            <div class="en-help-body">
+              <p>Structure: Article + [all modifiers] + Partizip + Noun. Everything between the article and the noun is the "extended" part. To decode: read the noun first, then the participle, then the rest.</p>
+              <p>Example: "der [von der Regierung 2022 verabschiedete] Gesetzentwurf" = the draft law [that was passed by the government in 2022].</p>
+            </div>
+          </details>
+          <div class="info-box"><strong>Struktur des EPA:</strong><br>
+            Artikel + <span style="font-family:'DM Mono',monospace;">[Ergänzungen]</span> + <span class="kh">Partizip</span> + Nomen<br><br>
+            das <span style="font-family:'DM Mono',monospace;">[von Fatima sorgfältig]</span> <span class="kh">ausgearbeitete</span> Konzept<br>
+            = das Konzept, das Fatima sorgfältig ausgearbeitet hat
+          </div>
+          <div class="ex-list">
+            <div class="ex-card"><div style="flex:1;">
+              <div class="ex-de">der <span class="kh">von allen Experten anerkannte</span> Bericht</div>
+              <div class="ex-note">= der Bericht, der von allen Experten anerkannt wurde</div>
+            </div></div>
+            <div class="ex-card"><div style="flex:1;">
+              <div class="ex-de">das <span class="kh">seit Jahren diskutierte</span> Problem</div>
+              <div class="ex-note">= das Problem, über das seit Jahren diskutiert wird</div>
+            </div></div>
+            <div class="ex-card"><div style="flex:1;">
+              <div class="ex-de">die <span class="kh">auf dem internationalen Markt erfolgreich verkauften</span> Produkte</div>
+              <div class="ex-note">= die Produkte, die auf dem internationalen Markt erfolgreich verkauft wurden</div>
+            </div></div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(2,0)">Weiter →</button>
+        </div>
+      </div>
+      <div class="step" id="l2-s1"><div class="card">
+        <div class="quiz-qnum" id="l2-qnum">FRAGE 1 VON 2</div><div class="quiz-q" id="l2-q"></div><div class="quiz-hint" id="l2-hint"></div><div class="quiz-opts" id="l2-opts"></div>
+        <div class="qfeedback" id="l2-fb"><div class="qft" id="l2-ft"></div><div class="qfb" id="l2-fbe"></div><div class="qfr" id="l2-rule"></div></div>
+        <div class="qnext" id="l2-next"><button class="btn btn-primary" onclick="advQ(2)">Weiter →</button></div>
+      </div></div>
+    </div>
+
+    <div id="lesson-3" class="lesson-pane">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">B2 · Modul 5 · Lektion 4 von 5</div>
+          <h2 class="lesson-h">EPA in <span style="color:var(--blue)">B2-Texten lesen</span></h2>
+          <p class="body-text">B2-Texte, besonders Zeitungs- und Wissenschaftstexte, enthalten häufig sehr lange EPAs. Eine Lesestrategie hilft, diese schnell zu entschlüsseln.</p>
+          <div class="success-box"><strong>Lesestrategie für EPA:</strong><br>
+            1. Finde das Nomen (am Ende der Nominalphrase)<br>
+            2. Finde das Partizip (direkt vor dem Nomen)<br>
+            3. Löse in Relativsatz auf: Artikel + Nomen + das/der/die + Partizip<br>
+            4. Ergänzungen zwischen Artikel und Partizip = Adverbien/Objekte des Relativsatzes
+          </div>
+          <div class="warn-box" style="font-style:italic;">„der von der Bundesregierung im Jahr 2023 nach langen Verhandlungen verabschiedete Haushaltsentwurf"</div>
+          <div class="info-box"><strong>Analyse:</strong><br>
+            Nomen: <strong>Haushaltsentwurf</strong><br>
+            Partizip: <strong>verabschiedete</strong> (PII → passiv, abgeschlossen)<br>
+            Ergänzungen: von der Bundesregierung, im Jahr 2023, nach langen Verhandlungen<br>
+            = der Haushaltsentwurf, der von der Bundesregierung im Jahr 2023 nach langen Verhandlungen verabschiedet wurde
+          </div>
+          <div class="ex-list">
+            <div class="ex-card"><div style="flex:1;">
+              <div class="ex-de">„die am stärksten betroffenen Regionen"</div>
+              <div class="ex-note">= die Regionen, die am stärksten betroffen sind/wurden</div>
+            </div></div>
+            <div class="ex-card"><div style="flex:1;">
+              <div class="ex-de">„der nach Hause gehende Arbeiter"</div>
+              <div class="ex-note">PI: = der Arbeiter, der nach Hause geht (gleichzeitig, aktiv)</div>
+            </div></div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(3,0)">Weiter →</button>
+        </div>
+      </div>
+      <div class="step" id="l3-s1"><div class="card">
+        <div class="quiz-qnum" id="l3-qnum">FRAGE 1 VON 2</div><div class="quiz-q" id="l3-q"></div><div class="quiz-hint" id="l3-hint"></div><div class="quiz-opts" id="l3-opts"></div>
+        <div class="qfeedback" id="l3-fb"><div class="qft" id="l3-ft"></div><div class="qfb" id="l3-fbe"></div><div class="qfr" id="l3-rule"></div></div>
+        <div class="qnext" id="l3-next"><button class="btn btn-primary" onclick="advQ(3)">Weiter →</button></div>
+      </div></div>
+    </div>
+
+    <div id="lesson-4" class="lesson-pane">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">B2 · Modul 5 · Lektion 5 von 5</div>
+          <h2 class="lesson-h">Partizipialkonstruktionen <span style="color:var(--blue)">schreiben</span></h2>
+          <p class="body-text">Partizipialkonstruktionen im eigenen Schreiben einzusetzen zeigt stilistische Kompetenz auf B2-Niveau. Aber Vorsicht: Sie müssen grammatisch korrekt und klar sein.</p>
+          <div class="info-box"><strong>Wann Partizipialattribut statt Relativsatz?</strong><br><br>
+            ✓ Formelle Texte (Briefe, Berichte, Artikel)<br>
+            ✓ Wenn der Satz sonst zu lang wird (mehrere Relativsätze hintereinander)<br>
+            ✓ Um Variation und Stil zu zeigen<br>
+            ✗ Nicht in kurzen, einfachen Texten — wirkt dann gestelzt
+          </div>
+          <div class="ex-list">
+            <div class="ex-card"><div style="flex:1;">
+              <div class="ex-de">Ngozi zitierte <span class="kh">einen von allen Wissenschaftlern anerkannten</span> Befund.</div>
+              <div class="ex-note">EPA im Akkusativ: einen [EPA] Befund</div>
+            </div></div>
+            <div class="ex-card"><div style="flex:1;">
+              <div class="ex-de">Die <span class="kh">im Rahmen dieser Studie erhobenen</span> Daten zeigen…</div>
+              <div class="ex-note">EPA als Subjekt: Die [EPA] Daten</div>
+            </div></div>
+          </div>
+          <div class="success-box"><strong>B2-Schreibtipp:</strong> Ersetze in deinem Aufsatz mindestens einen Relativsatz durch ein Partizipialattribut. Das zeigt grammatische Bandbreite und verbessert deine Punktzahl für sprachlichen Ausdruck.</div>
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(4,0)">Weiter →</button>
+        </div>
+      </div>
+      <div class="step" id="l4-s1"><div class="card">
+        <div class="quiz-qnum" id="l4-qnum">FRAGE 1 VON 2</div><div class="quiz-q" id="l4-q"></div><div class="quiz-hint" id="l4-hint"></div><div class="quiz-opts" id="l4-opts"></div>
+        <div class="qfeedback" id="l4-fb"><div class="qft" id="l4-ft"></div><div class="qfb" id="l4-fbe"></div><div class="qfr" id="l4-rule"></div></div>
+        <div class="qnext" id="l4-next"><button class="btn btn-primary" onclick="advQ(4)">Weiter →</button></div>
+      </div></div>
+      <div class="step" id="l4-s2"><div class="complete-wrap">
+        <div class="complete-icon">🌿</div>
+        <h2 class="lesson-h">Modul abgeschlossen!</h2>
+        <p class="body-text">Du beherrschst Partizipialkonstruktionen auf B2-Niveau — von einfachen Partizipialattributen bis hin zu komplexen erweiterten Partizipialattributen.</p>
+        <div class="xp-badge">⚡ +120 XP</div>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:12px;">
+          <button class="btn btn-outline" onclick="showOverview()">Lektionen ansehen</button>
+          <a href="deutschweg-prototype.html" class="btn btn-primary" style="text-decoration:none;display:inline-flex;align-items:center;">← Dashboard</a>
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="dw-next-step-bar">
+  <a href="module-b2-4-konzessivsaetze.html" class="dw-nsb-link">← Modul 4</a>
+  <a href="deutschweg-prototype.html#b2" class="dw-nsb-link">B2 Übersicht</a>
+  <a href="module-b2-6-modalpartikeln.html" class="dw-nsb-cta">Modul 6: Modalpartikeln →</a>
+</div>
+
+<script>
+var QD={
+  0:[
+    {q:'Was bedeutet „die schlafende Katze"?',hint:'Partizip I = aktiv + gleichzeitig',opts:['die Katze, die geschlafen hat','die Katze, die schläft (gerade)','die Katze, die schlafen soll','die Katze, die schlafen wird'],ans:1,exp:'Partizip I (schlafend) = aktiv, gleichzeitig. Die Katze schläft in dem Moment — sie ist gerade dabei zu schlafen.',rule:'Partizip I = Infinitiv + -d: aktiv, gleichzeitig'},
+    {q:'Was drückt „das unterschriebene Formular" aus?',hint:'Partizip II + transitives Verb',opts:['Das Formular unterschreibt gerade.','Das Formular wird gerade unterschrieben.','Das Formular wurde (bereits) unterschrieben.','Das Formular soll unterschrieben werden.'],ans:2,exp:'Partizip II bei transitiven Verben = passiv, abgeschlossen: das Formular, das (bereits) unterschrieben wurde.',rule:'Partizip II (transitiv) = passiv + abgeschlossen'}
+  ],
+  1:[
+    {q:'Welches Partizipialattribut entspricht „der Mann, der singt"?',hint:'gleichzeitig + aktiv → Partizip I',opts:['der gesungene Mann','der singende Mann','der gesunge Mann','der singend Mann'],ans:1,exp:'Gleichzeitig + aktiv → Partizip I: singen → singend + Adjektivendung (-e im Nominativ mask.): der singende Mann.',rule:'Aktiv + gleichzeitig → Partizip I als Attribut'},
+    {q:'Kann man „das Buch, das nicht gedruckt werden soll" in ein Partizipialattribut umformen?',hint:'Enthält der Relativsatz ein Modalverb?',opts:['Ja: das nicht druckende Buch','Ja: das nicht zu druckende Buch','Nein, nicht mit Modalverb möglich','Ja: das ungedruckte Buch'],ans:2,exp:'„sein+zu+Inf." als Partizipialattribut ist bei notwendig/möglich-Bedeutung möglich: das nicht zu druckende Buch = das Buch, das nicht gedruckt werden soll/kann.',rule:'sein+zu+Inf. = Partizipialattribut mit Notwendigkeit/Möglichkeit'}
+  ],
+  2:[
+    {q:'Was ist das Nomen in: „der von allen anerkannte Bericht"?',hint:'Das Nomen steht am Ende der Nominalphrase',opts:['der','anerkannte','Bericht','von allen'],ans:2,exp:'In einer Nominalphrase steht das Nomen immer zuletzt: [Artikel] + [Ergänzungen] + [Partizip] + [Nomen]. Das Nomen ist hier „Bericht".',rule:'EPA-Struktur: Artikel + [Ergänzungen + Partizip] + Nomen'},
+    {q:'„Das seit Jahren diskutierte Problem" entspricht:',hint:'PII + seit → passiv, schon länger',opts:['das Problem, das in Jahren diskutiert wird','das Problem, über das seit Jahren diskutiert wird','das Problem, das seit Jahren diskutiert haben','das Problem, das diskutieren soll'],ans:1,exp:'Passiv-EPA auflösen: „diskutiert" (PII) → wurde diskutiert. Ergänzung: seit Jahren → über das seit Jahren diskutiert wird.',rule:'EPA auflösen: Nomen + Relativpronomen + Partizip (+ Ergänzungen)'}
+  ],
+  3:[
+    {q:'Welche Lesestrategie hilft bei langen EPAs?',hint:'Was findet man zuerst?',opts:['Lies das Partizip zuerst, dann den Artikel','Lies das Nomen zuerst, dann das Partizip, dann die Ergänzungen','Ignoriere die Ergänzungen und rate aus dem Kontext','Lies von rechts nach links'],ans:1,exp:'Strategie: 1. Nomen am Ende finden, 2. Partizip direkt vor dem Nomen finden, 3. In Relativsatz auflösen, 4. Ergänzungen als Adverbialien des Relativsatzes ergänzen.',rule:'EPA lesen: Nomen → Partizip → Ergänzungen → Relativsatz rekonstruieren'},
+    {q:'„die am stärksten betroffenen Regionen" bedeutet:',hint:'am stärksten = Superlativ, betroffen = PII',opts:['die Regionen, die am stärksten betreffen','die Regionen, die am stärksten betroffen sind/wurden','die Regionen, die am stärksten betreffen werden','die stärksten Regionen, die betroffen sind'],ans:1,exp:'PII „betroffen" = passiv/Zustand. „Am stärksten" = Superlativ als Ergänzung. → die Regionen, die am stärksten betroffen sind (Zustandspassiv) oder wurden.',rule:'PII in EPA → passiv/abgeschlossen; Ergänzungen bleiben als Adverbialien'}
+  ],
+  4:[
+    {q:'Wann ist es sinnvoll, ein Partizipialattribut statt eines Relativsatzes zu verwenden?',hint:'Stil und Register',opts:['Immer, weil es kürzer ist','In formellen Texten, zur Stilvariation, wenn viele Relativsätze hintereinander stehen','Nur in mündlicher Sprache','Nur wenn das Partizip ein starkes Verb hat'],ans:1,exp:'Partizipialattribute sind typisch für formelle Schriftsprache (Berichte, Artikel, akademische Texte). Sie helfen, Wiederholungen von dass/der/die/das zu vermeiden und zeigen stilistische Kompetenz.',rule:'Partizipialattribute: formell, schriftlich, zur Stilvariation'},
+    {q:'„Ngozi zitierte einen von Wissenschaftlern untersuchten Befund." Was zeigt die Endung -en?',hint:'Kasus: „einen" → welcher Fall?',opts:['Nominativ Maskulinum','Akkusativ Maskulinum','Dativ Maskulinum','Genitiv Maskulinum'],ans:1,exp:'„einen" ist der unbestimmte Artikel Akkusativ Maskulinum. Partizipialattribute folgen der Adjektivdeklination: Akkusativ Mask. nach unbestimmtem Artikel → -en.',rule:'Partizipialattribute deklinieren wie Adjektive: nach Kasus und Artikel'}
+  ]
+};
+var curLesson=0,curStep=0,curQ={},qIdx=0,xp=0,lessonSteps=[2,2,2,2,3];
+function speakSentence(btn,text){if(!window.speechSynthesis)return;window.speechSynthesis.cancel();if(btn.classList.contains('speaking')){btn.classList.remove('speaking');return;}var u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=0.9;u.onend=()=>btn.classList.remove('speaking');btn.classList.add('speaking');window.speechSynthesis.speak(u);}
+function showOverview(){document.getElementById('screen-lesson').classList.remove('active');document.getElementById('screen-overview').classList.add('active');window.scrollTo(0,0);}
+function goLesson(li){curLesson=li;curStep=0;qIdx=0;document.getElementById('screen-overview').classList.remove('active');document.getElementById('screen-lesson').classList.add('active');document.querySelectorAll('.lesson-pane').forEach(p=>p.style.display='none');document.getElementById('lesson-'+li).style.display='block';document.querySelectorAll('#lesson-'+li+' .step').forEach((s,i)=>s.classList.toggle('active',i===0));renderDots(li);updateProgress(li,0);window.scrollTo(0,0);}
+function renderDots(li){var n=lessonSteps[li],row=document.getElementById('dotRow');row.innerHTML='';for(var i=0;i<n;i++){var d=document.createElement('div');d.className='dot'+(i===0?' active':'');(function(idx){d.onclick=function(){if(idx<=curStep)goStep(curLesson,idx);};})(i);row.appendChild(d);}}
+function goStep(li,si){curStep=si;document.querySelectorAll('#lesson-'+li+' .step').forEach((s,i)=>s.classList.toggle('active',i===si));document.querySelectorAll('#dotRow .dot').forEach((d,i)=>{d.classList.toggle('active',i===si);d.classList.toggle('done',i<si);});updateProgress(li,si);window.scrollTo(0,0);}
+function updateProgress(li,si){document.getElementById('progFill').style.width=Math.round((si/(lessonSteps[li]-1))*100)+'%';}
+function nextStep(li,si){var nsi=si+1;if(nsi>=lessonSteps[li])return;initQuiz(li);goStep(li,nsi);}
+function initQuiz(li){qIdx=0;renderQ(li);}
+function renderQ(li){var qs=QD[li];if(!qs||qIdx>=qs.length){showResult(li);return;}var q=qs[qIdx];document.getElementById('l'+li+'-qnum').textContent='FRAGE '+(qIdx+1)+' VON '+qs.length;document.getElementById('l'+li+'-q').textContent=q.q;document.getElementById('l'+li+'-hint').textContent=q.hint;var opts=document.getElementById('l'+li+'-opts');opts.innerHTML='';['A','B','C','D'].forEach(function(l,i){var btn=document.createElement('button');btn.className='qopt';btn.innerHTML='<span class="qletter">'+l+'</span>'+q.opts[i];btn.onclick=function(){pickQ(li,i);};opts.appendChild(btn);});document.getElementById('l'+li+'-fb').className='qfeedback';document.getElementById('l'+li+'-next').className='qnext';}
+function pickQ(li,idx){var q=QD[li][qIdx];var opts=document.querySelectorAll('#l'+li+'-opts .qopt');opts.forEach(b=>b.disabled=true);opts[idx].classList.add(idx===q.ans?'correct':'wrong');if(idx!==q.ans)opts[q.ans].classList.add('correct');var ok=idx===q.ans;if(ok){xp+=10;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';}var fb=document.getElementById('l'+li+'-fb');fb.className='qfeedback show '+(ok?'ok':'no');document.getElementById('l'+li+'-ft').textContent=ok?'✓ Richtig!':'✗ Leider falsch.';document.getElementById('l'+li+'-ft').className='qft '+(ok?'ok':'no');document.getElementById('l'+li+'-fbe').textContent=q.exp;document.getElementById('l'+li+'-rule').textContent='📌 '+q.rule;document.getElementById('l'+li+'-next').className='qnext show';}
+function advQ(li){qIdx++;if(qIdx>=QD[li].length)showResult(li);else renderQ(li);}
+function showResult(li){if(li===4){goStep(li,2);localStorage.setItem('dw_xp',parseInt(localStorage.getItem('dw_xp')||'0')+xp);localStorage.setItem('dw_mod_b2_5_done','1');}else goLesson(li+1);}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');xp=0;document.getElementById('xpDisp').textContent='⚡ 0 XP';});
+
+  // ===== STANDALONE QUIZ =====
+  var SQ_DATA = [
+  {
+    "q": "Was ersetzt eine Partizipialkonstruktion?",
+    "opts": [
+      "Ein Substantiv",
+      "Einen Relativsatz oder Adverbialsatz",
+      "Einen Hauptsatz",
+      "Ein Adverb"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Partizipialkonstruktionen koennen Relativ- oder Adverbialsaetze ersetzen.",
+    "fb_ko": "Falsch. Sie ersetzen haeufig Relativ- oder Adverbialsaetze."
+  },
+  {
+    "q": "Welches Partizip beschreibt eine aktive, laufende Handlung?",
+    "opts": [
+      "Partizip II",
+      "Partizip I",
+      "Infinitiv mit zu",
+      "Partizip III"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Das Partizip I (Praesenspatizip) beschreibt gleichzeitige aktive Handlungen.",
+    "fb_ko": "Falsch. Das Partizip I, z.B. 'lesend', drueckt eine aktive, gleichzeitige Handlung aus."
+  },
+  {
+    "q": "Was bedeutet 'die renovierte Wohnung'?",
+    "opts": [
+      "die Wohnung, die renoviert wird",
+      "die Wohnung, die renoviert wurde",
+      "die Wohnung, die renoviert werden soll",
+      "die Wohnung, die man renoviert"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! 'Renoviert' (Partizip II) drueckt eine abgeschlossene passive Handlung aus.",
+    "fb_ko": "Falsch. Das Partizip II 'renoviert' beschreibt eine abgeschlossene Handlung."
+  },
+  {
+    "q": "Welcher Satz enthaelt eine erweiterte Partizipialkonstruktion?",
+    "opts": [
+      "Das laufende Kind",
+      "Der im letzten Jahr neu gebaute Bahnhof",
+      "Die singenden Voegel",
+      "Das gelesene Buch"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! 'Der im letzten Jahr neu gebaute Bahnhof' ist eine erweiterte Partizipialkonstruktion.",
+    "fb_ko": "Falsch. Eine erweiterte Konstruktion enthaelt zusaetzliche Angaben wie 'im letzten Jahr'."
+  },
+  {
+    "q": "In welchem Stil werden Partizipialkonstruktionen besonders haeufig verwendet?",
+    "opts": [
+      "In der Umgangssprache",
+      "In formellen und schriftlichen Texten",
+      "In der gesprochenen Alltagssprache",
+      "In Kinderbuechern"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Partizipialkonstruktionen sind typisch fuer formelle Schriftsprache.",
+    "fb_ko": "Falsch. Sie sind vor allem in formellen und schriftlichen Kontexten ueblich."
+  }
+];
+  var sqIdx=0, sqScore=0, sqAnswered=false;
+  var sqResults=[];
+  function sqInit(){sqIdx=0;sqScore=0;sqAnswered=false;sqResults=[];sqRender();}
+  function sqRender(){
+    var d=SQ_DATA[sqIdx];
+    document.getElementById('sqQuestion').style.display='block';
+    document.getElementById('sqResult').classList.remove('show');
+    document.getElementById('sqQText').textContent=(sqIdx+1)+'. '+d.q;
+    var dots=document.getElementById('sqDots');
+    dots.innerHTML='';
+    for(var i=0;i<5;i++){
+      var dot=document.createElement('div');
+      var cls='sq-dot';
+      if(i<sqIdx){ cls+= sqResults[i]?' done':' wrong'; }
+      else if(i===sqIdx){ cls+=' active'; }
+      dot.className=cls;
+      dots.appendChild(dot);
+    }
+    var opts=document.getElementById('sqOpts');
+    opts.innerHTML='';
+    d.opts.forEach(function(o,i){
+      var b=document.createElement('button');
+      b.className='sq-opt';
+      b.textContent=o;
+      (function(idx){b.onclick=function(){sqPick(idx);};})(i);
+      opts.appendChild(b);
+    });
+    var fb=document.getElementById('sqFb');
+    fb.className='sq-fb';
+    fb.textContent='';
+    document.getElementById('sqNext').className='btn btn-primary sq-next';
+    sqAnswered=false;
+  }
+  function sqPick(idx){
+    if(sqAnswered)return;
+    sqAnswered=true;
+    var d=SQ_DATA[sqIdx];
+    var opts=document.getElementById('sqOpts').querySelectorAll('.sq-opt');
+    opts.forEach(function(b){b.classList.add('disabled');});
+    var ok=(idx===d.ans);
+    if(ok){sqScore++;sqResults[sqIdx]=true;}else{sqResults[sqIdx]=false;}
+    opts[idx].classList.add(ok?'correct':'wrong');
+    if(!ok) opts[d.ans].classList.add('correct');
+    var fb=document.getElementById('sqFb');
+    fb.textContent=ok?d.fb_ok:d.fb_ko;
+    fb.className='sq-fb show '+(ok?'ok':'ko');
+    document.getElementById('sqNext').className='btn btn-primary sq-next show';
+  }
+  function sqAdvance(){
+    if(sqIdx<4){sqIdx++;sqRender();}else{sqShowResult();}
+  }
+  function sqShowResult(){
+    document.getElementById('sqQuestion').style.display='none';
+    var res=document.getElementById('sqResult');
+    res.className='sq-result show';
+    document.getElementById('sqScoreNum').textContent=sqScore+'/5';
+    var msgs=['Nicht aufgeben! \u{1F31F}','Nicht aufgeben! \u{1F31F}','Weiter üben! \u{1F4DA}','Gut gemacht! \u{1F4AA}','Sehr gut! \u{1F44F}','Ausgezeichnet! \u{1F389}'];
+    document.getElementById('sqScoreMsg').textContent=msgs[sqScore];
+  }
+  function sqReset(){
+    sqIdx=0;sqScore=0;sqAnswered=false;sqResults=[];
+    document.getElementById('sqResult').className='sq-result';
+    document.getElementById('sqQuestion').style.display='block';
+    sqRender();
+  }
+  document.addEventListener('DOMContentLoaded',function(){sqInit();});
+
+  document.addEventListener('DOMContentLoaded',function(){
+    var nb=document.getElementById('sqNextMod');
+    if(nb){ nb.onclick=function(){ window.location.href='module-b2-6-modalpartikeln.html'; }; }
+  });
+
+</script>
+</body>
+</html>

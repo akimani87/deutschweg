@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — B2 Modul 2: Erweitertes Passiv</title>
+<link rel="stylesheet" href="deutschweg-theme.css">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --dir:#c9a84c; --ind:#3498db; --ki:#e67e22; --kii:#9b59b6;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--blue); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--blue); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--blue); color:var(--white); width:100%; }
+  .btn-primary:hover { background:#2980b9; transform:translateY(-2px); box-shadow:0 8px 24px rgba(52,152,219,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(52,152,219,0.2); }
+  .speak-btn.speaking { background:var(--blue); color:var(--white); }
+  .en-help { background:rgba(52,152,219,0.05); border:1px dashed rgba(52,152,219,0.25); border-radius:10px; margin:12px 0; }
+  .en-help summary { padding:10px 16px; cursor:pointer; font-size:13px; color:var(--blue); font-family:'DM Mono',monospace; letter-spacing:.03em; list-style:none; display:flex; align-items:center; gap:8px; }
+  .en-help summary::-webkit-details-marker { display:none; }
+  .en-help[open] summary { border-bottom:1px dashed rgba(52,152,219,0.2); }
+  .en-help-body { padding:12px 16px; font-size:13px; color:rgba(245,240,232,.7); line-height:1.8; }
+  .en-help-body p { margin-bottom:8px; }
+  .en-help-body p:last-child { margin-bottom:0; }
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-note { font-size:12px; color:var(--gray); line-height:1.6; }
+  .formula-box { background:var(--card2-bg); border:1px solid rgba(52,152,219,0.2); border-radius:14px; padding:20px 22px; margin:14px 0; text-align:center; }
+  .formula-title { font-size:10px; letter-spacing:3px; font-family:'DM Mono',monospace; color:var(--blue); margin-bottom:14px; }
+  .formula-main { font-family:'DM Mono',monospace; font-size:16px; font-weight:700; color:var(--white); line-height:2.2; }
+  .transform-box { background:var(--card2-bg); border:1px solid rgba(52,152,219,0.15); border-radius:14px; padding:18px 20px; margin:12px 0; }
+  .trn-row { display:flex; align-items:flex-start; gap:12px; margin-bottom:10px; }
+  .trn-row:last-child { margin-bottom:0; }
+  .trn-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; flex-shrink:0; width:70px; padding-top:2px; }
+  .trn-text { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); line-height:1.7; }
+  .trn-arrow { text-align:center; color:var(--blue); font-size:18px; margin:4px 0; padding-left:82px; }
+  .comp-table { width:100%; border-collapse:collapse; font-size:13px; margin:14px 0; }
+  .comp-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:10px 14px; text-align:left; border-bottom:2px solid rgba(255,255,255,0.1); }
+  .comp-table td { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'DM Mono',monospace; font-size:13px; vertical-align:top; }
+  .comp-table tr:last-child td { border-bottom:none; }
+  .comp-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.0; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+  .dh { color:var(--dir); font-weight:700; }
+  .kh { color:var(--ki); font-weight:700; }
+  .fh { color:var(--kii); font-weight:700; }
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Mono',monospace; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--blue); background:rgba(52,152,219,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(52,152,219,0.1); border-radius:8px; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(52,152,219,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.2); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(52,152,219,0.12); border:1px solid var(--blue); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--blue); font-size:18px; margin:18px 0; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .lesson-h{font-size:22px;} .wr-grid{grid-template-columns:1fr;} }
+
+  /* ===== STANDALONE QUIZ ===== */
+  .sq-wrap{background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:28px;margin-top:32px;}
+  .sq-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:6px;}
+  .sq-sub{font-size:13px;color:var(--gray);margin-bottom:20px;}
+  .sq-dots{display:flex;gap:8px;margin-bottom:20px;}
+  .sq-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all 0.3s;}
+  .sq-dot.active{background:var(--blue);width:22px;border-radius:4px;}
+  .sq-dot.done{background:var(--green);}
+  .sq-dot.wrong{background:var(--red);}
+  .sq-q{font-size:16px;font-weight:600;margin-bottom:16px;line-height:1.5;}
+  .sq-opts{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+  .sq-opt{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:12px 16px;cursor:pointer;font-size:14px;transition:all 0.2s;text-align:left;}
+  .sq-opt:hover:not(.disabled){background:rgba(52,152,219,0.12);border-color:var(--blue);}
+  .sq-opt.selected{background:rgba(52,152,219,0.15);border-color:var(--blue);}
+  .sq-opt.correct{background:rgba(39,174,96,0.15);border-color:var(--green);color:var(--green);}
+  .sq-opt.wrong{background:rgba(192,57,43,0.15);border-color:var(--red);color:var(--red);}
+  .sq-opt.disabled{cursor:default;pointer-events:none;}
+  .sq-fb{font-size:14px;padding:12px 16px;border-radius:10px;margin-bottom:16px;display:none;}
+  .sq-fb.show{display:block;}
+  .sq-fb.ok{background:rgba(39,174,96,0.12);border:1px solid rgba(39,174,96,0.3);color:var(--green);}
+  .sq-fb.ko{background:rgba(192,57,43,0.12);border:1px solid rgba(192,57,43,0.3);color:#e07070;}
+  .sq-next{display:none;}
+  .sq-next.show{display:inline-block;}
+  .sq-result{display:none;text-align:center;padding:20px 0;}
+  .sq-result.show{display:block;}
+  .sq-score-num{font-family:'Playfair Display',serif;font-size:48px;color:var(--blue);margin-bottom:8px;}
+  .sq-score-msg{font-size:20px;margin-bottom:24px;}
+  .sq-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+  .sq-btns .btn{width:auto;padding:12px 28px;}
+
+</style>
+<style>
+/* LIGHT THEME OVERRIDE */
+:root {
+  --black:#F8FAFC; --white:#1F2937; --cream:#4B5563;
+  --gold:#3B82F6; --gold-light:#2563EB;
+  --red:#EF4444; --green:#10B981; --blue:#3B82F6;
+  --gray:#9CA3AF; --card-bg:#FFFFFF; --card2-bg:#F8FAFC;
+  --border:#E5E7EB;
+  --dir:#3B82F6; --ind:#3B82F6; --ki:#F59E0B; --kii:#8B5CF6;
+}
+body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-serif; }
+.top-nav { background:white; border-bottom:1px solid #E5E7EB; backdrop-filter:none; }
+.btn-primary { background:#3B82F6; color:white; }
+.btn-primary:hover { background:#2563EB; box-shadow:0 8px 24px rgba(59,130,246,0.3); }
+.btn-outline { background:transparent; border:1px solid #3B82F6; color:#3B82F6; }
+.card { background:#FFFFFF; border:1px solid #E5E7EB; box-shadow:0 1px 3px rgba(0,0,0,0.07); }
+.info-box { background:#EFF6FF; border-left:3px solid #3B82F6; color:#1D4ED8; }
+.warn-box { background:#EFF6FF; border-left:3px solid #3B82F6; color:#1D4ED8; }
+.danger-box { background:#FEF2F2; border-left:3px solid #EF4444; color:#991B1B; }
+.success-box { background:#ECFDF5; border-left:3px solid #10B981; color:#065F46; }
+.qopt { border:1px solid #E5E7EB; background:white; color:#1F2937; }
+.qopt:hover:not([disabled]) { border-color:#3B82F6; background:#EFF6FF; }
+.xp-badge { background:#EFF6FF; border:1px solid #3B82F6; color:#3B82F6; }
+.speak-btn { background:#EFF6FF; border-color:#DBEAFE; color:#3B82F6; }
+.speak-btn.speaking { background:#3B82F6; color:white; }
+.lesson-card { background:#F8FAFC; border:1px solid #E5E7EB; }
+.ex-card { background:#F8FAFC; border:1px solid #E5E7EB; }
+</style>
+</head>
+<body>
+
+<div id="screen-overview" class="screen active">
+  <nav class="dw-nav">
+    <div class="dw-nav-inner">
+      <a href="deutschweg-prototype.html" class="dw-logo">
+        <div class="dw-logo-icon">D</div>
+        <span class="dw-logo-text">Deutsch<span>Weg</span></span>
+      </a>
+      <a href="exam-vault.html" style="font-size:13px;font-weight:600;color:#1D4ED8;text-decoration:none;margin-right:8px;">📝 Exams</a>
+      <a href="deutschweg-prototype.html" class="dw-btn dw-btn-secondary">← Back to Dashboard</a>
+    </div>
+  </nav>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">B2 · Grammatik · Modul 2</div>
+    <h1 class="lesson-h" style="font-size:36px;">Erweitertes <span style="color:var(--blue)">Passiv</span></h1>
+    <p class="body-text">Das Passiv auf B2-Niveau geht weit über das einfache Vorgangspassiv hinaus. Du lernst das Zustandspassiv, Passivumschreibungen (sein+zu, lassen+sich), modales Passiv und alle Zeitformen — unverzichtbar für akademische und formelle Texte.</p>
+
+    <details class="en-help">
+      <summary>🇬🇧 What will I learn here?</summary>
+      <div class="en-help-body">
+        <p>At B2, you go beyond basic passive (wird gemacht) to master: Zustandspassiv (ist gemacht), passive with modal verbs (muss gemacht werden), passive alternatives (ist zu machen, lässt sich machen), and all tenses of the passive.</p>
+        <p>Passive voice is essential for academic writing, formal reports, and B2 reading texts — it shifts focus from the actor to the action or result.</p>
+      </div>
+    </details>
+
+    <div class="info-box"><strong>Lernziele dieses Moduls:</strong><br><br>
+      ✦ Vorgangspassiv vs. Zustandspassiv unterscheiden und bilden<br>
+      ✦ Alle Zeitformen des Passivs sicher beherrschen<br>
+      ✦ Modales Passiv (muss/kann/soll + werden) korrekt einsetzen<br>
+      ✦ Passivumschreibungen (sein+zu, lassen+sich) verwenden<br>
+      ✦ Passiv in B2-Lesetexten erkennen und verstehen<br>
+      ✦ Passivsätze in Aktivsätze umformen (und umgekehrt)
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">🔄</div><div><div class="lc-title">Lektion 1 — Vorgangs- vs. Zustandspassiv</div><div class="lc-desc">werden + Partizip II vs. sein + Partizip II. Der Unterschied, der im B2-Test zählt.</div></div><div class="lc-tag" style="color:var(--blue);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">⏱️</div><div><div class="lc-title">Lektion 2 — Alle Zeitformen des Passivs</div><div class="lc-desc">Präsens bis Futur. Passiv Perfekt und Plusquamperfekt. Übersichtstabelle.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">🔧</div><div><div class="lc-title">Lektion 3 — Modales Passiv</div><div class="lc-desc">muss/kann/soll/darf + Partizip II + werden. Die Kombination, die B2-Texte dominiert.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">↔️</div><div><div class="lc-title">Lektion 4 — Passivumschreibungen</div><div class="lc-desc">sein + zu + Infinitiv. lassen + sich + Infinitiv. Wann welche Variante?</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">✍️</div><div><div class="lc-title">Lektion 5 — Passiv aktiv einsetzen</div><div class="lc-desc">Aktiv ↔ Passiv umformen. von + Dativ. Passiv ohne Agens. B2-Schreibstrategien.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
+    <!-- STANDALONE QUIZ -->
+    <div class="sq-wrap" id="sqWrap">
+      <div id="sqQuestion">
+        <div class="sq-title">Wissenstest</div>
+        <div class="sq-sub">5 Fragen &mdash; teste dein Wissen!</div>
+        <div class="sq-dots" id="sqDots"></div>
+        <div class="sq-q" id="sqQText"></div>
+        <div class="sq-opts" id="sqOpts"></div>
+        <div class="sq-fb" id="sqFb"></div>
+        <button class="btn btn-primary sq-next" id="sqNext" onclick="sqAdvance()">Weiter &#x2192;</button>
+      </div>
+      <div class="sq-result" id="sqResult">
+        <div class="sq-score-num" id="sqScoreNum">0/5</div>
+        <div class="sq-score-msg" id="sqScoreMsg"></div>
+        <div class="sq-btns">
+          <button class="btn btn-outline" onclick="sqReset()">Nochmal versuchen</button>
+          <button class="btn btn-primary" id="sqNextMod">N&#xE4;chstes Modul &#x2192;</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lektionen</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--blue);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- LEKTION 1 -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">B2 · Modul 2 · Lektion 1 von 5</div>
+          <h2 class="lesson-h">Vorgangs- vs. <span style="color:var(--ki)">Zustandspassiv</span></h2>
+          <p class="body-text">Der entscheidende Unterschied: Das <span class="kh">Vorgangspassiv</span> beschreibt den Prozess (etwas passiert). Das <span class="fh">Zustandspassiv</span> beschreibt das Ergebnis (etwas ist fertig/geschehen).</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Two types of passive explained</summary>
+            <div class="en-help-body">
+              <p><strong>Vorgangspassiv (process passive):</strong> werden + Partizip II. Focus on the action happening. "The door is being opened." Das Fenster wird geöffnet.</p>
+              <p><strong>Zustandspassiv (state passive):</strong> sein + Partizip II. Focus on the resulting state. "The door is open (= has been opened)." Das Fenster ist geöffnet.</p>
+              <p>Tip: Zustandspassiv often looks like an adjective. The key test: can you add "schon/bereits" (already)? If yes → Zustandspassiv.</p>
+            </div>
+          </details>
+
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Typ</th><th>Bildung</th><th>Bedeutung</th><th>Beispiel</th></tr>
+              <tr><td style="color:var(--ki);">Vorgang</td><td>werden + P.II</td><td>Prozess läuft</td><td class="kh">wird gebaut</td></tr>
+              <tr><td style="color:var(--kii);">Zustand</td><td>sein + P.II</td><td>Ergebnis</td><td class="fh">ist gebaut</td></tr>
+            </table>
+          </div>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--ki);">VORGANG</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das Haus <span class="kh">wird gebaut</span>. (jetzt, Prozess)</div>
+                <div class="ex-note">Vorgangspassiv: werden + Partizip II. Etwas geschieht gerade.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das Haus wird gebaut.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--kii);">ZUSTAND</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das Haus <span class="fh">ist gebaut</span>. (fertig, Ergebnis)</div>
+                <div class="ex-note">Zustandspassiv: sein + Partizip II. Ergebnis eines abgeschlossenen Vorgangs.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das Haus ist gebaut.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--ki);">VORGANG</div>
+              <div style="flex:1;">
+                <div class="ex-de">Die Tür <span class="kh">wird geöffnet</span>. (jemand öffnet sie gerade)</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--kii);">ZUSTAND</div>
+              <div style="flex:1;">
+                <div class="ex-de">Die Tür <span class="fh">ist geöffnet</span>. (sie steht offen)</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong>Merke!</strong> „Das Buch ist geschrieben" kann auch Adjektiv sein (wie „Das Buch ist interessant"). Der Kontext entscheidet. Test: Kann man „von jemandem" hinzufügen? → Zustandspassiv.</div>
+
+          <div class="sec-label">Weitere Beispiele (B2-Kontext)</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Kofi fragte, ob der Vertrag schon <span class="fh">unterzeichnet sei</span>.</div>
+                <div class="ex-note">Zustandspassiv im KI (indirekte Rede): sein → sei</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Amina berichtete, die Daten <span class="kh">würden gerade ausgewertet</span>.</div>
+                <div class="ex-note">Vorgangspassiv Gegenwart im KI: werden → würden (wir/sie → KII)</div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(0,0)">Weiter →</button>
+        </div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card">
+          <div class="quiz-qnum" id="l0-qnum">FRAGE 1 VON 2</div>
+          <div class="quiz-q" id="l0-q"></div>
+          <div class="quiz-hint" id="l0-hint"></div>
+          <div class="quiz-opts" id="l0-opts"></div>
+          <div class="qfeedback" id="l0-fb"><div class="qft" id="l0-ft"></div><div class="qfb" id="l0-fbe"></div><div class="qfr" id="l0-rule"></div></div>
+          <div class="qnext" id="l0-next"><button class="btn btn-primary" onclick="advQ(0)">Weiter →</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEKTION 2 -->
+    <div id="lesson-1" class="lesson-pane">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">B2 · Modul 2 · Lektion 2 von 5</div>
+          <h2 class="lesson-h">Alle <span style="color:var(--blue)">Zeitformen</span> des Passivs</h2>
+          <p class="body-text">Das Passiv existiert in allen Zeitformen. Auf B2-Niveau musst du besonders Passiv Perfekt und Plusquamperfekt sicher bilden können — sie erscheinen häufig in Berichten und Analysen.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Passive tenses overview</summary>
+            <div class="en-help-body">
+              <p>Passive in all tenses uses <strong>werden</strong> conjugated in that tense + Partizip II of the main verb.</p>
+              <p>Perfekt passive is tricky: it's "ist worden" not "ist geworden". The "ge-" is dropped from "geworden" → "worden".</p>
+              <p>Plusquamperfekt: war + worden. Futur: wird + werden (sounds strange, rarely used — prefer active).</p>
+            </div>
+          </details>
+
+          <div class="comp-wrap" style="overflow-x:auto;">
+            <table class="comp-table">
+              <tr><th>Zeitform</th><th>Bildung (er/es)</th><th>Beispiel</th></tr>
+              <tr><td>Präsens</td><td>wird + P.II</td><td class="kh">wird gebaut</td></tr>
+              <tr><td>Präteritum</td><td>wurde + P.II</td><td class="kh">wurde gebaut</td></tr>
+              <tr><td>Perfekt</td><td>ist + P.II + worden</td><td class="kh">ist gebaut worden</td></tr>
+              <tr><td>Plusquamperf.</td><td>war + P.II + worden</td><td class="kh">war gebaut worden</td></tr>
+              <tr><td>Futur I</td><td>wird + P.II + werden</td><td class="kh">wird gebaut werden</td></tr>
+            </table>
+          </div>
+
+          <div class="danger-box"><strong>Achtung!</strong> Passiv Perfekt: „ist … <em>worden</em>" — NICHT „ist … geworden". Das ist einer der häufigsten B2-Fehler!<br><br>❌ Das Haus ist gebaut <em>geworden</em>.<br>✓ Das Haus ist gebaut <em>worden</em>.</div>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Ngozi berichtete: Der Bericht <span class="kh">wurde gestern fertiggestellt</span>.</div>
+                <div class="ex-note">Passiv Präteritum — häufig in Berichten und Erzählungen</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Die neue Brücke <span class="kh">ist 2023 eröffnet worden</span>.</div>
+                <div class="ex-note">Passiv Perfekt — ist + P.II + worden</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Die neue Brücke ist 2023 eröffnet worden.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Als wir ankamen, <span class="kh">war das Gebäude bereits abgerissen worden</span>.</div>
+                <div class="ex-note">Passiv Plusquamperfekt — war + P.II + worden</div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(1,0)">Weiter →</button>
+        </div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card">
+          <div class="quiz-qnum" id="l1-qnum">FRAGE 1 VON 2</div>
+          <div class="quiz-q" id="l1-q"></div>
+          <div class="quiz-hint" id="l1-hint"></div>
+          <div class="quiz-opts" id="l1-opts"></div>
+          <div class="qfeedback" id="l1-fb"><div class="qft" id="l1-ft"></div><div class="qfb" id="l1-fbe"></div><div class="qfr" id="l1-rule"></div></div>
+          <div class="qnext" id="l1-next"><button class="btn btn-primary" onclick="advQ(1)">Weiter →</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEKTION 3 -->
+    <div id="lesson-2" class="lesson-pane">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">B2 · Modul 2 · Lektion 3 von 5</div>
+          <h2 class="lesson-h">Modales <span style="color:var(--blue)">Passiv</span></h2>
+          <p class="body-text">Modalverben und Passiv kombiniert entstehen sehr häufig in formellen Texten: Gesetzen, Verordnungen, wissenschaftlichen Empfehlungen. Wer diese Konstruktion beherrscht, liest authentische B2-Texte mühelos.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Modal + passive explained</summary>
+            <div class="en-help-body">
+              <p>Combine a modal verb with passive: <strong>Modalverb + Partizip II + werden</strong></p>
+              <p>Präsens: Das muss gemacht werden. (This must be done.)</p>
+              <p>Präteritum: Das musste gemacht werden. (This had to be done.)</p>
+              <p>Perfekt: Das hat gemacht werden müssen. (This had to be done.) — rare but appears in formal texts.</p>
+            </div>
+          </details>
+
+          <div class="formula-box">
+            <div class="formula-title">MODALES PASSIV — FORMEL</div>
+            <div class="formula-main">Modalverb + Partizip II + <span style="color:var(--ki);">werden</span></div>
+            <div style="font-size:12px;color:var(--gray);margin-top:8px;font-family:'DM Mono',monospace;">Das Problem muss gelöst werden.</div>
+          </div>
+
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Zeitform</th><th>Bildung</th><th>Beispiel</th></tr>
+              <tr><td>Präsens</td><td>Modalv. + P.II + werden</td><td>muss erledigt werden</td></tr>
+              <tr><td>Präteritum</td><td>Modalv.(Prät.) + P.II + werden</td><td>musste erledigt werden</td></tr>
+              <tr><td>Perfekt</td><td>hat + P.II + werden + Modalv.(Inf.)</td><td>hat erledigt werden müssen</td></tr>
+            </table>
+          </div>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Alle Dokumente <span class="kh">müssen bis Freitag eingereicht werden</span>.</div>
+                <div class="ex-note">müssen + eingereicht + werden — typisch für offizielle Anforderungen</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Alle Dokumente müssen bis Freitag eingereicht werden.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Die Ergebnisse <span class="kh">können nicht überprüft werden</span>.</div>
+                <div class="ex-note">können + überprüft + werden — Möglichkeit verneint</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Chidi erklärte, das Protokoll <span class="kh">solle unverzüglich veröffentlicht werden</span>.</div>
+                <div class="ex-note">Modales Passiv + KI (indirekte Rede): soll → solle</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Diese Regelung <span class="kh">darf nicht umgangen werden</span>.</div>
+                <div class="ex-note">Verbot: dürfen (negiert) + P.II + werden</div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(2,0)">Weiter →</button>
+        </div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card">
+          <div class="quiz-qnum" id="l2-qnum">FRAGE 1 VON 2</div>
+          <div class="quiz-q" id="l2-q"></div>
+          <div class="quiz-hint" id="l2-hint"></div>
+          <div class="quiz-opts" id="l2-opts"></div>
+          <div class="qfeedback" id="l2-fb"><div class="qft" id="l2-ft"></div><div class="qfb" id="l2-fbe"></div><div class="qfr" id="l2-rule"></div></div>
+          <div class="qnext" id="l2-next"><button class="btn btn-primary" onclick="advQ(2)">Weiter →</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEKTION 4 -->
+    <div id="lesson-3" class="lesson-pane">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">B2 · Modul 2 · Lektion 4 von 5</div>
+          <h2 class="lesson-h"><span style="color:var(--blue)">Passivumschreibungen</span></h2>
+          <p class="body-text">Deutsch hat elegante Alternativen zum echten Passiv — besonders in formeller und wissenschaftlicher Sprache. Diese Umschreibungen klingen natürlicher und erscheinen häufig in B2-Texten.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Passive alternatives explained</summary>
+            <div class="en-help-body">
+              <p><strong>sein + zu + Infinitiv:</strong> expresses necessity/possibility (equivalent to "must/can be done"). Das ist zu beachten = This must be noted.</p>
+              <p><strong>lassen + sich + Infinitiv:</strong> expresses possibility (equivalent to "can be done"). Das lässt sich lösen = That can be solved.</p>
+              <p><strong>man + Aktiv:</strong> informal alternative. Man muss das beachten = This must be noted.</p>
+            </div>
+          </details>
+
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Konstruktion</th><th>Bedeutung</th><th>Beispiel</th></tr>
+              <tr><td>sein + zu + Inf.</td><td>muss/kann gemacht werden</td><td>Das ist zu beachten.</td></tr>
+              <tr><td>lassen + sich + Inf.</td><td>kann gemacht werden</td><td>Das lässt sich lösen.</td></tr>
+              <tr><td>sich + lassen + Inf.</td><td>= lassen+sich</td><td>Der Fehler lässt sich korrigieren.</td></tr>
+              <tr><td>Adjektiv auf -bar/-lich</td><td>kann gemacht werden</td><td>Das ist lösbar / verständlich.</td></tr>
+            </table>
+          </div>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--ind);">SEIN+ZU</div>
+              <div style="flex:1;">
+                <div class="ex-de">Dieser Punkt <span class="kh">ist besonders zu beachten</span>.</div>
+                <div class="ex-note">= muss beachtet werden (obligatorisch/empfohlen)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Dieser Punkt ist besonders zu beachten.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(155,89,182,0.12);color:var(--kii);">LASSEN+SICH</div>
+              <div style="flex:1;">
+                <div class="ex-de">Das Problem <span class="fh">lässt sich nicht ignorieren</span>.</div>
+                <div class="ex-note">= kann nicht ignoriert werden (Möglichkeit)</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Das Problem lässt sich nicht ignorieren.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(39,174,96,0.12);color:var(--green);">-BAR</div>
+              <div style="flex:1;">
+                <div class="ex-de">Die Lösung ist <span style="color:var(--green);font-weight:700;">durchführbar</span>.</div>
+                <div class="ex-note">= kann durchgeführt werden — Adjektiv-Ableitung auf -bar</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="success-box"><strong>Tipp für B2-Schreiben:</strong> Wechsle zwischen echtem Passiv und Umschreibungen ab — das zeigt Stilkompetenz und macht deine Texte abwechslungsreicher.</div>
+
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(3,0)">Weiter →</button>
+        </div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card">
+          <div class="quiz-qnum" id="l3-qnum">FRAGE 1 VON 2</div>
+          <div class="quiz-q" id="l3-q"></div>
+          <div class="quiz-hint" id="l3-hint"></div>
+          <div class="quiz-opts" id="l3-opts"></div>
+          <div class="qfeedback" id="l3-fb"><div class="qft" id="l3-ft"></div><div class="qfb" id="l3-fbe"></div><div class="qfr" id="l3-rule"></div></div>
+          <div class="qnext" id="l3-next"><button class="btn btn-primary" onclick="advQ(3)">Weiter →</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEKTION 5 -->
+    <div id="lesson-4" class="lesson-pane">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">B2 · Modul 2 · Lektion 5 von 5</div>
+          <h2 class="lesson-h">Aktiv ↔ Passiv &amp; <span style="color:var(--blue)">B2-Strategien</span></h2>
+          <p class="body-text">Beim Umformen von Aktiv in Passiv und zurück müssen Kasus, das Agens (von + Dativ) und der Satzaufbau beachtet werden. Passiv ohne Agens ist besonders in formellen Texten häufig.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Active ↔ Passive transformation</summary>
+            <div class="en-help-body">
+              <p>Active → Passive: Object becomes subject (Nominative). Subject becomes agent with "von + Dative" (optional). Verb becomes werden + Partizip II.</p>
+              <p>Passive without agent: extremely common in formal German — the actor is unknown, unimportant, or obvious from context. "Es wird diskutiert" (there is discussion going on).</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Aktiv → Passiv: Schritt für Schritt</div>
+          <div class="transform-box">
+            <div class="trn-row"><div class="trn-label" style="color:var(--dir);">AKTIV</div><div class="trn-text">Fatima <span class="dh">liest</span> den Bericht.</div></div>
+            <div class="trn-arrow">↓ Objekt wird Subjekt | Subjekt → von + Dat. | Verb → wird + P.II</div>
+            <div class="trn-row"><div class="trn-label" style="color:var(--ki);">PASSIV</div><div class="trn-text">Der Bericht <span class="kh">wird</span> (von Fatima) <span class="kh">gelesen</span>.</div></div>
+          </div>
+
+          <div class="sec-label">Passiv ohne Agens (häufig!)</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Über dieses Thema <span class="kh">wird viel diskutiert</span>.</div>
+                <div class="ex-note">Kein Agens — der Handelnde ist allgemein/unbekannt. Typisch für formelle Texte.</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Es <span class="kh">wurde eine neue Regelung eingeführt</span>.</div>
+                <div class="ex-note">„Es" als Platzhalter — Subjekt hat keinen eigenen Inhalt</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">Häufige Fehler</div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">FALSCH</div>
+              <div class="wr-word">Das Buch ist geschrieben geworden.</div>
+              <div style="font-size:11px;color:var(--red);margin-top:6px;">geworden statt worden</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">RICHTIG</div>
+              <div class="wr-word">Das Buch ist geschrieben worden.</div>
+            </div>
+            <div class="wr-wrong">
+              <div class="wr-label">FALSCH</div>
+              <div class="wr-word">Er wurde von dem Brief informiert.</div>
+              <div style="font-size:11px;color:var(--red);margin-top:6px;">Brief ist kein Agens (Person)</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">RICHTIG</div>
+              <div class="wr-word">Er wurde durch den Brief informiert.</div>
+              <div style="font-size:11px;color:var(--green);margin-top:6px;">durch = unbelebtes Mittel</div>
+            </div>
+          </div>
+
+          <div class="warn-box"><strong>von vs. durch:</strong> „von" steht vor dem Handelnden (Person/Institution). „durch" steht vor dem Mittel/Instrument (unbelebt).<br>
+          von Kofi informiert ✓ | durch einen Brief informiert ✓</div>
+
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(4,0)">Weiter →</button>
+        </div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card">
+          <div class="quiz-qnum" id="l4-qnum">FRAGE 1 VON 2</div>
+          <div class="quiz-q" id="l4-q"></div>
+          <div class="quiz-hint" id="l4-hint"></div>
+          <div class="quiz-opts" id="l4-opts"></div>
+          <div class="qfeedback" id="l4-fb"><div class="qft" id="l4-ft"></div><div class="qfb" id="l4-fbe"></div><div class="qfr" id="l4-rule"></div></div>
+          <div class="qnext" id="l4-next"><button class="btn btn-primary" onclick="advQ(4)">Weiter →</button></div>
+        </div>
+      </div>
+      <div class="step" id="l4-s2">
+        <div class="complete-wrap">
+          <div class="complete-icon">🏗️</div>
+          <h2 class="lesson-h">Modul abgeschlossen!</h2>
+          <p class="body-text">Du beherrschst jetzt das erweiterte Passiv auf B2-Niveau: Vorgangs- und Zustandspassiv, alle Zeitformen, modales Passiv, Passivumschreibungen und die Aktiv-Passiv-Transformation.</p>
+          <div class="xp-badge">⚡ +120 XP</div>
+          <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:12px;">
+            <button class="btn btn-outline" onclick="showOverview()">Lektionen ansehen</button>
+            <a href="deutschweg-prototype.html" class="btn btn-primary" style="text-decoration:none;display:inline-flex;align-items:center;">← Dashboard</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="dw-next-step-bar">
+  <a href="module-b2-1-konjunktiv1.html" class="dw-nsb-link">← Modul 1</a>
+  <a href="deutschweg-prototype.html#b2" class="dw-nsb-link">B2 Übersicht</a>
+  <a href="module-b2-3-nominalisierung.html" class="dw-nsb-cta">Modul 3: Nominalisierung →</a>
+</div>
+
+<script>
+var QD = {
+  0: [
+    { q:'Was drückt das Zustandspassiv aus?',
+      hint:'sein + Partizip II',
+      opts:['Einen laufenden Prozess','Das Ergebnis einer abgeschlossenen Handlung','Eine Möglichkeit','Eine Aufforderung'],
+      ans:1,
+      exp:'Zustandspassiv (sein + P.II) beschreibt das Ergebnis: Die Tür ist geöffnet = sie steht offen (Zustand). Vorgangspassiv (wird geöffnet) beschreibt den Prozess.',
+      rule:'Zustandspassiv = sein + P.II → Ergebnis/Zustand' },
+    { q:'Welcher Satz zeigt das Vorgangspassiv?',
+      hint:'Vorgangspassiv: werden + Partizip II',
+      opts:['Die Arbeit ist erledigt.','Das Fenster ist geschlossen.','Der Brief wird gerade geschrieben.','Das Buch ist gedruckt.'],
+      ans:2,
+      exp:'„Der Brief wird gerade geschrieben" ist Vorgangspassiv: werden (Präsens) + Partizip II. Die anderen Sätze zeigen Zustandspassiv (sein + P.II).',
+      rule:'Vorgangspassiv: werden + P.II (Prozess läuft)' }
+  ],
+  1: [
+    { q:'Wie lautet das Passiv Perfekt von „bauen"?',
+      hint:'Passiv Perfekt: ist/sind + P.II + ???',
+      opts:['ist gebaut geworden','ist gebaut worden','wurde gebaut','war gebaut worden'],
+      ans:1,
+      exp:'Passiv Perfekt: ist + Partizip II + worden. NICHT „geworden" — das ist einer der häufigsten Fehler!',
+      rule:'Passiv Perfekt: ist + P.II + worden (niemals geworden!)' },
+    { q:'Ngozi berichtete, als sie ankam, ___ das Büro bereits renoviert ___.',
+      hint:'Vorzeitigkeit in der Vergangenheit → Plusquamperfekt Passiv',
+      opts:['wurde / werden','war / geworden','war / worden','ist / worden'],
+      ans:2,
+      exp:'Passiv Plusquamperfekt: war + Partizip II + worden. Drückt aus, dass etwas vor einem anderen Vergangenheitsereignis abgeschlossen war.',
+      rule:'Passiv Plusquamperf.: war + P.II + worden' }
+  ],
+  2: [
+    { q:'Wie lautet das modale Passiv von „Die Aufgabe muss bis Montag abgeben"?',
+      hint:'Modalverb + Partizip II + werden',
+      opts:['Die Aufgabe muss bis Montag abgeben.','Die Aufgabe wird bis Montag abgegeben müssen.','Die Aufgabe muss bis Montag abgegeben werden.','Die Aufgabe ist bis Montag abgegeben.'],
+      ans:2,
+      exp:'Modales Passiv: Modalverb (muss) + Partizip II (abgegeben) + werden. Das Infinitiv „werden" steht am Ende.',
+      rule:'Modales Passiv: Modalverb + P.II + werden' },
+    { q:'Das Projekt ___ nicht verschoben werden.',
+      hint:'Verbot/Negation mit Modalverb im Passiv',
+      opts:['muss','will','darf','soll'],
+      ans:2,
+      exp:'„Darf nicht" im Passiv = Verbot. „Das Projekt darf nicht verschoben werden" bedeutet: es ist verboten, das Projekt zu verschieben.',
+      rule:'dürfen (negiert) + P.II + werden = Verbot im Passiv' }
+  ],
+  3: [
+    { q:'Welche Umschreibung bedeutet „kann gelöst werden"?',
+      hint:'lassen + sich + Infinitiv',
+      opts:['Das ist zu lösen.','Das lässt sich lösen.','Das wird gelöst.','Das ist lösbar.'],
+      ans:1,
+      exp:'„lassen + sich + Infinitiv" drückt Möglichkeit aus (= kann gemacht werden). „Ist zu lösen" drückt eher Notwendigkeit aus (muss gelöst werden).',
+      rule:'lassen + sich + Inf. = kann gemacht werden (Möglichkeit)' },
+    { q:'„Dieser Aspekt ist unbedingt zu beachten" bedeutet:',
+      hint:'sein + zu + Infinitiv drückt aus...',
+      opts:['Dieser Aspekt kann beachtet werden.','Dieser Aspekt muss beachtet werden.','Dieser Aspekt wird gerade beachtet.','Dieser Aspekt ist schon beachtet worden.'],
+      ans:1,
+      exp:'„sein + zu + Infinitiv" drückt Notwendigkeit/Obligation aus — entspricht „muss beachtet werden". Es ist eine häufige Passivumschreibung in formellen Texten.',
+      rule:'sein + zu + Inf. = muss gemacht werden (Notwendigkeit)' }
+  ],
+  4: [
+    { q:'Wie wird „Kwame repariert das Auto" ins Passiv umgeformt?',
+      hint:'Objekt (Auto) → Subjekt; Subjekt → von + Dativ',
+      opts:['Das Auto wird von Kwame repariert.','Kwame wird das Auto repariert.','Das Auto ist von Kwame repariert.','Das Auto wird Kwame reparieren.'],
+      ans:0,
+      exp:'Aktiv → Passiv: Objekt (das Auto → Nominativ) wird Subjekt. Handelnder (Kwame → Dativ) mit „von". Verb: wird + Partizip II.',
+      rule:'Aktiv → Passiv: Akkusativobjekt → Nominativsubjekt; Subjekt → von + Dativ' },
+    { q:'Amina wurde ___ den Bericht informiert.',
+      hint:'Person oder unbelebtes Mittel? → von oder durch?',
+      opts:['von','durch','mit','bei'],
+      ans:1,
+      exp:'„Durch" steht vor unbelebten Mitteln/Instrumenten. „Bericht" ist ein Dokument, kein Handelnder → durch. „Von" steht vor Personen/Institutionen.',
+      rule:'von + Person/Institution | durch + unbelebtes Mittel' }
+  ]
+};
+
+var curLesson=0, curStep=0, curQ={}, qIdx=0, xp=0;
+var lessonSteps=[2,2,2,2,3];
+
+function speakSentence(btn,text){if(!window.speechSynthesis)return;window.speechSynthesis.cancel();if(btn.classList.contains('speaking')){btn.classList.remove('speaking');return;}document.querySelectorAll('.speak-btn.speaking').forEach(b=>b.classList.remove('speaking'));var u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=0.9;u.onend=()=>btn.classList.remove('speaking');btn.classList.add('speaking');window.speechSynthesis.speak(u);}
+function showOverview(){document.getElementById('screen-lesson').classList.remove('active');document.getElementById('screen-overview').classList.add('active');window.scrollTo(0,0);}
+function goLesson(li){curLesson=li;curStep=0;qIdx=0;document.getElementById('screen-overview').classList.remove('active');document.getElementById('screen-lesson').classList.add('active');document.querySelectorAll('.lesson-pane').forEach(p=>p.style.display='none');document.getElementById('lesson-'+li).style.display='block';document.querySelectorAll('#lesson-'+li+' .step').forEach((s,i)=>s.classList.toggle('active',i===0));renderDots(li);updateProgress(li,0);window.scrollTo(0,0);}
+function renderDots(li){var n=lessonSteps[li],row=document.getElementById('dotRow');row.innerHTML='';for(var i=0;i<n;i++){var d=document.createElement('div');d.className='dot'+(i===0?' active':'');(function(idx){d.onclick=function(){if(idx<=curStep)goStep(curLesson,idx);};})(i);row.appendChild(d);}}
+function goStep(li,si){curStep=si;document.querySelectorAll('#lesson-'+li+' .step').forEach((s,i)=>s.classList.toggle('active',i===si));document.querySelectorAll('#dotRow .dot').forEach((d,i)=>{d.classList.toggle('active',i===si);d.classList.toggle('done',i<si);});updateProgress(li,si);window.scrollTo(0,0);}
+function updateProgress(li,si){document.getElementById('progFill').style.width=Math.round((si/(lessonSteps[li]-1))*100)+'%';}
+function nextStep(li,si){var nsi=si+1;if(nsi>=lessonSteps[li])return;initQuiz(li);goStep(li,nsi);}
+function initQuiz(li){qIdx=0;renderQ(li);}
+function renderQ(li){var qs=QD[li];if(!qs||qIdx>=qs.length){showResult(li);return;}var q=qs[qIdx];curQ=q;document.getElementById('l'+li+'-qnum').textContent='FRAGE '+(qIdx+1)+' VON '+qs.length;document.getElementById('l'+li+'-q').textContent=q.q;document.getElementById('l'+li+'-hint').textContent=q.hint;var opts=document.getElementById('l'+li+'-opts');opts.innerHTML='';var letters=['A','B','C','D'];q.opts.forEach(function(o,i){var btn=document.createElement('button');btn.className='qopt';btn.innerHTML='<span class="qletter">'+letters[i]+'</span>'+o;btn.onclick=function(){pickQ(li,i);};opts.appendChild(btn);});document.getElementById('l'+li+'-fb').className='qfeedback';document.getElementById('l'+li+'-next').className='qnext';}
+function pickQ(li,idx){var q=QD[li][qIdx];var opts=document.querySelectorAll('#l'+li+'-opts .qopt');opts.forEach(b=>b.disabled=true);opts[idx].classList.add(idx===q.ans?'correct':'wrong');if(idx!==q.ans)opts[q.ans].classList.add('correct');var ok=idx===q.ans;if(ok){xp+=10;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';}var fb=document.getElementById('l'+li+'-fb');fb.className='qfeedback show '+(ok?'ok':'no');document.getElementById('l'+li+'-ft').textContent=ok?'✓ Richtig!':'✗ Leider falsch.';document.getElementById('l'+li+'-ft').className='qft '+(ok?'ok':'no');document.getElementById('l'+li+'-fbe').textContent=q.exp;document.getElementById('l'+li+'-rule').textContent='📌 '+q.rule;document.getElementById('l'+li+'-next').className='qnext show';}
+function advQ(li){qIdx++;if(qIdx>=QD[li].length)showResult(li);else renderQ(li);}
+function showResult(li){if(li===4){goStep(li,2);localStorage.setItem('dw_xp',parseInt(localStorage.getItem('dw_xp')||'0')+xp);localStorage.setItem('dw_mod_b2_2_done','1');}else goLesson(li+1);}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');xp=0;document.getElementById('xpDisp').textContent='⚡ 0 XP';});
+
+  // ===== STANDALONE QUIZ =====
+  var SQ_DATA = [
+  {
+    "q": "Was drueckt das Zustandspassiv aus?",
+    "opts": [
+      "Eine laufende Handlung",
+      "Das Ergebnis einer abgeschlossenen Handlung",
+      "Eine zukuenftige Handlung",
+      "Eine Moeglichkeit"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Das Zustandspassiv beschreibt den Zustand als Ergebnis einer Handlung.",
+    "fb_ko": "Falsch. Das Zustandspassiv beschreibt das Ergebnis, z.B. 'Die Tuer ist geoeffnet.'"
+  },
+  {
+    "q": "Welche Konstruktion kann das Passiv ersetzen?",
+    "opts": [
+      "haben + Infinitiv",
+      "sein + zu + Infinitiv",
+      "werden + Partizip II",
+      "sein + worden"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! 'sein + zu + Infinitiv' ist eine haeufige Passiversatzform.",
+    "fb_ko": "Falsch. 'sein + zu + Infinitiv' ersetzt das Passiv mit Modalverbcharakter."
+  },
+  {
+    "q": "Wie bildet man das Vorgangspassiv im Perfekt?",
+    "opts": [
+      "wurde + Partizip II",
+      "ist + Partizip II + worden",
+      "war + Partizip II",
+      "werden + Partizip II + worden"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Das Passivperfekt: 'ist/sind + Partizip II + worden.'",
+    "fb_ko": "Falsch. Das Vorgangspassiv im Perfekt: 'ist + Partizip II + worden'."
+  },
+  {
+    "q": "Was bedeutet 'Das Paket laesst sich leicht oeffnen'?",
+    "opts": [
+      "Das Paket wird geoeffnet",
+      "Das Paket kann leicht geoeffnet werden",
+      "Das Paket hat sich geoeffnet",
+      "Das Paket oeffnet sich selber"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! 'lassen + sich + Infinitiv' drueckt eine Moeglichkeit aus.",
+    "fb_ko": "Falsch. Diese Konstruktion bedeutet 'Das Paket kann leicht geoeffnet werden.'"
+  },
+  {
+    "q": "Welcher Satz enthaelt ein unpersoenlisches Passiv?",
+    "opts": [
+      "Das Buch wird gelesen.",
+      "Es wird hier nicht geraucht.",
+      "Der Brief wurde geschrieben.",
+      "Die Aufgabe ist erledigt."
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Das unpersoenlische Passiv hat kein Subjekt und beginnt oft mit 'Es'.",
+    "fb_ko": "Falsch. 'Es wird hier nicht geraucht' ist ein unpersoenlisches Passiv ohne Subjekt."
+  }
+];
+  var sqIdx=0, sqScore=0, sqAnswered=false;
+  var sqResults=[];
+  function sqInit(){sqIdx=0;sqScore=0;sqAnswered=false;sqResults=[];sqRender();}
+  function sqRender(){
+    var d=SQ_DATA[sqIdx];
+    document.getElementById('sqQuestion').style.display='block';
+    document.getElementById('sqResult').classList.remove('show');
+    document.getElementById('sqQText').textContent=(sqIdx+1)+'. '+d.q;
+    var dots=document.getElementById('sqDots');
+    dots.innerHTML='';
+    for(var i=0;i<5;i++){
+      var dot=document.createElement('div');
+      var cls='sq-dot';
+      if(i<sqIdx){ cls+= sqResults[i]?' done':' wrong'; }
+      else if(i===sqIdx){ cls+=' active'; }
+      dot.className=cls;
+      dots.appendChild(dot);
+    }
+    var opts=document.getElementById('sqOpts');
+    opts.innerHTML='';
+    d.opts.forEach(function(o,i){
+      var b=document.createElement('button');
+      b.className='sq-opt';
+      b.textContent=o;
+      (function(idx){b.onclick=function(){sqPick(idx);};})(i);
+      opts.appendChild(b);
+    });
+    var fb=document.getElementById('sqFb');
+    fb.className='sq-fb';
+    fb.textContent='';
+    document.getElementById('sqNext').className='btn btn-primary sq-next';
+    sqAnswered=false;
+  }
+  function sqPick(idx){
+    if(sqAnswered)return;
+    sqAnswered=true;
+    var d=SQ_DATA[sqIdx];
+    var opts=document.getElementById('sqOpts').querySelectorAll('.sq-opt');
+    opts.forEach(function(b){b.classList.add('disabled');});
+    var ok=(idx===d.ans);
+    if(ok){sqScore++;sqResults[sqIdx]=true;}else{sqResults[sqIdx]=false;}
+    opts[idx].classList.add(ok?'correct':'wrong');
+    if(!ok) opts[d.ans].classList.add('correct');
+    var fb=document.getElementById('sqFb');
+    fb.textContent=ok?d.fb_ok:d.fb_ko;
+    fb.className='sq-fb show '+(ok?'ok':'ko');
+    document.getElementById('sqNext').className='btn btn-primary sq-next show';
+  }
+  function sqAdvance(){
+    if(sqIdx<4){sqIdx++;sqRender();}else{sqShowResult();}
+  }
+  function sqShowResult(){
+    document.getElementById('sqQuestion').style.display='none';
+    var res=document.getElementById('sqResult');
+    res.className='sq-result show';
+    document.getElementById('sqScoreNum').textContent=sqScore+'/5';
+    var msgs=['Nicht aufgeben! \u{1F31F}','Nicht aufgeben! \u{1F31F}','Weiter üben! \u{1F4DA}','Gut gemacht! \u{1F4AA}','Sehr gut! \u{1F44F}','Ausgezeichnet! \u{1F389}'];
+    document.getElementById('sqScoreMsg').textContent=msgs[sqScore];
+  }
+  function sqReset(){
+    sqIdx=0;sqScore=0;sqAnswered=false;sqResults=[];
+    document.getElementById('sqResult').className='sq-result';
+    document.getElementById('sqQuestion').style.display='block';
+    sqRender();
+  }
+  document.addEventListener('DOMContentLoaded',function(){sqInit();});
+
+  document.addEventListener('DOMContentLoaded',function(){
+    var nb=document.getElementById('sqNextMod');
+    if(nb){ nb.onclick=function(){ window.location.href='module-b2-3-nominalisierung.html'; }; }
+  });
+
+</script>
+</body>
+</html>

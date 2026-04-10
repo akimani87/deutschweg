@@ -82,6 +82,37 @@
   .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(52,152,219,0.12); border:1px solid var(--blue); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--blue); font-size:18px; margin:18px 0; }
   @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
   @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+
+  /* ===== STANDALONE QUIZ ===== */
+  .sq-wrap{background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:28px;margin-top:32px;}
+  .sq-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:6px;}
+  .sq-sub{font-size:13px;color:var(--gray);margin-bottom:20px;}
+  .sq-dots{display:flex;gap:8px;margin-bottom:20px;}
+  .sq-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all 0.3s;}
+  .sq-dot.active{background:var(--blue);width:22px;border-radius:4px;}
+  .sq-dot.done{background:var(--green);}
+  .sq-dot.wrong{background:var(--red);}
+  .sq-q{font-size:16px;font-weight:600;margin-bottom:16px;line-height:1.5;}
+  .sq-opts{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+  .sq-opt{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:12px 16px;cursor:pointer;font-size:14px;transition:all 0.2s;text-align:left;}
+  .sq-opt:hover:not(.disabled){background:rgba(52,152,219,0.12);border-color:var(--blue);}
+  .sq-opt.selected{background:rgba(52,152,219,0.15);border-color:var(--blue);}
+  .sq-opt.correct{background:rgba(39,174,96,0.15);border-color:var(--green);color:var(--green);}
+  .sq-opt.wrong{background:rgba(192,57,43,0.15);border-color:var(--red);color:var(--red);}
+  .sq-opt.disabled{cursor:default;pointer-events:none;}
+  .sq-fb{font-size:14px;padding:12px 16px;border-radius:10px;margin-bottom:16px;display:none;}
+  .sq-fb.show{display:block;}
+  .sq-fb.ok{background:rgba(39,174,96,0.12);border:1px solid rgba(39,174,96,0.3);color:var(--green);}
+  .sq-fb.ko{background:rgba(192,57,43,0.12);border:1px solid rgba(192,57,43,0.3);color:#e07070;}
+  .sq-next{display:none;}
+  .sq-next.show{display:inline-block;}
+  .sq-result{display:none;text-align:center;padding:20px 0;}
+  .sq-result.show{display:block;}
+  .sq-score-num{font-family:'Playfair Display',serif;font-size:48px;color:var(--blue);margin-bottom:8px;}
+  .sq-score-msg{font-size:20px;margin-bottom:24px;}
+  .sq-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+  .sq-btns .btn{width:auto;padding:12px 28px;}
+
 </style>
 <style>
 /* LIGHT THEME OVERRIDE */
@@ -132,6 +163,27 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
       <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">🏆</div><div><div class="lc-title">Lektion 5 — B2-Prüfungsgespräch simulieren</div><div class="lc-desc">Typische Themen, Bewertungskriterien, häufige Fehler und Strategien für die Prüfung.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
     </div>
     <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
+    <!-- STANDALONE QUIZ -->
+    <div class="sq-wrap" id="sqWrap">
+      <div id="sqQuestion">
+        <div class="sq-title">Wissenstest</div>
+        <div class="sq-sub">5 Fragen &mdash; teste dein Wissen!</div>
+        <div class="sq-dots" id="sqDots"></div>
+        <div class="sq-q" id="sqQText"></div>
+        <div class="sq-opts" id="sqOpts"></div>
+        <div class="sq-fb" id="sqFb"></div>
+        <button class="btn btn-primary sq-next" id="sqNext" onclick="sqAdvance()">Weiter &#x2192;</button>
+      </div>
+      <div class="sq-result" id="sqResult">
+        <div class="sq-score-num" id="sqScoreNum">0/5</div>
+        <div class="sq-score-msg" id="sqScoreMsg"></div>
+        <div class="sq-btns">
+          <button class="btn btn-outline" onclick="sqReset()">Nochmal versuchen</button>
+          <button class="btn btn-primary" id="sqNextMod">N&#xE4;chstes Modul &#x2192;</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -376,6 +428,142 @@ function nextStep(li,si){var steps=$('lesson-'+li).querySelectorAll('.step');ste
 function xpDisp(){$('xpDisp').textContent='⚡ '+xp+' XP';}
 function speakSentence(btn,text){if('speechSynthesis' in window){window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=0.9;btn.classList.add('speaking');u.onend=function(){btn.classList.remove('speaking');};window.speechSynthesis.speak(u);}}
 document.body.classList.add('ready');
+
+  // ===== STANDALONE QUIZ =====
+  var SQ_DATA = [
+  {
+    "q": "Wie beginnt man hoeflich eine Widerspruch-Aeusserung in einer Diskussion?",
+    "opts": [
+      "Das ist total falsch!",
+      "Ich sehe das etwas anders, weil...",
+      "Nein, du hast Unrecht.",
+      "Das stimmt ueberhaupt nicht."
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Hoeflicher Widerspruch beginnt mit einer abschwaechenden Formulierung.",
+    "fb_ko": "Falsch. Eine hoefliche Formulierung wie 'Ich sehe das etwas anders' ist angemessener."
+  },
+  {
+    "q": "Was bedeutet 'einen Kompromiss finden' in einer Diskussion?",
+    "opts": [
+      "Den anderen ueberzeugen",
+      "Eine Loesung finden, die beide Seiten akzeptieren koennen",
+      "Die eigene Meinung durchsetzen",
+      "Das Thema wechseln"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Ein Kompromiss ist eine gegenseitig akzeptable Loesung.",
+    "fb_ko": "Falsch. Ein Kompromiss ist eine Loesung, mit der alle Beteiligten einverstanden sein koennen."
+  },
+  {
+    "q": "Welche Funktion hat ein Gegenargument in einer Diskussion?",
+    "opts": [
+      "Das eigene Argument zu schwaerchen",
+      "Eine entgegengesetzte Position zu widerlegen oder zu relativieren",
+      "Dem Gespraechspartner zuzustimmen",
+      "Das Thema zu beenden"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Gegenargumente widerlegen oder relativieren die Gegenposition.",
+    "fb_ko": "Falsch. Gegenargumente dienen dazu, eine andere Position zu widerlegen."
+  },
+  {
+    "q": "Wie kann man in einer Diskussion das Wort ergreifen?",
+    "opts": [
+      "Den anderen einfach unterbrechen",
+      "'Darf ich kurz etwas ergaenzen?' oder 'Ich moechte dazu sagen...'",
+      "Laut sprechen",
+      "Schweigen und warten"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Hoefliche Einstiegsformeln helfen, das Wort zu ergreifen.",
+    "fb_ko": "Falsch. Hoefliche Einleitungen wie 'Darf ich ergaenzen?' sind die bessere Wahl."
+  },
+  {
+    "q": "Was ist bei der B2-Pruefung im Sprechteil Teil 3 (Diskussion) zu tun?",
+    "opts": [
+      "Einen Monolog halten",
+      "Gemeinsam mit einem Partner eine Loesung aushandeln",
+      "Einen Text vorlesen",
+      "Fragen beantworten"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! In Teil 3 handeln zwei Kandidaten gemeinsam eine Loesung aus.",
+    "fb_ko": "Falsch. In der Diskussion im B2-Sprechen handeln die Kandidaten gemeinsam eine Loesung aus."
+  }
+];
+  var sqIdx=0, sqScore=0, sqAnswered=false;
+  var sqResults=[];
+  function sqInit(){sqIdx=0;sqScore=0;sqAnswered=false;sqResults=[];sqRender();}
+  function sqRender(){
+    var d=SQ_DATA[sqIdx];
+    document.getElementById('sqQuestion').style.display='block';
+    document.getElementById('sqResult').classList.remove('show');
+    document.getElementById('sqQText').textContent=(sqIdx+1)+'. '+d.q;
+    var dots=document.getElementById('sqDots');
+    dots.innerHTML='';
+    for(var i=0;i<5;i++){
+      var dot=document.createElement('div');
+      var cls='sq-dot';
+      if(i<sqIdx){ cls+= sqResults[i]?' done':' wrong'; }
+      else if(i===sqIdx){ cls+=' active'; }
+      dot.className=cls;
+      dots.appendChild(dot);
+    }
+    var opts=document.getElementById('sqOpts');
+    opts.innerHTML='';
+    d.opts.forEach(function(o,i){
+      var b=document.createElement('button');
+      b.className='sq-opt';
+      b.textContent=o;
+      (function(idx){b.onclick=function(){sqPick(idx);};})(i);
+      opts.appendChild(b);
+    });
+    var fb=document.getElementById('sqFb');
+    fb.className='sq-fb';
+    fb.textContent='';
+    document.getElementById('sqNext').className='btn btn-primary sq-next';
+    sqAnswered=false;
+  }
+  function sqPick(idx){
+    if(sqAnswered)return;
+    sqAnswered=true;
+    var d=SQ_DATA[sqIdx];
+    var opts=document.getElementById('sqOpts').querySelectorAll('.sq-opt');
+    opts.forEach(function(b){b.classList.add('disabled');});
+    var ok=(idx===d.ans);
+    if(ok){sqScore++;sqResults[sqIdx]=true;}else{sqResults[sqIdx]=false;}
+    opts[idx].classList.add(ok?'correct':'wrong');
+    if(!ok) opts[d.ans].classList.add('correct');
+    var fb=document.getElementById('sqFb');
+    fb.textContent=ok?d.fb_ok:d.fb_ko;
+    fb.className='sq-fb show '+(ok?'ok':'ko');
+    document.getElementById('sqNext').className='btn btn-primary sq-next show';
+  }
+  function sqAdvance(){
+    if(sqIdx<4){sqIdx++;sqRender();}else{sqShowResult();}
+  }
+  function sqShowResult(){
+    document.getElementById('sqQuestion').style.display='none';
+    var res=document.getElementById('sqResult');
+    res.className='sq-result show';
+    document.getElementById('sqScoreNum').textContent=sqScore+'/5';
+    var msgs=['Nicht aufgeben! \u{1F31F}','Nicht aufgeben! \u{1F31F}','Weiter üben! \u{1F4DA}','Gut gemacht! \u{1F4AA}','Sehr gut! \u{1F44F}','Ausgezeichnet! \u{1F389}'];
+    document.getElementById('sqScoreMsg').textContent=msgs[sqScore];
+  }
+  function sqReset(){
+    sqIdx=0;sqScore=0;sqAnswered=false;sqResults=[];
+    document.getElementById('sqResult').className='sq-result';
+    document.getElementById('sqQuestion').style.display='block';
+    sqRender();
+  }
+  document.addEventListener('DOMContentLoaded',function(){sqInit();});
+
+  document.addEventListener('DOMContentLoaded',function(){
+    var nb=document.getElementById('sqNextMod');
+    if(nb){ nb.onclick=function(){ window.location.href='module-b2-10-hoeren-lesen-b2.html'; }; }
+  });
+
 </script>
 </body>
 </html>

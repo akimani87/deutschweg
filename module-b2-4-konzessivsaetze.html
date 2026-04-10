@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — B2 Modul 4: Adverbialsätze</title>
+<link rel="stylesheet" href="deutschweg-theme.css">
+<style>
+  :root { --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc; --gold:#c9a84c; --red:#c0392b; --green:#27ae60; --blue:#3498db; --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a; --border:rgba(201,168,76,0.2); --ki:#e67e22; --kii:#9b59b6; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); position:sticky; top:0; z-index:50; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--blue); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--blue); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; font-family:'DM Sans',sans-serif; }
+  .btn-primary { background:var(--blue); color:var(--white); width:100%; }
+  .btn-primary:hover { background:#2980b9; transform:translateY(-2px); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn.speaking { background:var(--blue); color:var(--white); }
+  .en-help { background:rgba(52,152,219,0.05); border:1px dashed rgba(52,152,219,0.25); border-radius:10px; margin:12px 0; }
+  .en-help summary { padding:10px 16px; cursor:pointer; font-size:13px; color:var(--blue); font-family:'DM Mono',monospace; list-style:none; display:flex; align-items:center; gap:8px; }
+  .en-help summary::-webkit-details-marker { display:none; }
+  .en-help[open] summary { border-bottom:1px dashed rgba(52,152,219,0.2); }
+  .en-help-body { padding:12px 16px; font-size:13px; color:rgba(245,240,232,.7); line-height:1.8; }
+  .en-help-body p { margin-bottom:8px; }
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-note { font-size:12px; color:var(--gray); line-height:1.6; }
+  .comp-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .comp-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:10px 14px; text-align:left; border-bottom:2px solid rgba(255,255,255,0.1); }
+  .comp-table td { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'DM Mono',monospace; font-size:13px; vertical-align:top; }
+  .comp-table tr:last-child td { border-bottom:none; }
+  .comp-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+  .kh { color:var(--ki); font-weight:700; }
+  .fh { color:var(--kii); font-weight:700; }
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Mono',monospace; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--blue); background:rgba(52,152,219,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(52,152,219,0.1); border-radius:8px; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(52,152,219,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.2); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(52,152,219,0.12); border:1px solid var(--blue); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--blue); font-size:18px; margin:18px 0; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .lesson-h{font-size:22px;} }
+
+  /* ===== STANDALONE QUIZ ===== */
+  .sq-wrap{background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:28px;margin-top:32px;}
+  .sq-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:6px;}
+  .sq-sub{font-size:13px;color:var(--gray);margin-bottom:20px;}
+  .sq-dots{display:flex;gap:8px;margin-bottom:20px;}
+  .sq-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all 0.3s;}
+  .sq-dot.active{background:var(--blue);width:22px;border-radius:4px;}
+  .sq-dot.done{background:var(--green);}
+  .sq-dot.wrong{background:var(--red);}
+  .sq-q{font-size:16px;font-weight:600;margin-bottom:16px;line-height:1.5;}
+  .sq-opts{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+  .sq-opt{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:12px 16px;cursor:pointer;font-size:14px;transition:all 0.2s;text-align:left;}
+  .sq-opt:hover:not(.disabled){background:rgba(52,152,219,0.12);border-color:var(--blue);}
+  .sq-opt.selected{background:rgba(52,152,219,0.15);border-color:var(--blue);}
+  .sq-opt.correct{background:rgba(39,174,96,0.15);border-color:var(--green);color:var(--green);}
+  .sq-opt.wrong{background:rgba(192,57,43,0.15);border-color:var(--red);color:var(--red);}
+  .sq-opt.disabled{cursor:default;pointer-events:none;}
+  .sq-fb{font-size:14px;padding:12px 16px;border-radius:10px;margin-bottom:16px;display:none;}
+  .sq-fb.show{display:block;}
+  .sq-fb.ok{background:rgba(39,174,96,0.12);border:1px solid rgba(39,174,96,0.3);color:var(--green);}
+  .sq-fb.ko{background:rgba(192,57,43,0.12);border:1px solid rgba(192,57,43,0.3);color:#e07070;}
+  .sq-next{display:none;}
+  .sq-next.show{display:inline-block;}
+  .sq-result{display:none;text-align:center;padding:20px 0;}
+  .sq-result.show{display:block;}
+  .sq-score-num{font-family:'Playfair Display',serif;font-size:48px;color:var(--blue);margin-bottom:8px;}
+  .sq-score-msg{font-size:20px;margin-bottom:24px;}
+  .sq-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+  .sq-btns .btn{width:auto;padding:12px 28px;}
+
+</style>
+<style>
+/* LIGHT THEME OVERRIDE */
+:root { --black:#F8FAFC; --white:#1F2937; --cream:#4B5563; --gold:#3B82F6; --red:#EF4444; --green:#10B981; --blue:#3B82F6; --gray:#9CA3AF; --card-bg:#FFFFFF; --card2-bg:#F8FAFC; --border:#E5E7EB; --ki:#F59E0B; --kii:#8B5CF6; }
+body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-serif; }
+.top-nav { background:white; border-bottom:1px solid #E5E7EB; backdrop-filter:none; }
+.btn-primary { background:#3B82F6; color:white; }
+.btn-outline { background:transparent; border:1px solid #3B82F6; color:#3B82F6; }
+.card { background:#FFFFFF; border:1px solid #E5E7EB; box-shadow:0 1px 3px rgba(0,0,0,0.07); }
+.info-box { background:#EFF6FF; border-left:3px solid #3B82F6; color:#1D4ED8; }
+.warn-box { background:#EFF6FF; border-left:3px solid #3B82F6; color:#1D4ED8; }
+.danger-box { background:#FEF2F2; border-left:3px solid #EF4444; color:#991B1B; }
+.success-box { background:#ECFDF5; border-left:3px solid #10B981; color:#065F46; }
+.qopt { border:1px solid #E5E7EB; background:white; color:#1F2937; }
+.qopt:hover:not([disabled]) { border-color:#3B82F6; background:#EFF6FF; }
+.xp-badge { background:#EFF6FF; border:1px solid #3B82F6; color:#3B82F6; }
+.speak-btn { background:#EFF6FF; border-color:#DBEAFE; color:#3B82F6; }
+.speak-btn.speaking { background:#3B82F6; color:white; }
+.lesson-card { background:#F8FAFC; border:1px solid #E5E7EB; }
+.ex-card { background:#F8FAFC; border:1px solid #E5E7EB; }
+</style>
+</head>
+<body>
+
+<div id="screen-overview" class="screen active">
+  <nav class="dw-nav">
+    <div class="dw-nav-inner">
+      <a href="deutschweg-prototype.html" class="dw-logo">
+        <div class="dw-logo-icon">D</div>
+        <span class="dw-logo-text">Deutsch<span>Weg</span></span>
+      </a>
+      <a href="exam-vault.html" style="font-size:13px;font-weight:600;color:#1D4ED8;text-decoration:none;margin-right:8px;">📝 Exams</a>
+      <a href="deutschweg-prototype.html" class="dw-btn dw-btn-secondary">← Back to Dashboard</a>
+    </div>
+  </nav>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">B2 · Grammatik · Modul 4</div>
+    <h1 class="lesson-h" style="font-size:36px;">Adverbialsätze: <span style="color:var(--blue)">Konzessiv, Kausal, Konsekutiv, Final</span></h1>
+    <p class="body-text">Adverbialsätze bilden das Rückgrat komplexer Argumentationen. Auf B2-Niveau müssen diese vier Typen präzise eingesetzt werden — mit allen Konjunktionen, Präpositionen und Alternativen.</p>
+    <details class="en-help">
+      <summary>🇬🇧 What will I learn here?</summary>
+      <div class="en-help-body">
+        <p>Four key adverbial clause types for B2: Concessive (obwohl — despite), Causal (weil/da — because), Consecutive (sodass — so that/result), Final (damit/um zu — in order to). Each has multiple connectors, prepositional alternatives, and formal variants.</p>
+      </div>
+    </details>
+    <div class="info-box"><strong>Lernziele:</strong><br><br>
+      ✦ Konzessivsätze: obwohl, obschon, wenngleich, trotzdem, dennoch, jedoch<br>
+      ✦ Kausalsätze: weil, da, denn — Unterschiede und Register<br>
+      ✦ Konsekutivsätze: sodass, so…dass, folglich, daher, deshalb<br>
+      ✦ Finalsätze: damit, um…zu, zwecks (+ Gen.)<br>
+      ✦ Formelle vs. informelle Varianten<br>
+      ✦ Inversion nach Adverbien (folglich, dennoch, daher)
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">⚖️</div><div><div class="lc-title">Lektion 1 — Konzessivsätze</div><div class="lc-desc">obwohl, obschon, wenngleich, trotzdem, dennoch, trotz + Gen. Einräumung trotz Widerspruch.</div></div><div class="lc-tag" style="color:var(--blue);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">🔍</div><div><div class="lc-title">Lektion 2 — Kausalsätze</div><div class="lc-desc">weil vs. da vs. denn. Wortstellung. Formal: aufgrund + Gen., angesichts.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">➡️</div><div><div class="lc-title">Lektion 3 — Konsekutivsätze</div><div class="lc-desc">sodass, so…dass. Adverbien: folglich, deshalb, daher, infolgedessen. Inversion.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">🎯</div><div><div class="lc-title">Lektion 4 — Finalsätze</div><div class="lc-desc">damit vs. um…zu. Wann welche Form? zwecks + Gen. Ziel und Absicht ausdrücken.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">🏆</div><div><div class="lc-title">Lektion 5 — Alle vier im Vergleich &amp; Prüfungstraining</div><div class="lc-desc">Abgrenzung der vier Typen. B2-Schreiben: Argumentation strukturieren.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
+    <!-- STANDALONE QUIZ -->
+    <div class="sq-wrap" id="sqWrap">
+      <div id="sqQuestion">
+        <div class="sq-title">Wissenstest</div>
+        <div class="sq-sub">5 Fragen &mdash; teste dein Wissen!</div>
+        <div class="sq-dots" id="sqDots"></div>
+        <div class="sq-q" id="sqQText"></div>
+        <div class="sq-opts" id="sqOpts"></div>
+        <div class="sq-fb" id="sqFb"></div>
+        <button class="btn btn-primary sq-next" id="sqNext" onclick="sqAdvance()">Weiter &#x2192;</button>
+      </div>
+      <div class="sq-result" id="sqResult">
+        <div class="sq-score-num" id="sqScoreNum">0/5</div>
+        <div class="sq-score-msg" id="sqScoreMsg"></div>
+        <div class="sq-btns">
+          <button class="btn btn-outline" onclick="sqReset()">Nochmal versuchen</button>
+          <button class="btn btn-primary" id="sqNextMod">N&#xE4;chstes Modul &#x2192;</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lektionen</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--blue);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- L1: Konzessiv -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">B2 · Modul 4 · Lektion 1 von 5</div>
+          <h2 class="lesson-h"><span style="color:var(--ki)">Konzessivsätze</span></h2>
+          <p class="body-text">Konzessivsätze drücken einen Widerspruch oder eine Einräumung aus: Obwohl X gilt, gilt dennoch Y. Sie sind zentral für B2-Argumentation.</p>
+          <details class="en-help">
+            <summary>🇬🇧 Concessive clauses explained</summary>
+            <div class="en-help-body">
+              <p>Concessive clauses express contrast: "Although it was raining, they went outside." German has many options ranging from informal (obwohl) to very formal (wenngleich, gleichwohl). The adverbs (trotzdem, dennoch, jedoch) cause inversion in the main clause.</p>
+            </div>
+          </details>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Ausdruck</th><th>Typ</th><th>Register</th><th>Beispiel</th></tr>
+              <tr><td class="kh">obwohl</td><td>Konj.</td><td>neutral</td><td>Obwohl er müde war, arbeitete er.</td></tr>
+              <tr><td class="kh">obschon</td><td>Konj.</td><td>gehoben</td><td>Obschon die Zeit knapp war…</td></tr>
+              <tr><td class="kh">wenngleich</td><td>Konj.</td><td>formal</td><td>Wenngleich es schwierig ist…</td></tr>
+              <tr><td class="kh">trotzdem</td><td>Adv.</td><td>neutral</td><td>Er war müde. Trotzdem arbeitete er.</td></tr>
+              <tr><td class="kh">dennoch</td><td>Adv.</td><td>gehoben</td><td>Er war erschöpft. Dennoch gab er nicht auf.</td></tr>
+              <tr><td class="kh">jedoch</td><td>Adv./Konj.</td><td>formal</td><td>Er ist kompetent, jedoch unerfahren.</td></tr>
+              <tr><td class="kh">trotz + Gen.</td><td>Präp.</td><td>formal</td><td>Trotz des schlechten Wetters…</td></tr>
+            </table>
+          </div>
+          <div class="warn-box"><strong>Merke!</strong> Nach Adverbien (trotzdem, dennoch, jedoch, gleichwohl) steht das Verb an Position 2 — Inversion! „Trotzdem <u>arbeitete</u> er." — NICHT „Trotzdem er arbeitete."</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Kwame hat <span class="kh">wenngleich</span> nicht viel Zeit, stets geholfen.</div>
+                <div class="ex-note">wenngleich — formelle Variante von obwohl</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Wenngleich er nicht viel Zeit hatte, hat Kwame stets geholfen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Fatima war krank. <span class="kh">Dennoch</span> hielt sie die Präsentation.</div>
+                <div class="ex-note">dennoch (Adverb) → Inversion: dennoch + Verb + Subjekt</div>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(0,0)">Weiter →</button>
+        </div>
+      </div>
+      <div class="step" id="l0-s1">
+        <div class="card">
+          <div class="quiz-qnum" id="l0-qnum">FRAGE 1 VON 2</div><div class="quiz-q" id="l0-q"></div><div class="quiz-hint" id="l0-hint"></div><div class="quiz-opts" id="l0-opts"></div>
+          <div class="qfeedback" id="l0-fb"><div class="qft" id="l0-ft"></div><div class="qfb" id="l0-fbe"></div><div class="qfr" id="l0-rule"></div></div>
+          <div class="qnext" id="l0-next"><button class="btn btn-primary" onclick="advQ(0)">Weiter →</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- L2: Kausal -->
+    <div id="lesson-1" class="lesson-pane">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">B2 · Modul 4 · Lektion 2 von 5</div>
+          <h2 class="lesson-h"><span style="color:var(--blue)">Kausalsätze</span></h2>
+          <p class="body-text">Kausalsätze begründen eine Aussage. Auf B2-Niveau ist die Wahl zwischen weil, da und denn entscheidend — sie unterscheiden sich in Wortstellung, Stil und Verwendungskontext.</p>
+          <details class="en-help">
+            <summary>🇬🇧 Causal connectors explained</summary>
+            <div class="en-help-body">
+              <p><strong>weil:</strong> most common, verb at end (subordinate clause). Can stand alone as answer: "Warum?" — "Weil er müde war."</p>
+              <p><strong>da:</strong> formal, often at sentence start, implies "since/given that" — the reason is already known to both parties.</p>
+              <p><strong>denn:</strong> coordinating conjunction (verb stays at position 2). Used in written language. Cannot stand alone as answer.</p>
+            </div>
+          </details>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Konnektor</th><th>Typ</th><th>Wortstellung</th><th>Wann?</th></tr>
+              <tr><td class="kh">weil</td><td>Konj.</td><td>Verb am Ende</td><td>universell, neue Info</td></tr>
+              <tr><td class="kh">da</td><td>Konj.</td><td>Verb am Ende</td><td>formell, bekannte Info</td></tr>
+              <tr><td class="kh">denn</td><td>Konj. (nebenordn.)</td><td>Verb an Pos. 2</td><td>geschrieben, erklärend</td></tr>
+              <tr><td class="kh">aufgrund + Gen.</td><td>Präp.</td><td>Nominalkonstruct.</td><td>sehr formal</td></tr>
+              <tr><td class="kh">angesichts + Gen.</td><td>Präp.</td><td>Nominalkonstruct.</td><td>angesichts der Lage</td></tr>
+            </table>
+          </div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Amina lernte viel, <span class="kh">weil</span> die Prüfung schwer war.</div>
+                <div class="ex-note">weil: Nebensatz, Verb am Ende. Neue Information.</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de"><span class="kh">Da</span> die Zeit knapp ist, kommen wir direkt zum Punkt.</div>
+                <div class="ex-note">da: Nebensatz, oft am Satzanfang, bekannte Situation</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Ngozi reiste nicht, <span class="kh">denn</span> sie hatte kein Visum.</div>
+                <div class="ex-note">denn: Hauptsatz-Wortstellung (Verb an Pos. 2)</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de"><span class="kh">Aufgrund</span> des schlechten Wetters wurde das Spiel abgesagt.</div>
+                <div class="ex-note">aufgrund + Genitiv — sehr formeller Stil</div>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(1,0)">Weiter →</button>
+        </div>
+      </div>
+      <div class="step" id="l1-s1">
+        <div class="card">
+          <div class="quiz-qnum" id="l1-qnum">FRAGE 1 VON 2</div><div class="quiz-q" id="l1-q"></div><div class="quiz-hint" id="l1-hint"></div><div class="quiz-opts" id="l1-opts"></div>
+          <div class="qfeedback" id="l1-fb"><div class="qft" id="l1-ft"></div><div class="qfb" id="l1-fbe"></div><div class="qfr" id="l1-rule"></div></div>
+          <div class="qnext" id="l1-next"><button class="btn btn-primary" onclick="advQ(1)">Weiter →</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- L3: Konsekutiv -->
+    <div id="lesson-2" class="lesson-pane">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">B2 · Modul 4 · Lektion 3 von 5</div>
+          <h2 class="lesson-h"><span style="color:var(--blue)">Konsekutivsätze</span></h2>
+          <p class="body-text">Konsekutivsätze drücken eine Folge oder ein Ergebnis aus. Die Folge kann so groß/intensiv sein, dass sie zu einem bestimmten Ergebnis führt.</p>
+          <details class="en-help">
+            <summary>🇬🇧 Consecutive clauses explained</summary>
+            <div class="en-help-body">
+              <p><strong>sodass:</strong> "so that" — result clause (subordinate). Das Problem war so groß, sodass…</p>
+              <p><strong>so…dass:</strong> "so…that" — so + adjective/adverb + dass. Er war so müde, dass er sofort einschlief.</p>
+              <p><strong>Adverbs causing inversion:</strong> folglich, deshalb, daher, infolgedessen, dementsprechend — all mean "therefore/consequently" but with slightly different registers.</p>
+            </div>
+          </details>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Ausdruck</th><th>Typ</th><th>Register</th></tr>
+              <tr><td class="kh">sodass</td><td>Konj.</td><td>neutral</td></tr>
+              <tr><td class="kh">so…dass</td><td>korrelativer Konj.</td><td>neutral</td></tr>
+              <tr><td class="kh">deshalb / daher</td><td>Adverb</td><td>neutral</td></tr>
+              <tr><td class="kh">folglich</td><td>Adverb</td><td>formal</td></tr>
+              <tr><td class="kh">infolgedessen</td><td>Adverb</td><td>sehr formal</td></tr>
+              <tr><td class="kh">dementsprechend</td><td>Adverb</td><td>formal</td></tr>
+            </table>
+          </div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Es regnete stark, <span class="kh">sodass</span> die Veranstaltung abgesagt wurde.</div>
+                <div class="ex-note">sodass: Nebensatz — Verb am Ende</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Es regnete so stark, sodass die Veranstaltung abgesagt wurde.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Kofi war <span class="kh">so</span> gut vorbereitet, <span class="kh">dass</span> er alle Fragen beantworten konnte.</div>
+                <div class="ex-note">so…dass: Intensität + Folge</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Die Kosten stiegen dramatisch. <span class="kh">Folglich</span> musste das Projekt gestoppt werden.</div>
+                <div class="ex-note">folglich: Adverb → Inversion (folglich + Verb + Subjekt)</div>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(2,0)">Weiter →</button>
+        </div>
+      </div>
+      <div class="step" id="l2-s1">
+        <div class="card">
+          <div class="quiz-qnum" id="l2-qnum">FRAGE 1 VON 2</div><div class="quiz-q" id="l2-q"></div><div class="quiz-hint" id="l2-hint"></div><div class="quiz-opts" id="l2-opts"></div>
+          <div class="qfeedback" id="l2-fb"><div class="qft" id="l2-ft"></div><div class="qfb" id="l2-fbe"></div><div class="qfr" id="l2-rule"></div></div>
+          <div class="qnext" id="l2-next"><button class="btn btn-primary" onclick="advQ(2)">Weiter →</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- L4: Final -->
+    <div id="lesson-3" class="lesson-pane">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">B2 · Modul 4 · Lektion 4 von 5</div>
+          <h2 class="lesson-h"><span style="color:var(--blue)">Finalsätze</span></h2>
+          <p class="body-text">Finalsätze drücken Ziel oder Zweck aus. Die Wahl zwischen „damit" und „um…zu" hängt davon ab, ob Subjekt und Objekt des Hauptsatzes identisch sind.</p>
+          <details class="en-help">
+            <summary>🇬🇧 Final clauses: damit vs. um…zu</summary>
+            <div class="en-help-body">
+              <p><strong>um…zu + Infinitiv:</strong> ONLY when the subject of both clauses is the SAME person. Amina lernt, um die Prüfung zu bestehen. (Amina learns → Amina passes.)</p>
+              <p><strong>damit:</strong> when subjects are DIFFERENT. Amina erklärt, damit Kofi versteht. (Amina explains → Kofi understands.)</p>
+              <p>Common mistake: using um…zu when subjects differ → use damit.</p>
+            </div>
+          </details>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Ausdruck</th><th>Subjekte</th><th>Beispiel</th></tr>
+              <tr><td class="kh">um…zu + Inf.</td><td>gleich</td><td>Ich lerne, um die Prüfung zu bestehen.</td></tr>
+              <tr><td class="kh">damit</td><td>verschieden</td><td>Ich lerne, damit meine Familie stolz ist.</td></tr>
+              <tr><td class="kh">zwecks + Gen.</td><td>—</td><td>zwecks besserer Vorbereitung (sehr formal)</td></tr>
+            </table>
+          </div>
+          <div class="danger-box"><strong>Achtung!</strong><br>
+            ❌ Ich erkläre es, um er es versteht.<br>
+            ✓ Ich erkläre es, damit er es versteht. (verschiedene Subjekte: ich / er)<br><br>
+            ❌ Ich lerne, damit zu bestehen.<br>
+            ✓ Ich lerne, um zu bestehen. (gleiches Subjekt: ich / ich)
+          </div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Chidi trainiert täglich, <span class="kh">um</span> die Meisterschaft <span class="kh">zu gewinnen</span>.</div>
+                <div class="ex-note">um…zu: Chidi trainiert → Chidi gewinnt (gleiches Subjekt)</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Ngozi schreibt klar, <span class="kh">damit</span> alle Leser es verstehen.</div>
+                <div class="ex-note">damit: Ngozi schreibt → Leser verstehen (verschiedene Subjekte)</div>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(3,0)">Weiter →</button>
+        </div>
+      </div>
+      <div class="step" id="l3-s1">
+        <div class="card">
+          <div class="quiz-qnum" id="l3-qnum">FRAGE 1 VON 2</div><div class="quiz-q" id="l3-q"></div><div class="quiz-hint" id="l3-hint"></div><div class="quiz-opts" id="l3-opts"></div>
+          <div class="qfeedback" id="l3-fb"><div class="qft" id="l3-ft"></div><div class="qfb" id="l3-fbe"></div><div class="qfr" id="l3-rule"></div></div>
+          <div class="qnext" id="l3-next"><button class="btn btn-primary" onclick="advQ(3)">Weiter →</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- L5: Vergleich & Training -->
+    <div id="lesson-4" class="lesson-pane">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">B2 · Modul 4 · Lektion 5 von 5</div>
+          <h2 class="lesson-h">Alle vier <span style="color:var(--blue)">im Vergleich</span></h2>
+          <p class="body-text">Ein Text auf B2-Niveau verwendet alle vier Adverbialsatz-Typen. Die Fähigkeit, sie zu unterscheiden und richtig zu wählen, macht deine Argumentation präzise und überzeugend.</p>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Typ</th><th>Frage</th><th>Konnektoren (Auswahl)</th></tr>
+              <tr><td style="color:var(--ki);">Konzessiv</td><td>Obwohl? Trotz was?</td><td>obwohl, dennoch, trotz+Gen.</td></tr>
+              <tr><td style="color:var(--blue);">Kausal</td><td>Warum? Weshalb?</td><td>weil, da, denn, aufgrund+Gen.</td></tr>
+              <tr><td style="color:var(--green);">Konsekutiv</td><td>Mit welcher Folge?</td><td>sodass, so…dass, folglich</td></tr>
+              <tr><td style="color:var(--kii);">Final</td><td>Mit welchem Ziel?</td><td>damit, um…zu, zwecks+Gen.</td></tr>
+            </table>
+          </div>
+          <div class="success-box"><strong>B2-Argumentationsstrategie:</strong><br><br>
+            These: „Bildung ist wichtig."<br>
+            <span style="color:var(--blue);">Kausal:</span> Da Bildung die soziale Mobilität fördert, …<br>
+            <span style="color:var(--ki);">Konzessiv:</span> Obwohl Bildung kostspielig ist, …<br>
+            <span style="color:var(--green);">Konsekutiv:</span> Deshalb sollten Regierungen mehr investieren.<br>
+            <span style="color:var(--kii);">Final:</span> Damit alle Bürger gleiche Chancen haben, …
+          </div>
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(4,0)">Weiter →</button>
+        </div>
+      </div>
+      <div class="step" id="l4-s1">
+        <div class="card">
+          <div class="quiz-qnum" id="l4-qnum">FRAGE 1 VON 2</div><div class="quiz-q" id="l4-q"></div><div class="quiz-hint" id="l4-hint"></div><div class="quiz-opts" id="l4-opts"></div>
+          <div class="qfeedback" id="l4-fb"><div class="qft" id="l4-ft"></div><div class="qfb" id="l4-fbe"></div><div class="qfr" id="l4-rule"></div></div>
+          <div class="qnext" id="l4-next"><button class="btn btn-primary" onclick="advQ(4)">Weiter →</button></div>
+        </div>
+      </div>
+      <div class="step" id="l4-s2">
+        <div class="complete-wrap">
+          <div class="complete-icon">🔗</div>
+          <h2 class="lesson-h">Modul abgeschlossen!</h2>
+          <p class="body-text">Du beherrschst jetzt alle vier Adverbialsatz-Typen auf B2-Niveau — Konzessiv, Kausal, Konsekutiv, Final — mit allen Varianten und Formalstufen.</p>
+          <div class="xp-badge">⚡ +120 XP</div>
+          <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:12px;">
+            <button class="btn btn-outline" onclick="showOverview()">Lektionen ansehen</button>
+            <a href="deutschweg-prototype.html" class="btn btn-primary" style="text-decoration:none;display:inline-flex;align-items:center;">← Dashboard</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="dw-next-step-bar">
+  <a href="module-b2-3-nominalisierung.html" class="dw-nsb-link">← Modul 3</a>
+  <a href="deutschweg-prototype.html#b2" class="dw-nsb-link">B2 Übersicht</a>
+  <a href="module-b2-5-partizipialkonstruktionen.html" class="dw-nsb-cta">Modul 5: Partizipien →</a>
+</div>
+
+<script>
+var QD={
+  0:[
+    {q:'Welche Wortstellung ist nach „dennoch" korrekt?',hint:'dennoch ist ein Adverb → Inversion',opts:['dennoch er arbeitete weiter.','dennoch arbeitete er weiter.','dennoch, er arbeitete weiter.','er arbeitete dennoch weiter nicht.'],ans:1,exp:'Adverbien wie dennoch, trotzdem, folglich stehen an Position 1 → Inversion: Verb an Position 2 (arbeitete), dann Subjekt (er).',rule:'Adverb an Pos. 1 → Inversion: Adv. + Verb + Subjekt'},
+    {q:'Welcher Ausdruck ist die formellste Variante von „obwohl"?',hint:'sehr gehobenes Register',opts:['trotzdem','obwohl','wenngleich','aber'],ans:2,exp:'„wenngleich" ist die formellste Konzessivkonjunktion. Obschon ist auch gehoben, aber wenngleich ist für akademische/offizielle Texte am typischsten.',rule:'Konzessiv formell: wenngleich > obschon > obwohl > trotzdem'}
+  ],
+  1:[
+    {q:'Welchen Satz kann man als direkte Antwort auf „Warum?" verwenden?',hint:'Welche Konjunktion bildet selbstständige Antworten?',opts:['Denn er krank war.','Da er krank war.','Weil er krank war.','Er war nämlich krank.'],ans:2,exp:'„Weil" kann als Antwort auf „Warum?" allein stehen: „Warum?" — „Weil er krank war." Denn-Sätze können nicht isoliert stehen.',rule:'weil: kann als Antwort auf Warum? stehen; denn: nicht isoliert möglich'},
+    {q:'„___ der hohen Kosten wurde das Projekt abgebrochen" — formell',hint:'Präposition + Genitiv für Kausalität',opts:['Wegen','Weil','Denn','Da'],ans:0,exp:'„wegen + Genitiv" (oder aufgrund + Genitiv) ist die formelle Nominalvariante des Kausalsatzes: wegen der hohen Kosten. Weil/da/denn sind Konjunktionen.',rule:'wegen/aufgrund + Gen. = formelle Nominalvariante des Kausalsatzes'}
+  ],
+  2:[
+    {q:'„Die Lage war ___ ernst, ___ sofortige Maßnahmen nötig waren."',hint:'Intensität + Folge → korrelativ',opts:['sehr / dass','so / dass','zu / um','sehr / sodass'],ans:1,exp:'so…dass: so + Adjektiv + dass. Drückt aus: Die Intensität ist so groß, dass eine Folge entsteht. „Sehr…dass" ist keine Standardkonstruktion.',rule:'so + Adj./Adv. + dass = Intensität mit Folge (korrelativer Konsekutivsatz)'},
+    {q:'Welches Adverb bedeutet „als Folge davon" und ist sehr formal?',hint:'ein einziges langes Adverb',opts:['deshalb','daher','infolgedessen','sodass'],ans:2,exp:'„infolgedessen" bedeutet „als Folge dessen, als direkte Konsequenz" und gehört zum sehr formellen/schriftlichen Register. Sodass ist eine Konjunktion, keine Adverb.',rule:'infolgedessen = sehr formelles Konsekutiv-Adverb (Inversion!)'}
+  ],
+  3:[
+    {q:'„Amina erklärt langsam, ___ Chidi versteht." — Welche Form?',hint:'Wer erklärt ≠ wer versteht',opts:['um zu verstehen','damit','um zu erklären','sodass Chidi'],ans:1,exp:'Verschiedene Subjekte (Amina / Chidi) → damit-Satz. „Um…zu" ist nur möglich, wenn beide Subjekte identisch sind.',rule:'damit: verschiedene Subjekte; um…zu: gleiche Subjekte'},
+    {q:'„Kofi trainiert täglich, ___ die Meisterschaft zu gewinnen."',hint:'Kofi trainiert → Kofi gewinnt (gleiches Subjekt)',opts:['damit','weil','um','dass'],ans:2,exp:'Gleiches Subjekt (Kofi trainiert / Kofi gewinnt) → um…zu + Infinitiv. „Damit" würde ein verschiedenes Subjekt implizieren.',rule:'um…zu: nur wenn Subjekte identisch sind'}
+  ],
+  4:[
+    {q:'Welcher Satztyp passt: „Die Preise stiegen, ___ viele Familien nicht mehr mieten konnten."',hint:'Was ist die Folge steigender Preise?',opts:['Konzessiv: obwohl','Kausal: da','Konsekutiv: sodass','Final: damit'],ans:2,exp:'Die steigenden Preise führen zu einer Folge (Familien können nicht mieten) → Konsekutivsatz: sodass.',rule:'Konsekutiv: Ursache → Folge (sodass, so…dass, folglich)'},
+    {q:'„___ des mangelnden Interesses wurde das Angebot eingestellt." Identifiziere den Adverbialsatztyp.',hint:'Warum wurde es eingestellt?',opts:['Final','Konzessiv','Konsekutiv','Kausal'],ans:3,exp:'„Aufgrund des mangelnden Interesses" = Grund/Ursache → Kausalsatz (hier als Nominalphrase mit Präposition „aufgrund + Genitiv").',rule:'aufgrund + Gen. = formelle Nominalvariante des Kausalsatzes'}
+  ]
+};
+var curLesson=0,curStep=0,curQ={},qIdx=0,xp=0,lessonSteps=[2,2,2,2,3];
+function speakSentence(btn,text){if(!window.speechSynthesis)return;window.speechSynthesis.cancel();if(btn.classList.contains('speaking')){btn.classList.remove('speaking');return;}var u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=0.9;u.onend=()=>btn.classList.remove('speaking');btn.classList.add('speaking');window.speechSynthesis.speak(u);}
+function showOverview(){document.getElementById('screen-lesson').classList.remove('active');document.getElementById('screen-overview').classList.add('active');window.scrollTo(0,0);}
+function goLesson(li){curLesson=li;curStep=0;qIdx=0;document.getElementById('screen-overview').classList.remove('active');document.getElementById('screen-lesson').classList.add('active');document.querySelectorAll('.lesson-pane').forEach(p=>p.style.display='none');document.getElementById('lesson-'+li).style.display='block';document.querySelectorAll('#lesson-'+li+' .step').forEach((s,i)=>s.classList.toggle('active',i===0));renderDots(li);updateProgress(li,0);window.scrollTo(0,0);}
+function renderDots(li){var n=lessonSteps[li],row=document.getElementById('dotRow');row.innerHTML='';for(var i=0;i<n;i++){var d=document.createElement('div');d.className='dot'+(i===0?' active':'');(function(idx){d.onclick=function(){if(idx<=curStep)goStep(curLesson,idx);};})(i);row.appendChild(d);}}
+function goStep(li,si){curStep=si;document.querySelectorAll('#lesson-'+li+' .step').forEach((s,i)=>s.classList.toggle('active',i===si));document.querySelectorAll('#dotRow .dot').forEach((d,i)=>{d.classList.toggle('active',i===si);d.classList.toggle('done',i<si);});updateProgress(li,si);window.scrollTo(0,0);}
+function updateProgress(li,si){document.getElementById('progFill').style.width=Math.round((si/(lessonSteps[li]-1))*100)+'%';}
+function nextStep(li,si){var nsi=si+1;if(nsi>=lessonSteps[li])return;initQuiz(li);goStep(li,nsi);}
+function initQuiz(li){qIdx=0;renderQ(li);}
+function renderQ(li){var qs=QD[li];if(!qs||qIdx>=qs.length){showResult(li);return;}var q=qs[qIdx];document.getElementById('l'+li+'-qnum').textContent='FRAGE '+(qIdx+1)+' VON '+qs.length;document.getElementById('l'+li+'-q').textContent=q.q;document.getElementById('l'+li+'-hint').textContent=q.hint;var opts=document.getElementById('l'+li+'-opts');opts.innerHTML='';['A','B','C','D'].forEach(function(l,i){var btn=document.createElement('button');btn.className='qopt';btn.innerHTML='<span class="qletter">'+l+'</span>'+q.opts[i];btn.onclick=function(){pickQ(li,i);};opts.appendChild(btn);});document.getElementById('l'+li+'-fb').className='qfeedback';document.getElementById('l'+li+'-next').className='qnext';}
+function pickQ(li,idx){var q=QD[li][qIdx];var opts=document.querySelectorAll('#l'+li+'-opts .qopt');opts.forEach(b=>b.disabled=true);opts[idx].classList.add(idx===q.ans?'correct':'wrong');if(idx!==q.ans)opts[q.ans].classList.add('correct');var ok=idx===q.ans;if(ok){xp+=10;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';}var fb=document.getElementById('l'+li+'-fb');fb.className='qfeedback show '+(ok?'ok':'no');document.getElementById('l'+li+'-ft').textContent=ok?'✓ Richtig!':'✗ Leider falsch.';document.getElementById('l'+li+'-ft').className='qft '+(ok?'ok':'no');document.getElementById('l'+li+'-fbe').textContent=q.exp;document.getElementById('l'+li+'-rule').textContent='📌 '+q.rule;document.getElementById('l'+li+'-next').className='qnext show';}
+function advQ(li){qIdx++;if(qIdx>=QD[li].length)showResult(li);else renderQ(li);}
+function showResult(li){if(li===4){goStep(li,2);localStorage.setItem('dw_xp',parseInt(localStorage.getItem('dw_xp')||'0')+xp);localStorage.setItem('dw_mod_b2_4_done','1');}else goLesson(li+1);}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');xp=0;document.getElementById('xpDisp').textContent='⚡ 0 XP';});
+
+  // ===== STANDALONE QUIZ =====
+  var SQ_DATA = [
+  {
+    "q": "Welche Konjunktion leitet einen Konzessivsatz ein?",
+    "opts": [
+      "weil",
+      "obwohl",
+      "damit",
+      "falls"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! 'Obwohl' leitet konzessive Nebensaetze ein.",
+    "fb_ko": "Falsch. 'Obwohl' ist die typische konzessive Konjunktion."
+  },
+  {
+    "q": "Was drueckt ein Konzessivsatz aus?",
+    "opts": [
+      "Einen Grund",
+      "Einen Gegensatz trotz einer Bedingung",
+      "Eine Absicht",
+      "Eine Folge"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Ein Konzessivsatz drueckt einen Widerspruch oder Gegensatz aus.",
+    "fb_ko": "Falsch. Konzessivsaetze druecken aus, dass etwas trotz eines Hindernisses gilt."
+  },
+  {
+    "q": "Welche Konstruktion ist konzessiv?",
+    "opts": [
+      "Er kommt, weil er Zeit hat.",
+      "Er kommt, obwohl er muede ist.",
+      "Er kommt, damit er lernt.",
+      "Er kommt, wenn er Zeit hat."
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! 'obwohl er muede ist' ist ein Konzessivsatz.",
+    "fb_ko": "Falsch. Die Konstruktion mit 'obwohl' ist konzessiv."
+  },
+  {
+    "q": "Welches Adverb kann 'obwohl' als Satzverknuepfer ersetzen?",
+    "opts": [
+      "deshalb",
+      "trotzdem",
+      "naemlich",
+      "also"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! 'Trotzdem' drueckt dieselbe konzessive Bedeutung als Adverb aus.",
+    "fb_ko": "Falsch. 'Trotzdem' ist das adverbiale Aequivalent zu 'obwohl'."
+  },
+  {
+    "q": "Wie unterscheidet sich 'obwohl' von 'obgleich'?",
+    "opts": [
+      "'Obgleich' ist umgangssprachlicher",
+      "'Obgleich' ist formeller, bedeutet aber dasselbe",
+      "'Obgleich' drueckt eine Bedingung aus",
+      "'Obgleich' steht nur im Hauptsatz"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! 'Obgleich' ist ein gehobenes Synonym fuer 'obwohl'.",
+    "fb_ko": "Falsch. 'Obgleich' ist eine formellere Variante von 'obwohl' mit gleicher Bedeutung."
+  }
+];
+  var sqIdx=0, sqScore=0, sqAnswered=false;
+  var sqResults=[];
+  function sqInit(){sqIdx=0;sqScore=0;sqAnswered=false;sqResults=[];sqRender();}
+  function sqRender(){
+    var d=SQ_DATA[sqIdx];
+    document.getElementById('sqQuestion').style.display='block';
+    document.getElementById('sqResult').classList.remove('show');
+    document.getElementById('sqQText').textContent=(sqIdx+1)+'. '+d.q;
+    var dots=document.getElementById('sqDots');
+    dots.innerHTML='';
+    for(var i=0;i<5;i++){
+      var dot=document.createElement('div');
+      var cls='sq-dot';
+      if(i<sqIdx){ cls+= sqResults[i]?' done':' wrong'; }
+      else if(i===sqIdx){ cls+=' active'; }
+      dot.className=cls;
+      dots.appendChild(dot);
+    }
+    var opts=document.getElementById('sqOpts');
+    opts.innerHTML='';
+    d.opts.forEach(function(o,i){
+      var b=document.createElement('button');
+      b.className='sq-opt';
+      b.textContent=o;
+      (function(idx){b.onclick=function(){sqPick(idx);};})(i);
+      opts.appendChild(b);
+    });
+    var fb=document.getElementById('sqFb');
+    fb.className='sq-fb';
+    fb.textContent='';
+    document.getElementById('sqNext').className='btn btn-primary sq-next';
+    sqAnswered=false;
+  }
+  function sqPick(idx){
+    if(sqAnswered)return;
+    sqAnswered=true;
+    var d=SQ_DATA[sqIdx];
+    var opts=document.getElementById('sqOpts').querySelectorAll('.sq-opt');
+    opts.forEach(function(b){b.classList.add('disabled');});
+    var ok=(idx===d.ans);
+    if(ok){sqScore++;sqResults[sqIdx]=true;}else{sqResults[sqIdx]=false;}
+    opts[idx].classList.add(ok?'correct':'wrong');
+    if(!ok) opts[d.ans].classList.add('correct');
+    var fb=document.getElementById('sqFb');
+    fb.textContent=ok?d.fb_ok:d.fb_ko;
+    fb.className='sq-fb show '+(ok?'ok':'ko');
+    document.getElementById('sqNext').className='btn btn-primary sq-next show';
+  }
+  function sqAdvance(){
+    if(sqIdx<4){sqIdx++;sqRender();}else{sqShowResult();}
+  }
+  function sqShowResult(){
+    document.getElementById('sqQuestion').style.display='none';
+    var res=document.getElementById('sqResult');
+    res.className='sq-result show';
+    document.getElementById('sqScoreNum').textContent=sqScore+'/5';
+    var msgs=['Nicht aufgeben! \u{1F31F}','Nicht aufgeben! \u{1F31F}','Weiter üben! \u{1F4DA}','Gut gemacht! \u{1F4AA}','Sehr gut! \u{1F44F}','Ausgezeichnet! \u{1F389}'];
+    document.getElementById('sqScoreMsg').textContent=msgs[sqScore];
+  }
+  function sqReset(){
+    sqIdx=0;sqScore=0;sqAnswered=false;sqResults=[];
+    document.getElementById('sqResult').className='sq-result';
+    document.getElementById('sqQuestion').style.display='block';
+    sqRender();
+  }
+  document.addEventListener('DOMContentLoaded',function(){sqInit();});
+
+  document.addEventListener('DOMContentLoaded',function(){
+    var nb=document.getElementById('sqNextMod');
+    if(nb){ nb.onclick=function(){ window.location.href='module-b2-5-partizipialkonstruktionen.html'; }; }
+  });
+
+</script>
+</body>
+</html>

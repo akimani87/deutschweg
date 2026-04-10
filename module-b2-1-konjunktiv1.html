@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — B2 Modul 1: Konjunktiv I</title>
+<link rel="stylesheet" href="deutschweg-theme.css">
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+    --dir:#c9a84c; --ind:#3498db; --ki:#e67e22; --kii:#9b59b6;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); backdrop-filter:blur(20px); position:sticky; top:0; z-index:50; }
+  .logo { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .logo span { color:var(--gold); }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:3px; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--blue); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); }
+  .dot.active { background:var(--blue); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; }
+  .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; }
+  .btn-primary { background:var(--blue); color:var(--white); width:100%; }
+  .btn-primary:hover { background:#2980b9; transform:translateY(-2px); box-shadow:0 8px 24px rgba(52,152,219,0.3); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .btn-outline:hover { border-color:var(--blue); color:var(--blue); }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn:hover { background:rgba(52,152,219,0.2); }
+  .speak-btn.speaking { background:var(--blue); color:var(--white); }
+  .en-help { background:rgba(52,152,219,0.05); border:1px dashed rgba(52,152,219,0.25); border-radius:10px; margin:12px 0; }
+  .en-help summary { padding:10px 16px; cursor:pointer; font-size:13px; color:var(--blue); font-family:'DM Mono',monospace; letter-spacing:.03em; list-style:none; display:flex; align-items:center; gap:8px; }
+  .en-help summary::-webkit-details-marker { display:none; }
+  .en-help[open] summary { border-bottom:1px dashed rgba(52,152,219,0.2); }
+  .en-help-body { padding:12px 16px; font-size:13px; color:rgba(245,240,232,.7); line-height:1.8; }
+  .en-help-body p { margin-bottom:8px; }
+  .en-help-body p:last-child { margin-bottom:0; }
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-tag { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; padding:3px 10px; border-radius:20px; flex-shrink:0; margin-top:2px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-note { font-size:12px; color:var(--gray); line-height:1.6; }
+  .formula-box { background:var(--card2-bg); border:1px solid rgba(52,152,219,0.2); border-radius:14px; padding:20px 22px; margin:14px 0; text-align:center; }
+  .formula-title { font-size:10px; letter-spacing:3px; font-family:'DM Mono',monospace; color:var(--blue); margin-bottom:14px; }
+  .formula-main { font-family:'DM Mono',monospace; font-size:18px; font-weight:700; color:var(--white); line-height:2; }
+  .transform-box { background:var(--card2-bg); border:1px solid rgba(52,152,219,0.15); border-radius:14px; padding:18px 20px; margin:12px 0; }
+  .trn-row { display:flex; align-items:flex-start; gap:12px; margin-bottom:10px; }
+  .trn-row:last-child { margin-bottom:0; }
+  .trn-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; flex-shrink:0; width:56px; padding-top:2px; }
+  .trn-text { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); line-height:1.7; }
+  .trn-arrow { text-align:center; color:var(--blue); font-size:18px; margin:4px 0; padding-left:68px; }
+  .comp-table { width:100%; border-collapse:collapse; font-size:13px; margin:14px 0; }
+  .comp-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:10px 14px; text-align:left; border-bottom:2px solid rgba(255,255,255,0.1); }
+  .comp-table td { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'DM Mono',monospace; font-size:13px; vertical-align:top; }
+  .comp-table tr:last-child td { border-bottom:none; }
+  .comp-table tr:hover td { background:rgba(255,255,255,0.02); }
+  .comp-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+  .wr-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:14px 0; }
+  .wr-wrong { background:rgba(192,57,43,0.07); border:1px solid rgba(192,57,43,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-right { background:rgba(39,174,96,0.07); border:1px solid rgba(39,174,96,0.25); border-radius:10px; padding:14px 16px; }
+  .wr-label { font-size:10px; letter-spacing:2px; font-family:'DM Mono',monospace; margin-bottom:8px; }
+  .wr-wrong .wr-label { color:var(--red); }
+  .wr-right .wr-label { color:var(--green); }
+  .wr-word { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; line-height:2.0; }
+  .wr-wrong .wr-word { color:#e74c3c; }
+  .wr-right .wr-word { color:var(--green); }
+  .dh { color:var(--dir); font-weight:700; }
+  .ih { color:var(--ind); font-weight:700; }
+  .kh { color:var(--ki); font-weight:700; }
+  .fh { color:var(--kii); font-weight:700; }
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Mono',monospace; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--blue); background:rgba(52,152,219,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; }
+  .qft.ok { color:var(--green); }
+  .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(52,152,219,0.1); border-radius:8px; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; }
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(52,152,219,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.2); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .nav-row { display:flex; gap:12px; margin-top:20px; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(52,152,219,0.12); border:1px solid var(--blue); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--blue); font-size:18px; margin:18px 0; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  @media(max-width:600px){ .lesson-h{font-size:22px;} .wr-grid{grid-template-columns:1fr;} }
+
+  /* ===== STANDALONE QUIZ ===== */
+  .sq-wrap{background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:28px;margin-top:32px;}
+  .sq-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:6px;}
+  .sq-sub{font-size:13px;color:var(--gray);margin-bottom:20px;}
+  .sq-dots{display:flex;gap:8px;margin-bottom:20px;}
+  .sq-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all 0.3s;}
+  .sq-dot.active{background:var(--blue);width:22px;border-radius:4px;}
+  .sq-dot.done{background:var(--green);}
+  .sq-dot.wrong{background:var(--red);}
+  .sq-q{font-size:16px;font-weight:600;margin-bottom:16px;line-height:1.5;}
+  .sq-opts{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+  .sq-opt{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:12px 16px;cursor:pointer;font-size:14px;transition:all 0.2s;text-align:left;}
+  .sq-opt:hover:not(.disabled){background:rgba(52,152,219,0.12);border-color:var(--blue);}
+  .sq-opt.selected{background:rgba(52,152,219,0.15);border-color:var(--blue);}
+  .sq-opt.correct{background:rgba(39,174,96,0.15);border-color:var(--green);color:var(--green);}
+  .sq-opt.wrong{background:rgba(192,57,43,0.15);border-color:var(--red);color:var(--red);}
+  .sq-opt.disabled{cursor:default;pointer-events:none;}
+  .sq-fb{font-size:14px;padding:12px 16px;border-radius:10px;margin-bottom:16px;display:none;}
+  .sq-fb.show{display:block;}
+  .sq-fb.ok{background:rgba(39,174,96,0.12);border:1px solid rgba(39,174,96,0.3);color:var(--green);}
+  .sq-fb.ko{background:rgba(192,57,43,0.12);border:1px solid rgba(192,57,43,0.3);color:#e07070;}
+  .sq-next{display:none;}
+  .sq-next.show{display:inline-block;}
+  .sq-result{display:none;text-align:center;padding:20px 0;}
+  .sq-result.show{display:block;}
+  .sq-score-num{font-family:'Playfair Display',serif;font-size:48px;color:var(--blue);margin-bottom:8px;}
+  .sq-score-msg{font-size:20px;margin-bottom:24px;}
+  .sq-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+  .sq-btns .btn{width:auto;padding:12px 28px;}
+
+</style>
+<style>
+/* LIGHT THEME OVERRIDE */
+:root {
+  --black:#F8FAFC; --white:#1F2937; --cream:#4B5563;
+  --gold:#3B82F6; --gold-light:#2563EB;
+  --red:#EF4444; --green:#10B981; --blue:#3B82F6;
+  --gray:#9CA3AF; --card-bg:#FFFFFF; --card2-bg:#F8FAFC;
+  --border:#E5E7EB;
+  --dir:#3B82F6; --ind:#3B82F6; --ki:#F59E0B; --kii:#8B5CF6;
+}
+body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-serif; }
+.top-nav { background:white; border-bottom:1px solid #E5E7EB; backdrop-filter:none; }
+.bottom-nav { background:white; border-top:1px solid #E5E7EB; backdrop-filter:none; }
+.btn-primary { background:#3B82F6; color:white; }
+.btn-primary:hover { background:#2563EB; box-shadow:0 8px 24px rgba(59,130,246,0.3); }
+.btn-outline { background:transparent; border:1px solid #3B82F6; color:#3B82F6; }
+.card { background:#FFFFFF; border:1px solid #E5E7EB; box-shadow:0 1px 3px rgba(0,0,0,0.07); }
+.info-box { background:#EFF6FF; border-left:3px solid #3B82F6; color:#1D4ED8; }
+.warn-box { background:#EFF6FF; border-left:3px solid #3B82F6; color:#1D4ED8; }
+.danger-box { background:#FEF2F2; border-left:3px solid #EF4444; color:#991B1B; }
+.success-box { background:#ECFDF5; border-left:3px solid #10B981; color:#065F46; }
+.qopt { border:1px solid #E5E7EB; background:white; color:#1F2937; }
+.qopt:hover:not([disabled]) { border-color:#3B82F6; background:#EFF6FF; }
+.xp-badge { background:#EFF6FF; border:1px solid #3B82F6; color:#3B82F6; }
+.speak-btn { background:#EFF6FF; border-color:#DBEAFE; color:#3B82F6; }
+.speak-btn.speaking { background:#3B82F6; color:white; }
+.lesson-card { background:#F8FAFC; border:1px solid #E5E7EB; }
+.ex-card { background:#F8FAFC; border:1px solid #E5E7EB; }
+</style>
+</head>
+<body>
+
+<!-- OVERVIEW -->
+<div id="screen-overview" class="screen active">
+  <nav class="dw-nav">
+    <div class="dw-nav-inner">
+      <a href="deutschweg-prototype.html" class="dw-logo">
+        <div class="dw-logo-icon">D</div>
+        <span class="dw-logo-text">Deutsch<span>Weg</span></span>
+      </a>
+      <a href="exam-vault.html" style="font-size:13px;font-weight:600;color:#1D4ED8;text-decoration:none;margin-right:8px;">📝 Exams</a>
+      <a href="deutschweg-prototype.html" class="dw-btn dw-btn-secondary">← Back to Dashboard</a>
+    </div>
+  </nav>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">B2 · Grammatik · Modul 1</div>
+    <h1 class="lesson-h" style="font-size:36px;">Konjunktiv I — <span style="color:var(--blue)">Indirekte Rede</span></h1>
+    <p class="body-text">Auf B2-Niveau begegnet dir Konjunktiv I nicht nur in einfachen Berichten — er prägt Zeitungsartikel, wissenschaftliche Texte, juristische Dokumente und politische Reden. Wer Konjunktiv I souverän beherrscht, schreibt und liest authentisches Deutsch auf Hochschulniveau.</p>
+
+    <details class="en-help">
+      <summary>🇬🇧 What will I learn here?</summary>
+      <div class="en-help-body">
+        <p>At B2 level, Konjunktiv I (subjunctive I) goes beyond simple reported speech. You'll master its use in journalism, academic writing, and formal legal/political contexts — exactly what appears in Goethe B2 reading and writing tasks.</p>
+        <p>Key difference from B1: at B2 you also handle indirect questions, indirect commands, and you understand why newspapers use KI over KII.</p>
+      </div>
+    </details>
+
+    <div class="info-box"><strong>Lernziele dieses Moduls:</strong><br><br>
+      ✦ Konjunktiv I Formen aller Personen sicher bilden<br>
+      ✦ Wann KII / würde-Form als Ersatz verwendet wird<br>
+      ✦ Indirekte Fragen und Aufforderungen korrekt formulieren<br>
+      ✦ Konjunktiv I in journalistischen und wissenschaftlichen Texten erkennen<br>
+      ✦ Zeitformen der indirekten Rede auf B2-Niveau beherrschen<br>
+      ✦ Häufige B2-Prüfungsfehler vermeiden
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">📐</div><div><div class="lc-title">Lektion 1 — Bildung: alle Formen, alle Personen</div><div class="lc-desc">Systematische Bildung des Konjunktiv I. Stamm + Endungen. Sonderfall: sein. Wann KI = Indikativ.</div></div><div class="lc-tag" style="color:var(--blue);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">🔀</div><div><div class="lc-title">Lektion 2 — KI vs. KII: Wann welcher?</div><div class="lc-desc">Wenn Konjunktiv I mit dem Indikativ identisch ist, muss Konjunktiv II (oder würde+Inf.) eingesetzt werden.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">❓</div><div><div class="lc-title">Lektion 3 — Fragen &amp; Aufforderungen indirekt</div><div class="lc-desc">Indirekte Fragen mit ob / W-Wort. Indirekte Aufforderungen mit zu+Infinitiv statt Imperativ.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">📰</div><div><div class="lc-title">Lektion 4 — Journalismus &amp; Wissenschaft</div><div class="lc-desc">Warum KI in Zeitungen? Distanzierung und Objektivität. Akademische und juristische Sprache.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">⏱️</div><div><div class="lc-title">Lektion 5 — Zeitformen &amp; B2-Prüfungstraining</div><div class="lc-desc">Gegenwart, Vergangenheit, Zukunft in der indirekten Rede. Typische Fehler und Prüfungsstrategien.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
+    <!-- STANDALONE QUIZ -->
+    <div class="sq-wrap" id="sqWrap">
+      <div id="sqQuestion">
+        <div class="sq-title">Wissenstest</div>
+        <div class="sq-sub">5 Fragen &mdash; teste dein Wissen!</div>
+        <div class="sq-dots" id="sqDots"></div>
+        <div class="sq-q" id="sqQText"></div>
+        <div class="sq-opts" id="sqOpts"></div>
+        <div class="sq-fb" id="sqFb"></div>
+        <button class="btn btn-primary sq-next" id="sqNext" onclick="sqAdvance()">Weiter &#x2192;</button>
+      </div>
+      <div class="sq-result" id="sqResult">
+        <div class="sq-score-num" id="sqScoreNum">0/5</div>
+        <div class="sq-score-msg" id="sqScoreMsg"></div>
+        <div class="sq-btns">
+          <button class="btn btn-outline" onclick="sqReset()">Nochmal versuchen</button>
+          <button class="btn btn-primary" id="sqNextMod">N&#xE4;chstes Modul &#x2192;</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- LESSON SCREEN -->
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lektionen</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--blue);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <!-- LEKTION 1 -->
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0">
+        <div class="card">
+          <div class="concept-tag">B2 · Modul 1 · Lektion 1 von 5</div>
+          <h2 class="lesson-h">Konjunktiv I — <span style="color:var(--ki)">Bildung</span></h2>
+          <p class="body-text">Der Konjunktiv I wird gebildet aus dem <span class="kh">Infinitivstamm</span> des Verbs + die Konjunktiv-I-Endungen. Die Grundregel ist einfach — aber du musst die Ausnahmen kennen.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Formation explained in English</summary>
+            <div class="en-help-body">
+              <p><strong>Konjunktiv I formation:</strong> Take the infinitive, remove -en → you have the stem. Then add: -e, -est, -e, -en, -et, -en for ich/du/er/wir/ihr/sie.</p>
+              <p>Special case: <strong>sein</strong> is completely irregular: ich sei, du seiest, er sei, wir seien, ihr seiet, sie seien.</p>
+              <p>When Konjunktiv I looks the same as the Indikativ (especially with wir/sie), you MUST switch to Konjunktiv II. That's the key rule for B2.</p>
+            </div>
+          </details>
+
+          <div class="formula-box">
+            <div class="formula-title">BILDUNGSREGEL — KONJUNKTIV I</div>
+            <div class="formula-main">Infinitivstamm + <span style="color:var(--ki)">KI-Endung</span></div>
+            <div style="font-size:12px;color:var(--gray);margin-top:8px;font-family:'DM Mono',monospace;">lernen → lern + e/est/e/en/et/en</div>
+          </div>
+
+          <div class="sec-label">Vollständige Konjugationstabelle: lernen</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Person</th><th>Indikativ</th><th style="color:var(--ki);">Konjunktiv I</th><th>Gleich?</th></tr>
+              <tr><td>ich</td><td>lerne</td><td class="kh">lerne</td><td style="color:var(--red);">⚠ gleich</td></tr>
+              <tr><td>du</td><td>lernst</td><td class="kh">lernest</td><td style="color:var(--green);">✓ erkennbar</td></tr>
+              <tr><td>er/sie/es</td><td>lernt</td><td class="kh">lerne</td><td style="color:var(--green);">✓ erkennbar</td></tr>
+              <tr><td>wir</td><td>lernen</td><td class="kh">lernen</td><td style="color:var(--red);">⚠ gleich</td></tr>
+              <tr><td>ihr</td><td>lernt</td><td class="kh">lernet</td><td style="color:var(--green);">✓ erkennbar</td></tr>
+              <tr><td>sie/Sie</td><td>lernen</td><td class="kh">lernen</td><td style="color:var(--red);">⚠ gleich</td></tr>
+            </table>
+          </div>
+
+          <div class="warn-box"><strong>Merke!</strong> Die 3. Person Singular (er/sie/es) ist <em>immer</em> erkennbar — deshalb benutzt die Zeitung fast immer er/sie-Formen in der indirekten Rede.</div>
+
+          <div class="sec-label">Sonderfall: sein</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Person</th><th style="color:var(--ki);">Konjunktiv I (sein)</th></tr>
+              <tr><td>ich</td><td class="kh">sei</td></tr>
+              <tr><td>du</td><td class="kh">sei(e)st</td></tr>
+              <tr><td>er/sie/es</td><td class="kh">sei</td></tr>
+              <tr><td>wir</td><td class="kh">seien</td></tr>
+              <tr><td>ihr</td><td class="kh">seiet</td></tr>
+              <tr><td>sie/Sie</td><td class="kh">seien</td></tr>
+            </table>
+          </div>
+
+          <div class="sec-label">Weitere wichtige Verben</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Verb</th><th>er/sie (Ind.)</th><th style="color:var(--ki);">er/sie (KI)</th></tr>
+              <tr><td>haben</td><td>hat</td><td class="kh">habe</td></tr>
+              <tr><td>werden</td><td>wird</td><td class="kh">werde</td></tr>
+              <tr><td>können</td><td>kann</td><td class="kh">könne</td></tr>
+              <tr><td>müssen</td><td>muss</td><td class="kh">müsse</td></tr>
+              <tr><td>sollen</td><td>soll</td><td class="kh">solle</td></tr>
+              <tr><td>wollen</td><td>will</td><td class="kh">wolle</td></tr>
+              <tr><td>gehen</td><td>geht</td><td class="kh">gehe</td></tr>
+              <tr><td>kommen</td><td>kommt</td><td class="kh">komme</td></tr>
+            </table>
+          </div>
+
+          <div class="sec-label">Beispiele mit afrikanischen Namen</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Fatima erklärte, sie <span class="kh">habe</span> die Prüfung bestanden.</div>
+                <div class="ex-note">KI von haben → habe. 3. Person Sg. immer eindeutig.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Fatima erklärte, sie habe die Prüfung bestanden.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Ngozi berichtete, der Zug <span class="kh">sei</span> pünktlich angekommen.</div>
+                <div class="ex-note">KI von sein → sei. Sonderform, immer erkennbar.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Ngozi berichtete, der Zug sei pünktlich angekommen.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de">Chidi sagte, er <span class="kh">könne</span> morgen nicht kommen.</div>
+                <div class="ex-note">KI von können → könne. Modales Verb im KI.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Chidi sagte, er könne morgen nicht kommen.')">🔊</button>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(0,0)">Weiter →</button>
+        </div>
+      </div>
+
+      <div class="step" id="l0-s1">
+        <div class="card">
+          <div class="quiz-qnum" id="l0-qnum">FRAGE 1 VON 2</div>
+          <div class="quiz-q" id="l0-q"></div>
+          <div class="quiz-hint" id="l0-hint"></div>
+          <div class="quiz-opts" id="l0-opts"></div>
+          <div class="qfeedback" id="l0-fb"><div class="qft" id="l0-ft"></div><div class="qfb" id="l0-fbe"></div><div class="qfr" id="l0-rule"></div></div>
+          <div class="qnext" id="l0-next"><button class="btn btn-primary" onclick="advQ(0)">Weiter →</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEKTION 2 -->
+    <div id="lesson-1" class="lesson-pane">
+      <div class="step active" id="l1-s0">
+        <div class="card">
+          <div class="concept-tag">B2 · Modul 1 · Lektion 2 von 5</div>
+          <h2 class="lesson-h">KI vs. KII — <span style="color:var(--kii)">Wann welcher?</span></h2>
+          <p class="body-text">Wenn Konjunktiv I mit dem Indikativ identisch klingt, verliert er seine Funktion — der Leser erkennt die Distanzierung nicht. Dann muss der <span class="fh">Konjunktiv II</span> oder die <span class="fh">würde-Form</span> eingesetzt werden.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 KI vs KII explained</summary>
+            <div class="en-help-body">
+              <p>Konjunktiv I's purpose is to signal "I'm reporting what someone else said." But if KI looks identical to the indicative (plain present), readers can't tell the difference — so you must use KII instead.</p>
+              <p>Rule: <strong>If KI = Indikativ → use KII</strong>. The most common cases: ich (ich lerne = KI and Ind.), wir/sie lernen (same form).</p>
+              <p>KII of weak verbs = würde + Infinitiv. KII of strong verbs: vowel change (käme, ginge, hätte, wäre).</p>
+            </div>
+          </details>
+
+          <div class="info-box"><strong>Die Regel:</strong> KI → KII wenn KI = Indikativ<br><br>
+            Sie sagten, sie <span class="kh">lernen</span> Deutsch. ← FALSCH (lernen = Indikativ!)<br>
+            Sie sagten, sie <span class="fh">lernten</span> Deutsch. ← RICHTIG (KII erkennbar)
+          </div>
+
+          <div class="sec-label">Übersicht: Wann KI, wann KII?</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Person</th><th>KI erkennbar?</th><th>Verwende</th></tr>
+              <tr><td>ich</td><td style="color:var(--red);">Nein (= Indikativ)</td><td class="fh">KII / würde</td></tr>
+              <tr><td>du</td><td style="color:var(--green);">Ja (-est)</td><td class="kh">KI</td></tr>
+              <tr><td>er/sie/es</td><td style="color:var(--green);">Ja (-e)</td><td class="kh">KI</td></tr>
+              <tr><td>wir</td><td style="color:var(--red);">Nein (= Indikativ)</td><td class="fh">KII / würde</td></tr>
+              <tr><td>ihr</td><td style="color:var(--green);">Ja (-et)</td><td class="kh">KI</td></tr>
+              <tr><td>sie/Sie</td><td style="color:var(--red);">Nein (= Indikativ)</td><td class="fh">KII / würde</td></tr>
+            </table>
+          </div>
+
+          <div class="sec-label">Konjunktiv II Formen der wichtigsten Verben</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Verb</th><th style="color:var(--kii);">KII (er/sie)</th><th style="color:var(--kii);">KII (wir/sie)</th></tr>
+              <tr><td>sein</td><td class="fh">wäre</td><td class="fh">wären</td></tr>
+              <tr><td>haben</td><td class="fh">hätte</td><td class="fh">hätten</td></tr>
+              <tr><td>werden</td><td class="fh">würde</td><td class="fh">würden</td></tr>
+              <tr><td>kommen</td><td class="fh">käme</td><td class="fh">kämen</td></tr>
+              <tr><td>gehen</td><td class="fh">ginge</td><td class="fh">gingen</td></tr>
+              <tr><td>können</td><td class="fh">könnte</td><td class="fh">könnten</td></tr>
+              <tr><td>lernen</td><td>würde lernen</td><td>würden lernen</td></tr>
+            </table>
+          </div>
+
+          <div class="sec-label">Transformationsübungen</div>
+          <div class="transform-box">
+            <div class="trn-row"><div class="trn-label" style="color:var(--dir);">DIREKT</div><div class="trn-text">Kwame sagte: „Wir <span class="dh">kommen</span> morgen."</div></div>
+            <div class="trn-arrow">↓ wir kommen = KI gleich Indikativ → KII verwenden</div>
+            <div class="trn-row"><div class="trn-label" style="color:var(--kii);">KII</div><div class="trn-text">Kwame sagte, sie <span class="fh">kämen</span> morgen.</div></div>
+          </div>
+          <div class="transform-box">
+            <div class="trn-row"><div class="trn-label" style="color:var(--dir);">DIREKT</div><div class="trn-text">Amina erklärte: „Ich <span class="dh">lerne</span> täglich vier Stunden."</div></div>
+            <div class="trn-arrow">↓ ich lerne = KI gleich Indikativ → würde-Form</div>
+            <div class="trn-row"><div class="trn-label" style="color:var(--kii);">KII</div><div class="trn-text">Amina erklärte, sie <span class="fh">würde</span> täglich vier Stunden lernen.</div></div>
+          </div>
+
+          <div class="danger-box"><strong>Achtung!</strong> Bei Modalverben (können, müssen, wollen…) in der 1./3. Person Singular ist KI immer erkennbar (könne, müsse, wolle) — hier wird <em>nicht</em> KII verwendet.</div>
+
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(1,0)">Weiter →</button>
+        </div>
+      </div>
+
+      <div class="step" id="l1-s1">
+        <div class="card">
+          <div class="quiz-qnum" id="l1-qnum">FRAGE 1 VON 2</div>
+          <div class="quiz-q" id="l1-q"></div>
+          <div class="quiz-hint" id="l1-hint"></div>
+          <div class="quiz-opts" id="l1-opts"></div>
+          <div class="qfeedback" id="l1-fb"><div class="qft" id="l1-ft"></div><div class="qfb" id="l1-fbe"></div><div class="qfr" id="l1-rule"></div></div>
+          <div class="qnext" id="l1-next"><button class="btn btn-primary" onclick="advQ(1)">Weiter →</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEKTION 3 -->
+    <div id="lesson-2" class="lesson-pane">
+      <div class="step active" id="l2-s0">
+        <div class="card">
+          <div class="concept-tag">B2 · Modul 1 · Lektion 3 von 5</div>
+          <h2 class="lesson-h">Indirekte <span style="color:var(--blue)">Fragen &amp; Aufforderungen</span></h2>
+          <p class="body-text">Neben Aussagen müssen auch Fragen und Aufforderungen in die indirekte Rede übertragen werden — mit klaren strukturellen Regeln, die sich von einfacher Berichterstattung unterscheiden.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Indirect questions and commands</summary>
+            <div class="en-help-body">
+              <p><strong>Indirect yes/no questions:</strong> Use "ob" (whether). Er fragte, ob sie komme.</p>
+              <p><strong>Indirect W-questions:</strong> Keep the question word, verb goes to end. Er fragte, wann sie komme.</p>
+              <p><strong>Indirect commands:</strong> Use the infinitive with "zu". Er bat sie, das Fenster zu öffnen. (Not: Er bat sie, öffne das Fenster.)</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Indirekte Fragen</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Fragetyp</th><th>Direkt</th><th>Indirekt</th></tr>
+              <tr><td>Ja/Nein</td><td>„Kommst du?"</td><td>Er fragte, <span class="kh">ob</span> sie <span class="kh">komme</span>.</td></tr>
+              <tr><td>W-Frage</td><td>„Wann kommst du?"</td><td>Er fragte, <span class="kh">wann</span> sie <span class="kh">komme</span>.</td></tr>
+              <tr><td>W-Frage</td><td>„Warum lernst du das?"</td><td>Sie wollte wissen, <span class="kh">warum</span> er das <span class="kh">lerne</span>.</td></tr>
+            </table>
+          </div>
+
+          <div class="warn-box"><strong>Merke!</strong> Bei indirekten Fragen steht das Verb am Ende — wie in einem Nebensatz. Das gilt auch dann, wenn kein „ob" oder W-Wort steht (nur in formeller Sprache).</div>
+
+          <div class="sec-label">Indirekte Aufforderungen</div>
+          <div class="ex-list">
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de"><span class="dh">Direkt:</span> Kofi sagte: „Komm bitte pünktlich!"</div>
+                <div class="ex-de"><span class="kh">Indirekt:</span> Kofi bat ihn, pünktlich <span class="kh">zu kommen</span>.</div>
+                <div class="ex-note">Imperativ → bitten/auffordern + zu + Infinitiv</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de"><span class="dh">Direkt:</span> Die Lehrerin sagte: „Öffnet eure Bücher!"</div>
+                <div class="ex-de"><span class="kh">Indirekt:</span> Die Lehrerin forderte sie auf, ihre Bücher <span class="kh">zu öffnen</span>.</div>
+                <div class="ex-note">auffordern + Infinitiv mit zu</div>
+              </div>
+            </div>
+            <div class="ex-card">
+              <div style="flex:1;">
+                <div class="ex-de"><span class="dh">Direkt:</span> Ngozi bat: „Hilf mir bitte!"</div>
+                <div class="ex-de"><span class="kh">Indirekt:</span> Ngozi bat ihn, ihr <span class="kh">zu helfen</span>.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">Verben zur Einleitung von Aufforderungen</div>
+          <div class="info-box">
+            <strong>bitten + zu + Inf.</strong> — höfliche Bitte<br>
+            <strong>auffordern + zu + Inf.</strong> — offizielle Aufforderung<br>
+            <strong>befehlen + zu + Inf.</strong> — Befehl (formell/militärisch)<br>
+            <strong>raten + zu + Inf.</strong> — Empfehlung<br>
+            <strong>warnen + vor + Dat. / warnen + zu + Inf.</strong> — Warnung
+          </div>
+
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(2,0)">Weiter →</button>
+        </div>
+      </div>
+
+      <div class="step" id="l2-s1">
+        <div class="card">
+          <div class="quiz-qnum" id="l2-qnum">FRAGE 1 VON 2</div>
+          <div class="quiz-q" id="l2-q"></div>
+          <div class="quiz-hint" id="l2-hint"></div>
+          <div class="quiz-opts" id="l2-opts"></div>
+          <div class="qfeedback" id="l2-fb"><div class="qft" id="l2-ft"></div><div class="qfb" id="l2-fbe"></div><div class="qfr" id="l2-rule"></div></div>
+          <div class="qnext" id="l2-next"><button class="btn btn-primary" onclick="advQ(2)">Weiter →</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEKTION 4 -->
+    <div id="lesson-3" class="lesson-pane">
+      <div class="step active" id="l3-s0">
+        <div class="card">
+          <div class="concept-tag">B2 · Modul 1 · Lektion 4 von 5</div>
+          <h2 class="lesson-h">Konjunktiv I in <span style="color:var(--blue)">Journalismus &amp; Wissenschaft</span></h2>
+          <p class="body-text">Im professionellen Schreiben signalisiert der Konjunktiv I <em>Distanzierung</em>: Der Autor übernimmt keine Verantwortung für die zitierte Aussage. Das ist zentral für Journalismus, Rechtsprache und akademisches Schreiben.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Why journalists use Konjunktiv I</summary>
+            <div class="en-help-body">
+              <p>When a journalist uses KI, they are saying: "This is what the source claimed — I'm reporting it, not vouching for it." Using the indicative would imply the journalist believes the statement is true.</p>
+              <p>In German law, witness statements are recorded in KI. In academic papers, cited positions use KI to show "this is what the author argues."</p>
+              <p>This neutrality function is the key reason B2 learners must master KI — it shows linguistic and cultural sophistication.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Zeitungsbeispiel (authentisch)</div>
+          <div class="warn-box" style="font-style:italic;">Der Minister erklärte, die Regierung <span class="kh">werde</span> keine Steuern erhöhen. Er <span class="kh">sei</span> überzeugt, dass die Wirtschaft sich erholen <span class="kh">werde</span>. Die Opposition <span class="kh">zweifle</span> jedoch an dieser Einschätzung, wie ihr Sprecher mitteilte.</div>
+
+          <div class="ex-list">
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(230,126,34,0.12);color:var(--ki);">DISTANZ</div>
+              <div style="flex:1;">
+                <div class="ex-de">Die Polizei teilte mit, der Verdächtige <span class="kh">habe</span> gestanden.</div>
+                <div class="ex-note">KI zeigt: Polizei sagt es — Journalist bestätigt es nicht persönlich.</div>
+              </div>
+              <button class="speak-btn" onclick="speakSentence(this,'Die Polizei teilte mit, der Verdächtige habe gestanden.')">🔊</button>
+            </div>
+            <div class="ex-card">
+              <div class="ex-tag" style="background:rgba(52,152,219,0.12);color:var(--ind);">AKADEMISCH</div>
+              <div style="flex:1;">
+                <div class="ex-de">Müller (2019) argumentiert, dass Sprache soziale Wirklichkeit konstruiere.</div>
+                <div class="ex-note">Akademische Zitation: KI zeigt, dies ist Müllers These — nicht meine Aussage.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-label">Einleitungsverben für B2-Texte</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Verb</th><th>Nuance</th><th>Beispiel (KI)</th></tr>
+              <tr><td>behaupten</td><td>evtl. unglaubwürdig</td><td>Er behaupte, unschuldig zu sein.</td></tr>
+              <tr><td>betonen</td><td>Wichtigkeit</td><td>Sie betone, dies sei dringend.</td></tr>
+              <tr><td>einräumen</td><td>zugeben</td><td>Er räume ein, Fehler gemacht zu haben.</td></tr>
+              <tr><td>verweisen auf</td><td>formal/legal</td><td>Sie weise darauf hin, dass…</td></tr>
+              <tr><td>argumentieren</td><td>akademisch</td><td>Er argumentiere, dass…</td></tr>
+              <tr><td>konstatieren</td><td>feststellen</td><td>Die Studie konstatiere, dass…</td></tr>
+            </table>
+          </div>
+
+          <div class="success-box"><strong>Tipp für die B2-Prüfung:</strong> In der Schreiben-Aufgabe "Einen Artikel zusammenfassen" werden Quellen mit KI zitiert. Wer KI korrekt einsetzt, zeigt sprachliches Niveau und bekommt Punkte für Ausdruck.</div>
+
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(3,0)">Weiter →</button>
+        </div>
+      </div>
+
+      <div class="step" id="l3-s1">
+        <div class="card">
+          <div class="quiz-qnum" id="l3-qnum">FRAGE 1 VON 2</div>
+          <div class="quiz-q" id="l3-q"></div>
+          <div class="quiz-hint" id="l3-hint"></div>
+          <div class="quiz-opts" id="l3-opts"></div>
+          <div class="qfeedback" id="l3-fb"><div class="qft" id="l3-ft"></div><div class="qfb" id="l3-fbe"></div><div class="qfr" id="l3-rule"></div></div>
+          <div class="qnext" id="l3-next"><button class="btn btn-primary" onclick="advQ(3)">Weiter →</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEKTION 5 -->
+    <div id="lesson-4" class="lesson-pane">
+      <div class="step active" id="l4-s0">
+        <div class="card">
+          <div class="concept-tag">B2 · Modul 1 · Lektion 5 von 5</div>
+          <h2 class="lesson-h">Zeitformen &amp; <span style="color:var(--blue)">B2-Prüfungstraining</span></h2>
+          <p class="body-text">Die indirekte Rede hat auf B2-Niveau ein eigenes Zeitformensystem: Gegenwart, Vergangenheit und Zukunft werden durch bestimmte Konstruktionen ausgedrückt — nicht durch direkte Übertragung der Originalzeitform.</p>
+
+          <details class="en-help">
+            <summary>🇬🇧 Tense system in indirect speech</summary>
+            <div class="en-help-body">
+              <p>German indirect speech has only 3 tenses (not 6 like direct speech):</p>
+              <p><strong>Present/ongoing:</strong> KI of the main verb → er lerne, sie habe</p>
+              <p><strong>Past (any past tense):</strong> KI of haben/sein + Partizip II → er habe gelernt, sie sei gegangen</p>
+              <p><strong>Future:</strong> KI of werden + Infinitiv → er werde kommen</p>
+              <p>Any direct-speech past (Präteritum, Perfekt, Plusquamperfekt) → all become KI haben/sein + Partizip II in indirect speech.</p>
+            </div>
+          </details>
+
+          <div class="sec-label">Das Zeitformensystem der indirekten Rede</div>
+          <div class="comp-wrap">
+            <table class="comp-table">
+              <tr><th>Bedeutung</th><th>Direkte Rede</th><th>Indirekte Rede</th></tr>
+              <tr><td>Gegenwart</td><td>„Ich lerne."</td><td>Er sage, er <span class="kh">lerne</span>.</td></tr>
+              <tr><td>Vergangenheit</td><td>„Ich lernte." / „Ich habe gelernt."</td><td>Er sage, er <span class="kh">habe gelernt</span>.</td></tr>
+              <tr><td>Zukunft</td><td>„Ich werde lernen."</td><td>Er sage, er <span class="kh">werde lernen</span>.</td></tr>
+            </table>
+          </div>
+
+          <div class="warn-box"><strong>Merke!</strong> Alle Vergangenheitsformen (Präteritum, Perfekt, Plusquamperfekt) werden in der indirekten Rede zu <em>einer</em> Form: <span class="kh">KI von haben/sein + Partizip II</span>.</div>
+
+          <div class="sec-label">Häufige B2-Fehler</div>
+          <div class="wr-grid">
+            <div class="wr-wrong">
+              <div class="wr-label">FALSCH</div>
+              <div class="wr-word">Sie sagte, sie lernt Deutsch.</div>
+              <div style="font-size:11px;color:var(--red);margin-top:6px;">Indikativ statt KI</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">RICHTIG</div>
+              <div class="wr-word">Sie sagte, sie lerne Deutsch.</div>
+              <div style="font-size:11px;color:var(--green);margin-top:6px;">KI (3. Sg.) erkennbar</div>
+            </div>
+            <div class="wr-wrong">
+              <div class="wr-label">FALSCH</div>
+              <div class="wr-word">Er berichtete, sie lernen viel.</div>
+              <div style="font-size:11px;color:var(--red);margin-top:6px;">KI = Indikativ → KII nötig</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">RICHTIG</div>
+              <div class="wr-word">Er berichtete, sie lernten viel.</div>
+              <div style="font-size:11px;color:var(--green);margin-top:6px;">KII, da KI nicht erkennbar</div>
+            </div>
+            <div class="wr-wrong">
+              <div class="wr-label">FALSCH</div>
+              <div class="wr-word">Amina fragte, kommt er?</div>
+              <div style="font-size:11px;color:var(--red);margin-top:6px;">Kein ob, falsche Verbstellung</div>
+            </div>
+            <div class="wr-right">
+              <div class="wr-label">RICHTIG</div>
+              <div class="wr-word">Amina fragte, ob er komme.</div>
+              <div style="font-size:11px;color:var(--green);margin-top:6px;">ob + Verb am Ende + KI</div>
+            </div>
+          </div>
+
+          <div class="success-box"><strong>B2-Prüfungsstrategie:</strong><br>
+            1. Erkenne KI-Formen schnell im Lesetext → Distanzierung vom Autor<br>
+            2. Beim Schreiben: 3. Sg. in KI (lerne, habe, sei, werde) — immer eindeutig<br>
+            3. Bei wir/sie-Formen: KII verwenden (lernten, kämen, hätten)<br>
+            4. Indirekte Fragen immer mit ob oder W-Wort + Verb am Ende
+          </div>
+
+          <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(4,0)">Weiter →</button>
+        </div>
+      </div>
+
+      <div class="step" id="l4-s1">
+        <div class="card">
+          <div class="quiz-qnum" id="l4-qnum">FRAGE 1 VON 2</div>
+          <div class="quiz-q" id="l4-q"></div>
+          <div class="quiz-hint" id="l4-hint"></div>
+          <div class="quiz-opts" id="l4-opts"></div>
+          <div class="qfeedback" id="l4-fb"><div class="qft" id="l4-ft"></div><div class="qfb" id="l4-fbe"></div><div class="qfr" id="l4-rule"></div></div>
+          <div class="qnext" id="l4-next"><button class="btn btn-primary" onclick="advQ(4)">Weiter →</button></div>
+        </div>
+      </div>
+
+      <div class="step" id="l4-s2">
+        <div class="complete-wrap">
+          <div class="complete-icon">🎓</div>
+          <h2 class="lesson-h">Modul abgeschlossen!</h2>
+          <p class="body-text">Du hast Konjunktiv I auf B2-Niveau gemeistert — Bildung, KI vs. KII, indirekte Fragen, journalistische Distanzierung und das Zeitformensystem.</p>
+          <div class="xp-badge">⚡ +120 XP</div>
+          <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:12px;">
+            <button class="btn btn-outline" onclick="showOverview()">Lektionen ansehen</button>
+            <a href="deutschweg-prototype.html" class="btn btn-primary" style="text-decoration:none;display:inline-flex;align-items:center;">← Dashboard</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="dw-next-step-bar">
+  <a href="deutschweg-prototype.html" class="dw-nsb-link">← Dashboard</a>
+  <a href="deutschweg-prototype.html#b2" class="dw-nsb-link">B2 Übersicht</a>
+  <a href="module-b2-2-passiv-erweitert.html" class="dw-nsb-cta">Modul 2: Passiv →</a>
+</div>
+
+<script>
+var QD = {
+  0: [
+    { q:'Welche Form ist der Konjunktiv I von „kommen" in der 3. Person Singular?',
+      hint:'Infinitivstamm komm- + Konjunktiv-I-Endung',
+      opts:['kommt','käme','komme','kommen'],
+      ans:2,
+      exp:'Konjunktiv I: Stamm + -e → komme. „Kommt" ist Indikativ, „käme" ist KII, „kommen" ist Infinitiv/Plural.',
+      rule:'3. Sg. KI: Stamm + -e (immer eindeutig erkennbar)' },
+    { q:'Amina berichtete, sie ___ die ganze Nacht gelernt.',
+      hint:'Vergangenheit in der indirekten Rede → KI von haben + Partizip II',
+      opts:['lerntest','lernte','habe gelernt','hat gelernt'],
+      ans:2,
+      exp:'Vergangenheit in der indirekten Rede: KI von haben (habe) + Partizip II (gelernt). „Hat gelernt" wäre Indikativ.',
+      rule:'Alle Vergangenheitsformen → KI haben/sein + Partizip II' }
+  ],
+  1: [
+    { q:'Warum schreibt man: „Sie sagten, sie kämen morgen" statt „sie kommen"?',
+      hint:'Denke an KI = Indikativ',
+      opts:['Weil KII höflicher ist','Weil KI von kommen (kommen) mit dem Indikativ identisch ist','Weil „morgen" Zukunft bedeutet','Weil kommen ein starkes Verb ist'],
+      ans:1,
+      exp:'„kommen" (wir/sie) im KI sieht genauso aus wie der Indikativ Plural. Deshalb wechselt man zu KII (kämen), damit die Distanzierung erkennbar bleibt.',
+      rule:'KI = Indikativ → KII verwenden' },
+    { q:'Kofi erklärte, er ___ leider nicht helfen.',
+      hint:'können + 3. Sg. → KI ist erkennbar',
+      opts:['konnte','könne','kann','würde können'],
+      ans:1,
+      exp:'Modalverben in der 3. Sg. haben immer erkennbare KI-Formen: können → könne. Hier ist kein KII nötig.',
+      rule:'3. Sg. Modalverben: KI immer erkennbar (könne, müsse, wolle, dürfe, solle)' }
+  ],
+  2: [
+    { q:'Ngozi fragte, ___ Chidi morgen komme.',
+      hint:'Ja/Nein-Frage in der indirekten Rede',
+      opts:['dass','ob','weil','denn'],
+      ans:1,
+      exp:'Indirekte Ja/Nein-Fragen werden mit „ob" eingeleitet. Das Verb steht am Ende im KI.',
+      rule:'Indirekte Ja/Nein-Frage → ob + Verb am Ende (KI)' },
+    { q:'Der Lehrer bat die Schüler, ihre Aufgaben ___ .',
+      hint:'Indirekte Aufforderung: bitten + zu + Infinitiv',
+      opts:['abgeben','abzugeben','geben ab','abgegeben haben'],
+      ans:1,
+      exp:'Indirekte Aufforderungen: bitten/auffordern + zu + Infinitiv. Bei trennbaren Verben: ab-zu-geben.',
+      rule:'Indirekte Aufforderung: bitten/auffordern + zu + Inf. (trennbar: Präfix-zu-Stamm)' }
+  ],
+  3: [
+    { q:'Warum verwendet ein Zeitungsartikel Konjunktiv I?',
+      hint:'Was signalisiert KI dem Leser?',
+      opts:['Um zu zeigen, dass die Aussage unwahr ist','Um den Text interessanter zu machen','Um Distanzierung zu signalisieren: Der Journalist berichtet, ohne die Aussage zu bestätigen','Weil es formaler klingt als der Indikativ'],
+      ans:2,
+      exp:'KI im Journalismus zeigt Distanzierung: Der Journalist berichtet die Aussage einer anderen Person, ohne persönlich dafür einzustehen. Er sagt nicht, es sei wahr — er sagt nur, was gesagt wurde.',
+      rule:'Journalistisches KI = Distanzierung vom zitierten Inhalt' },
+    { q:'Welches Verb passt am besten für: Jemand gibt zu, dass er einen Fehler gemacht hat?',
+      hint:'„Zugeben" auf formal Deutsch',
+      opts:['sagen','einräumen','behaupten','konstatieren'],
+      ans:1,
+      exp:'„Einräumen" bedeutet „zugeben, konzedieren". Es ist das formelle Verb für das Eingestehen von Fehlern oder Schwächen. „Behaupten" impliziert Zweifel an der Aussage.',
+      rule:'Einleitungsverb Nuancen: einräumen = zugeben; behaupten = evtl. unglaubwürdig' }
+  ],
+  4: [
+    { q:'Kwame sagte: „Ich war gestern krank." → Indirekt: Kwame sagte, er ___ gestern krank ___.',
+      hint:'Vergangenheit indirekt → KI von sein + Partizip II',
+      opts:['war / —','sei / gewesen','wäre / gewesen','ist / gewesen'],
+      ans:1,
+      exp:'Vergangenheit (war = Präteritum) wird in der indirekten Rede zu KI von sein + Partizip II: sei gewesen.',
+      rule:'Alle Vergangenheiten → KI haben/sein + Partizip II' },
+    { q:'Fatima schrieb, sie ___ nächste Woche die Prüfung ablegen.',
+      hint:'Zukunft in der indirekten Rede',
+      opts:['legt ab','habe abgelegt','werde ablegen','würde ablegen'],
+      ans:2,
+      exp:'Zukunft in der indirekten Rede: KI von werden (werde) + Infinitiv. „Würde ablegen" wäre KII-Futur, nur wenn werde = Indikativ nicht erkennbar wäre.',
+      rule:'Zukunft indirekt: KI von werden + Infinitiv → werde ablegen' }
+  ]
+};
+
+var curLesson = 0, curStep = 0, curQ = {}, qIdx = 0, xp = 0;
+var lessonSteps = [2, 2, 2, 2, 3];
+var totalQ = [0,0,0,0,0];
+
+function speakSentence(btn, text) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  if (btn.classList.contains('speaking')) { btn.classList.remove('speaking'); return; }
+  document.querySelectorAll('.speak-btn.speaking').forEach(b => b.classList.remove('speaking'));
+  var u = new SpeechSynthesisUtterance(text);
+  u.lang = 'de-DE'; u.rate = 0.9;
+  u.onend = () => btn.classList.remove('speaking');
+  btn.classList.add('speaking');
+  window.speechSynthesis.speak(u);
+}
+
+function showOverview() {
+  document.getElementById('screen-lesson').classList.remove('active');
+  document.getElementById('screen-overview').classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function goLesson(li) {
+  curLesson = li; curStep = 0; qIdx = 0;
+  document.getElementById('screen-overview').classList.remove('active');
+  document.getElementById('screen-lesson').classList.add('active');
+  document.querySelectorAll('.lesson-pane').forEach(p => p.style.display='none');
+  document.getElementById('lesson-'+li).style.display='block';
+  document.querySelectorAll('#lesson-'+li+' .step').forEach((s,i) => s.classList.toggle('active', i===0));
+  renderDots(li);
+  updateProgress(li, 0);
+  if (li === curLesson && QD[li]) initQuiz(li);
+  window.scrollTo(0,0);
+}
+
+function renderDots(li) {
+  var n = lessonSteps[li], row = document.getElementById('dotRow');
+  row.innerHTML = '';
+  for (var i=0; i<n; i++) {
+    var d = document.createElement('div');
+    d.className = 'dot' + (i===0?' active':'');
+    d.dataset.step = i;
+    (function(idx){ d.onclick = function(){ if(idx <= curStep) goStep(curLesson, idx); }; })(i);
+    row.appendChild(d);
+  }
+}
+
+function goStep(li, si) {
+  curStep = si;
+  document.querySelectorAll('#lesson-'+li+' .step').forEach((s,i) => s.classList.toggle('active', i===si));
+  document.querySelectorAll('#dotRow .dot').forEach((d,i) => {
+    d.classList.toggle('active', i===si);
+    d.classList.toggle('done', i<si);
+  });
+  updateProgress(li, si);
+  window.scrollTo(0,0);
+}
+
+function updateProgress(li, si) {
+  var pct = Math.round((si / (lessonSteps[li]-1)) * 100);
+  document.getElementById('progFill').style.width = pct + '%';
+}
+
+function nextStep(li, si) {
+  var nsi = si + 1;
+  if (nsi >= lessonSteps[li]) return;
+  if (nsi === lessonSteps[li] - (li===4?2:1)) initQuiz(li);
+  goStep(li, nsi);
+}
+
+function initQuiz(li) {
+  qIdx = 0;
+  renderQ(li);
+}
+
+function renderQ(li) {
+  var qs = QD[li];
+  if (!qs || qIdx >= qs.length) { showResult(li); return; }
+  var q = qs[qIdx]; curQ = q;
+  document.getElementById('l'+li+'-qnum').textContent = 'FRAGE '+(qIdx+1)+' VON '+qs.length;
+  document.getElementById('l'+li+'-q').textContent = q.q;
+  document.getElementById('l'+li+'-hint').textContent = q.hint;
+  var opts = document.getElementById('l'+li+'-opts');
+  opts.innerHTML = '';
+  var letters = ['A','B','C','D'];
+  q.opts.forEach(function(o,i){
+    var btn = document.createElement('button');
+    btn.className = 'qopt';
+    btn.innerHTML = '<span class="qletter">'+letters[i]+'</span>'+o;
+    btn.onclick = function(){ pickQ(li, i); };
+    opts.appendChild(btn);
+  });
+  var fb = document.getElementById('l'+li+'-fb');
+  fb.className = 'qfeedback';
+  document.getElementById('l'+li+'-next').className = 'qnext';
+}
+
+function pickQ(li, idx) {
+  var q = QD[li][qIdx];
+  var opts = document.querySelectorAll('#l'+li+'-opts .qopt');
+  opts.forEach(function(b){ b.disabled = true; });
+  opts[idx].classList.add(idx===q.ans?'correct':'wrong');
+  if (idx !== q.ans) opts[q.ans].classList.add('correct');
+  var ok = idx === q.ans;
+  if (ok) { xp += 10; document.getElementById('xpDisp').textContent = '⚡ '+xp+' XP'; }
+  var fb = document.getElementById('l'+li+'-fb');
+  fb.className = 'qfeedback show '+(ok?'ok':'no');
+  document.getElementById('l'+li+'-ft').textContent = ok ? '✓ Richtig!' : '✗ Leider falsch.';
+  document.getElementById('l'+li+'-ft').className = 'qft '+(ok?'ok':'no');
+  document.getElementById('l'+li+'-fbe').textContent = q.exp;
+  document.getElementById('l'+li+'-rule').textContent = '📌 ' + q.rule;
+  document.getElementById('l'+li+'-next').className = 'qnext show';
+}
+
+function advQ(li) {
+  qIdx++;
+  if (qIdx >= QD[li].length) {
+    showResult(li);
+  } else {
+    renderQ(li);
+  }
+}
+
+function showResult(li) {
+  if (li === 4) {
+    goStep(li, 2);
+    var stored = parseInt(localStorage.getItem('dw_xp')||'0');
+    localStorage.setItem('dw_xp', stored + xp);
+    localStorage.setItem('dw_mod_b2_1_done','1');
+  } else {
+    var next = li + 1;
+    goLesson(next);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  document.body.classList.add('ready');
+  var stored = parseInt(localStorage.getItem('dw_xp')||'0');
+  xp = 0;
+  document.getElementById('xpDisp').textContent = '⚡ 0 XP';
+});
+
+  // ===== STANDALONE QUIZ =====
+  var SQ_DATA = [
+  {
+    "q": "Welche Funktion hat der Konjunktiv I hauptsaechlich?",
+    "opts": [
+      "Wunsch ausdruecken",
+      "Indirekte Rede wiedergeben",
+      "Vergangenheit beschreiben",
+      "Bedingungen formulieren"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Konjunktiv I wird vor allem fuer indirekte Rede verwendet.",
+    "fb_ko": "Falsch. Der Konjunktiv I dient hauptsaechlich zur Wiedergabe indirekter Rede."
+  },
+  {
+    "q": "Wie lautet die Konjunktiv-I-Form von 'er kommt'?",
+    "opts": [
+      "er kaeme",
+      "er komme",
+      "er kommen",
+      "er ist gekommen"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! 'er komme' ist die korrekte Konjunktiv-I-Form.",
+    "fb_ko": "Falsch. Die korrekte Form lautet 'er komme' (Stamm + -e)."
+  },
+  {
+    "q": "Wann muss Konjunktiv II statt Konjunktiv I verwendet werden?",
+    "opts": [
+      "Bei Verben im Praeteritum",
+      "Wenn KI mit dem Indikativ identisch waere",
+      "Bei Modalverben immer",
+      "In der Zukunftsform immer"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Wenn die KI-Form mit dem Indikativ uebereinstimmt, nimmt man KII.",
+    "fb_ko": "Falsch. Man nimmt KII, wenn die KI-Form nicht eindeutig vom Indikativ zu unterscheiden ist."
+  },
+  {
+    "q": "Wie lautet die Konjunktiv-I-Form von 'sein' in der 3. Person Singular?",
+    "opts": [
+      "ist",
+      "waere",
+      "sei",
+      "seien"
+    ],
+    "ans": 2,
+    "fb_ok": "Richtig! 'sei' ist die KI-Form von 'sein' (3. Pers. Sg.).",
+    "fb_ko": "Falsch. Die korrekte Form ist 'sei', z.B. 'Er sagte, er sei krank.'"
+  },
+  {
+    "q": "In welchem Kontext wird Konjunktiv I besonders haeufig verwendet?",
+    "opts": [
+      "In alltaeglichen Gespraechen",
+      "In Zeitungsartikeln und Nachrichtenberichten",
+      "In Kochrezepten",
+      "In Wettervorsagen"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Journalisten verwenden KI zur Distanzierung von Aussagen Dritter.",
+    "fb_ko": "Falsch. Konjunktiv I ist typisch fuer Zeitungsartikel und Nachrichtenberichte."
+  }
+];
+  var sqIdx=0, sqScore=0, sqAnswered=false;
+  var sqResults=[];
+  function sqInit(){sqIdx=0;sqScore=0;sqAnswered=false;sqResults=[];sqRender();}
+  function sqRender(){
+    var d=SQ_DATA[sqIdx];
+    document.getElementById('sqQuestion').style.display='block';
+    document.getElementById('sqResult').classList.remove('show');
+    document.getElementById('sqQText').textContent=(sqIdx+1)+'. '+d.q;
+    var dots=document.getElementById('sqDots');
+    dots.innerHTML='';
+    for(var i=0;i<5;i++){
+      var dot=document.createElement('div');
+      var cls='sq-dot';
+      if(i<sqIdx){ cls+= sqResults[i]?' done':' wrong'; }
+      else if(i===sqIdx){ cls+=' active'; }
+      dot.className=cls;
+      dots.appendChild(dot);
+    }
+    var opts=document.getElementById('sqOpts');
+    opts.innerHTML='';
+    d.opts.forEach(function(o,i){
+      var b=document.createElement('button');
+      b.className='sq-opt';
+      b.textContent=o;
+      (function(idx){b.onclick=function(){sqPick(idx);};})(i);
+      opts.appendChild(b);
+    });
+    var fb=document.getElementById('sqFb');
+    fb.className='sq-fb';
+    fb.textContent='';
+    document.getElementById('sqNext').className='btn btn-primary sq-next';
+    sqAnswered=false;
+  }
+  function sqPick(idx){
+    if(sqAnswered)return;
+    sqAnswered=true;
+    var d=SQ_DATA[sqIdx];
+    var opts=document.getElementById('sqOpts').querySelectorAll('.sq-opt');
+    opts.forEach(function(b){b.classList.add('disabled');});
+    var ok=(idx===d.ans);
+    if(ok){sqScore++;sqResults[sqIdx]=true;}else{sqResults[sqIdx]=false;}
+    opts[idx].classList.add(ok?'correct':'wrong');
+    if(!ok) opts[d.ans].classList.add('correct');
+    var fb=document.getElementById('sqFb');
+    fb.textContent=ok?d.fb_ok:d.fb_ko;
+    fb.className='sq-fb show '+(ok?'ok':'ko');
+    document.getElementById('sqNext').className='btn btn-primary sq-next show';
+  }
+  function sqAdvance(){
+    if(sqIdx<4){sqIdx++;sqRender();}else{sqShowResult();}
+  }
+  function sqShowResult(){
+    document.getElementById('sqQuestion').style.display='none';
+    var res=document.getElementById('sqResult');
+    res.className='sq-result show';
+    document.getElementById('sqScoreNum').textContent=sqScore+'/5';
+    var msgs=['Nicht aufgeben! \u{1F31F}','Nicht aufgeben! \u{1F31F}','Weiter üben! \u{1F4DA}','Gut gemacht! \u{1F4AA}','Sehr gut! \u{1F44F}','Ausgezeichnet! \u{1F389}'];
+    document.getElementById('sqScoreMsg').textContent=msgs[sqScore];
+  }
+  function sqReset(){
+    sqIdx=0;sqScore=0;sqAnswered=false;sqResults=[];
+    document.getElementById('sqResult').className='sq-result';
+    document.getElementById('sqQuestion').style.display='block';
+    sqRender();
+  }
+  document.addEventListener('DOMContentLoaded',function(){sqInit();});
+
+  document.addEventListener('DOMContentLoaded',function(){
+    var nb=document.getElementById('sqNextMod');
+    if(nb){ nb.onclick=function(){ window.location.href='module-b2-2-passiv-erweitert.html'; }; }
+  });
+
+</script>
+</body>
+</html>

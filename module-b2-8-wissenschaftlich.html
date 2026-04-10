@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — B2 Modul 8: Wissenschaftliche Sprache</title>
+<link rel="stylesheet" href="deutschweg-theme.css">
+<style>
+  :root { --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc; --gold:#c9a84c; --red:#c0392b; --green:#27ae60; --blue:#3498db; --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a; --border:rgba(201,168,76,0.2); --ki:#e67e22; --kii:#9b59b6; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); position:sticky; top:0; z-index:50; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-size:13px; }
+  .back-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--blue); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); } .dot.active { background:var(--blue); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; } .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; font-family:'DM Sans',sans-serif; }
+  .btn-primary { background:var(--blue); color:var(--white); width:100%; }
+  .btn-primary:hover { background:#2980b9; }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn.speaking { background:var(--blue); color:var(--white); }
+  .en-help { background:rgba(52,152,219,0.05); border:1px dashed rgba(52,152,219,0.25); border-radius:10px; margin:12px 0; }
+  .en-help summary { padding:10px 16px; cursor:pointer; font-size:13px; color:var(--blue); font-family:'DM Mono',monospace; list-style:none; display:flex; align-items:center; gap:8px; }
+  .en-help summary::-webkit-details-marker { display:none; }
+  .en-help[open] summary { border-bottom:1px dashed rgba(52,152,219,0.2); }
+  .en-help-body { padding:12px 16px; font-size:13px; color:rgba(245,240,232,.7); line-height:1.8; }
+  .en-help-body p { margin-bottom:8px; }
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-note { font-size:12px; color:var(--gray); line-height:1.6; }
+  .comp-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .comp-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:10px 14px; text-align:left; border-bottom:2px solid rgba(255,255,255,0.1); }
+  .comp-table td { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'DM Mono',monospace; font-size:13px; vertical-align:top; }
+  .comp-table tr:last-child td { border-bottom:none; }
+  .comp-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+  .kh { color:var(--ki); font-weight:700; } .fh { color:var(--kii); font-weight:700; }
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Mono',monospace; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--blue); background:rgba(52,152,219,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; } .qft.ok { color:var(--green); } .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(52,152,219,0.1); border-radius:8px; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; }
+  .qnext { display:none; } .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(52,152,219,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.2); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(52,152,219,0.12); border:1px solid var(--blue); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--blue); font-size:18px; margin:18px 0; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+
+  /* ===== STANDALONE QUIZ ===== */
+  .sq-wrap{background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:28px;margin-top:32px;}
+  .sq-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:6px;}
+  .sq-sub{font-size:13px;color:var(--gray);margin-bottom:20px;}
+  .sq-dots{display:flex;gap:8px;margin-bottom:20px;}
+  .sq-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all 0.3s;}
+  .sq-dot.active{background:var(--blue);width:22px;border-radius:4px;}
+  .sq-dot.done{background:var(--green);}
+  .sq-dot.wrong{background:var(--red);}
+  .sq-q{font-size:16px;font-weight:600;margin-bottom:16px;line-height:1.5;}
+  .sq-opts{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+  .sq-opt{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:12px 16px;cursor:pointer;font-size:14px;transition:all 0.2s;text-align:left;}
+  .sq-opt:hover:not(.disabled){background:rgba(52,152,219,0.12);border-color:var(--blue);}
+  .sq-opt.selected{background:rgba(52,152,219,0.15);border-color:var(--blue);}
+  .sq-opt.correct{background:rgba(39,174,96,0.15);border-color:var(--green);color:var(--green);}
+  .sq-opt.wrong{background:rgba(192,57,43,0.15);border-color:var(--red);color:var(--red);}
+  .sq-opt.disabled{cursor:default;pointer-events:none;}
+  .sq-fb{font-size:14px;padding:12px 16px;border-radius:10px;margin-bottom:16px;display:none;}
+  .sq-fb.show{display:block;}
+  .sq-fb.ok{background:rgba(39,174,96,0.12);border:1px solid rgba(39,174,96,0.3);color:var(--green);}
+  .sq-fb.ko{background:rgba(192,57,43,0.12);border:1px solid rgba(192,57,43,0.3);color:#e07070;}
+  .sq-next{display:none;}
+  .sq-next.show{display:inline-block;}
+  .sq-result{display:none;text-align:center;padding:20px 0;}
+  .sq-result.show{display:block;}
+  .sq-score-num{font-family:'Playfair Display',serif;font-size:48px;color:var(--blue);margin-bottom:8px;}
+  .sq-score-msg{font-size:20px;margin-bottom:24px;}
+  .sq-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+  .sq-btns .btn{width:auto;padding:12px 28px;}
+
+</style>
+<style>
+/* LIGHT THEME OVERRIDE */
+:root { --black:#F8FAFC; --white:#1F2937; --cream:#4B5563; --gold:#3B82F6; --red:#EF4444; --green:#10B981; --blue:#3B82F6; --gray:#9CA3AF; --card-bg:#FFFFFF; --card2-bg:#F8FAFC; --border:#E5E7EB; --ki:#F59E0B; --kii:#8B5CF6; }
+body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-serif; }
+.top-nav { background:white; border-bottom:1px solid #E5E7EB; backdrop-filter:none; }
+.btn-primary { background:#3B82F6; color:white; } .btn-outline { background:transparent; border:1px solid #3B82F6; color:#3B82F6; }
+.card { background:#FFFFFF; border:1px solid #E5E7EB; box-shadow:0 1px 3px rgba(0,0,0,0.07); }
+.info-box { background:#EFF6FF; border-left:3px solid #3B82F6; color:#1D4ED8; }
+.warn-box { background:#EFF6FF; border-left:3px solid #3B82F6; color:#1D4ED8; }
+.danger-box { background:#FEF2F2; border-left:3px solid #EF4444; color:#991B1B; }
+.success-box { background:#ECFDF5; border-left:3px solid #10B981; color:#065F46; }
+.qopt { border:1px solid #E5E7EB; background:white; color:#1F2937; }
+.qopt:hover:not([disabled]) { border-color:#3B82F6; background:#EFF6FF; }
+.xp-badge { background:#EFF6FF; border:1px solid #3B82F6; color:#3B82F6; }
+.speak-btn { background:#EFF6FF; border-color:#DBEAFE; color:#3B82F6; }
+.speak-btn.speaking { background:#3B82F6; color:white; }
+.lesson-card { background:#F8FAFC; border:1px solid #E5E7EB; }
+.ex-card { background:#F8FAFC; border:1px solid #E5E7EB; }
+</style>
+</head>
+<body>
+<div id="screen-overview" class="screen active">
+  <nav class="dw-nav"><div class="dw-nav-inner">
+    <a href="deutschweg-prototype.html" class="dw-logo"><div class="dw-logo-icon">D</div><span class="dw-logo-text">Deutsch<span>Weg</span></span></a>
+    <a href="exam-vault.html" style="font-size:13px;font-weight:600;color:#1D4ED8;text-decoration:none;margin-right:8px;">📝 Exams</a>
+    <a href="deutschweg-prototype.html" class="dw-btn dw-btn-secondary">← Back to Dashboard</a>
+  </div></nav>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">B2 · Schreiben · Modul 8</div>
+    <h1 class="lesson-h" style="font-size:36px;">Wissenschaftliche &amp; <span style="color:var(--blue)">formelle Sprache</span></h1>
+    <p class="body-text">Akademische und formelle Texte folgen klaren sprachlichen Konventionen — Objektität, Präzision, Unpersönlichkeit. Diese Sprache ist der Standard in Universitäten, Behörden und professionellen Kontexten.</p>
+    <details class="en-help"><summary>🇬🇧 What will I learn here?</summary>
+      <div class="en-help-body"><p>German academic/formal language is characterized by: passive voice, nominalization, impersonal constructions (man/es), subjunctive I (Konjunktiv I), precise vocabulary, and avoidance of colloquialisms. Mastering this register is essential for B2 writing tasks.</p></div>
+    </details>
+    <div class="info-box"><strong>Lernziele:</strong><br><br>
+      ✦ Merkmale wissenschaftlicher Sprache kennen<br>
+      ✦ Unpersönliche Konstruktionen (man, es, Passiv) anwenden<br>
+      ✦ Formelle Lexik vs. umgangssprachliche Alternativen<br>
+      ✦ Zitieren und Paraphrasieren auf B2-Niveau<br>
+      ✦ Formelle Briefe und Bewerbungsschreiben strukturieren
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">🎓</div><div><div class="lc-title">Lektion 1 — Merkmale wissenschaftlicher Sprache</div><div class="lc-desc">Objektivität, Präzision, Unpersönlichkeit. Was formelle Texte von informellen unterscheidet.</div></div><div class="lc-tag" style="color:var(--blue);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">👤</div><div><div class="lc-title">Lektion 2 — Unpersönliche Konstruktionen</div><div class="lc-desc">man, es, Passiv als Mittel zur Distanzierung. Ich-Vermeidung im akademischen Schreiben.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">📚</div><div><div class="lc-title">Lektion 3 — Formelle Lexik</div><div class="lc-desc">erörtern statt besprechen, darlegen statt erklären, hinsichtlich statt wegen. Wortschatzerweiterung.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">✏️</div><div><div class="lc-title">Lektion 4 — Zitieren und Paraphrasieren</div><div class="lc-desc">Wie man Quellen korrekt einbettet. Konjunktiv I beim Zitieren. Paraphrase-Techniken.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">📮</div><div><div class="lc-title">Lektion 5 — Formeller Brief / Bewerbung</div><div class="lc-desc">Struktur, Anrede, Grußformel, typische Phrasen. B2-Schreibaufgabe: formeller Brief.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
+    <!-- STANDALONE QUIZ -->
+    <div class="sq-wrap" id="sqWrap">
+      <div id="sqQuestion">
+        <div class="sq-title">Wissenstest</div>
+        <div class="sq-sub">5 Fragen &mdash; teste dein Wissen!</div>
+        <div class="sq-dots" id="sqDots"></div>
+        <div class="sq-q" id="sqQText"></div>
+        <div class="sq-opts" id="sqOpts"></div>
+        <div class="sq-fb" id="sqFb"></div>
+        <button class="btn btn-primary sq-next" id="sqNext" onclick="sqAdvance()">Weiter &#x2192;</button>
+      </div>
+      <div class="sq-result" id="sqResult">
+        <div class="sq-score-num" id="sqScoreNum">0/5</div>
+        <div class="sq-score-msg" id="sqScoreMsg"></div>
+        <div class="sq-btns">
+          <button class="btn btn-outline" onclick="sqReset()">Nochmal versuchen</button>
+          <button class="btn btn-primary" id="sqNextMod">N&#xE4;chstes Modul &#x2192;</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lektionen</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--blue);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0"><div class="card">
+        <div class="concept-tag">B2 · Modul 8 · Lektion 1 von 5</div>
+        <h2 class="lesson-h">Merkmale <span style="color:var(--ki)">wissenschaftlicher Sprache</span></h2>
+        <p class="body-text">Wissenschaftliche und formelle deutsche Texte unterscheiden sich von alltagssprachlichen Texten in Stil, Lexik und Grammatik.</p>
+        <details class="en-help"><summary>🇬🇧 Features of academic German</summary>
+          <div class="en-help-body"><p>Key features: 1. Objectivity (avoid personal opinions unless marked). 2. Precision (exact terms, no vague language). 3. Impersonality (passive, man, es). 4. Complex sentence structure (subordinate clauses, participial attributes). 5. Technical vocabulary. 6. Citations with Konjunktiv I.</p></div>
+        </details>
+        <div class="comp-wrap">
+          <table class="comp-table">
+            <tr><th>Merkmal</th><th>Umgangssprache</th><th>Formell/Wissenschaftlich</th></tr>
+            <tr><td class="kh">Objektivität</td><td>Ich finde, das ist gut.</td><td>Die Ergebnisse deuten darauf hin, dass…</td></tr>
+            <tr><td style="color:var(--blue);">Unpersönlichkeit</td><td>Wir haben untersucht…</td><td>Es wurde untersucht… / Man untersuchte…</td></tr>
+            <tr><td class="fh">Präzision</td><td>viele Leute</td><td>ein signifikanter Anteil der Bevölkerung</td></tr>
+            <tr><td style="color:var(--green);">Lexik</td><td>machen</td><td>durchführen, realisieren, bewerkstelligen</td></tr>
+            <tr><td style="color:var(--gold);">Satzbau</td><td>Das ist wichtig.</td><td>Dies stellt einen wesentlichen Faktor dar.</td></tr>
+          </table>
+        </div>
+        <div class="warn-box"><strong>Merke!</strong> Im B2-Schreiben sollen deine Texte formell sein — aber nicht unlesbar! Übertreibe Nominalstil nicht. Klarheit und Präzision sind wichtiger als schiere Komplexität.</div>
+        <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(0,0)">Weiter →</button>
+      </div></div>
+      <div class="step" id="l0-s1"><div class="card">
+        <div class="quiz-qnum" id="l0-qnum">FRAGE 1 VON 2</div><div class="quiz-q" id="l0-q"></div><div class="quiz-hint" id="l0-hint"></div><div class="quiz-opts" id="l0-opts"></div>
+        <div class="qfeedback" id="l0-fb"><div class="qft" id="l0-ft"></div><div class="qfb" id="l0-fbe"></div><div class="qfr" id="l0-rule"></div></div>
+        <div class="qnext" id="l0-next"><button class="btn btn-primary" onclick="advQ(0)">Weiter →</button></div>
+      </div></div>
+    </div>
+
+    <div id="lesson-1" class="lesson-pane">
+      <div class="step active" id="l1-s0"><div class="card">
+        <div class="concept-tag">B2 · Modul 8 · Lektion 2 von 5</div>
+        <h2 class="lesson-h">Unpersönliche <span style="color:var(--blue)">Konstruktionen</span></h2>
+        <p class="body-text">Akademische Texte vermeiden das „Ich" — stattdessen werden unpersönliche Konstruktionen verwendet, die Objektivität signalisieren.</p>
+        <div class="comp-wrap">
+          <table class="comp-table">
+            <tr><th>Konstruktion</th><th>Beispiel</th><th>Nuance</th></tr>
+            <tr><td class="kh">Passiv</td><td>Es wurde untersucht, ob…</td><td>Standard, sehr formell</td></tr>
+            <tr><td style="color:var(--blue);">man</td><td>Man kann feststellen, dass…</td><td>allgemein, neutral</td></tr>
+            <tr><td class="fh">es + Passiv</td><td>Es lässt sich zeigen, dass…</td><td>neutral, präzise</td></tr>
+            <tr><td style="color:var(--green);">Nominalisierung</td><td>Die Analyse zeigt…</td><td>Nominalstil, sehr formell</td></tr>
+            <tr><td style="color:var(--gold);">Relativsatz</td><td>Studien, die belegen, dass…</td><td>klar, strukturiert</td></tr>
+          </table>
+        </div>
+        <div class="ex-list">
+          <div class="ex-card"><div style="flex:1;">
+            <div class="ex-de">❌ <span style="color:var(--red);">Ich habe herausgefunden, dass die Daten falsch sind.</span></div>
+            <div class="ex-note">Zu persönlich für akademische Texte</div>
+          </div></div>
+          <div class="ex-card"><div style="flex:1;">
+            <div class="ex-de">✓ <span class="kh">Die Analyse hat ergeben, dass die Daten fehlerhaft sind.</span></div>
+            <div class="ex-note">Nominalisierung (die Analyse) + unpersönlich (hat ergeben)</div>
+          </div></div>
+          <div class="ex-card"><div style="flex:1;">
+            <div class="ex-de">✓ <span style="color:var(--blue);">Es lässt sich feststellen, dass die Daten Unstimmigkeiten aufweisen.</span></div>
+            <div class="ex-note">lassen+sich = elegante unpersönliche Konstruktion</div>
+          </div></div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(1,0)">Weiter →</button>
+      </div></div>
+      <div class="step" id="l1-s1"><div class="card">
+        <div class="quiz-qnum" id="l1-qnum">FRAGE 1 VON 2</div><div class="quiz-q" id="l1-q"></div><div class="quiz-hint" id="l1-hint"></div><div class="quiz-opts" id="l1-opts"></div>
+        <div class="qfeedback" id="l1-fb"><div class="qft" id="l1-ft"></div><div class="qfb" id="l1-fbe"></div><div class="qfr" id="l1-rule"></div></div>
+        <div class="qnext" id="l1-next"><button class="btn btn-primary" onclick="advQ(1)">Weiter →</button></div>
+      </div></div>
+    </div>
+
+    <div id="lesson-2" class="lesson-pane">
+      <div class="step active" id="l2-s0"><div class="card">
+        <div class="concept-tag">B2 · Modul 8 · Lektion 3 von 5</div>
+        <h2 class="lesson-h">Formelle <span style="color:var(--blue)">Lexik</span></h2>
+        <p class="body-text">Formelle Sprache verwendet präzisere, gehobene Vokabeln anstelle alltagssprachlicher Alternativen. Diese Wörter steigern das Niveau deiner B2-Texte erheblich.</p>
+        <div class="comp-wrap">
+          <table class="comp-table">
+            <tr><th>Umgangssprache</th><th>Formell/Wissenschaftlich</th></tr>
+            <tr><td>sagen, erklären</td><td>darlegen, erläutern, ausführen, konstatieren</td></tr>
+            <tr><td>zeigen, beweisen</td><td>belegen, aufzeigen, nachweisen, demonstrieren</td></tr>
+            <tr><td>benutzen</td><td>verwenden, einsetzen, nutzen, anwenden</td></tr>
+            <tr><td>untersuchen</td><td>analysieren, erforschen, eruieren, prüfen</td></tr>
+            <tr><td>wegen</td><td>aufgrund + Gen., infolge + Gen., angesichts + Gen.</td></tr>
+            <tr><td>aber</td><td>jedoch, allerdings, indessen, nichtsdestoweniger</td></tr>
+            <tr><td>denken</td><td>erachten, betrachten als, auffassen als</td></tr>
+            <tr><td>wichtig</td><td>bedeutsam, relevant, wesentlich, ausschlaggebend</td></tr>
+          </table>
+        </div>
+        <div class="success-box"><strong>B2-Tipp:</strong> Du musst nicht alle Wörter auf einmal lernen. Merke dir 2-3 formelle Synonyme für die häufigsten Wörter (sagen, zeigen, wichtig, aber) — das reicht für einen deutlich besseren Aufsatz.</div>
+        <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(2,0)">Weiter →</button>
+      </div></div>
+      <div class="step" id="l2-s1"><div class="card">
+        <div class="quiz-qnum" id="l2-qnum">FRAGE 1 VON 2</div><div class="quiz-q" id="l2-q"></div><div class="quiz-hint" id="l2-hint"></div><div class="quiz-opts" id="l2-opts"></div>
+        <div class="qfeedback" id="l2-fb"><div class="qft" id="l2-ft"></div><div class="qfb" id="l2-fbe"></div><div class="qfr" id="l2-rule"></div></div>
+        <div class="qnext" id="l2-next"><button class="btn btn-primary" onclick="advQ(2)">Weiter →</button></div>
+      </div></div>
+    </div>
+
+    <div id="lesson-3" class="lesson-pane">
+      <div class="step active" id="l3-s0"><div class="card">
+        <div class="concept-tag">B2 · Modul 8 · Lektion 4 von 5</div>
+        <h2 class="lesson-h">Zitieren &amp; <span style="color:var(--blue)">Paraphrasieren</span></h2>
+        <p class="body-text">Im akademischen und formellen Schreiben werden Quellen zitiert oder paraphrasiert. Konjunktiv I zeigt: Dies ist die Aussage einer anderen Person.</p>
+        <div class="info-box"><strong>Einleitungsphrasen für Zitate und Paraphrasen:</strong><br><br>
+          Müller (2022) argumentiert, dass… (+ KI)<br>
+          Laut Schmitt (2021) sei… (+ KI)<br>
+          In der Studie von Chen wird darauf hingewiesen, dass… (+ KI)<br>
+          Wie Osei betont, lasse sich… (+ KI)<br>
+          Es wird dargelegt, dass… (Passiv + KI)
+        </div>
+        <div class="ex-list">
+          <div class="ex-card"><div style="flex:1;">
+            <div class="ex-de">Kwame (2023) legt dar, Bildungsinvestitionen <span class="kh">seien</span> der effektivste Weg zur Armutsreduktion.</div>
+            <div class="ex-note">darlegen + KI von sein (seien) — akademische Zitation</div>
+          </div></div>
+          <div class="ex-card"><div style="flex:1;">
+            <div class="ex-de">Die Forschungsergebnisse zeigen, dass eine erhöhte Investition in erneuerbare Energien erforderlich <span class="kh">sei</span>.</div>
+            <div class="ex-note">KI (sei) zeigt: Dies ist die Position der Studie, nicht meine eigene Aussage</div>
+          </div></div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(3,0)">Weiter →</button>
+      </div></div>
+      <div class="step" id="l3-s1"><div class="card">
+        <div class="quiz-qnum" id="l3-qnum">FRAGE 1 VON 2</div><div class="quiz-q" id="l3-q"></div><div class="quiz-hint" id="l3-hint"></div><div class="quiz-opts" id="l3-opts"></div>
+        <div class="qfeedback" id="l3-fb"><div class="qft" id="l3-ft"></div><div class="qfb" id="l3-fbe"></div><div class="qfr" id="l3-rule"></div></div>
+        <div class="qnext" id="l3-next"><button class="btn btn-primary" onclick="advQ(3)">Weiter →</button></div>
+      </div></div>
+    </div>
+
+    <div id="lesson-4" class="lesson-pane">
+      <div class="step active" id="l4-s0"><div class="card">
+        <div class="concept-tag">B2 · Modul 8 · Lektion 5 von 5</div>
+        <h2 class="lesson-h">Formeller Brief &amp; <span style="color:var(--blue)">Bewerbung</span></h2>
+        <p class="body-text">Der formelle Brief ist eine häufige B2-Schreibaufgabe. Er folgt einer strengen Struktur mit festen Phrasen für Anrede, Einleitung, Hauptteil und Schlussformel.</p>
+        <div class="comp-wrap">
+          <table class="comp-table">
+            <tr><th>Teil</th><th>Formulierung</th></tr>
+            <tr><td class="kh">Anrede (bekannt)</td><td>Sehr geehrte Frau Müller, / Sehr geehrter Herr Schmidt,</td></tr>
+            <tr><td class="kh">Anrede (unbekannt)</td><td>Sehr geehrte Damen und Herren,</td></tr>
+            <tr><td style="color:var(--blue);">Einleitung</td><td>Hiermit bewerbe ich mich… / Ich schreibe Ihnen bezüglich…</td></tr>
+            <tr><td style="color:var(--blue);">Hauptteil</td><td>Im Folgenden möchte ich darlegen… / Wie Sie der Anlage entnehmen können…</td></tr>
+            <tr><td class="fh">Schluss</td><td>Für Rückfragen stehe ich Ihnen gerne zur Verfügung. / Ich freue mich auf Ihre Rückmeldung.</td></tr>
+            <tr><td class="fh">Grußformel</td><td>Mit freundlichen Grüßen, / Hochachtungsvoll,</td></tr>
+          </table>
+        </div>
+        <div class="danger-box"><strong>Häufige Fehler im formellen Brief:</strong><br>
+          ❌ „Hallo Frau Müller" → ✓ „Sehr geehrte Frau Müller"<br>
+          ❌ „Ich finde, Sie sollten…" → ✓ „Es wäre wünschenswert, wenn…"<br>
+          ❌ „Tschüss" → ✓ „Mit freundlichen Grüßen"
+        </div>
+        <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(4,0)">Weiter →</button>
+      </div></div>
+      <div class="step" id="l4-s1"><div class="card">
+        <div class="quiz-qnum" id="l4-qnum">FRAGE 1 VON 2</div><div class="quiz-q" id="l4-q"></div><div class="quiz-hint" id="l4-hint"></div><div class="quiz-opts" id="l4-opts"></div>
+        <div class="qfeedback" id="l4-fb"><div class="qft" id="l4-ft"></div><div class="qfb" id="l4-fbe"></div><div class="qfr" id="l4-rule"></div></div>
+        <div class="qnext" id="l4-next"><button class="btn btn-primary" onclick="advQ(4)">Weiter →</button></div>
+      </div></div>
+      <div class="step" id="l4-s2"><div class="complete-wrap">
+        <div class="complete-icon">🎓</div>
+        <h2 class="lesson-h">Modul abgeschlossen!</h2>
+        <p class="body-text">Du beherrschst jetzt die Grundlagen der wissenschaftlichen und formellen deutschen Sprache — Unpersönlichkeit, formelle Lexik, Zitation und formelle Briefe.</p>
+        <div class="xp-badge">⚡ +120 XP</div>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:12px;">
+          <button class="btn btn-outline" onclick="showOverview()">Lektionen ansehen</button>
+          <a href="deutschweg-prototype.html" class="btn btn-primary" style="text-decoration:none;display:inline-flex;align-items:center;">← Dashboard</a>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</div>
+
+<div class="dw-next-step-bar">
+  <a href="module-b2-7-textanalyse.html" class="dw-nsb-link">← Modul 7</a>
+  <a href="deutschweg-prototype.html#b2" class="dw-nsb-link">B2 Übersicht</a>
+  <a href="module-b2-9-diskussion.html" class="dw-nsb-cta">Modul 9: Diskutieren →</a>
+</div>
+
+<script>
+var QD={
+  0:[
+    {q:'Welcher Satz entspricht dem formellen Stil?',hint:'Objektiv, unpersönlich, präzise',opts:['Ich glaube, das ist ein großes Problem.','Es lässt sich festhalten, dass dies ein bedeutsames Problem darstellt.','Das ist echt ein riesiges Problem.','Wir denken, es ist ein Problem.'],ans:1,exp:'Formell: unpersönlich (es lässt sich), nominalisiert (darstellt), präzise (bedeutsames Problem). Umgangssprachlich sind: „Ich glaube", „echt", „riesig".',rule:'Formell: unpersönlich + präzise + Nominalstil'},
+    {q:'Was ist ein Merkmal wissenschaftlicher Sprache?',hint:'Denke an Objektivität und Stil',opts:['Häufige Verwendung von Ich und Wir','Kurze, einfache Sätze ohne Nebensätze','Unpersönliche Konstruktionen und Fachvokabular','Emotionale Sprache und persönliche Anekdoten'],ans:2,exp:'Wissenschaftliche Sprache ist unpersönlich (Passiv, man, es), präzise (Fachvokabular), objektiv (keine persönlichen Meinungen ohne Markierung) und strukturiert (klare Argumentation).',rule:'Wissenschaftliche Sprache: unpersönlich, präzise, objektiv, strukturiert'}
+  ],
+  1:[
+    {q:'Wie lautet die formellste unpersönliche Alternative zu „Ich habe untersucht"?',hint:'Passiv oder Nominalisierung?',opts:['Man untersucht das.','Es wurde untersucht.','Wir haben untersucht.','Die Untersuchung wurde durchgeführt.'],ans:3,exp:'„Die Untersuchung wurde durchgeführt" ist am formellsten: Nominalisierung (die Untersuchung) + Passiv (wurde durchgeführt). Keine Person — maximale Unpersönlichkeit.',rule:'Formellste Unpersönlichkeit: Nominalisierung + Passiv'},
+    {q:'„Es lässt sich feststellen, dass…" entspricht:',hint:'lassen+sich = Passivumschreibung',opts:['Ich stelle fest, dass…','Man kann feststellen, dass… (unpersönlich)','Es wird festgestellt, dass… (echtes Passiv)','Alle oben genannten Alternativen sind gleichwertig.'],ans:3,exp:'„Es lässt sich feststellen" ist eine Passivumschreibung (lassen+sich) und entspricht sowohl „man kann feststellen" als auch „es kann festgestellt werden". Alle sind unpersönlich und formell.',rule:'lassen+sich = kann+werden (Passivumschreibung), unpersönlich und formell'}
+  ],
+  2:[
+    {q:'Welches ist die formellste Alternative zu „zeigen"?',hint:'wissenschaftlicher Kontext: Ergebnisse zeigen…',opts:['machen','belegen/nachweisen','sagen','erklären'],ans:1,exp:'„belegen" und „nachweisen" sind die formellsten wissenschaftlichen Alternativen zu „zeigen". Verwendung: Die Studie belegt / die Daten weisen nach, dass…',rule:'zeigen → formell: belegen, nachweisen, aufzeigen, demonstrieren'},
+    {q:'Welches Wort ist ein formelles Synonym für „wegen"?',hint:'mit Genitiv',opts:['aber','deshalb','aufgrund + Gen.','weil'],ans:2,exp:'„aufgrund + Genitiv" ist das formelle nominale Äquivalent von „wegen" (das auch + Genitiv nimmt). „aufgrund der steigenden Kosten" statt „wegen den/der steigenden Kosten".',rule:'wegen → formell: aufgrund + Gen., infolge + Gen., angesichts + Gen.'}
+  ],
+  3:[
+    {q:'Warum verwendet man Konjunktiv I beim Zitieren?',hint:'Funktion des KI in akademischen Texten',opts:['Weil es formeller klingt','Um zu zeigen, dass es sich um die Aussage einer anderen Person handelt','Weil Indikativ zu direkt ist','Weil es die Grammatikregel für alle Nebensätze ist'],ans:1,exp:'Konjunktiv I beim Zitieren signalisiert: Diese Aussage stammt von der zitierten Person/Studie — ich übernehme keine persönliche Verantwortung dafür. Das ist die Distanzierungsfunktion des KI.',rule:'KI beim Zitieren = Distanzierung: „das ist Müllers These, nicht meine"'},
+    {q:'„Laut Osei (2022) sei das Bildungssystem reformbedürftig." Warum ist „sei" korrekt?',hint:'sei = KI von sein',opts:['Weil sei die Vergangenheitsform von sein ist','Weil sei Konjunktiv I von sein ist — indirekte Rede/Zitation','Weil Osei eine Autorität ist','Weil reformbedürftig ein Adjektiv ist'],ans:1,exp:'„sei" ist Konjunktiv I von „sein". Bei der Zitation mit „laut + Person" verwendet man KI, um die Aussage als die des Zitierten zu markieren, nicht als eigene Feststellung.',rule:'laut + Person → KI: sei, habe, werde, komme…'}
+  ],
+  4:[
+    {q:'Welche Anrede ist korrekt für eine unbekannte Person in einem formellen Brief?',hint:'Du kennst den Namen nicht',opts:['Hallo,','Liebe Damen und Herren,','Sehr geehrte Damen und Herren,','Hey,'],ans:2,exp:'„Sehr geehrte Damen und Herren," ist die Standardanrede im formellen deutschen Brief, wenn der Name des Empfängers unbekannt ist.',rule:'Formeller Brief ohne Namenskenntnis: „Sehr geehrte Damen und Herren,"'},
+    {q:'Welche Schlussformel ist für einen formellen Brief korrekt?',hint:'Kein Tschüss, kein Liebe Grüße',opts:['Tschüss!','Liebe Grüße,','Mit freundlichen Grüßen,','Bis bald,'],ans:2,exp:'„Mit freundlichen Grüßen," ist die Standardschlussformel im formellen deutschen Brief. „Tschüss" und „Liebe Grüße" sind informell.',rule:'Formeller Brief: „Mit freundlichen Grüßen," / „Hochachtungsvoll,"'}
+  ]
+};
+var curLesson=0,curStep=0,curQ={},qIdx=0,xp=0,lessonSteps=[2,2,2,2,3];
+function speakSentence(btn,text){if(!window.speechSynthesis)return;window.speechSynthesis.cancel();if(btn.classList.contains('speaking')){btn.classList.remove('speaking');return;}var u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=0.9;u.onend=()=>btn.classList.remove('speaking');btn.classList.add('speaking');window.speechSynthesis.speak(u);}
+function showOverview(){document.getElementById('screen-lesson').classList.remove('active');document.getElementById('screen-overview').classList.add('active');window.scrollTo(0,0);}
+function goLesson(li){curLesson=li;curStep=0;qIdx=0;document.getElementById('screen-overview').classList.remove('active');document.getElementById('screen-lesson').classList.add('active');document.querySelectorAll('.lesson-pane').forEach(p=>p.style.display='none');document.getElementById('lesson-'+li).style.display='block';document.querySelectorAll('#lesson-'+li+' .step').forEach((s,i)=>s.classList.toggle('active',i===0));renderDots(li);updateProgress(li,0);window.scrollTo(0,0);}
+function renderDots(li){var n=lessonSteps[li],row=document.getElementById('dotRow');row.innerHTML='';for(var i=0;i<n;i++){var d=document.createElement('div');d.className='dot'+(i===0?' active':'');(function(idx){d.onclick=function(){if(idx<=curStep)goStep(curLesson,idx);};})(i);row.appendChild(d);}}
+function goStep(li,si){curStep=si;document.querySelectorAll('#lesson-'+li+' .step').forEach((s,i)=>s.classList.toggle('active',i===si));document.querySelectorAll('#dotRow .dot').forEach((d,i)=>{d.classList.toggle('active',i===si);d.classList.toggle('done',i<si);});updateProgress(li,si);window.scrollTo(0,0);}
+function updateProgress(li,si){document.getElementById('progFill').style.width=Math.round((si/(lessonSteps[li]-1))*100)+'%';}
+function nextStep(li,si){var nsi=si+1;if(nsi>=lessonSteps[li])return;initQuiz(li);goStep(li,nsi);}
+function initQuiz(li){qIdx=0;renderQ(li);}
+function renderQ(li){var qs=QD[li];if(!qs||qIdx>=qs.length){showResult(li);return;}var q=qs[qIdx];document.getElementById('l'+li+'-qnum').textContent='FRAGE '+(qIdx+1)+' VON '+qs.length;document.getElementById('l'+li+'-q').textContent=q.q;document.getElementById('l'+li+'-hint').textContent=q.hint;var opts=document.getElementById('l'+li+'-opts');opts.innerHTML='';['A','B','C','D'].forEach(function(l,i){var btn=document.createElement('button');btn.className='qopt';btn.innerHTML='<span class="qletter">'+l+'</span>'+q.opts[i];btn.onclick=function(){pickQ(li,i);};opts.appendChild(btn);});document.getElementById('l'+li+'-fb').className='qfeedback';document.getElementById('l'+li+'-next').className='qnext';}
+function pickQ(li,idx){var q=QD[li][qIdx];var opts=document.querySelectorAll('#l'+li+'-opts .qopt');opts.forEach(b=>b.disabled=true);opts[idx].classList.add(idx===q.ans?'correct':'wrong');if(idx!==q.ans)opts[q.ans].classList.add('correct');var ok=idx===q.ans;if(ok){xp+=10;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';}var fb=document.getElementById('l'+li+'-fb');fb.className='qfeedback show '+(ok?'ok':'no');document.getElementById('l'+li+'-ft').textContent=ok?'✓ Richtig!':'✗ Leider falsch.';document.getElementById('l'+li+'-ft').className='qft '+(ok?'ok':'no');document.getElementById('l'+li+'-fbe').textContent=q.exp;document.getElementById('l'+li+'-rule').textContent='📌 '+q.rule;document.getElementById('l'+li+'-next').className='qnext show';}
+function advQ(li){qIdx++;if(qIdx>=QD[li].length)showResult(li);else renderQ(li);}
+function showResult(li){if(li===4){goStep(li,2);localStorage.setItem('dw_xp',parseInt(localStorage.getItem('dw_xp')||'0')+xp);localStorage.setItem('dw_mod_b2_8_done','1');}else goLesson(li+1);}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');xp=0;document.getElementById('xpDisp').textContent='⚡ 0 XP';});
+
+  // ===== STANDALONE QUIZ =====
+  var SQ_DATA = [
+  {
+    "q": "Was charakterisiert wissenschaftliches Schreiben?",
+    "opts": [
+      "Persoenliche Meinungen und Emotionen",
+      "Objektiver Ton, Praezision und belegte Aussagen",
+      "Umgangssprachliche Ausdruecke",
+      "Kurze, einfache Saetze"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Wissenschaftliche Texte sind objektiv, praezise und belegen Aussagen.",
+    "fb_ko": "Falsch. Wissenschaftliches Schreiben zeichnet sich durch Objektivitaet, Praezision und Belege aus."
+  },
+  {
+    "q": "Welche Form wird im wissenschaftlichen Schreiben bevorzugt, um Objektivitaet zu signalisieren?",
+    "opts": [
+      "Die Ich-Form",
+      "Das Passiv oder unpersoenlische Konstruktionen",
+      "Direkte Anrede",
+      "Befehlsform"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Das Passiv und unpersoenlische Konstruktionen schaffen Distanz und Objektivitaet.",
+    "fb_ko": "Falsch. Passiv und unpersoenlische Konstruktionen signalisieren Objektivitaet."
+  },
+  {
+    "q": "Was ist eine Hedging-Formulierung?",
+    "opts": [
+      "Eine direkte Behauptung",
+      "Eine vorsichtige Aussage, die Unsicherheit ausdrueckt",
+      "Ein Zitat aus einer Quelle",
+      "Eine Definition"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Hedging drueckt Vorsicht und Unsicherheit aus, z.B. 'Es scheint, dass...'",
+    "fb_ko": "Falsch. Hedging ist eine abschwaechende Formulierung, die Unsicherheit signalisiert."
+  },
+  {
+    "q": "Wie zitiert man im deutschen akademischen Stil korrekt?",
+    "opts": [
+      "Ohne Quellenangabe",
+      "Mit Autor, Jahr und Seitenzahl",
+      "Nur mit dem Buchtitel",
+      "Mit der ISBN-Nummer"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Zitate benoetigen Autor, Erscheinungsjahr und Seitenzahl.",
+    "fb_ko": "Falsch. Im akademischen Zitieren gibt man Autor, Erscheinungsjahr und Seitenzahl an."
+  },
+  {
+    "q": "Welches Konnektiv leitet einen Schlussfolgerungssatz ein?",
+    "opts": [
+      "obwohl",
+      "somit / daher / folglich",
+      "weil",
+      "damit"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! 'Somit', 'daher' und 'folglich' leiten Schlussfolgerungen ein.",
+    "fb_ko": "Falsch. 'Somit', 'daher' und 'folglich' sind typische Konnektive fuer Schlussfolgerungen."
+  }
+];
+  var sqIdx=0, sqScore=0, sqAnswered=false;
+  var sqResults=[];
+  function sqInit(){sqIdx=0;sqScore=0;sqAnswered=false;sqResults=[];sqRender();}
+  function sqRender(){
+    var d=SQ_DATA[sqIdx];
+    document.getElementById('sqQuestion').style.display='block';
+    document.getElementById('sqResult').classList.remove('show');
+    document.getElementById('sqQText').textContent=(sqIdx+1)+'. '+d.q;
+    var dots=document.getElementById('sqDots');
+    dots.innerHTML='';
+    for(var i=0;i<5;i++){
+      var dot=document.createElement('div');
+      var cls='sq-dot';
+      if(i<sqIdx){ cls+= sqResults[i]?' done':' wrong'; }
+      else if(i===sqIdx){ cls+=' active'; }
+      dot.className=cls;
+      dots.appendChild(dot);
+    }
+    var opts=document.getElementById('sqOpts');
+    opts.innerHTML='';
+    d.opts.forEach(function(o,i){
+      var b=document.createElement('button');
+      b.className='sq-opt';
+      b.textContent=o;
+      (function(idx){b.onclick=function(){sqPick(idx);};})(i);
+      opts.appendChild(b);
+    });
+    var fb=document.getElementById('sqFb');
+    fb.className='sq-fb';
+    fb.textContent='';
+    document.getElementById('sqNext').className='btn btn-primary sq-next';
+    sqAnswered=false;
+  }
+  function sqPick(idx){
+    if(sqAnswered)return;
+    sqAnswered=true;
+    var d=SQ_DATA[sqIdx];
+    var opts=document.getElementById('sqOpts').querySelectorAll('.sq-opt');
+    opts.forEach(function(b){b.classList.add('disabled');});
+    var ok=(idx===d.ans);
+    if(ok){sqScore++;sqResults[sqIdx]=true;}else{sqResults[sqIdx]=false;}
+    opts[idx].classList.add(ok?'correct':'wrong');
+    if(!ok) opts[d.ans].classList.add('correct');
+    var fb=document.getElementById('sqFb');
+    fb.textContent=ok?d.fb_ok:d.fb_ko;
+    fb.className='sq-fb show '+(ok?'ok':'ko');
+    document.getElementById('sqNext').className='btn btn-primary sq-next show';
+  }
+  function sqAdvance(){
+    if(sqIdx<4){sqIdx++;sqRender();}else{sqShowResult();}
+  }
+  function sqShowResult(){
+    document.getElementById('sqQuestion').style.display='none';
+    var res=document.getElementById('sqResult');
+    res.className='sq-result show';
+    document.getElementById('sqScoreNum').textContent=sqScore+'/5';
+    var msgs=['Nicht aufgeben! \u{1F31F}','Nicht aufgeben! \u{1F31F}','Weiter üben! \u{1F4DA}','Gut gemacht! \u{1F4AA}','Sehr gut! \u{1F44F}','Ausgezeichnet! \u{1F389}'];
+    document.getElementById('sqScoreMsg').textContent=msgs[sqScore];
+  }
+  function sqReset(){
+    sqIdx=0;sqScore=0;sqAnswered=false;sqResults=[];
+    document.getElementById('sqResult').className='sq-result';
+    document.getElementById('sqQuestion').style.display='block';
+    sqRender();
+  }
+  document.addEventListener('DOMContentLoaded',function(){sqInit();});
+
+  document.addEventListener('DOMContentLoaded',function(){
+    var nb=document.getElementById('sqNextMod');
+    if(nb){ nb.onclick=function(){ window.location.href='module-b2-9-diskussion.html'; }; }
+  });
+
+</script>
+</body>
+</html>

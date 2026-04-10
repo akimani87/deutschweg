@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeutschWeg — B2 Modul 7: Textanalyse</title>
+<link rel="stylesheet" href="deutschweg-theme.css">
+<style>
+  :root { --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc; --gold:#c9a84c; --red:#c0392b; --green:#27ae60; --blue:#3498db; --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a; --border:rgba(201,168,76,0.2); --ki:#e67e22; --kii:#9b59b6; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; opacity:0; transition:opacity 0.25s ease; }
+  body.ready { opacity:1; }
+  .screen { display:none; min-height:100vh; flex-direction:column; padding-bottom:100px; }
+  .screen.active { display:flex; }
+  .top-nav { display:flex; align-items:center; justify-content:space-between; padding:16px 24px; border-bottom:1px solid var(--border); background:rgba(10,10,10,0.95); position:sticky; top:0; z-index:50; }
+  .back-btn { background:none; border:1px solid var(--border); color:var(--white); padding:8px 16px; border-radius:20px; cursor:pointer; font-size:13px; transition:all 0.2s; }
+  .back-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .progress-bar { height:3px; background:rgba(255,255,255,0.08); }
+  .progress-fill { height:100%; background:var(--blue); transition:width 0.5s ease; }
+  .dot-row { display:flex; gap:8px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); cursor:pointer; transition:all 0.3s; }
+  .dot.done { background:var(--green); } .dot.active { background:var(--blue); width:22px; border-radius:4px; }
+  .step { display:none; animation:fadeUp 0.4s ease both; } .step.active { display:block; }
+  .btn { display:inline-block; padding:14px 32px; border-radius:50px; font-size:15px; font-weight:600; cursor:pointer; border:none; transition:all 0.2s; text-align:center; font-family:'DM Sans',sans-serif; }
+  .btn-primary { background:var(--blue); color:var(--white); width:100%; }
+  .btn-primary:hover { background:#2980b9; transform:translateY(-2px); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--white); padding:14px 24px; width:auto; }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:28px; margin-bottom:14px; }
+  .concept-tag { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:8px; font-family:'DM Mono',monospace; }
+  .lesson-h { font-family:'Playfair Display',serif; font-size:28px; line-height:1.2; margin-bottom:16px; }
+  .body-text { color:var(--cream); line-height:1.85; font-size:15px; margin-bottom:14px; }
+  .sec-label { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin:20px 0 12px; font-family:'DM Mono',monospace; }
+  .info-box { background:rgba(201,168,76,0.06); border-left:3px solid var(--gold); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .warn-box { background:rgba(52,152,219,0.06); border-left:3px solid var(--blue); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .danger-box { background:rgba(192,57,43,0.06); border-left:3px solid var(--red); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .success-box { background:rgba(39,174,96,0.06); border-left:3px solid var(--green); padding:14px 18px; border-radius:0 10px 10px 0; margin:14px 0; font-size:14px; color:var(--cream); line-height:1.75; }
+  .speak-btn { display:inline-flex; align-items:center; gap:6px; background:rgba(52,152,219,0.1); border:1px solid rgba(52,152,219,0.3); border-radius:20px; padding:7px 14px; cursor:pointer; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; transition:all 0.2s; margin:6px 4px 6px 0; user-select:none; }
+  .speak-btn.speaking { background:var(--blue); color:var(--white); }
+  .en-help { background:rgba(52,152,219,0.05); border:1px dashed rgba(52,152,219,0.25); border-radius:10px; margin:12px 0; }
+  .en-help summary { padding:10px 16px; cursor:pointer; font-size:13px; color:var(--blue); font-family:'DM Mono',monospace; list-style:none; display:flex; align-items:center; gap:8px; }
+  .en-help summary::-webkit-details-marker { display:none; }
+  .en-help[open] summary { border-bottom:1px dashed rgba(52,152,219,0.2); }
+  .en-help-body { padding:12px 16px; font-size:13px; color:rgba(245,240,232,.7); line-height:1.8; }
+  .en-help-body p { margin-bottom:8px; }
+  .ex-list { display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+  .ex-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; display:flex; align-items:flex-start; gap:14px; }
+  .ex-de { font-family:'DM Mono',monospace; font-size:14px; color:var(--cream); margin-bottom:3px; }
+  .ex-note { font-size:12px; color:var(--gray); line-height:1.6; }
+  .comp-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .comp-table th { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1.5px; padding:10px 14px; text-align:left; border-bottom:2px solid rgba(255,255,255,0.1); }
+  .comp-table td { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.05); font-family:'DM Mono',monospace; font-size:13px; vertical-align:top; }
+  .comp-table tr:last-child td { border-bottom:none; }
+  .comp-wrap { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; margin:14px 0; overflow-x:auto; }
+  .kh { color:var(--ki); font-weight:700; } .fh { color:var(--kii); font-weight:700; }
+  .quiz-qnum { font-family:'DM Mono',monospace; font-size:11px; color:var(--blue); letter-spacing:2px; margin-bottom:10px; }
+  .quiz-q { font-family:'Playfair Display',serif; font-size:20px; margin-bottom:6px; }
+  .quiz-hint { font-size:13px; color:var(--gray); margin-bottom:16px; }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .qopt { padding:13px 18px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; cursor:pointer; transition:all 0.2s; font-size:14px; background:transparent; color:var(--white); font-family:'DM Mono',monospace; text-align:left; display:flex; align-items:center; gap:12px; }
+  .qopt:hover:not([disabled]) { border-color:var(--blue); background:rgba(52,152,219,0.06); }
+  .qopt.correct { border-color:var(--green); background:rgba(39,174,96,0.1); }
+  .qopt.wrong { border-color:var(--red); background:rgba(192,57,43,0.1); }
+  .qletter { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:11px; font-family:'DM Mono',monospace; flex-shrink:0; }
+  .qopt.correct .qletter { background:var(--green); color:#fff; }
+  .qopt.wrong .qletter { background:var(--red); color:#fff; }
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; }
+  .qfeedback.show { display:block; animation:fadeUp 0.3s ease both; }
+  .qfeedback.ok { background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .qfeedback.no { background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); }
+  .qft { font-weight:700; font-size:14px; margin-bottom:5px; } .qft.ok { color:var(--green); } .qft.no { color:#e74c3c; }
+  .qfb { font-size:13px; color:var(--cream); line-height:1.7; }
+  .qfr { margin-top:8px; padding:7px 12px; background:rgba(52,152,219,0.1); border-radius:8px; font-size:12px; color:var(--blue); font-family:'DM Mono',monospace; }
+  .qnext { display:none; } .qnext.show { display:block; }
+  .lesson-card { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:18px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:16px; }
+  .lesson-card:hover { border-color:rgba(52,152,219,0.4); transform:translateX(3px); }
+  .lc-icon { width:46px; height:46px; border-radius:12px; background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.2); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .lc-title { font-weight:600; font-size:15px; margin-bottom:3px; }
+  .lc-desc { font-size:12px; color:var(--gray); }
+  .lc-tag { font-family:'DM Mono',monospace; font-size:11px; margin-left:auto; flex-shrink:0; }
+  .complete-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding:50px 24px; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+  .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(52,152,219,0.12); border:1px solid var(--blue); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--blue); font-size:18px; margin:18px 0; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+
+  /* ===== STANDALONE QUIZ ===== */
+  .sq-wrap{background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:28px;margin-top:32px;}
+  .sq-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:6px;}
+  .sq-sub{font-size:13px;color:var(--gray);margin-bottom:20px;}
+  .sq-dots{display:flex;gap:8px;margin-bottom:20px;}
+  .sq-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all 0.3s;}
+  .sq-dot.active{background:var(--blue);width:22px;border-radius:4px;}
+  .sq-dot.done{background:var(--green);}
+  .sq-dot.wrong{background:var(--red);}
+  .sq-q{font-size:16px;font-weight:600;margin-bottom:16px;line-height:1.5;}
+  .sq-opts{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+  .sq-opt{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:12px 16px;cursor:pointer;font-size:14px;transition:all 0.2s;text-align:left;}
+  .sq-opt:hover:not(.disabled){background:rgba(52,152,219,0.12);border-color:var(--blue);}
+  .sq-opt.selected{background:rgba(52,152,219,0.15);border-color:var(--blue);}
+  .sq-opt.correct{background:rgba(39,174,96,0.15);border-color:var(--green);color:var(--green);}
+  .sq-opt.wrong{background:rgba(192,57,43,0.15);border-color:var(--red);color:var(--red);}
+  .sq-opt.disabled{cursor:default;pointer-events:none;}
+  .sq-fb{font-size:14px;padding:12px 16px;border-radius:10px;margin-bottom:16px;display:none;}
+  .sq-fb.show{display:block;}
+  .sq-fb.ok{background:rgba(39,174,96,0.12);border:1px solid rgba(39,174,96,0.3);color:var(--green);}
+  .sq-fb.ko{background:rgba(192,57,43,0.12);border:1px solid rgba(192,57,43,0.3);color:#e07070;}
+  .sq-next{display:none;}
+  .sq-next.show{display:inline-block;}
+  .sq-result{display:none;text-align:center;padding:20px 0;}
+  .sq-result.show{display:block;}
+  .sq-score-num{font-family:'Playfair Display',serif;font-size:48px;color:var(--blue);margin-bottom:8px;}
+  .sq-score-msg{font-size:20px;margin-bottom:24px;}
+  .sq-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+  .sq-btns .btn{width:auto;padding:12px 28px;}
+
+</style>
+<style>
+/* LIGHT THEME OVERRIDE */
+:root { --black:#F8FAFC; --white:#1F2937; --cream:#4B5563; --gold:#3B82F6; --red:#EF4444; --green:#10B981; --blue:#3B82F6; --gray:#9CA3AF; --card-bg:#FFFFFF; --card2-bg:#F8FAFC; --border:#E5E7EB; --ki:#F59E0B; --kii:#8B5CF6; }
+body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-serif; }
+.top-nav { background:white; border-bottom:1px solid #E5E7EB; backdrop-filter:none; }
+.btn-primary { background:#3B82F6; color:white; } .btn-outline { background:transparent; border:1px solid #3B82F6; color:#3B82F6; }
+.card { background:#FFFFFF; border:1px solid #E5E7EB; box-shadow:0 1px 3px rgba(0,0,0,0.07); }
+.info-box { background:#EFF6FF; border-left:3px solid #3B82F6; color:#1D4ED8; }
+.warn-box { background:#EFF6FF; border-left:3px solid #3B82F6; color:#1D4ED8; }
+.danger-box { background:#FEF2F2; border-left:3px solid #EF4444; color:#991B1B; }
+.success-box { background:#ECFDF5; border-left:3px solid #10B981; color:#065F46; }
+.qopt { border:1px solid #E5E7EB; background:white; color:#1F2937; }
+.qopt:hover:not([disabled]) { border-color:#3B82F6; background:#EFF6FF; }
+.xp-badge { background:#EFF6FF; border:1px solid #3B82F6; color:#3B82F6; }
+.speak-btn { background:#EFF6FF; border-color:#DBEAFE; color:#3B82F6; }
+.speak-btn.speaking { background:#3B82F6; color:white; }
+.lesson-card { background:#F8FAFC; border:1px solid #E5E7EB; }
+.ex-card { background:#F8FAFC; border:1px solid #E5E7EB; }
+</style>
+</head>
+<body>
+<div id="screen-overview" class="screen active">
+  <nav class="dw-nav"><div class="dw-nav-inner">
+    <a href="deutschweg-prototype.html" class="dw-logo"><div class="dw-logo-icon">D</div><span class="dw-logo-text">Deutsch<span>Weg</span></span></a>
+    <a href="exam-vault.html" style="font-size:13px;font-weight:600;color:#1D4ED8;text-decoration:none;margin-right:8px;">📝 Exams</a>
+    <a href="deutschweg-prototype.html" class="dw-btn dw-btn-secondary">← Back to Dashboard</a>
+  </div></nav>
+  <div style="padding:36px 24px;max-width:680px;margin:0 auto;width:100%;">
+    <div class="concept-tag">B2 · Lesen/Schreiben · Modul 7</div>
+    <h1 class="lesson-h" style="font-size:36px;">Textanalyse &amp; <span style="color:var(--blue)">Argumentationsstrukturen</span></h1>
+    <p class="body-text">Auf B2-Niveau werden nicht nur Texte gelesen — sie werden analysiert. Du erkennst Argumentationsstrukturen, unterscheidest Fakten von Meinungen und verstehst rhetorische Mittel.</p>
+    <details class="en-help"><summary>🇬🇧 What will I learn here?</summary>
+      <div class="en-help-body"><p>B2 text analysis: identifying thesis, arguments, counter-arguments, conclusions. Distinguishing facts from opinions. Recognizing text structure (introduction, body, conclusion). Spotting rhetorical devices. This is essential for the B2 reading section (Leseverstehen) and the essay writing task.</p></div>
+    </details>
+    <div class="info-box"><strong>Lernziele:</strong><br><br>
+      ✦ Textstruktur erkennen: These, Argument, Gegenargument, Schluss<br>
+      ✦ Fakt vs. Meinung/Behauptung unterscheiden<br>
+      ✦ Argumentationsmarker verstehen und einsetzen<br>
+      ✦ Rhetorische Mittel erkennen (Analogie, Appell, Ironie)<br>
+      ✦ Autor-Perspektive und Ton erschließen<br>
+      ✦ Eigene Argumentationen strukturieren (B2 Schreiben)
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin:28px 0;">
+      <div class="lesson-card" onclick="goLesson(0)"><div class="lc-icon">🏗️</div><div><div class="lc-title">Lektion 1 — Textstruktur: These → Schluss</div><div class="lc-desc">Einleitung, Hauptteil (Argumentation), Schluss. Wie B2-Texte aufgebaut sind.</div></div><div class="lc-tag" style="color:var(--blue);">START →</div></div>
+      <div class="lesson-card" onclick="goLesson(1)"><div class="lc-icon">⚖️</div><div><div class="lc-title">Lektion 2 — Fakt vs. Meinung</div><div class="lc-desc">Sprachliche Signale: Es ist bekannt, dass… vs. Ich meine, dass… Behauptung erkennen.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 2</div></div>
+      <div class="lesson-card" onclick="goLesson(2)"><div class="lc-icon">🔗</div><div><div class="lc-title">Lektion 3 — Argumentationsmarker</div><div class="lc-desc">erstens/zweitens, einerseits/andererseits, zum einen/zum anderen. Übergänge und Signalwörter.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 3</div></div>
+      <div class="lesson-card" onclick="goLesson(3)"><div class="lc-icon">🎭</div><div><div class="lc-title">Lektion 4 — Rhetorik und Stilmittel</div><div class="lc-desc">Analogie, Beispiel, Appell, Ironie, Frage. Wie Autoren Leser überzeugen.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 4</div></div>
+      <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">✍️</div><div><div class="lc-title">Lektion 5 — Eigene Argumentation schreiben</div><div class="lc-desc">B2-Aufsatz: Struktur, Übergänge, überzeugende Argumente. Muster und Phrasen.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
+    </div>
+    <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
+    <!-- STANDALONE QUIZ -->
+    <div class="sq-wrap" id="sqWrap">
+      <div id="sqQuestion">
+        <div class="sq-title">Wissenstest</div>
+        <div class="sq-sub">5 Fragen &mdash; teste dein Wissen!</div>
+        <div class="sq-dots" id="sqDots"></div>
+        <div class="sq-q" id="sqQText"></div>
+        <div class="sq-opts" id="sqOpts"></div>
+        <div class="sq-fb" id="sqFb"></div>
+        <button class="btn btn-primary sq-next" id="sqNext" onclick="sqAdvance()">Weiter &#x2192;</button>
+      </div>
+      <div class="sq-result" id="sqResult">
+        <div class="sq-score-num" id="sqScoreNum">0/5</div>
+        <div class="sq-score-msg" id="sqScoreMsg"></div>
+        <div class="sq-btns">
+          <button class="btn btn-outline" onclick="sqReset()">Nochmal versuchen</button>
+          <button class="btn btn-primary" id="sqNextMod">N&#xE4;chstes Modul &#x2192;</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="screen-lesson" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="top-nav" style="border-bottom:none;">
+    <button class="back-btn" onclick="showOverview()">← Lektionen</button>
+    <div class="dot-row" id="dotRow"></div>
+    <div id="xpDisp" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--blue);">⚡ 0 XP</div>
+  </div>
+  <div style="max-width:680px;margin:0 auto;width:100%;padding:20px 24px;">
+
+    <div id="lesson-0" class="lesson-pane">
+      <div class="step active" id="l0-s0"><div class="card">
+        <div class="concept-tag">B2 · Modul 7 · Lektion 1 von 5</div>
+        <h2 class="lesson-h">Textstruktur: <span style="color:var(--ki)">These → Schluss</span></h2>
+        <p class="body-text">Jeder argumentative Text hat eine klare Struktur. Diese Struktur zu erkennen, ist der erste Schritt zur erfolgreichen B2-Textanalyse.</p>
+        <details class="en-help"><summary>🇬🇧 Text structure explained</summary>
+          <div class="en-help-body"><p>Argumentative text structure: 1. Introduction (Einleitung) — context + thesis (Hauptthese). 2. Body (Hauptteil) — arguments (Pro) + counter-arguments (Kontra) + evidence. 3. Conclusion (Schluss) — summary + position/call to action. Identifying these sections quickly is key for B2 reading comprehension.</p></div>
+        </details>
+        <div class="comp-wrap">
+          <table class="comp-table">
+            <tr><th>Teil</th><th>Inhalt</th><th>Signalwörter</th></tr>
+            <tr><td class="kh">Einleitung</td><td>Kontext, Problemstellung, These</td><td>Heutzutage, Es ist bekannt, dass…</td></tr>
+            <tr><td style="color:var(--blue);">Hauptteil</td><td>Argumente, Belege, Gegenargumente</td><td>Erstens, Außerdem, Allerdings</td></tr>
+            <tr><td class="fh">Schluss</td><td>Zusammenfassung, Fazit, Appell</td><td>Insgesamt, Zusammenfassend, Daher</td></tr>
+          </table>
+        </div>
+        <div class="info-box"><strong>Argumentationsstruktur im Hauptteil:</strong><br><br>
+          1. <strong>Argument</strong> benennen<br>
+          2. <strong>Erklären/Belegen</strong> (Beispiel, Statistik, Studie)<br>
+          3. <strong>Schlussfolgerung</strong> für das Argument<br>
+          4. Eventuell: <strong>Gegenargument einräumen</strong> und entkräften
+        </div>
+        <div class="ex-list">
+          <div class="ex-card"><div style="flex:1;">
+            <div class="ex-de"><span class="kh">These:</span> Digitale Bildung sollte in allen Schulen verpflichtend sein.</div>
+            <div class="ex-note">Die Hauptthese steht am Ende der Einleitung — klar und präzise formuliert.</div>
+          </div></div>
+          <div class="ex-card"><div style="flex:1;">
+            <div class="ex-de"><span style="color:var(--blue);">Argument:</span> Digitale Kompetenzen sind auf dem modernen Arbeitsmarkt unerlässlich. Laut einer Studie von 2023 verlangen 80% aller Stellen grundlegende IT-Kenntnisse. <span class="fh">Daher</span> müssen Schulen diese Kompetenzen vermitteln.</div>
+            <div class="ex-note">Argument → Beleg (Statistik) → Schlussfolgerung</div>
+          </div></div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(0,0)">Weiter →</button>
+      </div></div>
+      <div class="step" id="l0-s1"><div class="card">
+        <div class="quiz-qnum" id="l0-qnum">FRAGE 1 VON 2</div><div class="quiz-q" id="l0-q"></div><div class="quiz-hint" id="l0-hint"></div><div class="quiz-opts" id="l0-opts"></div>
+        <div class="qfeedback" id="l0-fb"><div class="qft" id="l0-ft"></div><div class="qfb" id="l0-fbe"></div><div class="qfr" id="l0-rule"></div></div>
+        <div class="qnext" id="l0-next"><button class="btn btn-primary" onclick="advQ(0)">Weiter →</button></div>
+      </div></div>
+    </div>
+
+    <div id="lesson-1" class="lesson-pane">
+      <div class="step active" id="l1-s0"><div class="card">
+        <div class="concept-tag">B2 · Modul 7 · Lektion 2 von 5</div>
+        <h2 class="lesson-h">Fakt vs. <span style="color:var(--blue)">Meinung</span></h2>
+        <p class="body-text">Im B2-Lesetext musst du häufig entscheiden: Ist das eine belegbare Tatsache oder die Meinung/Behauptung des Autors? Sprachliche Signale zeigen den Unterschied.</p>
+        <div class="comp-wrap">
+          <table class="comp-table">
+            <tr><th>Typ</th><th>Sprachliche Signale</th><th>Beispiel</th></tr>
+            <tr><td class="kh">Fakt</td><td>Studien zeigen, Forschungen belegen, es gilt als erwiesen</td><td>Studien belegen, dass Sport die Gesundheit fördert.</td></tr>
+            <tr><td style="color:var(--blue);">Meinung</td><td>Ich meine, meiner Ansicht nach, offenbar, anscheinend</td><td>Meiner Ansicht nach ist Sport wichtiger als Diät.</td></tr>
+            <tr><td class="fh">Behauptung</td><td>Es wird behauptet, angeblich, laut X</td><td>Angeblich soll das Produkt helfen.</td></tr>
+          </table>
+        </div>
+        <div class="warn-box"><strong>Merke!</strong> „angeblich" und „soll" drücken Distanzierung aus — Der Sprecher übernimmt keine Verantwortung für die Aussage. Ähnlich wie Konjunktiv I im Journalismus.</div>
+        <div class="ex-list">
+          <div class="ex-card"><div style="flex:1;">
+            <div class="ex-de"><span class="kh">„Laut Statistik sind 60% der Jugendlichen täglich online."</span></div>
+            <div class="ex-note">Fakt: laut + Quelle → belegbare Aussage</div>
+          </div></div>
+          <div class="ex-card"><div style="flex:1;">
+            <div class="ex-de"><span style="color:var(--blue);">"Meiner Meinung nach ist das eine besorgniserregende Entwicklung."</span></div>
+            <div class="ex-note">Meinung: meiner Meinung nach → persönliche Wertung</div>
+          </div></div>
+          <div class="ex-card"><div style="flex:1;">
+            <div class="ex-de"><span class="fh">"Das Produkt soll angeblich Wunder wirken."</span></div>
+            <div class="ex-note">Behauptung: soll + angeblich → Autor distanziert sich, zweifelt</div>
+          </div></div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(1,0)">Weiter →</button>
+      </div></div>
+      <div class="step" id="l1-s1"><div class="card">
+        <div class="quiz-qnum" id="l1-qnum">FRAGE 1 VON 2</div><div class="quiz-q" id="l1-q"></div><div class="quiz-hint" id="l1-hint"></div><div class="quiz-opts" id="l1-opts"></div>
+        <div class="qfeedback" id="l1-fb"><div class="qft" id="l1-ft"></div><div class="qfb" id="l1-fbe"></div><div class="qfr" id="l1-rule"></div></div>
+        <div class="qnext" id="l1-next"><button class="btn btn-primary" onclick="advQ(1)">Weiter →</button></div>
+      </div></div>
+    </div>
+
+    <div id="lesson-2" class="lesson-pane">
+      <div class="step active" id="l2-s0"><div class="card">
+        <div class="concept-tag">B2 · Modul 7 · Lektion 3 von 5</div>
+        <h2 class="lesson-h"><span style="color:var(--blue)">Argumentationsmarker</span></h2>
+        <p class="body-text">Argumentationsmarker sind die Signalwörter, die Struktur und Logik eines Textes sichtbar machen. Sie sind unverzichtbar für eigene B2-Texte.</p>
+        <div class="comp-wrap">
+          <table class="comp-table">
+            <tr><th>Funktion</th><th>Marker</th></tr>
+            <tr><td style="color:var(--ki);">Aufzählung</td><td>erstens/zweitens, zum einen/zum anderen, einerseits/andererseits</td></tr>
+            <tr><td style="color:var(--blue);">Hinzufügen</td><td>außerdem, darüber hinaus, zusätzlich, überdies</td></tr>
+            <tr><td style="color:var(--green);">Kontrast</td><td>allerdings, jedoch, dennoch, im Gegensatz dazu</td></tr>
+            <tr><td style="color:var(--kii);">Schluss</td><td>insgesamt, abschließend, zusammenfassend, daher, folglich</td></tr>
+            <tr><td style="color:var(--gold);">Beispiel</td><td>beispielsweise, so zum Beispiel, wie etwa, nämlich</td></tr>
+            <tr><td style="color:var(--red);">Betonung</td><td>besonders, vor allem, insbesondere, in erster Linie</td></tr>
+          </table>
+        </div>
+        <div class="success-box"><strong>B2-Schreibtipp:</strong> Variiere deine Argumentationsmarker! Benutze nicht immer „aber" — wechsle zwischen allerdings, jedoch, dennoch, im Gegensatz dazu. Das zeigt lexikalische Bandbreite.</div>
+        <div class="ex-list">
+          <div class="ex-card"><div style="flex:1;">
+            <div class="ex-de"><span class="kh">Einerseits</span> bietet digitale Bildung viele Vorteile. <span style="color:var(--blue);">Andererseits</span> birgt sie auch Risiken.</div>
+            <div class="ex-note">einerseits/andererseits: klassischer Kontrast in der Argumentation</div>
+          </div><button class="speak-btn" onclick="speakSentence(this,'Einerseits bietet digitale Bildung viele Vorteile. Andererseits birgt sie auch Risiken.')">🔊</button></div>
+          <div class="ex-card"><div style="flex:1;">
+            <div class="ex-de"><span style="color:var(--kii);">Zusammenfassend</span> lässt sich sagen, dass weitere Forschung notwendig ist.</div>
+            <div class="ex-note">zusammenfassend: leitet den Schlussteil ein</div>
+          </div></div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(2,0)">Weiter →</button>
+      </div></div>
+      <div class="step" id="l2-s1"><div class="card">
+        <div class="quiz-qnum" id="l2-qnum">FRAGE 1 VON 2</div><div class="quiz-q" id="l2-q"></div><div class="quiz-hint" id="l2-hint"></div><div class="quiz-opts" id="l2-opts"></div>
+        <div class="qfeedback" id="l2-fb"><div class="qft" id="l2-ft"></div><div class="qfb" id="l2-fbe"></div><div class="qfr" id="l2-rule"></div></div>
+        <div class="qnext" id="l2-next"><button class="btn btn-primary" onclick="advQ(2)">Weiter →</button></div>
+      </div></div>
+    </div>
+
+    <div id="lesson-3" class="lesson-pane">
+      <div class="step active" id="l3-s0"><div class="card">
+        <div class="concept-tag">B2 · Modul 7 · Lektion 4 von 5</div>
+        <h2 class="lesson-h">Rhetorik &amp; <span style="color:var(--blue)">Stilmittel</span></h2>
+        <p class="body-text">Autoren nutzen rhetorische Mittel, um zu überzeugen. Sie zu erkennen ist wichtig für die B2-Prüfung (Leseverstehen) und für das eigene Schreiben.</p>
+        <div class="comp-wrap">
+          <table class="comp-table">
+            <tr><th>Stilmittel</th><th>Erklärung</th><th>Beispiel</th></tr>
+            <tr><td class="kh">Analogie</td><td>Vergleich mit ähnlicher Situation</td><td>Wie beim Sport gilt: regelmäßig üben führt zum Erfolg.</td></tr>
+            <tr><td style="color:var(--blue);">Beispiel</td><td>konkreter Beleg für eine These</td><td>So zeigt die Stadt Hamburg, dass…</td></tr>
+            <tr><td class="fh">Appell</td><td>Leser direkt ansprechen</td><td>Wir alle müssen handeln, bevor es zu spät ist.</td></tr>
+            <tr><td style="color:var(--green);">Rhetorische Frage</td><td>Frage, die keine Antwort erwartet</td><td>Wollen wir wirklich tatenlos zusehen?</td></tr>
+            <tr><td style="color:var(--gold);">Ironie</td><td>das Gegenteil vom Wortlaut gemeint</td><td>Sehr klug, diese Entscheidung. (ironisch)</td></tr>
+          </table>
+        </div>
+        <div class="warn-box"><strong>Merke!</strong> Im B2-Lesetest werden oft rhetorische Fragen und Appelle als Aussagen über die Einstellung des Autors abgefragt. Eine rhetorische Frage zeigt immer eine klare (implizierte) Meinung des Autors.</div>
+        <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(3,0)">Weiter →</button>
+      </div></div>
+      <div class="step" id="l3-s1"><div class="card">
+        <div class="quiz-qnum" id="l3-qnum">FRAGE 1 VON 2</div><div class="quiz-q" id="l3-q"></div><div class="quiz-hint" id="l3-hint"></div><div class="quiz-opts" id="l3-opts"></div>
+        <div class="qfeedback" id="l3-fb"><div class="qft" id="l3-ft"></div><div class="qfb" id="l3-fbe"></div><div class="qfr" id="l3-rule"></div></div>
+        <div class="qnext" id="l3-next"><button class="btn btn-primary" onclick="advQ(3)">Weiter →</button></div>
+      </div></div>
+    </div>
+
+    <div id="lesson-4" class="lesson-pane">
+      <div class="step active" id="l4-s0"><div class="card">
+        <div class="concept-tag">B2 · Modul 7 · Lektion 5 von 5</div>
+        <h2 class="lesson-h">Eigene Argumentation <span style="color:var(--blue)">schreiben</span></h2>
+        <p class="body-text">Im B2-Aufsatz wird eine klare, strukturierte Argumentation erwartet. Hier ist eine bewährte Vorlage.</p>
+        <div class="info-box"><strong>B2-Aufsatz Struktur (5 Absätze):</strong><br><br>
+          1. <strong>Einleitung:</strong> Thema einführen, These formulieren<br>
+          2. <strong>Pro-Argument 1:</strong> Argument + Beleg + Schluss<br>
+          3. <strong>Pro-Argument 2:</strong> Argument + Beleg + Schluss<br>
+          4. <strong>Gegenargument + Entkräftung:</strong> Auch wenn X… ist Y dennoch wichtiger, weil…<br>
+          5. <strong>Schluss:</strong> Zusammenfassung + persönliche Position + Ausblick
+        </div>
+        <div class="ex-list">
+          <div class="ex-card"><div style="flex:1;">
+            <div class="ex-de"><span class="kh">Einleitung:</span> In der heutigen Gesellschaft gewinnt das Thema X zunehmend an Bedeutung. In diesem Aufsatz möchte ich zeigen, dass…</div>
+          </div></div>
+          <div class="ex-card"><div style="flex:1;">
+            <div class="ex-de"><span style="color:var(--blue);">Gegenargument:</span> Zwar mag es stimmen, dass X teuer ist. Dennoch überwiegen die Vorteile, da…</div>
+            <div class="ex-note">Zwar…dennoch: klassische Konzessiv-Gegenargumentation</div>
+          </div></div>
+          <div class="ex-card"><div style="flex:1;">
+            <div class="ex-de"><span class="fh">Schluss:</span> Insgesamt lässt sich festhalten, dass… Daher ist es wichtig, dass… Ich bin überzeugt, dass…</div>
+          </div></div>
+        </div>
+        <div class="success-box"><strong>Bewertungskriterien B2 Schreiben:</strong> Inhalt (relevante Argumente) + Struktur (klare Gliederung) + Sprache (Vielfalt der Ausdrücke) + Korrektheit (Grammatik, Orthografie). Alle vier Bereiche werden bewertet!</div>
+        <button class="btn btn-primary" style="margin-top:20px;" onclick="nextStep(4,0)">Weiter →</button>
+      </div></div>
+      <div class="step" id="l4-s1"><div class="card">
+        <div class="quiz-qnum" id="l4-qnum">FRAGE 1 VON 2</div><div class="quiz-q" id="l4-q"></div><div class="quiz-hint" id="l4-hint"></div><div class="quiz-opts" id="l4-opts"></div>
+        <div class="qfeedback" id="l4-fb"><div class="qft" id="l4-ft"></div><div class="qfb" id="l4-fbe"></div><div class="qfr" id="l4-rule"></div></div>
+        <div class="qnext" id="l4-next"><button class="btn btn-primary" onclick="advQ(4)">Weiter →</button></div>
+      </div></div>
+      <div class="step" id="l4-s2"><div class="complete-wrap">
+        <div class="complete-icon">🔍</div>
+        <h2 class="lesson-h">Modul abgeschlossen!</h2>
+        <p class="body-text">Du kannst jetzt Texte analysieren, Argumentationsstrukturen erkennen und eigene überzeugende Argumentationen auf B2-Niveau verfassen.</p>
+        <div class="xp-badge">⚡ +120 XP</div>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:12px;">
+          <button class="btn btn-outline" onclick="showOverview()">Lektionen ansehen</button>
+          <a href="deutschweg-prototype.html" class="btn btn-primary" style="text-decoration:none;display:inline-flex;align-items:center;">← Dashboard</a>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</div>
+
+<div class="dw-next-step-bar">
+  <a href="module-b2-6-modalpartikeln.html" class="dw-nsb-link">← Modul 6</a>
+  <a href="deutschweg-prototype.html#b2" class="dw-nsb-link">B2 Übersicht</a>
+  <a href="module-b2-8-wissenschaftlich.html" class="dw-nsb-cta">Modul 8: Wissenschaftl. Sprache →</a>
+</div>
+
+<script>
+var QD={
+  0:[
+    {q:'Wo steht die Hauptthese in einem argumentativen Text?',hint:'Struktur: Einleitung → Hauptteil → Schluss',opts:['Am Anfang der Einleitung als erste Aussage','Am Ende der Einleitung, nach der Problemstellung','In der Mitte des Hauptteils','Am Ende des Schlusses'],ans:1,exp:'Die Hauptthese steht am Ende der Einleitung — nach der Kontextualisierung und Problemstellung. So weiß der Leser, welche Position der Autor vertritt.',rule:'These: am Ende der Einleitung (nach Kontext/Problem)'},
+    {q:'Was ist die richtige Argumentationsstruktur?',hint:'Argument → ? → ?',opts:['Schluss → Argument → Beleg','Argument → Beleg → Schlussfolgerung','These → Schluss → Argument','Beleg → These → Schluss'],ans:1,exp:'Jedes Argument wird: 1. benannt, 2. mit Beleg/Beispiel gestützt, 3. mit einer Schlussfolgerung verbunden. Diese 3-Schritt-Struktur macht Argumente überzeugend.',rule:'Argumentationsstruktur: Argument → Beleg → Schlussfolgerung'}
+  ],
+  1:[
+    {q:'Welcher Satz ist ein Fakt (nicht eine Meinung)?',hint:'Suche nach einer Quellenangabe',opts:['Ich glaube, dass Bildung wichtig ist.','Meiner Ansicht nach sollte mehr investiert werden.','Laut OECD-Bericht 2023 schneidet Deutschland gut ab.','Offenbar sind die Ergebnisse gut.'],ans:2,exp:'„Laut OECD-Bericht" = Quellenangabe → belegbarer Fakt. „Ich glaube", „meiner Ansicht nach", „offenbar" sind Meinungs-/Einschränkungssignale.',rule:'Fakt: laut Quelle, Studien zeigen, es gilt als erwiesen'},
+    {q:'Was drückt „angeblich" in einem Satz aus?',hint:'Distanzierungspartikel',opts:['Der Autor bestätigt die Aussage.','Der Autor zweifelt an der Aussage und distanziert sich.','Die Aussage ist wissenschaftlich bewiesen.','Es ist eine persönliche Meinung.'],ans:1,exp:'„angeblich" = Distanzierungspartikel: Der Autor gibt die Aussage wieder, übernimmt aber keine Verantwortung dafür — ähnlich wie Konjunktiv I im Journalismus.',rule:'angeblich / soll = Distanzierung; Autor zweifelt an der Aussage'}
+  ],
+  2:[
+    {q:'Welcher Marker leitet ein zusätzliches Argument ein?',hint:'additive Funktion',opts:['allerdings','jedoch','außerdem','insgesamt'],ans:2,exp:'„Außerdem" (= additionally/furthermore) fügt ein weiteres Argument hinzu. „Allerdings" und „jedoch" drücken Kontrast aus. „Insgesamt" leitet den Schluss ein.',rule:'außerdem / darüber hinaus = additiver Argumentationsmarker'},
+    {q:'„___ hat das Thema zwei Seiten: Vorteile und Nachteile." — Welche Marker passen?',hint:'Zweiteilung / Kontrast',opts:['Erstens, zweitens','Einerseits, andererseits','Außerdem, überdies','Zusammenfassend, daher'],ans:1,exp:'„Einerseits…andererseits" drückt eine Zweiteilung (Pro/Kontra) aus. „Erstens/zweitens" zählt auf. „Einerseits/andererseits" zeigt einen inhaltlichen Kontrast.',rule:'einerseits/andererseits = strukturierter Kontrast (Pro/Kontra)'}
+  ],
+  3:[
+    {q:'„Wollen wir wirklich tatenlos zusehen, wie…?" — Was ist das?',hint:'Eine Frage, die keine Antwort erwartet',opts:['Eine echte Informationsfrage','Eine rhetorische Frage','Eine indirekte Frage','Ein Appell'],ans:1,exp:'Rhetorische Frage: Der Autor erwartet keine direkte Antwort. Die implizierte Antwort ist klar (Nein!) — es ist ein rhetorisches Mittel, um eine Position zu verstärken.',rule:'Rhetorische Frage = implizierte Aussage, keine echte Frage'},
+    {q:'Was bedeutet es, wenn ein Autor „Wie beim Sport gilt auch hier…" schreibt?',hint:'Vergleich mit ähnlicher bekannter Situation',opts:['Der Autor schreibt über Sport.','Der Autor benutzt eine Analogie.','Der Autor macht einen Fehler.','Der Autor benutzt ein konkretes Beispiel.'],ans:1,exp:'Eine Analogie vergleicht zwei ähnliche Situationen, um ein Argument zu erklären oder zu verstärken. „Wie beim Sport" macht ein abstraktes Argument konkret und nachvollziehbar.',rule:'Analogie = Vergleich mit bekannter Situation zur Veranschaulichung'}
+  ],
+  4:[
+    {q:'Wie beginnt man ein Gegenargument elegant im B2-Aufsatz?',hint:'Konzessiv-Konstruktion',opts:['Aber die Gegenseite sagt…','Zwar mag es stimmen, dass X… Dennoch…','Einige Leute denken, dass…','Es gibt auch andere Meinungen.'],ans:1,exp:'„Zwar… dennoch" ist die eleganteste Konzessivkonstruktion für Gegenargumente: Man räumt den Einwand ein (zwar) und entkräftet ihn dann (dennoch + eigenes Argument).',rule:'Zwar…dennoch = elegante Gegenargumentation'},
+    {q:'Was wird bei B2-Schreiben bewertet?',hint:'Vier Hauptkategorien',opts:['Nur die Grammatik','Nur den Inhalt und die Struktur','Inhalt, Struktur, sprachliche Vielfalt und Korrektheit','Nur die Länge des Textes'],ans:2,exp:'B2-Schreiben wird in vier Bereichen bewertet: Inhalt (relevante Argumente), Struktur (klare Gliederung), sprachliche Vielfalt (Wortschatz, Grammatikvielfalt) und Korrektheit.',rule:'B2 Schreiben: Inhalt + Struktur + sprachliche Vielfalt + Korrektheit'}
+  ]
+};
+var curLesson=0,curStep=0,curQ={},qIdx=0,xp=0,lessonSteps=[2,2,2,2,3];
+function speakSentence(btn,text){if(!window.speechSynthesis)return;window.speechSynthesis.cancel();if(btn.classList.contains('speaking')){btn.classList.remove('speaking');return;}var u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=0.9;u.onend=()=>btn.classList.remove('speaking');btn.classList.add('speaking');window.speechSynthesis.speak(u);}
+function showOverview(){document.getElementById('screen-lesson').classList.remove('active');document.getElementById('screen-overview').classList.add('active');window.scrollTo(0,0);}
+function goLesson(li){curLesson=li;curStep=0;qIdx=0;document.getElementById('screen-overview').classList.remove('active');document.getElementById('screen-lesson').classList.add('active');document.querySelectorAll('.lesson-pane').forEach(p=>p.style.display='none');document.getElementById('lesson-'+li).style.display='block';document.querySelectorAll('#lesson-'+li+' .step').forEach((s,i)=>s.classList.toggle('active',i===0));renderDots(li);updateProgress(li,0);window.scrollTo(0,0);}
+function renderDots(li){var n=lessonSteps[li],row=document.getElementById('dotRow');row.innerHTML='';for(var i=0;i<n;i++){var d=document.createElement('div');d.className='dot'+(i===0?' active':'');(function(idx){d.onclick=function(){if(idx<=curStep)goStep(curLesson,idx);};})(i);row.appendChild(d);}}
+function goStep(li,si){curStep=si;document.querySelectorAll('#lesson-'+li+' .step').forEach((s,i)=>s.classList.toggle('active',i===si));document.querySelectorAll('#dotRow .dot').forEach((d,i)=>{d.classList.toggle('active',i===si);d.classList.toggle('done',i<si);});updateProgress(li,si);window.scrollTo(0,0);}
+function updateProgress(li,si){document.getElementById('progFill').style.width=Math.round((si/(lessonSteps[li]-1))*100)+'%';}
+function nextStep(li,si){var nsi=si+1;if(nsi>=lessonSteps[li])return;initQuiz(li);goStep(li,nsi);}
+function initQuiz(li){qIdx=0;renderQ(li);}
+function renderQ(li){var qs=QD[li];if(!qs||qIdx>=qs.length){showResult(li);return;}var q=qs[qIdx];document.getElementById('l'+li+'-qnum').textContent='FRAGE '+(qIdx+1)+' VON '+qs.length;document.getElementById('l'+li+'-q').textContent=q.q;document.getElementById('l'+li+'-hint').textContent=q.hint;var opts=document.getElementById('l'+li+'-opts');opts.innerHTML='';['A','B','C','D'].forEach(function(l,i){var btn=document.createElement('button');btn.className='qopt';btn.innerHTML='<span class="qletter">'+l+'</span>'+q.opts[i];btn.onclick=function(){pickQ(li,i);};opts.appendChild(btn);});document.getElementById('l'+li+'-fb').className='qfeedback';document.getElementById('l'+li+'-next').className='qnext';}
+function pickQ(li,idx){var q=QD[li][qIdx];var opts=document.querySelectorAll('#l'+li+'-opts .qopt');opts.forEach(b=>b.disabled=true);opts[idx].classList.add(idx===q.ans?'correct':'wrong');if(idx!==q.ans)opts[q.ans].classList.add('correct');var ok=idx===q.ans;if(ok){xp+=10;document.getElementById('xpDisp').textContent='⚡ '+xp+' XP';}var fb=document.getElementById('l'+li+'-fb');fb.className='qfeedback show '+(ok?'ok':'no');document.getElementById('l'+li+'-ft').textContent=ok?'✓ Richtig!':'✗ Leider falsch.';document.getElementById('l'+li+'-ft').className='qft '+(ok?'ok':'no');document.getElementById('l'+li+'-fbe').textContent=q.exp;document.getElementById('l'+li+'-rule').textContent='📌 '+q.rule;document.getElementById('l'+li+'-next').className='qnext show';}
+function advQ(li){qIdx++;if(qIdx>=QD[li].length)showResult(li);else renderQ(li);}
+function showResult(li){if(li===4){goStep(li,2);localStorage.setItem('dw_xp',parseInt(localStorage.getItem('dw_xp')||'0')+xp);localStorage.setItem('dw_mod_b2_7_done','1');}else goLesson(li+1);}
+document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');xp=0;document.getElementById('xpDisp').textContent='⚡ 0 XP';});
+
+  // ===== STANDALONE QUIZ =====
+  var SQ_DATA = [
+  {
+    "q": "Was ist das Hauptziel einer Textanalyse?",
+    "opts": [
+      "Einen Text abzuschreiben",
+      "Inhalt, Struktur und sprachliche Mittel eines Textes zu untersuchen",
+      "Einen neuen Text zu verfassen",
+      "Den Wortschatz zu erweitern"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Eine Textanalyse untersucht Inhalt, Struktur und Sprachmittel systematisch.",
+    "fb_ko": "Falsch. Bei der Textanalyse werden Inhalt, Struktur und sprachliche Mittel untersucht."
+  },
+  {
+    "q": "Was ist Kohaerenz in einem Text?",
+    "opts": [
+      "Die Laenge des Textes",
+      "Der inhaltliche Zusammenhang und logische Aufbau",
+      "Die Verwendung von Fremdwoertern",
+      "Die Anzahl der Absaetze"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Kohaerenz bezeichnet den inhaltlich-logischen Zusammenhang eines Textes.",
+    "fb_ko": "Falsch. Kohaerenz bezeichnet den inhaltlichen und logischen Zusammenhang der Textteile."
+  },
+  {
+    "q": "Welches sprachliche Mittel liegt vor, wenn etwas mit einem Bild verglichen wird?",
+    "opts": [
+      "Metapher",
+      "Ironie",
+      "Antithese",
+      "Ellipse"
+    ],
+    "ans": 0,
+    "fb_ok": "Richtig! Eine Metapher ist ein bildhafter Vergleich ohne 'wie'.",
+    "fb_ko": "Falsch. Eine Metapher ist ein uebertragener Ausdruck, der etwas bildlich beschreibt."
+  },
+  {
+    "q": "Wie beginnt man typischerweise eine Textanalyse?",
+    "opts": [
+      "Mit der eigenen Meinung",
+      "Mit einer Einleitung, die Text, Autor, Datum und Thema nennt",
+      "Mit dem Schluss des Textes",
+      "Mit einem langen Zitat"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Die Einleitung nennt Textsorte, Autor, Erscheinungsdatum und Thema.",
+    "fb_ko": "Falsch. Die Textanalyse beginnt mit einer Einleitung, die Text, Autor, Datum und Thema vorstellt."
+  },
+  {
+    "q": "Was untersucht man bei der Stilanalyse?",
+    "opts": [
+      "Nur die Grammatikfehler",
+      "Satzbau, Wortschatz, Ton und rhetorische Mittel",
+      "Die Biografie des Autors",
+      "Die Druckfehler im Text"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Die Stilanalyse betrachtet Satzbau, Wortschatz, Ton und rhetorische Mittel.",
+    "fb_ko": "Falsch. Die Stilanalyse untersucht Satzbau, Wortschatz, Ton und rhetorische Mittel."
+  }
+];
+  var sqIdx=0, sqScore=0, sqAnswered=false;
+  var sqResults=[];
+  function sqInit(){sqIdx=0;sqScore=0;sqAnswered=false;sqResults=[];sqRender();}
+  function sqRender(){
+    var d=SQ_DATA[sqIdx];
+    document.getElementById('sqQuestion').style.display='block';
+    document.getElementById('sqResult').classList.remove('show');
+    document.getElementById('sqQText').textContent=(sqIdx+1)+'. '+d.q;
+    var dots=document.getElementById('sqDots');
+    dots.innerHTML='';
+    for(var i=0;i<5;i++){
+      var dot=document.createElement('div');
+      var cls='sq-dot';
+      if(i<sqIdx){ cls+= sqResults[i]?' done':' wrong'; }
+      else if(i===sqIdx){ cls+=' active'; }
+      dot.className=cls;
+      dots.appendChild(dot);
+    }
+    var opts=document.getElementById('sqOpts');
+    opts.innerHTML='';
+    d.opts.forEach(function(o,i){
+      var b=document.createElement('button');
+      b.className='sq-opt';
+      b.textContent=o;
+      (function(idx){b.onclick=function(){sqPick(idx);};})(i);
+      opts.appendChild(b);
+    });
+    var fb=document.getElementById('sqFb');
+    fb.className='sq-fb';
+    fb.textContent='';
+    document.getElementById('sqNext').className='btn btn-primary sq-next';
+    sqAnswered=false;
+  }
+  function sqPick(idx){
+    if(sqAnswered)return;
+    sqAnswered=true;
+    var d=SQ_DATA[sqIdx];
+    var opts=document.getElementById('sqOpts').querySelectorAll('.sq-opt');
+    opts.forEach(function(b){b.classList.add('disabled');});
+    var ok=(idx===d.ans);
+    if(ok){sqScore++;sqResults[sqIdx]=true;}else{sqResults[sqIdx]=false;}
+    opts[idx].classList.add(ok?'correct':'wrong');
+    if(!ok) opts[d.ans].classList.add('correct');
+    var fb=document.getElementById('sqFb');
+    fb.textContent=ok?d.fb_ok:d.fb_ko;
+    fb.className='sq-fb show '+(ok?'ok':'ko');
+    document.getElementById('sqNext').className='btn btn-primary sq-next show';
+  }
+  function sqAdvance(){
+    if(sqIdx<4){sqIdx++;sqRender();}else{sqShowResult();}
+  }
+  function sqShowResult(){
+    document.getElementById('sqQuestion').style.display='none';
+    var res=document.getElementById('sqResult');
+    res.className='sq-result show';
+    document.getElementById('sqScoreNum').textContent=sqScore+'/5';
+    var msgs=['Nicht aufgeben! \u{1F31F}','Nicht aufgeben! \u{1F31F}','Weiter üben! \u{1F4DA}','Gut gemacht! \u{1F4AA}','Sehr gut! \u{1F44F}','Ausgezeichnet! \u{1F389}'];
+    document.getElementById('sqScoreMsg').textContent=msgs[sqScore];
+  }
+  function sqReset(){
+    sqIdx=0;sqScore=0;sqAnswered=false;sqResults=[];
+    document.getElementById('sqResult').className='sq-result';
+    document.getElementById('sqQuestion').style.display='block';
+    sqRender();
+  }
+  document.addEventListener('DOMContentLoaded',function(){sqInit();});
+
+  document.addEventListener('DOMContentLoaded',function(){
+    var nb=document.getElementById('sqNextMod');
+    if(nb){ nb.onclick=function(){ window.location.href='module-b2-8-wissenschaftlich.html'; }; }
+  });
+
+</script>
+</body>
+</html>

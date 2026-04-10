@@ -79,6 +79,37 @@
   .xp-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(52,152,219,0.12); border:1px solid var(--blue); border-radius:50px; padding:10px 28px; font-weight:700; color:var(--blue); font-size:18px; margin:18px 0; }
   @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
   @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+
+  /* ===== STANDALONE QUIZ ===== */
+  .sq-wrap{background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:28px;margin-top:32px;}
+  .sq-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:6px;}
+  .sq-sub{font-size:13px;color:var(--gray);margin-bottom:20px;}
+  .sq-dots{display:flex;gap:8px;margin-bottom:20px;}
+  .sq-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all 0.3s;}
+  .sq-dot.active{background:var(--blue);width:22px;border-radius:4px;}
+  .sq-dot.done{background:var(--green);}
+  .sq-dot.wrong{background:var(--red);}
+  .sq-q{font-size:16px;font-weight:600;margin-bottom:16px;line-height:1.5;}
+  .sq-opts{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+  .sq-opt{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:12px 16px;cursor:pointer;font-size:14px;transition:all 0.2s;text-align:left;}
+  .sq-opt:hover:not(.disabled){background:rgba(52,152,219,0.12);border-color:var(--blue);}
+  .sq-opt.selected{background:rgba(52,152,219,0.15);border-color:var(--blue);}
+  .sq-opt.correct{background:rgba(39,174,96,0.15);border-color:var(--green);color:var(--green);}
+  .sq-opt.wrong{background:rgba(192,57,43,0.15);border-color:var(--red);color:var(--red);}
+  .sq-opt.disabled{cursor:default;pointer-events:none;}
+  .sq-fb{font-size:14px;padding:12px 16px;border-radius:10px;margin-bottom:16px;display:none;}
+  .sq-fb.show{display:block;}
+  .sq-fb.ok{background:rgba(39,174,96,0.12);border:1px solid rgba(39,174,96,0.3);color:var(--green);}
+  .sq-fb.ko{background:rgba(192,57,43,0.12);border:1px solid rgba(192,57,43,0.3);color:#e07070;}
+  .sq-next{display:none;}
+  .sq-next.show{display:inline-block;}
+  .sq-result{display:none;text-align:center;padding:20px 0;}
+  .sq-result.show{display:block;}
+  .sq-score-num{font-family:'Playfair Display',serif;font-size:48px;color:var(--blue);margin-bottom:8px;}
+  .sq-score-msg{font-size:20px;margin-bottom:24px;}
+  .sq-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+  .sq-btns .btn{width:auto;padding:12px 28px;}
+
 </style>
 <style>
 /* LIGHT THEME OVERRIDE */
@@ -127,6 +158,27 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
       <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">⏸️</div><div><div class="lc-title">Lektion 5 — Strategien: Zeitfüller und Notfallplan</div><div class="lc-desc">Was tun, wenn man ein Wort nicht weiß oder Zeit gewinnen muss?</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
     </div>
     <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
+    <!-- STANDALONE QUIZ -->
+    <div class="sq-wrap" id="sqWrap">
+      <div id="sqQuestion">
+        <div class="sq-title">Wissenstest</div>
+        <div class="sq-sub">5 Fragen &mdash; teste dein Wissen!</div>
+        <div class="sq-dots" id="sqDots"></div>
+        <div class="sq-q" id="sqQText"></div>
+        <div class="sq-opts" id="sqOpts"></div>
+        <div class="sq-fb" id="sqFb"></div>
+        <button class="btn btn-primary sq-next" id="sqNext" onclick="sqAdvance()">Weiter &#x2192;</button>
+      </div>
+      <div class="sq-result" id="sqResult">
+        <div class="sq-score-num" id="sqScoreNum">0/5</div>
+        <div class="sq-score-msg" id="sqScoreMsg"></div>
+        <div class="sq-btns">
+          <button class="btn btn-outline" onclick="sqReset()">Nochmal versuchen</button>
+          <button class="btn btn-primary" id="sqNextMod">N&#xE4;chstes Modul &#x2192;</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -356,6 +408,142 @@ function updateProg(li,si){var pct=Math.round(((li*2+si)/(lessonSteps.reduce(fun
 function nextStep(li,si){var steps=$('lesson-'+li).querySelectorAll('.step');steps[si].classList.remove('active');steps[si+1].classList.add('active');updateProg(li,si+1);var dots=$('dotRow').children;if(dots[si])dots[si].classList.replace('active','done');if(dots[si+1])dots[si+1].classList.add('active');if(si+1===1){initQuiz(li);}}
 function xpDisp(){$('xpDisp').textContent='⚡ '+xp+' XP';}
 document.body.classList.add('ready');
+
+  // ===== STANDALONE QUIZ =====
+  var SQ_DATA = [
+  {
+    "q": "Wie ist der B2-Sprechteil der Goethe-Pruefung aufgebaut?",
+    "opts": [
+      "Ein langer Monolog",
+      "Drei Teile: Vortrag, Diskussion und Einigung",
+      "Nur Fragen beantworten",
+      "Ein Rollenspiel"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Der B2-Sprechteil besteht aus Vortrag, Diskussion und Einigung.",
+    "fb_ko": "Falsch. Der B2-Sprechteil umfasst drei Teile: Vortrag, Diskussion und Einigung."
+  },
+  {
+    "q": "Was ist wichtig bei der Bildbeschreibung?",
+    "opts": [
+      "Nur die Farben nennen",
+      "Systematisch beschreiben: Was? Wo? Welche Stimmung? Interpretation",
+      "Das Bild ignorieren",
+      "Den Hintergrund weglassen"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Eine systematische Beschreibung umfasst Inhalt, Lage, Stimmung und Interpretation.",
+    "fb_ko": "Falsch. Eine gute Bildbeschreibung ist systematisch: Was, Wo, Stimmung, Interpretation."
+  },
+  {
+    "q": "Welcher Ausdruck ist ein hilfreicher Zeitfueller?",
+    "opts": [
+      "Ich weiss nicht.",
+      "Das ist eine interessante Frage, ich ueberlege kurz...",
+      "Keine Antwort",
+      "Ich habe das nicht verstanden."
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Zeitfueller geben einem Zeit zum Nachdenken und klingen natuerlich.",
+    "fb_ko": "Falsch. Saetze wie 'Das ist eine interessante Frage...' geben Zeit zum Nachdenken."
+  },
+  {
+    "q": "Was ist der Unterschied zwischen einem Monolog und einer Diskussion in der Pruefung?",
+    "opts": [
+      "Kein Unterschied",
+      "Im Monolog spricht man allein; in der Diskussion interagiert man mit dem Partner",
+      "Im Monolog darf man nicht sprechen",
+      "In der Diskussion spricht nur der Pruefer"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Im Monolog spricht man allein, in der Diskussion interagiert man mit dem Partner.",
+    "fb_ko": "Falsch. Der Monolog ist ein Einzelvortrag; die Diskussion ist eine Partnerinteraktion."
+  },
+  {
+    "q": "Wie leitet man einen Monolog am besten ein?",
+    "opts": [
+      "Sofort mit Details beginnen",
+      "Das Thema nennen, eine Gliederung ankuendigen und dann beginnen",
+      "Nur die Bilder zeigen",
+      "Mit einem Witz beginnen"
+    ],
+    "ans": 1,
+    "fb_ok": "Richtig! Eine gute Einleitung nennt das Thema und gibt eine kurze Gliederung.",
+    "fb_ko": "Falsch. Man nennt das Thema und kuendigt die Gliederung an, bevor man beginnt."
+  }
+];
+  var sqIdx=0, sqScore=0, sqAnswered=false;
+  var sqResults=[];
+  function sqInit(){sqIdx=0;sqScore=0;sqAnswered=false;sqResults=[];sqRender();}
+  function sqRender(){
+    var d=SQ_DATA[sqIdx];
+    document.getElementById('sqQuestion').style.display='block';
+    document.getElementById('sqResult').classList.remove('show');
+    document.getElementById('sqQText').textContent=(sqIdx+1)+'. '+d.q;
+    var dots=document.getElementById('sqDots');
+    dots.innerHTML='';
+    for(var i=0;i<5;i++){
+      var dot=document.createElement('div');
+      var cls='sq-dot';
+      if(i<sqIdx){ cls+= sqResults[i]?' done':' wrong'; }
+      else if(i===sqIdx){ cls+=' active'; }
+      dot.className=cls;
+      dots.appendChild(dot);
+    }
+    var opts=document.getElementById('sqOpts');
+    opts.innerHTML='';
+    d.opts.forEach(function(o,i){
+      var b=document.createElement('button');
+      b.className='sq-opt';
+      b.textContent=o;
+      (function(idx){b.onclick=function(){sqPick(idx);};})(i);
+      opts.appendChild(b);
+    });
+    var fb=document.getElementById('sqFb');
+    fb.className='sq-fb';
+    fb.textContent='';
+    document.getElementById('sqNext').className='btn btn-primary sq-next';
+    sqAnswered=false;
+  }
+  function sqPick(idx){
+    if(sqAnswered)return;
+    sqAnswered=true;
+    var d=SQ_DATA[sqIdx];
+    var opts=document.getElementById('sqOpts').querySelectorAll('.sq-opt');
+    opts.forEach(function(b){b.classList.add('disabled');});
+    var ok=(idx===d.ans);
+    if(ok){sqScore++;sqResults[sqIdx]=true;}else{sqResults[sqIdx]=false;}
+    opts[idx].classList.add(ok?'correct':'wrong');
+    if(!ok) opts[d.ans].classList.add('correct');
+    var fb=document.getElementById('sqFb');
+    fb.textContent=ok?d.fb_ok:d.fb_ko;
+    fb.className='sq-fb show '+(ok?'ok':'ko');
+    document.getElementById('sqNext').className='btn btn-primary sq-next show';
+  }
+  function sqAdvance(){
+    if(sqIdx<4){sqIdx++;sqRender();}else{sqShowResult();}
+  }
+  function sqShowResult(){
+    document.getElementById('sqQuestion').style.display='none';
+    var res=document.getElementById('sqResult');
+    res.className='sq-result show';
+    document.getElementById('sqScoreNum').textContent=sqScore+'/5';
+    var msgs=['Nicht aufgeben! \u{1F31F}','Nicht aufgeben! \u{1F31F}','Weiter üben! \u{1F4DA}','Gut gemacht! \u{1F4AA}','Sehr gut! \u{1F44F}','Ausgezeichnet! \u{1F389}'];
+    document.getElementById('sqScoreMsg').textContent=msgs[sqScore];
+  }
+  function sqReset(){
+    sqIdx=0;sqScore=0;sqAnswered=false;sqResults=[];
+    document.getElementById('sqResult').className='sq-result';
+    document.getElementById('sqQuestion').style.display='block';
+    sqRender();
+  }
+  document.addEventListener('DOMContentLoaded',function(){sqInit();});
+
+  document.addEventListener('DOMContentLoaded',function(){
+    var nb=document.getElementById('sqNextMod');
+    if(nb){ nb.onclick=function(){ window.location.href='module-b2-14-pruefungsvorbereitung.html'; }; }
+  });
+
 </script>
 </body>
 </html>
