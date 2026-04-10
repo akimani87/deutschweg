@@ -83,35 +83,37 @@
   @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
   @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
 
-  /* ===== STANDALONE QUIZ ===== */
-  .sq-wrap{background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:28px;margin-top:32px;}
-  .sq-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:6px;}
-  .sq-sub{font-size:13px;color:var(--gray);margin-bottom:20px;}
-  .sq-dots{display:flex;gap:8px;margin-bottom:20px;}
-  .sq-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all 0.3s;}
-  .sq-dot.active{background:var(--blue);width:22px;border-radius:4px;}
-  .sq-dot.done{background:var(--green);}
-  .sq-dot.wrong{background:var(--red);}
-  .sq-q{font-size:16px;font-weight:600;margin-bottom:16px;line-height:1.5;}
-  .sq-opts{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
-  .sq-opt{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:12px 16px;cursor:pointer;font-size:14px;transition:all 0.2s;text-align:left;}
-  .sq-opt:hover:not(.disabled){background:rgba(52,152,219,0.12);border-color:var(--blue);}
-  .sq-opt.selected{background:rgba(52,152,219,0.15);border-color:var(--blue);}
-  .sq-opt.correct{background:rgba(39,174,96,0.15);border-color:var(--green);color:var(--green);}
-  .sq-opt.wrong{background:rgba(192,57,43,0.15);border-color:var(--red);color:var(--red);}
-  .sq-opt.disabled{cursor:default;pointer-events:none;}
-  .sq-fb{font-size:14px;padding:12px 16px;border-radius:10px;margin-bottom:16px;display:none;}
-  .sq-fb.show{display:block;}
-  .sq-fb.ok{background:rgba(39,174,96,0.12);border:1px solid rgba(39,174,96,0.3);color:var(--green);}
-  .sq-fb.ko{background:rgba(192,57,43,0.12);border:1px solid rgba(192,57,43,0.3);color:#e07070;}
-  .sq-next{display:none;}
-  .sq-next.show{display:inline-block;}
-  .sq-result{display:none;text-align:center;padding:20px 0;}
-  .sq-result.show{display:block;}
-  .sq-score-num{font-family:'Playfair Display',serif;font-size:48px;color:var(--blue);margin-bottom:8px;}
-  .sq-score-msg{font-size:20px;margin-bottom:24px;}
-  .sq-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
-  .sq-btns .btn{width:auto;padding:12px 28px;}
+
+  /* ===== UEBUNGSAUFGABEN ===== */
+  .ubq-wrap{margin-top:32px;}
+  .ubq-qnum{font-family:'DM Mono',monospace;font-size:11px;color:var(--blue);letter-spacing:2px;margin-bottom:8px;}
+  .ubq-dots{display:flex;gap:6px;margin-bottom:16px;}
+  .ubq-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all 0.3s;}
+  .ubq-dot.active{background:var(--blue);width:20px;border-radius:4px;}
+  .ubq-dot.done{background:var(--green);}
+  .ubq-dot.wrong-dot{background:var(--red);}
+  .ubq-q{font-family:'Playfair Display',serif;font-size:19px;margin-bottom:14px;line-height:1.45;white-space:pre-line;}
+  .ubq-opts{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
+  .ubq-opt{padding:13px 18px;border:1px solid var(--border);border-radius:12px;cursor:pointer;transition:all 0.2s;font-size:14px;background:transparent;color:var(--white);font-family:'DM Sans',sans-serif;text-align:left;display:flex;align-items:center;gap:12px;width:100%;}
+  .ubq-opt:hover:not([disabled]){border-color:var(--blue);background:rgba(52,152,219,0.08);}
+  .ubq-opt.correct{border-color:var(--green)!important;background:rgba(39,174,96,0.1)!important;}
+  .ubq-opt.wrong{border-color:var(--red)!important;background:rgba(192,57,43,0.1)!important;}
+  .ubq-letter{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'DM Mono',monospace;flex-shrink:0;}
+  .ubq-opt.correct .ubq-letter{background:var(--green);color:#fff;}
+  .ubq-opt.wrong .ubq-letter{background:var(--red);color:#fff;}
+  .ubq-fb{display:none;padding:14px 16px;border-radius:12px;margin-bottom:12px;}
+  .ubq-fb.show{display:block;animation:fadeUp 0.3s ease both;}
+  .ubq-fb.ok{background:rgba(39,174,96,0.1);border:1px solid rgba(39,174,96,0.3);}
+  .ubq-fb.no{background:rgba(192,57,43,0.08);border:1px solid rgba(192,57,43,0.3);}
+  .ubq-fbt{font-weight:700;font-size:14px;margin-bottom:5px;}
+  .ubq-fbt.ok{color:var(--green);}
+  .ubq-fbt.no{color:#e74c3c;}
+  .ubq-fbd{font-size:13px;color:var(--cream);line-height:1.7;}
+  .ubq-nx{display:none;margin-top:8px;}
+  .ubq-nx.show{display:block;}
+  .ubq-score-num{font-family:'Playfair Display',serif;font-size:48px;color:var(--blue);margin-bottom:6px;}
+  .ubq-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px;}
+  .ubq-btns .btn{width:auto;padding:12px 28px;}
 
 </style>
 <style>
@@ -132,6 +134,10 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
 .speak-btn.speaking { background:#3B82F6; color:white; }
 .lesson-card { background:#F8FAFC; border:1px solid #E5E7EB; }
 .ex-card { background:#F8FAFC; border:1px solid #E5E7EB; }
+
+  .ubq-opt{border:1px solid #E5E7EB;background:white;color:#1F2937;}
+  .ubq-opt:hover:not([disabled]){border-color:#3B82F6;background:#EFF6FF;}
+  .ubq-letter{background:#F3F4F6;color:#374151;}
 </style>
 </head>
 <body>
@@ -163,25 +169,12 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
       <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">🏆</div><div><div class="lc-title">Lektion 5 — B2-Prüfungsgespräch simulieren</div><div class="lc-desc">Typische Themen, Bewertungskriterien, häufige Fehler und Strategien für die Prüfung.</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
     </div>
     <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
-    <!-- STANDALONE QUIZ -->
-    <div class="sq-wrap" id="sqWrap">
-      <div id="sqQuestion">
-        <div class="sq-title">Wissenstest</div>
-        <div class="sq-sub">5 Fragen &mdash; teste dein Wissen!</div>
-        <div class="sq-dots" id="sqDots"></div>
-        <div class="sq-q" id="sqQText"></div>
-        <div class="sq-opts" id="sqOpts"></div>
-        <div class="sq-fb" id="sqFb"></div>
-        <button class="btn btn-primary sq-next" id="sqNext" onclick="sqAdvance()">Weiter &#x2192;</button>
-      </div>
-      <div class="sq-result" id="sqResult">
-        <div class="sq-score-num" id="sqScoreNum">0/5</div>
-        <div class="sq-score-msg" id="sqScoreMsg"></div>
-        <div class="sq-btns">
-          <button class="btn btn-outline" onclick="sqReset()">Nochmal versuchen</button>
-          <button class="btn btn-primary" id="sqNextMod">N&#xE4;chstes Modul &#x2192;</button>
-        </div>
-      </div>
+    <!-- UEBUNGSAUFGABEN -->
+    <div class="card ubq-wrap" id="ubqWrap">
+      <div class="concept-tag">&#220;BUNGSAUFGABEN</div>
+      <h2 class="lesson-h" style="font-size:22px;margin-bottom:4px;">Teste dein Wissen</h2>
+      <p style="font-size:13px;color:var(--gray);margin-bottom:20px;font-family:'DM Mono',monospace;">5 Fragen zum Modul</p>
+      <div id="ubqMain"></div>
     </div>
 
   </div>
@@ -429,140 +422,86 @@ function xpDisp(){$('xpDisp').textContent='⚡ '+xp+' XP';}
 function speakSentence(btn,text){if('speechSynthesis' in window){window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=0.9;btn.classList.add('speaking');u.onend=function(){btn.classList.remove('speaking');};window.speechSynthesis.speak(u);}}
 document.body.classList.add('ready');
 
-  // ===== STANDALONE QUIZ =====
-  var SQ_DATA = [
-  {
-    "q": "Wie beginnt man hoeflich eine Widerspruch-Aeusserung in einer Diskussion?",
-    "opts": [
-      "Das ist total falsch!",
-      "Ich sehe das etwas anders, weil...",
-      "Nein, du hast Unrecht.",
-      "Das stimmt ueberhaupt nicht."
-    ],
-    "ans": 1,
-    "fb_ok": "Richtig! Hoeflicher Widerspruch beginnt mit einer abschwaechenden Formulierung.",
-    "fb_ko": "Falsch. Eine hoefliche Formulierung wie 'Ich sehe das etwas anders' ist angemessener."
-  },
-  {
-    "q": "Was bedeutet 'einen Kompromiss finden' in einer Diskussion?",
-    "opts": [
-      "Den anderen ueberzeugen",
-      "Eine Loesung finden, die beide Seiten akzeptieren koennen",
-      "Die eigene Meinung durchsetzen",
-      "Das Thema wechseln"
-    ],
-    "ans": 1,
-    "fb_ok": "Richtig! Ein Kompromiss ist eine gegenseitig akzeptable Loesung.",
-    "fb_ko": "Falsch. Ein Kompromiss ist eine Loesung, mit der alle Beteiligten einverstanden sein koennen."
-  },
-  {
-    "q": "Welche Funktion hat ein Gegenargument in einer Diskussion?",
-    "opts": [
-      "Das eigene Argument zu schwaerchen",
-      "Eine entgegengesetzte Position zu widerlegen oder zu relativieren",
-      "Dem Gespraechspartner zuzustimmen",
-      "Das Thema zu beenden"
-    ],
-    "ans": 1,
-    "fb_ok": "Richtig! Gegenargumente widerlegen oder relativieren die Gegenposition.",
-    "fb_ko": "Falsch. Gegenargumente dienen dazu, eine andere Position zu widerlegen."
-  },
-  {
-    "q": "Wie kann man in einer Diskussion das Wort ergreifen?",
-    "opts": [
-      "Den anderen einfach unterbrechen",
-      "'Darf ich kurz etwas ergaenzen?' oder 'Ich moechte dazu sagen...'",
-      "Laut sprechen",
-      "Schweigen und warten"
-    ],
-    "ans": 1,
-    "fb_ok": "Richtig! Hoefliche Einstiegsformeln helfen, das Wort zu ergreifen.",
-    "fb_ko": "Falsch. Hoefliche Einleitungen wie 'Darf ich ergaenzen?' sind die bessere Wahl."
-  },
-  {
-    "q": "Was ist bei der B2-Pruefung im Sprechteil Teil 3 (Diskussion) zu tun?",
-    "opts": [
-      "Einen Monolog halten",
-      "Gemeinsam mit einem Partner eine Loesung aushandeln",
-      "Einen Text vorlesen",
-      "Fragen beantworten"
-    ],
-    "ans": 1,
-    "fb_ok": "Richtig! In Teil 3 handeln zwei Kandidaten gemeinsam eine Loesung aus.",
-    "fb_ko": "Falsch. In der Diskussion im B2-Sprechen handeln die Kandidaten gemeinsam eine Loesung aus."
-  }
-];
-  var sqIdx=0, sqScore=0, sqAnswered=false;
-  var sqResults=[];
-  function sqInit(){sqIdx=0;sqScore=0;sqAnswered=false;sqResults=[];sqRender();}
-  function sqRender(){
-    var d=SQ_DATA[sqIdx];
-    document.getElementById('sqQuestion').style.display='block';
-    document.getElementById('sqResult').classList.remove('show');
-    document.getElementById('sqQText').textContent=(sqIdx+1)+'. '+d.q;
-    var dots=document.getElementById('sqDots');
-    dots.innerHTML='';
-    for(var i=0;i<5;i++){
-      var dot=document.createElement('div');
-      var cls='sq-dot';
-      if(i<sqIdx){ cls+= sqResults[i]?' done':' wrong'; }
-      else if(i===sqIdx){ cls+=' active'; }
-      dot.className=cls;
-      dots.appendChild(dot);
-    }
-    var opts=document.getElementById('sqOpts');
-    opts.innerHTML='';
-    d.opts.forEach(function(o,i){
-      var b=document.createElement('button');
-      b.className='sq-opt';
-      b.textContent=o;
-      (function(idx){b.onclick=function(){sqPick(idx);};})(i);
-      opts.appendChild(b);
-    });
-    var fb=document.getElementById('sqFb');
-    fb.className='sq-fb';
-    fb.textContent='';
-    document.getElementById('sqNext').className='btn btn-primary sq-next';
-    sqAnswered=false;
-  }
-  function sqPick(idx){
-    if(sqAnswered)return;
-    sqAnswered=true;
-    var d=SQ_DATA[sqIdx];
-    var opts=document.getElementById('sqOpts').querySelectorAll('.sq-opt');
-    opts.forEach(function(b){b.classList.add('disabled');});
-    var ok=(idx===d.ans);
-    if(ok){sqScore++;sqResults[sqIdx]=true;}else{sqResults[sqIdx]=false;}
-    opts[idx].classList.add(ok?'correct':'wrong');
-    if(!ok) opts[d.ans].classList.add('correct');
-    var fb=document.getElementById('sqFb');
-    fb.textContent=ok?d.fb_ok:d.fb_ko;
-    fb.className='sq-fb show '+(ok?'ok':'ko');
-    document.getElementById('sqNext').className='btn btn-primary sq-next show';
-  }
-  function sqAdvance(){
-    if(sqIdx<4){sqIdx++;sqRender();}else{sqShowResult();}
-  }
-  function sqShowResult(){
-    document.getElementById('sqQuestion').style.display='none';
-    var res=document.getElementById('sqResult');
-    res.className='sq-result show';
-    document.getElementById('sqScoreNum').textContent=sqScore+'/5';
-    var msgs=['Nicht aufgeben! \u{1F31F}','Nicht aufgeben! \u{1F31F}','Weiter üben! \u{1F4DA}','Gut gemacht! \u{1F4AA}','Sehr gut! \u{1F44F}','Ausgezeichnet! \u{1F389}'];
-    document.getElementById('sqScoreMsg').textContent=msgs[sqScore];
-  }
-  function sqReset(){
-    sqIdx=0;sqScore=0;sqAnswered=false;sqResults=[];
-    document.getElementById('sqResult').className='sq-result';
-    document.getElementById('sqQuestion').style.display='block';
-    sqRender();
-  }
-  document.addEventListener('DOMContentLoaded',function(){sqInit();});
 
-  document.addEventListener('DOMContentLoaded',function(){
-    var nb=document.getElementById('sqNextMod');
-    if(nb){ nb.onclick=function(){ window.location.href='module-b2-10-hoeren-lesen-b2.html'; }; }
-  });
+  // ===== UEBUNGSAUFGABEN =====
+  var UBQ_DATA = [{"q": "Wie widerspricht man h\u00f6flich?", "opts": ["Das ist falsch!", "Ich sehe das etwas anders, weil...", "Nein!", "Du hast keine Ahnung."], "ans": 1, "exp": "H\u00f6flicher Widerspruch beginnt mit abschw\u00e4chenden Formulierungen wie 'etwas anders'."}, {"q": "\"Ich bin der Meinung, dass...\" ist ein Ausdruck f\u00fcr:", "opts": ["Zustimmung", "Meinungs\u00e4u\u00dferung", "Widerspruch", "Zusammenfassung"], "ans": 1, "exp": "'Ich bin der Meinung...' ist eine typische B2-Formel zur Meinungs\u00e4u\u00dferung."}, {"q": "Bei einer B2-Diskussion sollte man:", "opts": ["Nur die eigene Meinung sagen", "Argumente mit Beispielen belegen", "Sehr schnell sprechen", "Keine Fragen stellen"], "ans": 1, "exp": "Gute Argumente werden immer mit konkreten Beispielen oder Belegen gest\u00fctzt."}, {"q": "\"Einerseits... andererseits...\" zeigt:", "opts": ["Chronologie", "Zwei Perspektiven/Gegen\u00fcberstellung", "Ursache und Wirkung", "Zusammenfassung"], "ans": 1, "exp": "'Einerseits... andererseits...' stellt zwei unterschiedliche Perspektiven gegen\u00fcber."}, {"q": "Um Zeit beim Sprechen zu gewinnen, sagt man:", "opts": ["Nichts \u2014 einfach schweigen", "Das ist eine gute Frage, ich \u00fcberlege kurz...", "Ich wei\u00df es nicht.", "N\u00e4chste Frage bitte."], "ans": 1, "exp": "Zeitgewinner-Phrasen helfen beim \u00dcberlegen ohne unangenehme Sprechpausen."}];
+  var ubqIdx=0, ubqScore=0, ubqAnswered=false, ubqResults=[], ubqNextHref='module-b2-10-hoeren-lesen-b2.html';
+  function ubqInit(){ubqIdx=0;ubqScore=0;ubqAnswered=false;ubqResults=[];ubqRender();}
+  function ubqRender(){
+    var d=UBQ_DATA[ubqIdx];
+    var dots='<div class="ubq-dots">';
+    for(var i=0;i<5;i++){
+      var c='ubq-dot';
+      if(i<ubqIdx){c+=ubqResults[i]?' done':' wrong-dot';}
+      else if(i===ubqIdx){c+=' active';}
+      dots+='<div class="'+c+'"></div>';
+    }
+    dots+='</div>';
+    var opts=d.opts.map(function(o,i){
+      return '<button class="ubq-opt" id="ubqO'+i+'" onclick="ubqPick('+i+')">'
+        +'<span class="ubq-letter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';
+    }).join('');
+    document.getElementById('ubqMain').innerHTML=
+      '<div class="ubq-qnum">FRAGE '+(ubqIdx+1)+' VON 5</div>'
+      +dots
+      +'<div class="ubq-q">'+d.q+'</div>'
+      +'<div class="ubq-opts">'+opts+'</div>'
+      +'<div class="ubq-fb" id="ubqFb"><div class="ubq-fbt" id="ubqFbt"></div><div class="ubq-fbd" id="ubqFbd"></div></div>'
+      +'<div class="ubq-nx" id="ubqNx"><button class="btn btn-primary" onclick="ubqAdv()">'
+      +(ubqIdx<4?'N\u00e4chste Frage \u2192':'Ergebnis anzeigen \u2192')+'</button></div>';
+    ubqAnswered=false;
+  }
+  function ubqPick(idx){
+    if(ubqAnswered)return;
+    ubqAnswered=true;
+    var d=UBQ_DATA[ubqIdx];
+    var ok=(idx===d.ans);
+    if(ok){ubqScore++;ubqResults[ubqIdx]=true;}else{ubqResults[ubqIdx]=false;}
+    for(var i=0;i<4;i++){
+      var b=document.getElementById('ubqO'+i);
+      if(b){b.disabled=true;if(i===d.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}
+    }
+    var fbt=document.getElementById('ubqFbt');
+    var fbd=document.getElementById('ubqFbd');
+    var fb=document.getElementById('ubqFb');
+    if(ok){
+      fbt.className='ubq-fbt ok';
+      fbt.textContent='\u2705 Richtig!';
+      fbd.textContent=d.exp;
+    }else{
+      fbt.className='ubq-fbt no';
+      fbt.textContent='\ud83d\udcaa Nicht ganz.';
+      fbd.textContent='Die richtige Antwort ist: '+d.opts[d.ans]+'. '+d.exp;
+    }
+    fb.className='ubq-fb show '+(ok?'ok':'no');
+    document.getElementById('ubqNx').className='ubq-nx show';
+  }
+  function ubqAdv(){
+    if(ubqIdx<4){ubqIdx++;ubqRender();}else{ubqShowResult();}
+  }
+  function ubqShowResult(){
+    var msgs=[
+      'Nicht aufgeben! \ud83c\udf1f\nDu schaffst das!',
+      'Nicht aufgeben! \ud83c\udf1f\nDu schaffst das!',
+      'Weiter \u00fcben! \ud83d\udcda\nLies die Lektion nochmal.',
+      'Gut gemacht! \ud83d\udcaa\nNoch etwas \u00fcben!',
+      'Sehr gut! \ud83d\udc4f\nFast perfekt!',
+      'Ausgezeichnet! \ud83c\udf89\nDu hast alles verstanden!'
+    ];
+    document.getElementById('ubqMain').innerHTML=
+      '<div style="text-align:center;padding:16px 0;">'
+      +'<div style="font-size:52px;margin-bottom:10px;">'
+      +(ubqScore===5?'\ud83c\udf89':ubqScore>=4?'\ud83d\udc4f':ubqScore>=3?'\ud83d\udcaa':'\ud83d\udcda')
+      +'</div>'
+      +'<div class="ubq-score-num">'+ubqScore+'/5</div>'
+      +'<div style="font-size:18px;margin-bottom:4px;white-space:pre-line;">'+msgs[ubqScore]+'</div>'
+      +'<div class="ubq-btns">'
+      +'<button class="btn btn-outline" onclick="ubqReset()">Nochmal versuchen</button>'
+      +'<button class="btn btn-primary" onclick="window.location.href=ubqNextHref">N\u00e4chstes Modul \u2192</button>'
+      +'</div></div>';
+  }
+  function ubqReset(){ubqIdx=0;ubqScore=0;ubqAnswered=false;ubqResults=[];ubqRender();}
+  document.addEventListener('DOMContentLoaded',function(){ubqInit();});
 
 </script>
 </body>

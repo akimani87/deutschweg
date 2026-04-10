@@ -80,35 +80,37 @@
   @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
   @keyframes popIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
 
-  /* ===== STANDALONE QUIZ ===== */
-  .sq-wrap{background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:28px;margin-top:32px;}
-  .sq-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:6px;}
-  .sq-sub{font-size:13px;color:var(--gray);margin-bottom:20px;}
-  .sq-dots{display:flex;gap:8px;margin-bottom:20px;}
-  .sq-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all 0.3s;}
-  .sq-dot.active{background:var(--blue);width:22px;border-radius:4px;}
-  .sq-dot.done{background:var(--green);}
-  .sq-dot.wrong{background:var(--red);}
-  .sq-q{font-size:16px;font-weight:600;margin-bottom:16px;line-height:1.5;}
-  .sq-opts{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
-  .sq-opt{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:12px 16px;cursor:pointer;font-size:14px;transition:all 0.2s;text-align:left;}
-  .sq-opt:hover:not(.disabled){background:rgba(52,152,219,0.12);border-color:var(--blue);}
-  .sq-opt.selected{background:rgba(52,152,219,0.15);border-color:var(--blue);}
-  .sq-opt.correct{background:rgba(39,174,96,0.15);border-color:var(--green);color:var(--green);}
-  .sq-opt.wrong{background:rgba(192,57,43,0.15);border-color:var(--red);color:var(--red);}
-  .sq-opt.disabled{cursor:default;pointer-events:none;}
-  .sq-fb{font-size:14px;padding:12px 16px;border-radius:10px;margin-bottom:16px;display:none;}
-  .sq-fb.show{display:block;}
-  .sq-fb.ok{background:rgba(39,174,96,0.12);border:1px solid rgba(39,174,96,0.3);color:var(--green);}
-  .sq-fb.ko{background:rgba(192,57,43,0.12);border:1px solid rgba(192,57,43,0.3);color:#e07070;}
-  .sq-next{display:none;}
-  .sq-next.show{display:inline-block;}
-  .sq-result{display:none;text-align:center;padding:20px 0;}
-  .sq-result.show{display:block;}
-  .sq-score-num{font-family:'Playfair Display',serif;font-size:48px;color:var(--blue);margin-bottom:8px;}
-  .sq-score-msg{font-size:20px;margin-bottom:24px;}
-  .sq-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
-  .sq-btns .btn{width:auto;padding:12px 28px;}
+
+  /* ===== UEBUNGSAUFGABEN ===== */
+  .ubq-wrap{margin-top:32px;}
+  .ubq-qnum{font-family:'DM Mono',monospace;font-size:11px;color:var(--blue);letter-spacing:2px;margin-bottom:8px;}
+  .ubq-dots{display:flex;gap:6px;margin-bottom:16px;}
+  .ubq-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all 0.3s;}
+  .ubq-dot.active{background:var(--blue);width:20px;border-radius:4px;}
+  .ubq-dot.done{background:var(--green);}
+  .ubq-dot.wrong-dot{background:var(--red);}
+  .ubq-q{font-family:'Playfair Display',serif;font-size:19px;margin-bottom:14px;line-height:1.45;white-space:pre-line;}
+  .ubq-opts{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
+  .ubq-opt{padding:13px 18px;border:1px solid var(--border);border-radius:12px;cursor:pointer;transition:all 0.2s;font-size:14px;background:transparent;color:var(--white);font-family:'DM Sans',sans-serif;text-align:left;display:flex;align-items:center;gap:12px;width:100%;}
+  .ubq-opt:hover:not([disabled]){border-color:var(--blue);background:rgba(52,152,219,0.08);}
+  .ubq-opt.correct{border-color:var(--green)!important;background:rgba(39,174,96,0.1)!important;}
+  .ubq-opt.wrong{border-color:var(--red)!important;background:rgba(192,57,43,0.1)!important;}
+  .ubq-letter{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'DM Mono',monospace;flex-shrink:0;}
+  .ubq-opt.correct .ubq-letter{background:var(--green);color:#fff;}
+  .ubq-opt.wrong .ubq-letter{background:var(--red);color:#fff;}
+  .ubq-fb{display:none;padding:14px 16px;border-radius:12px;margin-bottom:12px;}
+  .ubq-fb.show{display:block;animation:fadeUp 0.3s ease both;}
+  .ubq-fb.ok{background:rgba(39,174,96,0.1);border:1px solid rgba(39,174,96,0.3);}
+  .ubq-fb.no{background:rgba(192,57,43,0.08);border:1px solid rgba(192,57,43,0.3);}
+  .ubq-fbt{font-weight:700;font-size:14px;margin-bottom:5px;}
+  .ubq-fbt.ok{color:var(--green);}
+  .ubq-fbt.no{color:#e74c3c;}
+  .ubq-fbd{font-size:13px;color:var(--cream);line-height:1.7;}
+  .ubq-nx{display:none;margin-top:8px;}
+  .ubq-nx.show{display:block;}
+  .ubq-score-num{font-family:'Playfair Display',serif;font-size:48px;color:var(--blue);margin-bottom:6px;}
+  .ubq-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px;}
+  .ubq-btns .btn{width:auto;padding:12px 28px;}
 
 </style>
 <style>
@@ -127,6 +129,10 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
 .xp-badge { background:#EFF6FF; border:1px solid #3B82F6; color:#3B82F6; }
 .lesson-card { background:#F8FAFC; border:1px solid #E5E7EB; }
 .ex-card { background:#F8FAFC; border:1px solid #E5E7EB; }
+
+  .ubq-opt{border:1px solid #E5E7EB;background:white;color:#1F2937;}
+  .ubq-opt:hover:not([disabled]){border-color:#3B82F6;background:#EFF6FF;}
+  .ubq-letter{background:#F3F4F6;color:#374151;}
 </style>
 </head>
 <body>
@@ -158,25 +164,12 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
       <div class="lesson-card" onclick="goLesson(4)"><div class="lc-icon">⏸️</div><div><div class="lc-title">Lektion 5 — Strategien: Zeitfüller und Notfallplan</div><div class="lc-desc">Was tun, wenn man ein Wort nicht weiß oder Zeit gewinnen muss?</div></div><div class="lc-tag" style="color:var(--gray);">LEKTION 5</div></div>
     </div>
     <button class="btn btn-primary" onclick="goLesson(0)">Lektion 1 beginnen →</button>
-    <!-- STANDALONE QUIZ -->
-    <div class="sq-wrap" id="sqWrap">
-      <div id="sqQuestion">
-        <div class="sq-title">Wissenstest</div>
-        <div class="sq-sub">5 Fragen &mdash; teste dein Wissen!</div>
-        <div class="sq-dots" id="sqDots"></div>
-        <div class="sq-q" id="sqQText"></div>
-        <div class="sq-opts" id="sqOpts"></div>
-        <div class="sq-fb" id="sqFb"></div>
-        <button class="btn btn-primary sq-next" id="sqNext" onclick="sqAdvance()">Weiter &#x2192;</button>
-      </div>
-      <div class="sq-result" id="sqResult">
-        <div class="sq-score-num" id="sqScoreNum">0/5</div>
-        <div class="sq-score-msg" id="sqScoreMsg"></div>
-        <div class="sq-btns">
-          <button class="btn btn-outline" onclick="sqReset()">Nochmal versuchen</button>
-          <button class="btn btn-primary" id="sqNextMod">N&#xE4;chstes Modul &#x2192;</button>
-        </div>
-      </div>
+    <!-- UEBUNGSAUFGABEN -->
+    <div class="card ubq-wrap" id="ubqWrap">
+      <div class="concept-tag">&#220;BUNGSAUFGABEN</div>
+      <h2 class="lesson-h" style="font-size:22px;margin-bottom:4px;">Teste dein Wissen</h2>
+      <p style="font-size:13px;color:var(--gray);margin-bottom:20px;font-family:'DM Mono',monospace;">5 Fragen zum Modul</p>
+      <div id="ubqMain"></div>
     </div>
 
   </div>
@@ -409,140 +402,86 @@ function nextStep(li,si){var steps=$('lesson-'+li).querySelectorAll('.step');ste
 function xpDisp(){$('xpDisp').textContent='⚡ '+xp+' XP';}
 document.body.classList.add('ready');
 
-  // ===== STANDALONE QUIZ =====
-  var SQ_DATA = [
-  {
-    "q": "Wie ist der B2-Sprechteil der Goethe-Pruefung aufgebaut?",
-    "opts": [
-      "Ein langer Monolog",
-      "Drei Teile: Vortrag, Diskussion und Einigung",
-      "Nur Fragen beantworten",
-      "Ein Rollenspiel"
-    ],
-    "ans": 1,
-    "fb_ok": "Richtig! Der B2-Sprechteil besteht aus Vortrag, Diskussion und Einigung.",
-    "fb_ko": "Falsch. Der B2-Sprechteil umfasst drei Teile: Vortrag, Diskussion und Einigung."
-  },
-  {
-    "q": "Was ist wichtig bei der Bildbeschreibung?",
-    "opts": [
-      "Nur die Farben nennen",
-      "Systematisch beschreiben: Was? Wo? Welche Stimmung? Interpretation",
-      "Das Bild ignorieren",
-      "Den Hintergrund weglassen"
-    ],
-    "ans": 1,
-    "fb_ok": "Richtig! Eine systematische Beschreibung umfasst Inhalt, Lage, Stimmung und Interpretation.",
-    "fb_ko": "Falsch. Eine gute Bildbeschreibung ist systematisch: Was, Wo, Stimmung, Interpretation."
-  },
-  {
-    "q": "Welcher Ausdruck ist ein hilfreicher Zeitfueller?",
-    "opts": [
-      "Ich weiss nicht.",
-      "Das ist eine interessante Frage, ich ueberlege kurz...",
-      "Keine Antwort",
-      "Ich habe das nicht verstanden."
-    ],
-    "ans": 1,
-    "fb_ok": "Richtig! Zeitfueller geben einem Zeit zum Nachdenken und klingen natuerlich.",
-    "fb_ko": "Falsch. Saetze wie 'Das ist eine interessante Frage...' geben Zeit zum Nachdenken."
-  },
-  {
-    "q": "Was ist der Unterschied zwischen einem Monolog und einer Diskussion in der Pruefung?",
-    "opts": [
-      "Kein Unterschied",
-      "Im Monolog spricht man allein; in der Diskussion interagiert man mit dem Partner",
-      "Im Monolog darf man nicht sprechen",
-      "In der Diskussion spricht nur der Pruefer"
-    ],
-    "ans": 1,
-    "fb_ok": "Richtig! Im Monolog spricht man allein, in der Diskussion interagiert man mit dem Partner.",
-    "fb_ko": "Falsch. Der Monolog ist ein Einzelvortrag; die Diskussion ist eine Partnerinteraktion."
-  },
-  {
-    "q": "Wie leitet man einen Monolog am besten ein?",
-    "opts": [
-      "Sofort mit Details beginnen",
-      "Das Thema nennen, eine Gliederung ankuendigen und dann beginnen",
-      "Nur die Bilder zeigen",
-      "Mit einem Witz beginnen"
-    ],
-    "ans": 1,
-    "fb_ok": "Richtig! Eine gute Einleitung nennt das Thema und gibt eine kurze Gliederung.",
-    "fb_ko": "Falsch. Man nennt das Thema und kuendigt die Gliederung an, bevor man beginnt."
-  }
-];
-  var sqIdx=0, sqScore=0, sqAnswered=false;
-  var sqResults=[];
-  function sqInit(){sqIdx=0;sqScore=0;sqAnswered=false;sqResults=[];sqRender();}
-  function sqRender(){
-    var d=SQ_DATA[sqIdx];
-    document.getElementById('sqQuestion').style.display='block';
-    document.getElementById('sqResult').classList.remove('show');
-    document.getElementById('sqQText').textContent=(sqIdx+1)+'. '+d.q;
-    var dots=document.getElementById('sqDots');
-    dots.innerHTML='';
-    for(var i=0;i<5;i++){
-      var dot=document.createElement('div');
-      var cls='sq-dot';
-      if(i<sqIdx){ cls+= sqResults[i]?' done':' wrong'; }
-      else if(i===sqIdx){ cls+=' active'; }
-      dot.className=cls;
-      dots.appendChild(dot);
-    }
-    var opts=document.getElementById('sqOpts');
-    opts.innerHTML='';
-    d.opts.forEach(function(o,i){
-      var b=document.createElement('button');
-      b.className='sq-opt';
-      b.textContent=o;
-      (function(idx){b.onclick=function(){sqPick(idx);};})(i);
-      opts.appendChild(b);
-    });
-    var fb=document.getElementById('sqFb');
-    fb.className='sq-fb';
-    fb.textContent='';
-    document.getElementById('sqNext').className='btn btn-primary sq-next';
-    sqAnswered=false;
-  }
-  function sqPick(idx){
-    if(sqAnswered)return;
-    sqAnswered=true;
-    var d=SQ_DATA[sqIdx];
-    var opts=document.getElementById('sqOpts').querySelectorAll('.sq-opt');
-    opts.forEach(function(b){b.classList.add('disabled');});
-    var ok=(idx===d.ans);
-    if(ok){sqScore++;sqResults[sqIdx]=true;}else{sqResults[sqIdx]=false;}
-    opts[idx].classList.add(ok?'correct':'wrong');
-    if(!ok) opts[d.ans].classList.add('correct');
-    var fb=document.getElementById('sqFb');
-    fb.textContent=ok?d.fb_ok:d.fb_ko;
-    fb.className='sq-fb show '+(ok?'ok':'ko');
-    document.getElementById('sqNext').className='btn btn-primary sq-next show';
-  }
-  function sqAdvance(){
-    if(sqIdx<4){sqIdx++;sqRender();}else{sqShowResult();}
-  }
-  function sqShowResult(){
-    document.getElementById('sqQuestion').style.display='none';
-    var res=document.getElementById('sqResult');
-    res.className='sq-result show';
-    document.getElementById('sqScoreNum').textContent=sqScore+'/5';
-    var msgs=['Nicht aufgeben! \u{1F31F}','Nicht aufgeben! \u{1F31F}','Weiter üben! \u{1F4DA}','Gut gemacht! \u{1F4AA}','Sehr gut! \u{1F44F}','Ausgezeichnet! \u{1F389}'];
-    document.getElementById('sqScoreMsg').textContent=msgs[sqScore];
-  }
-  function sqReset(){
-    sqIdx=0;sqScore=0;sqAnswered=false;sqResults=[];
-    document.getElementById('sqResult').className='sq-result';
-    document.getElementById('sqQuestion').style.display='block';
-    sqRender();
-  }
-  document.addEventListener('DOMContentLoaded',function(){sqInit();});
 
-  document.addEventListener('DOMContentLoaded',function(){
-    var nb=document.getElementById('sqNextMod');
-    if(nb){ nb.onclick=function(){ window.location.href='module-b2-14-pruefungsvorbereitung.html'; }; }
-  });
+  // ===== UEBUNGSAUFGABEN =====
+  var UBQ_DATA = [{"q": "Eine B2-Pr\u00e4sentation dauert ca.:", "opts": ["1 Minute", "3\u20135 Minuten", "10 Minuten", "30 Minuten"], "ans": 1, "exp": "Die B2-Pr\u00e4sentation dauert ca. 3\u20135 Minuten."}, {"q": "Wie beginnt man eine Pr\u00e4sentation?", "opts": ["Sofort mit Details", "Mit Begr\u00fc\u00dfung, Thema vorstellen und Gliederung", "Mit einer langen Geschichte", "Mit Fragen ans Publikum"], "ans": 1, "exp": "Gute Struktur: Begr\u00fc\u00dfung \u2192 Thema nennen \u2192 kurze Gliederung \u2192 Hauptteil."}, {"q": "Bei der Bildbeschreibung B2:", "opts": ["Nur beschreiben was man sieht", "Beschreiben, interpretieren und Meinung \u00e4u\u00dfern", "Nur die Farben nennen", "Das Bild \u00fcbersetzen"], "ans": 1, "exp": "B2-Bildbeschreibung = beschreiben + interpretieren + eigene Meinung \u00e4u\u00dfern."}, {"q": "Wenn man ein Wort vergisst:", "opts": ["Aufh\u00f6ren zu sprechen", "Ich wei\u00df nicht sagen", "Umschreiben und weitersprechen", "Auf Englisch sagen"], "ans": 2, "exp": "Umschreiben zeigt Sprachkompetenz: 'das Ding, mit dem man schreibt' = Stift."}, {"q": "Pr\u00fcfungsangst bek\u00e4mpft man durch:", "opts": ["Gar nicht \u00fcben", "Regelm\u00e4\u00dfiges \u00dcben und positive Selbstgespr\u00e4che", "Viel Kaffee trinken", "Die Pr\u00fcfung vermeiden"], "ans": 1, "exp": "Regelm\u00e4\u00dfiges \u00dcben und positive Gedanken reduzieren Pr\u00fcfungsangst nachweislich."}];
+  var ubqIdx=0, ubqScore=0, ubqAnswered=false, ubqResults=[], ubqNextHref='module-b2-14-pruefungsvorbereitung.html';
+  function ubqInit(){ubqIdx=0;ubqScore=0;ubqAnswered=false;ubqResults=[];ubqRender();}
+  function ubqRender(){
+    var d=UBQ_DATA[ubqIdx];
+    var dots='<div class="ubq-dots">';
+    for(var i=0;i<5;i++){
+      var c='ubq-dot';
+      if(i<ubqIdx){c+=ubqResults[i]?' done':' wrong-dot';}
+      else if(i===ubqIdx){c+=' active';}
+      dots+='<div class="'+c+'"></div>';
+    }
+    dots+='</div>';
+    var opts=d.opts.map(function(o,i){
+      return '<button class="ubq-opt" id="ubqO'+i+'" onclick="ubqPick('+i+')">'
+        +'<span class="ubq-letter">'+['A','B','C','D'][i]+'</span>'+o+'</button>';
+    }).join('');
+    document.getElementById('ubqMain').innerHTML=
+      '<div class="ubq-qnum">FRAGE '+(ubqIdx+1)+' VON 5</div>'
+      +dots
+      +'<div class="ubq-q">'+d.q+'</div>'
+      +'<div class="ubq-opts">'+opts+'</div>'
+      +'<div class="ubq-fb" id="ubqFb"><div class="ubq-fbt" id="ubqFbt"></div><div class="ubq-fbd" id="ubqFbd"></div></div>'
+      +'<div class="ubq-nx" id="ubqNx"><button class="btn btn-primary" onclick="ubqAdv()">'
+      +(ubqIdx<4?'N\u00e4chste Frage \u2192':'Ergebnis anzeigen \u2192')+'</button></div>';
+    ubqAnswered=false;
+  }
+  function ubqPick(idx){
+    if(ubqAnswered)return;
+    ubqAnswered=true;
+    var d=UBQ_DATA[ubqIdx];
+    var ok=(idx===d.ans);
+    if(ok){ubqScore++;ubqResults[ubqIdx]=true;}else{ubqResults[ubqIdx]=false;}
+    for(var i=0;i<4;i++){
+      var b=document.getElementById('ubqO'+i);
+      if(b){b.disabled=true;if(i===d.ans)b.classList.add('correct');if(i===idx&&!ok)b.classList.add('wrong');}
+    }
+    var fbt=document.getElementById('ubqFbt');
+    var fbd=document.getElementById('ubqFbd');
+    var fb=document.getElementById('ubqFb');
+    if(ok){
+      fbt.className='ubq-fbt ok';
+      fbt.textContent='\u2705 Richtig!';
+      fbd.textContent=d.exp;
+    }else{
+      fbt.className='ubq-fbt no';
+      fbt.textContent='\ud83d\udcaa Nicht ganz.';
+      fbd.textContent='Die richtige Antwort ist: '+d.opts[d.ans]+'. '+d.exp;
+    }
+    fb.className='ubq-fb show '+(ok?'ok':'no');
+    document.getElementById('ubqNx').className='ubq-nx show';
+  }
+  function ubqAdv(){
+    if(ubqIdx<4){ubqIdx++;ubqRender();}else{ubqShowResult();}
+  }
+  function ubqShowResult(){
+    var msgs=[
+      'Nicht aufgeben! \ud83c\udf1f\nDu schaffst das!',
+      'Nicht aufgeben! \ud83c\udf1f\nDu schaffst das!',
+      'Weiter \u00fcben! \ud83d\udcda\nLies die Lektion nochmal.',
+      'Gut gemacht! \ud83d\udcaa\nNoch etwas \u00fcben!',
+      'Sehr gut! \ud83d\udc4f\nFast perfekt!',
+      'Ausgezeichnet! \ud83c\udf89\nDu hast alles verstanden!'
+    ];
+    document.getElementById('ubqMain').innerHTML=
+      '<div style="text-align:center;padding:16px 0;">'
+      +'<div style="font-size:52px;margin-bottom:10px;">'
+      +(ubqScore===5?'\ud83c\udf89':ubqScore>=4?'\ud83d\udc4f':ubqScore>=3?'\ud83d\udcaa':'\ud83d\udcda')
+      +'</div>'
+      +'<div class="ubq-score-num">'+ubqScore+'/5</div>'
+      +'<div style="font-size:18px;margin-bottom:4px;white-space:pre-line;">'+msgs[ubqScore]+'</div>'
+      +'<div class="ubq-btns">'
+      +'<button class="btn btn-outline" onclick="ubqReset()">Nochmal versuchen</button>'
+      +'<button class="btn btn-primary" onclick="window.location.href=ubqNextHref">N\u00e4chstes Modul \u2192</button>'
+      +'</div></div>';
+  }
+  function ubqReset(){ubqIdx=0;ubqScore=0;ubqAnswered=false;ubqResults=[];ubqRender();}
+  document.addEventListener('DOMContentLoaded',function(){ubqInit();});
 
 </script>
 </body>
