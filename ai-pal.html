@@ -2,57 +2,82 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>AI Pal — DeutschWeg</title>
 <link rel="stylesheet" href="./deutschweg-theme.css">
 <style>
   *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;height:100%;}
+  html,body{margin:0;padding:0;}
   body{
     background:#F8FAFC;
-    font-family:'Plus Jakarta Sans','DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;
     color:#1F2937;
-    display:flex;flex-direction:column;
+    font-family:'Plus Jakarta Sans','DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
     min-height:100vh;
-    padding-bottom:74px; /* room for bottom nav */
+    min-height:100dvh;
+    display:flex;flex-direction:column;
   }
 
   /* ── HEADER ── */
   .pal-header{
     background:linear-gradient(135deg,#1D4ED8 0%,#3B82F6 100%);
     color:#fff;
-    padding:18px 18px 16px;
+    padding:14px 16px 12px;
     display:flex;align-items:center;gap:12px;
-    position:sticky;top:0;z-index:50;
+    flex-shrink:0;
     box-shadow:0 2px 12px rgba(29,78,216,0.18);
+    position:sticky;top:0;z-index:30;
   }
   .pal-back{
     background:rgba(255,255,255,0.16);border:none;color:#fff;
     width:36px;height:36px;border-radius:10px;cursor:pointer;
     display:flex;align-items:center;justify-content:center;
     font-size:18px;font-weight:700;flex-shrink:0;
-    transition:background .2s;text-decoration:none;
+    text-decoration:none;transition:background .2s;
   }
   .pal-back:hover{background:rgba(255,255,255,0.26);}
-  .pal-avatar{
-    width:42px;height:42px;border-radius:50%;
+  .pal-avatar-h{
+    width:40px;height:40px;border-radius:50%;
     background:#fff;display:flex;align-items:center;justify-content:center;
-    font-size:24px;flex-shrink:0;
-    box-shadow:0 2px 8px rgba(0,0,0,0.18);
+    font-size:22px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.18);
   }
   .pal-title-wrap{flex:1;min-width:0;}
-  .pal-title{font-size:17px;font-weight:800;line-height:1.2;letter-spacing:-0.2px;}
+  .pal-title{font-size:16px;font-weight:800;line-height:1.2;letter-spacing:-0.2px;}
   .pal-status{
-    font-size:11px;font-weight:600;color:rgba(255,255,255,0.85);
+    font-size:11px;font-weight:600;color:rgba(255,255,255,0.88);
     margin-top:2px;display:flex;align-items:center;gap:6px;
   }
   .pal-dot{width:7px;height:7px;border-radius:50%;background:#10B981;box-shadow:0 0 6px #10B981;}
+
+  /* ── LEVEL PILLS ── */
+  .level-bar{
+    background:#fff;
+    border-bottom:1px solid #E5E7EB;
+    padding:10px 14px;
+    display:flex;justify-content:center;gap:6px;
+    flex-shrink:0;
+    position:sticky;top:62px;z-index:25;
+  }
+  .level-pill{
+    border:1.5px solid #E5E7EB;
+    background:#F8FAFC;
+    color:#475569;
+    border-radius:18px;
+    padding:6px 16px;
+    font-family:inherit;font-size:13px;font-weight:700;letter-spacing:0.3px;
+    cursor:pointer;
+    transition:all .18s ease;
+  }
+  .level-pill:hover{border-color:#3B82F6;color:#3B82F6;}
+  .level-pill.active{
+    background:#3B82F6;color:#fff;border-color:#3B82F6;
+    box-shadow:0 2px 8px rgba(59,130,246,0.3);
+  }
 
   /* ── CHAT AREA ── */
   .chat{
     flex:1;
     overflow-y:auto;
-    padding:18px 14px 20px;
+    padding:18px 14px 14px;
     display:flex;flex-direction:column;gap:12px;
     max-width:720px;width:100%;margin:0 auto;
     -webkit-overflow-scrolling:touch;
@@ -71,14 +96,14 @@
   .msg.pal{align-self:flex-start;}
 
   .msg-av{
-    width:34px;height:34px;border-radius:50%;
+    width:32px;height:32px;border-radius:50%;
     background:#EFF6FF;border:1.5px solid #DBEAFE;
     display:flex;align-items:center;justify-content:center;
-    font-size:18px;flex-shrink:0;
+    font-size:17px;flex-shrink:0;
   }
 
   .bubble{
-    padding:11px 14px;
+    padding:10px 14px;
     border-radius:18px;
     font-size:14.5px;line-height:1.6;
     white-space:pre-wrap;word-break:break-word;
@@ -114,17 +139,40 @@
     40%{opacity:1;transform:scale(1.3);}
   }
 
+  /* ── WELCOME EMPTY STATE ── */
+  .welcome{
+    text-align:center;
+    padding:28px 18px 8px;
+    color:#475569;
+  }
+  .welcome-emoji{font-size:54px;margin-bottom:14px;}
+  .welcome-title{
+    font-size:22px;font-weight:800;color:#1F2937;
+    margin-bottom:8px;letter-spacing:-0.3px;
+  }
+  .welcome-sub{font-size:14px;line-height:1.7;max-width:340px;margin:0 auto 18px;}
+  .quick-chips{
+    display:flex;flex-wrap:wrap;justify-content:center;gap:8px;
+    max-width:380px;margin:0 auto;
+  }
+  .chip{
+    background:#fff;border:1px solid #E5E7EB;
+    border-radius:20px;padding:8px 14px;
+    font-size:13px;font-weight:600;color:#3B82F6;
+    cursor:pointer;transition:all .2s;
+    font-family:inherit;
+  }
+  .chip:hover{background:#EFF6FF;border-color:#3B82F6;transform:translateY(-1px);}
+
   /* ── INPUT BAR ── */
   .input-bar{
-    position:fixed;
-    bottom:74px; /* sit above bottom nav */
-    left:0;right:0;
     background:#fff;
     border-top:1px solid #E5E7EB;
     padding:10px 12px;
-    display:flex;align-items:flex-end;gap:8px;
-    z-index:40;
+    flex-shrink:0;
     box-shadow:0 -2px 12px rgba(0,0,0,0.04);
+    /* sit above bottom nav */
+    margin-bottom:74px;
   }
   .input-bar-inner{
     max-width:720px;width:100%;margin:0 auto;
@@ -153,14 +201,13 @@
     font-size:18px;
     transition:all .2s;
   }
-  .mic-btn{
-    background:#F1F5F9;color:#475569;
-  }
+  .mic-btn{background:#F1F5F9;color:#475569;}
   .mic-btn:hover{background:#E2E8F0;}
   .mic-btn.recording{
     background:#EF4444;color:#fff;
     animation:pulse 1.3s ease infinite;
   }
+  .mic-btn.disabled{opacity:0.4;cursor:not-allowed;}
   @keyframes pulse{
     0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.5);}
     50%{box-shadow:0 0 0 10px rgba(239,68,68,0);}
@@ -172,31 +219,6 @@
   .send-btn:hover{background:#2563EB;transform:translateY(-1px);}
   .send-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none;}
 
-  /* ── WELCOME EMPTY STATE ── */
-  .welcome{
-    text-align:center;
-    padding:36px 18px 8px;
-    color:#475569;
-  }
-  .welcome-emoji{font-size:54px;margin-bottom:14px;}
-  .welcome-title{
-    font-size:22px;font-weight:800;color:#1F2937;
-    margin-bottom:8px;letter-spacing:-0.3px;
-  }
-  .welcome-sub{font-size:14px;line-height:1.7;max-width:340px;margin:0 auto 18px;}
-  .quick-chips{
-    display:flex;flex-wrap:wrap;justify-content:center;gap:8px;
-    max-width:380px;margin:0 auto;
-  }
-  .chip{
-    background:#fff;border:1px solid #E5E7EB;
-    border-radius:20px;padding:8px 14px;
-    font-size:13px;font-weight:600;color:#3B82F6;
-    cursor:pointer;transition:all .2s;
-    font-family:inherit;
-  }
-  .chip:hover{background:#EFF6FF;border-color:#3B82F6;transform:translateY(-1px);}
-
   /* ── BOTTOM NAV ── */
   .bottom-nav{
     position:fixed;bottom:0;left:0;right:0;
@@ -207,7 +229,7 @@
   }
   .nav-item{
     display:flex;flex-direction:column;align-items:center;gap:3px;
-    cursor:pointer;padding:6px 12px;border-radius:10px;
+    cursor:pointer;padding:6px 10px;border-radius:10px;
     transition:all .2s;border:none;background:none;color:#9CA3AF;
     text-decoration:none;flex:1;max-width:88px;
   }
@@ -216,36 +238,45 @@
   .nav-label{font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;}
 
   @media (max-width:380px){
-    .nav-item{padding:6px 6px;}
+    .nav-item{padding:6px 4px;}
     .nav-label{font-size:9px;letter-spacing:0.3px;}
+    .level-pill{padding:6px 12px;font-size:12px;}
   }
 </style>
 </head>
 <body>
 
 <!-- HEADER -->
-<div class="pal-header">
+<header class="pal-header">
   <a href="/dashboard" class="pal-back" aria-label="Back to dashboard">←</a>
-  <div class="pal-avatar">🤗</div>
+  <div class="pal-avatar-h">🤖</div>
   <div class="pal-title-wrap">
     <div class="pal-title">AI Pal</div>
     <div class="pal-status"><span class="pal-dot"></span> Your German learning buddy</div>
   </div>
+</header>
+
+<!-- LEVEL PILLS -->
+<div class="level-bar" role="tablist" aria-label="Choose your level">
+  <button class="level-pill" data-level="A1" role="tab">A1</button>
+  <button class="level-pill" data-level="A2" role="tab">A2</button>
+  <button class="level-pill" data-level="B1" role="tab">B1</button>
+  <button class="level-pill" data-level="B2" role="tab">B2</button>
 </div>
 
 <!-- CHAT -->
-<div class="chat" id="chat">
+<main class="chat" id="chat">
   <div class="welcome" id="welcome">
-    <div class="welcome-emoji">🤗</div>
+    <div class="welcome-emoji">🤖</div>
     <div class="welcome-title">Hallo! I'm AI Pal</div>
-    <div class="welcome-sub">Type or tap the mic to chat. Ask me anything in German or English — I'll help you learn step by step.</div>
+    <div class="welcome-sub">Pick your level above, then type or tap the mic. I'll help you spot patterns and fix mistakes.</div>
     <div class="quick-chips">
       <button class="chip" data-q="Ich gehe zu Schule">Ich gehe zu Schule</button>
       <button class="chip" data-q="How do I say 'I am hungry' in German?">"I am hungry" in German?</button>
       <button class="chip" data-q="Was bedeutet 'weil'?">Was bedeutet "weil"?</button>
     </div>
   </div>
-</div>
+</main>
 
 <!-- INPUT BAR -->
 <div class="input-bar">
@@ -257,7 +288,7 @@
 </div>
 
 <!-- BOTTOM NAV -->
-<div class="bottom-nav">
+<nav class="bottom-nav">
   <a class="nav-item" href="/dashboard">
     <span class="nav-icon">📚</span>
     <span class="nav-label">Modules</span>
@@ -278,34 +309,56 @@
     <span class="nav-icon">📝</span>
     <span class="nav-label">Exam Vault</span>
   </a>
-</div>
+</nav>
 
 <script>
 (function(){
   'use strict';
 
   var API_BASE = 'https://deutschweg.onrender.com';
+  var LEVELS   = ['A1','A2','B1','B2'];
+  var LS_KEY   = 'dw_ai_pal_level';
 
-  var chat     = document.getElementById('chat');
-  var welcome  = document.getElementById('welcome');
-  var input    = document.getElementById('input');
-  var sendBtn  = document.getElementById('sendBtn');
-  var micBtn   = document.getElementById('micBtn');
+  var chat    = document.getElementById('chat');
+  var welcome = document.getElementById('welcome');
+  var input   = document.getElementById('input');
+  var sendBtn = document.getElementById('sendBtn');
+  var micBtn  = document.getElementById('micBtn');
+  var pills   = document.querySelectorAll('.level-pill');
 
-  // Full conversation history — kept in memory for the session so AI Pal
-  // can detect repeated mistakes (server caps to last 30).
+  // ── Level state (persisted in localStorage) ─────────────────────────────
+  var level = 'A1';
+  try {
+    var saved = localStorage.getItem(LS_KEY);
+    if (saved && LEVELS.indexOf(saved) !== -1) level = saved;
+  } catch(_) {}
+
+  function setLevel(newLevel){
+    if (LEVELS.indexOf(newLevel) === -1) return;
+    level = newLevel;
+    try { localStorage.setItem(LS_KEY, level); } catch(_) {}
+    pills.forEach(function(p){
+      p.classList.toggle('active', p.getAttribute('data-level') === level);
+    });
+  }
+  pills.forEach(function(p){
+    p.addEventListener('click', function(){ setLevel(p.getAttribute('data-level')); });
+  });
+  setLevel(level);
+
+  // ── Conversation history (full session, server caps to last 30) ─────────
   var history = [];
 
-  // ── Wake the Render server ─────────────────────────────────────────────────
+  // ── Wake the Render server ──────────────────────────────────────────────
   fetch(API_BASE + '/').catch(function(){});
 
-  // ── Auto-resize textarea ──────────────────────────────────────────────────
+  // ── Auto-resize textarea ────────────────────────────────────────────────
   input.addEventListener('input', function(){
     this.style.height = 'auto';
     this.style.height = Math.min(this.scrollHeight, 110) + 'px';
   });
 
-  // ── Send on Enter (Shift+Enter = newline) ─────────────────────────────────
+  // ── Send on Enter (Shift+Enter = newline) ───────────────────────────────
   input.addEventListener('keydown', function(e){
     if (e.key === 'Enter' && !e.shiftKey){
       e.preventDefault();
@@ -314,27 +367,25 @@
   });
   sendBtn.addEventListener('click', sendMessage);
 
-  // ── Quick-start chips ─────────────────────────────────────────────────────
+  // ── Quick-start chips ───────────────────────────────────────────────────
   document.querySelectorAll('.chip').forEach(function(chip){
     chip.addEventListener('click', function(){
       input.value = chip.getAttribute('data-q');
       input.dispatchEvent(new Event('input'));
-      input.focus();
       sendMessage();
     });
   });
 
-  // ── Append message bubble ─────────────────────────────────────────────────
+  // ── Append message bubble ───────────────────────────────────────────────
   function appendMessage(role, text){
-    if (welcome && welcome.parentNode) welcome.parentNode.removeChild(welcome);
-
+    if (welcome && welcome.parentNode) {
+      welcome.parentNode.removeChild(welcome);
+      welcome = null;
+    }
     var row = document.createElement('div');
     row.className = 'msg ' + role;
-
     var html = '';
-    if (role === 'pal'){
-      html += '<div class="msg-av">🤗</div>';
-    }
+    if (role === 'pal') html += '<div class="msg-av">🤖</div>';
     html += '<div class="bubble"></div>';
     row.innerHTML = html;
     row.querySelector('.bubble').textContent = text;
@@ -347,7 +398,7 @@
     var row = document.createElement('div');
     row.className = 'msg pal';
     row.id = 'typing-row';
-    row.innerHTML = '<div class="msg-av">🤗</div><div class="bubble typing"><span></span><span></span><span></span></div>';
+    row.innerHTML = '<div class="msg-av">🤖</div><div class="bubble typing"><span></span><span></span><span></span></div>';
     chat.appendChild(row);
     chat.scrollTop = chat.scrollHeight;
   }
@@ -356,7 +407,7 @@
     if (el) el.remove();
   }
 
-  // ── Send message ──────────────────────────────────────────────────────────
+  // ── Send message ────────────────────────────────────────────────────────
   function sendMessage(){
     var text = input.value.trim();
     if (!text || sendBtn.disabled) return;
@@ -372,14 +423,18 @@
     fetch(API_BASE + '/api/aipal', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ messages: history })
+      body:    JSON.stringify({ messages: history, level: level })
     })
-    .then(function(r){ return r.json(); })
-    .then(function(data){
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, body: j }; }); })
+    .then(function(res){
       hideTyping();
-      var reply = data.reply || data.error || 'Oops — something went wrong. Try again!';
-      appendMessage('pal', reply);
-      if (data.reply) history.push({ role: 'assistant', content: data.reply });
+      if (res.ok && res.body && res.body.reply){
+        appendMessage('pal', res.body.reply);
+        history.push({ role: 'assistant', content: res.body.reply });
+      } else {
+        var msg = (res.body && res.body.error) ? res.body.error : 'Oops — something went wrong. Try again!';
+        appendMessage('pal', msg);
+      }
     })
     .catch(function(){
       hideTyping();
@@ -391,41 +446,36 @@
     });
   }
 
-  // ── Voice input via Web Speech API ────────────────────────────────────────
+  // ── Voice input via Web Speech API ──────────────────────────────────────
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  var recognition = null;
-  var isRecording = false;
-
   if (!SR){
+    micBtn.classList.add('disabled');
     micBtn.title = 'Voice input not supported on this browser';
-    micBtn.style.opacity = 0.5;
     micBtn.addEventListener('click', function(){
       alert('Voice input is not supported on this browser. Try Chrome on Android or desktop.');
     });
   } else {
-    recognition = new SR();
+    var recognition = new SR();
     recognition.lang = 'de-DE';
     recognition.continuous = false;
     recognition.interimResults = true;
 
+    var isRecording = false;
     var finalTranscript = '';
 
     recognition.addEventListener('start', function(){
       isRecording = true;
+      finalTranscript = '';
       micBtn.classList.add('recording');
       micBtn.textContent = '⏺';
-      finalTranscript = '';
     });
 
     recognition.addEventListener('result', function(e){
       var interim = '';
       for (var i = e.resultIndex; i < e.results.length; i++){
-        var transcript = e.results[i][0].transcript;
-        if (e.results[i].isFinal){
-          finalTranscript += transcript;
-        } else {
-          interim += transcript;
-        }
+        var t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) finalTranscript += t;
+        else interim += t;
       }
       input.value = (finalTranscript + interim).trim();
       input.dispatchEvent(new Event('input'));
@@ -435,7 +485,6 @@
       isRecording = false;
       micBtn.classList.remove('recording');
       micBtn.textContent = '🎤';
-      // Auto-send if we got something
       if (input.value.trim()) sendMessage();
     });
 

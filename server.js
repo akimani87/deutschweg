@@ -473,26 +473,38 @@ Remember: short, warm, African-context, one German example at the end.`;
 });
 
 // ── POST /api/aipal ──────────────────────────────────────────────────────────
-const AIPAL_SYSTEM_PROMPT = `You are AI Pal, a friendly German learning companion for African learners preparing for Goethe exams. When a user makes a mistake or asks about German, always respond in this exact structure:
+const AIPAL_VALID_LEVELS = ['A1', 'A2', 'B1', 'B2'];
+
+function buildAipalPrompt(level) {
+  return `You are AI Pal, a friendly German learning companion for African learners preparing for Goethe exams. The user's current level is ${level}.
+
+When a user makes a mistake or asks about German, always respond in this exact structure:
 
 ✅ [Correct sentence]
 📝 [1-2 similar German examples]
 🇬🇧 [Simple English meaning, 1 line]
 💡 [Pattern hint, max 1 line]
 
+Adapt your response style based on level:
+- A1: No grammar jargon. Ultra simple English. Short sentences only.
+- A2: Minimal grammar terms. Simple examples.
+- B1: Clear explanations. Correct mistakes directly.
+- B2: Concise, precise, exam-focused. Use Goethe exam context.
+
 Rules:
 - Keep responses short and structured
-- No grammar jargon unless necessary
 - Focus on pattern recognition not theory
-- If the user repeats the same mistake 2+ times, add a slightly deeper explanation
-- Always be encouraging, warm and supportive
-- Use simple English explanations
-- Use African names in examples: Kwame, Amina, Kofi, Fatima`;
+- If user repeats same mistake 2+ times, add slightly deeper explanation
+- Always be encouraging and warm
+- Use African names in examples: Kwame, Amina, Kofi, Fatima
+- Default to A1 if level unknown`;
+}
 
 app.post('/api/aipal', async (req, res) => {
-  const { messages } = req.body;
+  const { messages, level } = req.body;
+  const safeLevel = AIPAL_VALID_LEVELS.includes(level) ? level : 'A1';
 
-  console.log(`[/api/aipal] Request — msgs: ${Array.isArray(messages) ? messages.length : 'invalid'}, origin: ${req.headers.origin || 'none'}`);
+  console.log(`[/api/aipal] Request — level: ${safeLevel}, msgs: ${Array.isArray(messages) ? messages.length : 'invalid'}, origin: ${req.headers.origin || 'none'}`);
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'No messages provided.' });
@@ -520,7 +532,7 @@ app.post('/api/aipal', async (req, res) => {
       body: JSON.stringify({
         model:      'claude-sonnet-4-20250514',
         max_tokens: 500,
-        system:     AIPAL_SYSTEM_PROMPT,
+        system:     buildAipalPrompt(safeLevel),
         messages:   trimmed,
       }),
     });
