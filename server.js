@@ -558,6 +558,101 @@ app.post('/api/aipal', async (req, res) => {
   }
 });
 
+// ── POST /api/aitutor ────────────────────────────────────────────────────────
+const AITUTOR_VALID_LEVELS = ['A1', 'A2', 'B1', 'B2'];
+
+function buildAitutorPrompt(level) {
+  return `You are a patient, structured German teacher helping African learners prepare for the Goethe exam. The student's level is ${level}.
+
+Your role: explain clearly when asked. You are a full teacher.
+
+When explaining grammar:
+1. Give the rule clearly
+2. Show the structure
+3. Give 2-3 examples using African names (Kwame, Amina, Kofi, Fatima)
+4. Point out common mistakes
+
+When correcting sentences:
+1. Show the corrected version first
+2. Explain what was wrong
+3. Give the grammar rule behind it
+
+When giving writing feedback:
+- Comment on grammar, structure, and vocabulary
+- Suggest improvements
+- Keep tone encouraging
+
+When doing speaking roleplay:
+- Play the role asked (examiner, shopkeeper, doctor, etc.)
+- Stay in German unless the student asks for English explanation
+- Correct mistakes gently after each exchange
+
+Rules:
+- Be patient and encouraging always
+- Give complete explanations — don't cut short
+- Use simple English for explanations
+- Adapt depth to the student level: A1 simple, B2 detailed
+- If student seems frustrated, be extra warm and reassuring`;
+}
+
+app.post('/api/aitutor', async (req, res) => {
+  const { messages, level } = req.body;
+  const safeLevel = AITUTOR_VALID_LEVELS.includes(level) ? level : 'A1';
+
+  console.log(`[/api/aitutor] Request — level: ${safeLevel}, msgs: ${Array.isArray(messages) ? messages.length : 'invalid'}, origin: ${req.headers.origin || 'none'}`);
+
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return res.status(400).json({ error: 'No messages provided.' });
+  }
+
+  if (!process.env.CLAUDE_API_KEY) {
+    console.error('CLAUDE_API_KEY is not set');
+    return res.status(500).json({ error: 'API key not configured.' });
+  }
+
+  // Cap to last 30 turns; truncate each to bound payload size
+  const trimmed = messages.slice(-30).map(m => ({
+    role:    m.role === 'assistant' ? 'assistant' : 'user',
+    content: String(m.content).slice(0, 1500),
+  }));
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method:  'POST',
+      headers: {
+        'Content-Type':      'application/json',
+        'x-api-key':         process.env.CLAUDE_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model:      'claude-sonnet-4-20250514',
+        max_tokens: 800,
+        system:     buildAitutorPrompt(safeLevel),
+        messages:   trimmed,
+      }),
+    });
+
+    if (!response.ok) {
+      const errBody = await response.json().catch(() => ({}));
+      const message = errBody?.error?.message || `Claude API returned ${response.status}`;
+      console.error('[/api/aitutor] Claude API error:', message);
+      return res.status(502).json({ error: message });
+    }
+
+    const data  = await response.json();
+    const reply = data?.content?.[0]?.text?.trim() ?? '';
+
+    if (!reply) return res.status(502).json({ error: 'Empty response from AI. Try again.' });
+
+    console.log('[/api/aitutor] Success — reply length:', reply.length);
+    return res.json({ reply });
+
+  } catch (err) {
+    console.error('[/api/aitutor] Server error:', err.message);
+    return res.status(500).json({ error: 'Server error: ' + err.message });
+  }
+});
+
 // ── Start ────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log('');
