@@ -472,6 +472,80 @@ Remember: short, warm, African-context, one German example at the end.`;
   }
 });
 
+// ── POST /api/aipal ──────────────────────────────────────────────────────────
+const AIPAL_SYSTEM_PROMPT = `You are AI Pal, a friendly German learning companion for African learners preparing for Goethe exams. When a user makes a mistake or asks about German, always respond in this exact structure:
+
+✅ [Correct sentence]
+📝 [1-2 similar German examples]
+🇬🇧 [Simple English meaning, 1 line]
+💡 [Pattern hint, max 1 line]
+
+Rules:
+- Keep responses short and structured
+- No grammar jargon unless necessary
+- Focus on pattern recognition not theory
+- If the user repeats the same mistake 2+ times, add a slightly deeper explanation
+- Always be encouraging, warm and supportive
+- Use simple English explanations
+- Use African names in examples: Kwame, Amina, Kofi, Fatima`;
+
+app.post('/api/aipal', async (req, res) => {
+  const { messages } = req.body;
+
+  console.log(`[/api/aipal] Request — msgs: ${Array.isArray(messages) ? messages.length : 'invalid'}, origin: ${req.headers.origin || 'none'}`);
+
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return res.status(400).json({ error: 'No messages provided.' });
+  }
+
+  if (!process.env.CLAUDE_API_KEY) {
+    console.error('CLAUDE_API_KEY is not set');
+    return res.status(500).json({ error: 'API key not configured.' });
+  }
+
+  // Keep full history so AI Pal can detect repeated mistakes (cap to last 30 to bound payload size)
+  const trimmed = messages.slice(-30).map(m => ({
+    role:    m.role === 'assistant' ? 'assistant' : 'user',
+    content: String(m.content).slice(0, 1000),
+  }));
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method:  'POST',
+      headers: {
+        'Content-Type':      'application/json',
+        'x-api-key':         process.env.CLAUDE_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model:      'claude-sonnet-4-20250514',
+        max_tokens: 500,
+        system:     AIPAL_SYSTEM_PROMPT,
+        messages:   trimmed,
+      }),
+    });
+
+    if (!response.ok) {
+      const errBody = await response.json().catch(() => ({}));
+      const message = errBody?.error?.message || `Claude API returned ${response.status}`;
+      console.error('[/api/aipal] Claude API error:', message);
+      return res.status(502).json({ error: message });
+    }
+
+    const data  = await response.json();
+    const reply = data?.content?.[0]?.text?.trim() ?? '';
+
+    if (!reply) return res.status(502).json({ error: 'Empty response from AI. Try again.' });
+
+    console.log('[/api/aipal] Success — reply length:', reply.length);
+    return res.json({ reply });
+
+  } catch (err) {
+    console.error('[/api/aipal] Server error:', err.message);
+    return res.status(500).json({ error: 'Server error: ' + err.message });
+  }
+});
+
 // ── Start ────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log('');
