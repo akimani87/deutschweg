@@ -175,6 +175,16 @@ body{background:#F8FAFC;min-height:100vh;}
 .b2-banner-title{font-size:20px;font-weight:800;color:#111827;margin-bottom:8px;}
 .b2-banner-sub{font-size:14px;color:#6B7280;line-height:1.6;max-width:400px;margin:0 auto;}
 
+/* ── PLACEHOLDER BANNER (for sections under construction) ── */
+.vault-placeholder{
+  text-align:center;padding:28px 24px;
+  background:#FAFAF7;border:1px dashed #D1D5DB;
+  border-radius:14px;margin-bottom:20px;
+  color:#4B5563;font-size:14px;line-height:1.65;
+  max-width:560px;margin-left:auto;margin-right:auto;
+}
+.vault-placeholder strong{display:block;font-size:15px;color:#111827;margin-bottom:4px;font-weight:700;}
+
 /* ── BOTTOM NAV ── */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #E5E7EB;display:flex;justify-content:space-around;padding:10px 0 18px;z-index:100;box-shadow:0 -4px 20px rgba(0,0,0,0.06);}
 .nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 16px;border-radius:10px;transition:all .2s;border:none;background:none;color:#9CA3AF;text-decoration:none;}
@@ -207,7 +217,7 @@ body{background:#F8FAFC;min-height:100vh;}
 <div class="vault-hero">
   <div class="vault-hero-content">
     <div class="vault-title">Exam Vault 🏛️</div>
-    <div class="vault-subtitle">Official Goethe practice exams and full mock simulations. Prepare like it's the real thing.</div>
+    <div class="vault-subtitle">Full Goethe-format mock simulations with auto-scoring and AI feedback. Prepare like it's the real thing.</div>
   </div>
 </div>
 
@@ -215,8 +225,8 @@ body{background:#F8FAFC;min-height:100vh;}
 <div class="vault-stats">
   <div class="vault-stats-inner">
     <div class="stat-item">
-      <div class="stat-num">3+</div>
-      <div class="stat-label">Official A1 Exams</div>
+      <div class="stat-num">A1→B1</div>
+      <div class="stat-label">Mock Exams</div>
     </div>
     <div class="stat-item">
       <div class="stat-num">4</div>
@@ -224,7 +234,7 @@ body{background:#F8FAFC;min-height:100vh;}
     </div>
     <div class="stat-item">
       <div class="stat-num">✓</div>
-      <div class="stat-label">Real Goethe Format</div>
+      <div class="stat-label">Goethe Format</div>
     </div>
     <div class="stat-item">
       <div class="stat-num">⚡</div>
@@ -238,103 +248,18 @@ body{background:#F8FAFC;min-height:100vh;}
 
   <!-- LEVEL TABS -->
   <div class="level-tabs" role="tablist">
-    <button class="level-tab active" onclick="showLevel('a1')" id="tab-a1">A1 <span class="tab-badge">4</span></button>
-    <button class="level-tab" onclick="showLevel('a2')" id="tab-a2">A2 <span class="tab-badge">3</span></button>
-    <button class="level-tab" onclick="showLevel('b1')" id="tab-b1">B1 <span class="tab-badge">3</span></button>
+    <button class="level-tab active" onclick="showLevel('a1')" id="tab-a1">A1 <span class="tab-badge">1</span></button>
+    <button class="level-tab" onclick="showLevel('a2')" id="tab-a2">A2 <span class="tab-badge">1</span></button>
+    <button class="level-tab" onclick="showLevel('b1')" id="tab-b1">B1 <span class="tab-badge">2</span></button>
     <button class="level-tab" onclick="showLevel('b2')" id="tab-b2">B2 <span class="tab-badge">soon</span></button>
   </div>
 
   <!-- ══ A1 PANEL ══ -->
   <div class="level-panel active" id="panel-a1">
 
-    <div class="vault-section-head">
-      <div class="vsh-label">Official Exams</div>
-      <div class="vsh-line"></div>
-    </div>
-
-    <div class="exam-cards">
-
-      <!-- Official 1: Modellsatz -->
-      <div class="exam-card official">
-        <div class="ec-top">
-          <div class="ec-icon official-icon">🏛️</div>
-          <span class="ec-badge badge-official">Official Exam 1</span>
-        </div>
-        <div>
-          <div class="ec-name">Goethe A1 — Modellsatz</div>
-          <div class="ec-sub">Official model exam from Goethe Institut</div>
-        </div>
-        <div class="ec-meta">
-          <span class="ec-meta-item">65 minutes</span>
-          <span class="ec-meta-item">15 pts Hören</span>
-          <span class="ec-meta-item">15 pts Lesen</span>
-          <span class="ec-meta-item">20 pts Schreiben</span>
-        </div>
-        <div class="ec-sections">
-          <span class="ec-sec-tag has-audio">🔊 Hören</span>
-          <span class="ec-sec-tag">Lesen</span>
-          <span class="ec-sec-tag">Schreiben</span>
-          <span class="ec-sec-tag">Sprechen</span>
-        </div>
-        <div class="ec-footer">
-          <a href="./mock-exam-a1-official-1.html" class="ec-start-btn">Start Exam →</a>
-        </div>
-      </div>
-
-      <!-- Official 2: Übungssatz 01 -->
-      <div class="exam-card official">
-        <div class="ec-top">
-          <div class="ec-icon official-icon">🏛️</div>
-          <span class="ec-badge badge-official">Official Exam 2</span>
-        </div>
-        <div>
-          <div class="ec-name">Goethe A1 — Übungssatz 01</div>
-          <div class="ec-sub">Official practice set 01 from Goethe Institut</div>
-        </div>
-        <div class="ec-meta">
-          <span class="ec-meta-item">65 minutes</span>
-          <span class="ec-meta-item">15 pts Hören</span>
-          <span class="ec-meta-item">15 pts Lesen</span>
-          <span class="ec-meta-item">20 pts Schreiben</span>
-        </div>
-        <div class="ec-sections">
-          <span class="ec-sec-tag has-audio">🔊 Hören</span>
-          <span class="ec-sec-tag">Lesen</span>
-          <span class="ec-sec-tag">Schreiben</span>
-          <span class="ec-sec-tag">Sprechen</span>
-        </div>
-        <div class="ec-footer">
-          <a href="./mock-exam-a1-official-2.html" class="ec-start-btn">Start Exam →</a>
-        </div>
-      </div>
-
-      <!-- Official 3: Übungssatz 02 -->
-      <div class="exam-card official">
-        <div class="ec-top">
-          <div class="ec-icon official-icon">🏛️</div>
-          <span class="ec-badge badge-official">Official Exam 3</span>
-        </div>
-        <div>
-          <div class="ec-name">Goethe A1 — Übungssatz 02</div>
-          <div class="ec-sub">Official practice set 02 from Goethe Institut</div>
-        </div>
-        <div class="ec-meta">
-          <span class="ec-meta-item">65 minutes</span>
-          <span class="ec-meta-item">15 pts Hören</span>
-          <span class="ec-meta-item">15 pts Lesen</span>
-          <span class="ec-meta-item">20 pts Schreiben</span>
-        </div>
-        <div class="ec-sections">
-          <span class="ec-sec-tag has-audio">🔊 Hören</span>
-          <span class="ec-sec-tag">Lesen</span>
-          <span class="ec-sec-tag">Schreiben</span>
-          <span class="ec-sec-tag">Sprechen</span>
-        </div>
-        <div class="ec-footer">
-          <a href="./mock-exam-a1-official-3.html" class="ec-start-btn">Start Exam →</a>
-        </div>
-      </div>
-
+    <div class="vault-placeholder">
+      <strong>🚧 New practice exams coming soon</strong>
+      Original Goethe-format tests designed for you.
     </div>
 
     <div class="vault-section-head">
@@ -412,53 +337,9 @@ body{background:#F8FAFC;min-height:100vh;}
 
     </div>
 
-    <div class="vault-section-head">
-      <div class="vsh-label">Official Exams</div>
-      <div class="vsh-line"></div>
-    </div>
-
-    <div class="exam-cards">
-
-      <div class="exam-card coming-soon">
-        <div class="ec-top">
-          <div class="ec-icon soon-icon">🔒</div>
-          <span class="ec-badge badge-soon">Coming Soon</span>
-        </div>
-        <div>
-          <div class="ec-name">Goethe A2 — Official Exam 1</div>
-          <div class="ec-sub">Official Goethe Institut A2 practice exam</div>
-        </div>
-        <div class="ec-sections">
-          <span class="ec-sec-tag">Hören</span>
-          <span class="ec-sec-tag">Lesen</span>
-          <span class="ec-sec-tag">Schreiben</span>
-          <span class="ec-sec-tag">Sprechen</span>
-        </div>
-        <div class="ec-footer">
-          <div class="ec-soon-btn">🔒 Coming Soon</div>
-        </div>
-      </div>
-
-      <div class="exam-card coming-soon">
-        <div class="ec-top">
-          <div class="ec-icon soon-icon">🔒</div>
-          <span class="ec-badge badge-soon">Coming Soon</span>
-        </div>
-        <div>
-          <div class="ec-name">Goethe A2 — Official Exam 2</div>
-          <div class="ec-sub">Official Goethe Institut A2 practice exam</div>
-        </div>
-        <div class="ec-sections">
-          <span class="ec-sec-tag">Hören</span>
-          <span class="ec-sec-tag">Lesen</span>
-          <span class="ec-sec-tag">Schreiben</span>
-          <span class="ec-sec-tag">Sprechen</span>
-        </div>
-        <div class="ec-footer">
-          <div class="ec-soon-btn">🔒 Coming Soon</div>
-        </div>
-      </div>
-
+    <div class="vault-placeholder">
+      <strong>🚧 New practice exams coming soon</strong>
+      Original Goethe-format tests designed for you.
     </div>
   </div>
 
@@ -524,33 +405,9 @@ body{background:#F8FAFC;min-height:100vh;}
 
     </div>
 
-    <div class="vault-section-head">
-      <div class="vsh-label">Official Exams</div>
-      <div class="vsh-line"></div>
-    </div>
-
-    <div class="exam-cards">
-
-      <div class="exam-card coming-soon">
-        <div class="ec-top">
-          <div class="ec-icon soon-icon">🔒</div>
-          <span class="ec-badge badge-soon">Coming Soon</span>
-        </div>
-        <div>
-          <div class="ec-name">Goethe B1 — Official Exam 1</div>
-          <div class="ec-sub">Official Goethe Institut B1 practice exam</div>
-        </div>
-        <div class="ec-sections">
-          <span class="ec-sec-tag">Hören</span>
-          <span class="ec-sec-tag">Lesen</span>
-          <span class="ec-sec-tag">Schreiben</span>
-          <span class="ec-sec-tag">Sprechen</span>
-        </div>
-        <div class="ec-footer">
-          <div class="ec-soon-btn">🔒 Coming Soon</div>
-        </div>
-      </div>
-
+    <div class="vault-placeholder">
+      <strong>🚧 New practice exams coming soon</strong>
+      Original Goethe-format tests designed for you.
     </div>
   </div>
 
@@ -560,50 +417,15 @@ body{background:#F8FAFC;min-height:100vh;}
     <div class="b2-banner">
       <div class="b2-banner-icon">🚀</div>
       <div class="b2-banner-title">B2 content launching soon</div>
-      <div class="b2-banner-sub">We're building official B2 exam simulations. Complete A1 → B1 to unlock early access.</div>
+      <div class="b2-banner-sub">We're building B2 mock simulations. Complete A1 → B1 to unlock early access.</div>
+    </div>
+
+    <div class="vault-placeholder">
+      <strong>🚧 New practice exams coming soon</strong>
+      Original Goethe-format tests designed for you.
     </div>
 
     <div class="exam-cards">
-
-      <div class="exam-card coming-soon">
-        <div class="ec-top">
-          <div class="ec-icon soon-icon">🔒</div>
-          <span class="ec-badge badge-soon">Coming Soon</span>
-        </div>
-        <div>
-          <div class="ec-name">Goethe B2 — Official Exam 1</div>
-          <div class="ec-sub">Official Goethe Institut B2 practice exam</div>
-        </div>
-        <div class="ec-sections">
-          <span class="ec-sec-tag">Hören</span>
-          <span class="ec-sec-tag">Lesen</span>
-          <span class="ec-sec-tag">Schreiben</span>
-          <span class="ec-sec-tag">Sprechen</span>
-        </div>
-        <div class="ec-footer">
-          <div class="ec-soon-btn">🔒 Coming Soon</div>
-        </div>
-      </div>
-
-      <div class="exam-card coming-soon">
-        <div class="ec-top">
-          <div class="ec-icon soon-icon">🔒</div>
-          <span class="ec-badge badge-soon">Coming Soon</span>
-        </div>
-        <div>
-          <div class="ec-name">Goethe B2 — Official Exam 2</div>
-          <div class="ec-sub">Official Goethe Institut B2 practice exam</div>
-        </div>
-        <div class="ec-sections">
-          <span class="ec-sec-tag">Hören</span>
-          <span class="ec-sec-tag">Lesen</span>
-          <span class="ec-sec-tag">Schreiben</span>
-          <span class="ec-sec-tag">Sprechen</span>
-        </div>
-        <div class="ec-footer">
-          <div class="ec-soon-btn">🔒 Coming Soon</div>
-        </div>
-      </div>
 
       <div class="exam-card coming-soon">
         <div class="ec-top">
