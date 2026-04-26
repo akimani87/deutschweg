@@ -475,36 +475,34 @@ Remember: short, warm, African-context, one German example at the end.`;
 // ── POST /api/aipal ──────────────────────────────────────────────────────────
 const AIPAL_VALID_LEVELS = ['A1', 'A2', 'B1', 'B2'];
 
-function buildAipalPrompt(level) {
-  return `You are AI Pal, a friendly German learning companion for African learners preparing for Goethe exams. The user's current level is ${level}.
+function buildAipalPrompt(level, moduleName) {
+  return `You are AI Pal, a friendly learning companion for African learners studying German for the Goethe exam. The student's level is ${level}. They are currently studying: ${moduleName}.
 
-When a user makes a mistake or asks about German, always respond in this exact structure:
+Your role: walk alongside the student. Give short hints, encouragement, and quick pattern reminders. You are NOT a full teacher.
 
-✅ [Correct sentence]
-📝 [1-2 similar German examples]
-🇬🇧 [Simple English meaning, 1 line]
-💡 [Pattern hint, max 1 line]
-
-Adapt your response style based on level:
-- A1: No grammar jargon. Ultra simple English. Short sentences only.
-- A2: Minimal grammar terms. Simple examples.
-- B1: Clear explanations. Correct mistakes directly.
-- B2: Concise, precise, exam-focused. Use Goethe exam context.
+Always respond in this structure:
+💡 [Pattern or tip — 1 line max]
+🇩🇪 [German example]
+🇬🇧 [English meaning — 1 line]
 
 Rules:
-- Keep responses short and structured
-- Focus on pattern recognition not theory
-- If user repeats same mistake 2+ times, add slightly deeper explanation
-- Always be encouraging and warm
-- Use African names in examples: Kwame, Amina, Kofi, Fatima
-- Default to A1 if level unknown`;
+- Maximum 5 lines per response — always, no exceptions
+- No grammar jargon
+- Example first, explanation second
+- Use African names: Kwame, Amina, Kofi, Fatima
+- Be warm and encouraging like a study buddy
+- If student needs deeper help, end with: 'For a full explanation → Ask Tutor 👩‍🏫'
+- Never replace the AI Tutor — always refer complex questions there`;
 }
 
 app.post('/api/aipal', async (req, res) => {
-  const { messages, level } = req.body;
-  const safeLevel = AIPAL_VALID_LEVELS.includes(level) ? level : 'A1';
+  const { messages, level, module: moduleName } = req.body;
+  const safeLevel  = AIPAL_VALID_LEVELS.includes(level) ? level : 'A1';
+  const safeModule = (typeof moduleName === 'string' && moduleName.trim())
+    ? moduleName.trim().slice(0, 200)
+    : 'general German practice';
 
-  console.log(`[/api/aipal] Request — level: ${safeLevel}, msgs: ${Array.isArray(messages) ? messages.length : 'invalid'}, origin: ${req.headers.origin || 'none'}`);
+  console.log(`[/api/aipal] Request — level: ${safeLevel}, module: "${safeModule}", msgs: ${Array.isArray(messages) ? messages.length : 'invalid'}, origin: ${req.headers.origin || 'none'}`);
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'No messages provided.' });
@@ -515,10 +513,10 @@ app.post('/api/aipal', async (req, res) => {
     return res.status(500).json({ error: 'API key not configured.' });
   }
 
-  // Keep full history so AI Pal can detect repeated mistakes (cap to last 30 to bound payload size)
-  const trimmed = messages.slice(-30).map(m => ({
+  // Short memory by design — keep only last 6 turns
+  const trimmed = messages.slice(-6).map(m => ({
     role:    m.role === 'assistant' ? 'assistant' : 'user',
-    content: String(m.content).slice(0, 1000),
+    content: String(m.content).slice(0, 800),
   }));
 
   try {
@@ -531,8 +529,8 @@ app.post('/api/aipal', async (req, res) => {
       },
       body: JSON.stringify({
         model:      'claude-sonnet-4-20250514',
-        max_tokens: 500,
-        system:     buildAipalPrompt(safeLevel),
+        max_tokens: 200,
+        system:     buildAipalPrompt(safeLevel, safeModule),
         messages:   trimmed,
       }),
     });
