@@ -106,7 +106,7 @@ body{{background:var(--bg);}}
 <body>
 <nav class="dw-nav">
   <div class="dw-nav-inner" style="display:flex;align-items:center;justify-content:space-between;height:56px;">
-    <a href="./deutschweg-prototype.html" class="dw-logo">DeutschWeg</a>
+    <a href="./dashboard.html" class="dw-logo">DeutschWeg</a>
     <a href="./{module_url}" class="dw-btn" style="font-size:13px;padding:7px 16px;">{lbl_back}</a>
   </div>
 </nav>
@@ -131,7 +131,7 @@ body{{background:var(--bg);}}
     <div class="mt-result-msg" id="rm"></div>
     <div class="mt-actions">
       <button class="mt-btn-p" onclick="restart()">{btn_retry}</button>
-      <a href="./deutschweg-prototype.html" class="mt-btn-s">{btn_dash}</a>
+      <a href="./dashboard.html" class="mt-btn-s">{btn_dash}</a>
     </div>
   </div>
 </div>

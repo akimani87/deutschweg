@@ -589,7 +589,7 @@ NEXT_MOD = {
   "module-b2-11-wortschatz-b2.html":          "module-b2-12-schreiben-b2.html",
   "module-b2-12-schreiben-b2.html":           "module-b2-13-sprechen-b2.html",
   "module-b2-13-sprechen-b2.html":            "module-b2-14-pruefungsvorbereitung.html",
-  "module-b2-14-pruefungsvorbereitung.html":  "deutschweg-prototype.html",
+  "module-b2-14-pruefungsvorbereitung.html":  "dashboard.html",
 }
 
 
@@ -632,7 +632,7 @@ def process(fname):
 
     # 5. Build and inject JS before last </script>
     quiz_data_json = json.dumps(QUIZ[fname], ensure_ascii=True)
-    next_href = NEXT_MOD.get(fname, 'deutschweg-prototype.html')
+    next_href = NEXT_MOD.get(fname, 'dashboard.html')
     quiz_js = OBQ_JS_TPL % (quiz_data_json, next_href)
     last_script = html.rfind('</script>')
     if last_script == -1:

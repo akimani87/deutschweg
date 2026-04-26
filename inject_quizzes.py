@@ -245,12 +245,12 @@ NEXT_MOD = {
   "module-b2-11-wortschatz-b2.html": "module-b2-12-schreiben-b2.html",
   "module-b2-12-schreiben-b2.html": "module-b2-13-sprechen-b2.html",
   "module-b2-13-sprechen-b2.html": "module-b2-14-pruefungsvorbereitung.html",
-  "module-b2-14-pruefungsvorbereitung.html": "deutschweg-prototype.html",
+  "module-b2-14-pruefungsvorbereitung.html": "dashboard.html",
 }
 
 def build_quiz_js(fname):
     data = QUIZ_DATA[fname]
-    next_href = NEXT_MOD.get(fname, "deutschweg-prototype.html")
+    next_href = NEXT_MOD.get(fname, "dashboard.html")
     js_data = json.dumps(data, ensure_ascii=False, indent=2)
     js = QUIZ_JS_TPL % js_data
     js += """

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Generate mini-test-b2-1.html through mini-test-b2-14.html
-and patch deutschweg-prototype.html with Quick Test buttons.
+and patch dashboard.html with Quick Test buttons.
 Also adds .mt-quick-btn.b2 CSS to deutschweg-theme.css.
 """
 import os
@@ -355,7 +355,7 @@ body{{background:var(--bg);}}
 <body>
 <nav class="dw-nav">
   <div class="dw-nav-inner" style="display:flex;align-items:center;justify-content:space-between;height:56px;">
-    <a href="./deutschweg-prototype.html" class="dw-logo">DeutschWeg</a><a href="./exam-vault.html" style="font-size:13px;font-weight:600;color:#1D4ED8;text-decoration:none;margin:0 4px;">📝 Exams</a>
+    <a href="./dashboard.html" class="dw-logo">DeutschWeg</a><a href="./exam-vault.html" style="font-size:13px;font-weight:600;color:#1D4ED8;text-decoration:none;margin:0 4px;">📝 Exams</a>
     <a href="{module_file}" class="dw-btn" style="font-size:13px;padding:7px 16px;">← Lektion</a>
   </div>
 </nav>
@@ -380,7 +380,7 @@ body{{background:var(--bg);}}
     <div class="mt-result-msg" id="rm"></div>
     <div class="mt-actions">
       <button class="mt-btn-p" onclick="restart()">Nochmal versuchen</button>
-      <a href="./deutschweg-prototype.html" class="mt-btn-s">Zum Dashboard →</a>
+      <a href="./dashboard.html" class="mt-btn-s">Zum Dashboard →</a>
     </div>
   </div>
 </div>
@@ -514,9 +514,9 @@ if '.mt-quick-btn.b2' not in css:
 else:
     print("  SKIP .mt-quick-btn.b2 already in theme")
 
-# ── Patch deutschweg-prototype.html with Quick Test buttons ───────────────────
-print("Patching deutschweg-prototype.html...")
-proto_path = os.path.join(BASE, 'deutschweg-prototype.html')
+# ── Patch dashboard.html with Quick Test buttons ───────────────────
+print("Patching dashboard.html...")
+proto_path = os.path.join(BASE, 'dashboard.html')
 with open(proto_path, 'r', encoding='utf-8') as f:
     html = f.read()
 
