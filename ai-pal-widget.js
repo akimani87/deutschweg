@@ -35,6 +35,138 @@
     if (history.length > 6) history = history.slice(history.length - 6);
   }
 
+  // ── ERROR CATEGORIES (dual-layer tracker) ───────────────────────────────
+  var ERROR_CATEGORIES = {
+    article_masculine_accusative: {
+      patterns: [/\b(der|ein)\s+\w*(mann|bruder|vater|hund|apfel|tisch)\b/i, /einen?\s+\w+en\b/i],
+      session: 0, dbCount: 0
+    },
+    verb_position: {
+      patterns: [/^(morgen|heute|gestern|dann|danach|trotzdem)\s+ich\s+/i],
+      session: 0, dbCount: 0
+    },
+    verb_conjugation: {
+      patterns: [/\bich\s+(gehen|kommen|machen|haben|sein|spielen|lernen|arbeiten)\b/i],
+      session: 0, dbCount: 0
+    },
+    perfekt_auxiliary: {
+      patterns: [/\bhabe\s+(gegangen|gefahren|gelaufen|gekommen|geblieben)\b/i, /\bbin\s+(gespielt|gemacht|gelernt|gearbeitet|gekauft)\b/i],
+      session: 0, dbCount: 0
+    },
+    subordinate_clause_word_order: {
+      patterns: [/\b(weil|dass|wenn|obwohl|damit)\s+\w+\s+(bin|habe|ist|hat|war|hatte)\b/i],
+      session: 0, dbCount: 0
+    },
+    preposition_pattern: {
+      patterns: [/\bin\s+(schule|arbeit|markt|stadt|kirche)\b/i, /\bnach\s+(hause)\b/i],
+      session: 0, dbCount: 0
+    }
+  };
+
+  // Module pages don't currently load supabase-js; fall back to session-only
+  // tracking silently when the global client isn't present.
+  function getSupabase(){
+    return (typeof dwSupabase !== 'undefined') ? dwSupabase : null;
+  }
+
+  function detectError(userMessage){
+    var detected = null;
+    Object.keys(ERROR_CATEGORIES).forEach(function(category){
+      var data = ERROR_CATEGORIES[category];
+      data.patterns.forEach(function(pattern){
+        if (pattern.test(userMessage)){
+          data.session++;
+          detected = { category: category, sessionCount: data.session };
+        }
+      });
+    });
+    return detected;
+  }
+
+  function saveErrorToDatabase(category, moduleId, userLevel){
+    var sb = getSupabase();
+    if (!sb) return Promise.resolve(null);
+
+    return sb.auth.getUser().then(function(res){
+      var user = res && res.data && res.data.user;
+      if (!user) return null;
+
+      return sb.from('pal_errors').upsert({
+        user_id:        user.id,
+        error_category: category,
+        count:          1,
+        last_seen:      new Date().toISOString(),
+        module_id:      moduleId || null,
+        user_level:     userLevel || 'A1'
+      }, {
+        onConflict:       'user_id,error_category',
+        ignoreDuplicates: false
+      }).then(function(out){
+        if (!out.error){
+          return sb.rpc('increment_pal_error', {
+            p_user_id:  user.id,
+            p_category: category
+          });
+        }
+        return null;
+      });
+    }).catch(function(e){
+      console.error('Error saving to DB:', e);
+      return null;
+    });
+  }
+
+  function loadErrorsFromDatabase(){
+    var sb = getSupabase();
+    if (!sb) return Promise.resolve();
+
+    return sb.auth.getUser().then(function(res){
+      var user = res && res.data && res.data.user;
+      if (!user) return;
+
+      return sb.from('pal_errors')
+        .select('error_category, count')
+        .eq('user_id', user.id)
+        .then(function(out){
+          if (out.data){
+            out.data.forEach(function(row){
+              if (ERROR_CATEGORIES[row.error_category]){
+                ERROR_CATEGORIES[row.error_category].dbCount = row.count;
+              }
+            });
+          }
+        });
+    }).catch(function(e){
+      console.error('Error loading errors:', e);
+    });
+  }
+
+  function getErrorContext(detected){
+    if (!detected) return '';
+    var category     = detected.category;
+    var sessionCount = detected.sessionCount;
+    var dbCount      = (ERROR_CATEGORIES[category] && ERROR_CATEGORIES[category].dbCount) || 0;
+    var total        = sessionCount + dbCount;
+
+    if (sessionCount === 2){
+      return '\n\nNOTE: Student repeated "' + category + '" mistake ' + sessionCount + ' times this session. Use Template 4 (⚠️ Same pattern again).';
+    }
+    if (total >= 3){
+      return '\n\nNOTE: Student has made "' + category + '" mistake ' + total + ' times total (' + sessionCount + ' this session, ' + dbCount + ' previous sessions). Use Template 4 AND end with "Need more help? → Ask Tutor 👩‍🏫".';
+    }
+    return '\n\nNOTE: Student made a "' + category + '" mistake. Use Template 1 (Correction).';
+  }
+
+  function handleUserMessage(userMessage, moduleId, userLevel){
+    return loadErrorsFromDatabase().then(function(){
+      var detected = detectError(userMessage);
+      if (detected){
+        saveErrorToDatabase(detected.category, moduleId, userLevel);
+      }
+      return getErrorContext(detected);
+    });
+  }
+
   // ── CSS ─────────────────────────────────────────────────────────────────
   var css = ''
     + '#aip-bubble{'
@@ -261,14 +393,20 @@
     pushHistory('user', text);
     showTyping();
 
-    fetch(API_BASE + '/api/aipal', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({
-        messages: history,
-        level:    getLevel(),
-        module:   getModuleName()
-      })
+    var moduleName = getModuleName();
+    var levelNow   = getLevel();
+
+    handleUserMessage(text, moduleName, levelNow).then(function(errorContext){
+      return fetch(API_BASE + '/api/aipal', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+          messages:     history,
+          level:        levelNow,
+          module:       moduleName,
+          errorContext: errorContext || ''
+        })
+      });
     })
     .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, body: j }; }); })
     .then(function(res){

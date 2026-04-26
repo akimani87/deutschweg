@@ -615,13 +615,16 @@ RESPONSE CHECKLIST before sending:
 }
 
 app.post('/api/aipal', async (req, res) => {
-  const { messages, level, module: moduleName } = req.body;
+  const { messages, level, module: moduleName, errorContext } = req.body;
   const safeLevel  = AIPAL_VALID_LEVELS.includes(level) ? level : 'A1';
   const safeModule = (typeof moduleName === 'string' && moduleName.trim())
     ? moduleName.trim().slice(0, 200)
     : 'general German practice';
+  const safeErrorContext = (typeof errorContext === 'string' && errorContext.trim())
+    ? errorContext.slice(0, 500)
+    : '';
 
-  console.log(`[/api/aipal] Request — level: ${safeLevel}, module: "${safeModule}", msgs: ${Array.isArray(messages) ? messages.length : 'invalid'}, origin: ${req.headers.origin || 'none'}`);
+  console.log(`[/api/aipal] Request — level: ${safeLevel}, module: "${safeModule}", msgs: ${Array.isArray(messages) ? messages.length : 'invalid'}, errCtx: ${safeErrorContext ? 'yes' : 'no'}, origin: ${req.headers.origin || 'none'}`);
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'No messages provided.' });
@@ -649,7 +652,7 @@ app.post('/api/aipal', async (req, res) => {
       body: JSON.stringify({
         model:      'claude-sonnet-4-20250514',
         max_tokens: 150,
-        system:     buildAipalPrompt(safeLevel, safeModule),
+        system:     buildAipalPrompt(safeLevel, safeModule) + safeErrorContext,
         messages:   trimmed,
       }),
     });
