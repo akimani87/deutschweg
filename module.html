@@ -104,6 +104,9 @@
   .lesson-example .en { display:block; color:#6b7280; font-size:13px; margin-top:2px; }
   .lesson-tip     { background:#f0fdf4; border-left:3px solid #22c55e; padding:10px 14px; margin:10px 0; border-radius:0 8px 8px 0; font-size:14px; color:#166534; line-height:1.6; }
   .lesson-warning { background:#fff7ed; border-left:3px solid #f97316; padding:10px 14px; margin:10px 0; border-radius:0 8px 8px 0; font-size:14px; color:#9a3412; line-height:1.6; }
+  .lesson-audio   { margin:8px 0; }
+  .audio-btn      { background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; padding:8px 16px; border-radius:20px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit; }
+  .audio-btn:hover{ background:#dbeafe; }
 
   /* ── BUTTONS ── */
   .btn {
@@ -246,6 +249,18 @@
 
 <script src="./ai-pal-widget.js"></script>
 
+<!-- Audio playback for content_json audio blocks. Defined at global scope
+     so inline onclick handlers can reach it. -->
+<script>
+  function speakText(text, lang) {
+    if (typeof window.speechSynthesis === 'undefined') return;
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = lang || 'de-DE';
+    u.rate = 0.85;
+    window.speechSynthesis.speak(u);
+  }
+</script>
+
 <script>
 (function() {
   'use strict';
@@ -289,6 +304,15 @@
           return '<div class="lesson-tip">💡 '     + escapeHtml(block.content) + '</div>';
         case 'warning':
           return '<div class="lesson-warning">⚠️ ' + escapeHtml(block.content) + '</div>';
+        case 'audio':
+          // Single quotes in text would break the inline onclick string literal,
+          // so escape them. Visible label is HTML-escaped separately.
+          var jsArg = String(block.text == null ? '' : block.text).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+          return '<div class="lesson-audio">' +
+                   '<button class="audio-btn" onclick="speakText(\'' + jsArg + '\', \'de-DE\')">' +
+                     '🔊 ' + escapeHtml(block.text) +
+                   '</button>' +
+                 '</div>';
         default:
           return '';
       }
