@@ -16,7 +16,8 @@ create table if not exists public.modules (
   created_at   timestamptz not null default now()
 );
 
-create index if not exists modules_level_order_idx
+-- Logical unique key — lets the seed script upsert cleanly on re-runs.
+create unique index if not exists modules_level_order_uidx
   on public.modules (level, order_index);
 
 -- ── lessons ───────────────────────────────────────────────────────────────
@@ -25,11 +26,11 @@ create table if not exists public.lessons (
   module_id    uuid        not null references public.modules(id) on delete cascade,
   title        text,
   order_index  integer     not null,
-  content_json jsonb,
+  content_text text,
   created_at   timestamptz not null default now()
 );
 
-create index if not exists lessons_module_order_idx
+create unique index if not exists lessons_module_order_uidx
   on public.lessons (module_id, order_index);
 
 -- ── lesson_exercises ──────────────────────────────────────────────────────
@@ -45,7 +46,7 @@ create table if not exists public.lesson_exercises (
   order_index    integer not null
 );
 
-create index if not exists lesson_exercises_lesson_order_idx
+create unique index if not exists lesson_exercises_lesson_order_uidx
   on public.lesson_exercises (lesson_id, order_index);
 
 -- ── user_progress ─────────────────────────────────────────────────────────
@@ -65,25 +66,19 @@ create index if not exists user_progress_user_module_idx
   on public.user_progress (user_id, module_id);
 
 -- ── ROW LEVEL SECURITY ────────────────────────────────────────────────────
--- Content tables: world-readable (the app shows modules/lessons to anyone).
--- Writes only via service role / SQL — no client mutation policies defined.
 alter table public.modules          enable row level security;
 alter table public.lessons          enable row level security;
 alter table public.lesson_exercises enable row level security;
 
-drop policy if exists "modules_public_read"  on public.modules;
-create policy "modules_public_read"  on public.modules
-  for select using (true);
+drop policy if exists "modules_public_read"          on public.modules;
+create policy "modules_public_read"          on public.modules          for select using (true);
 
-drop policy if exists "lessons_public_read"  on public.lessons;
-create policy "lessons_public_read"  on public.lessons
-  for select using (true);
+drop policy if exists "lessons_public_read"          on public.lessons;
+create policy "lessons_public_read"          on public.lessons          for select using (true);
 
 drop policy if exists "lesson_exercises_public_read" on public.lesson_exercises;
-create policy "lesson_exercises_public_read" on public.lesson_exercises
-  for select using (true);
+create policy "lesson_exercises_public_read" on public.lesson_exercises for select using (true);
 
--- user_progress: own-row access only.
 alter table public.user_progress enable row level security;
 
 drop policy if exists "user_progress_select" on public.user_progress;
