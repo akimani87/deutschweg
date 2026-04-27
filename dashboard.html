@@ -688,20 +688,9 @@
     'B2-8':  { text: 'B2.2 — PRÜFUNGSFERTIGKEITEN (MODULE 8–14)',     color: '#8B5CF6' }
   };
 
-  // Quick-test mapping. Mirrors `mini_test_id` once that column is backfilled —
-  // until then this is the source of truth. Mock-exam modules (A2-12, B1-13)
-  // intentionally have no Quick Test.
-  var MINI_TEST_MAP = {};
-  (function () {
-    var i;
-    for (i = 1; i <= 13; i++) MINI_TEST_MAP['A1-' + i] = 'mini-test-a1-' + i + '.html';
-    for (i = 1; i <= 11; i++) MINI_TEST_MAP['A2-' + i] = 'mini-test-a2-' + i + '.html';
-    for (i = 1; i <= 12; i++) MINI_TEST_MAP['B1-' + i] = 'mini-test-b1-' + i + '.html';
-    for (i = 1; i <= 14; i++) MINI_TEST_MAP['B2-' + i] = 'mini-test-b2-' + i + '.html';
-  })();
-
   // Mock-exam modules need their bespoke HTML pages (timer, sections, etc.)
-  // — the generic module.html template can't run that logic.
+  // — the generic module.html template can't run that logic. The DB doesn't
+  // store the mock-exam page filename, so we keep this small map.
   var SPECIAL_HREFS = {
     'A2-12': './module24-mock-exam.html',
     'B1-13': './module-b1-13-mock-exam.html'
@@ -745,11 +734,10 @@
       // 2. The module card
       parts.push(renderCard(m));
 
-      // 3. Quick Test button (if there's one for this module)
-      var miniTest = MINI_TEST_MAP[key];
-      if (miniTest) {
+      // 3. Quick Test button — driven by the row's mini_test_id (NULL for mock exams)
+      if (m.mini_test_id) {
         var btnClass = 'mt-quick-btn' + (level === 'A1' ? '' : ' ' + level.toLowerCase());
-        parts.push('<a href="./' + miniTest + '" class="' + btnClass + '" onclick="event.stopPropagation()">Quick Test →</a>');
+        parts.push('<a href="./' + escapeHtml(m.mini_test_id) + '" class="' + btnClass + '" onclick="event.stopPropagation()">Quick Test →</a>');
       }
     });
     return parts.join('');
@@ -769,7 +757,7 @@
 
   dwSupabase
     .from('modules')
-    .select('id, level, title, order_index, icon, is_published')
+    .select('id, level, title, order_index, icon, is_published, mini_test_id, is_mock_exam')
     .eq('is_published', true)
     .order('level',       { ascending: true })
     .order('order_index', { ascending: true })

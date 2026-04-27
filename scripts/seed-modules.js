@@ -66,6 +66,7 @@ async function seedModule(m, idx, total) {
         description:  m.description || null,
         icon:         null,
         is_published: true,
+        is_mock_exam: !!m.is_mock_exam,
         mini_test_id: m.mini_test_id || null,
       },
       { onConflict: 'level,order_index' }
@@ -158,13 +159,15 @@ async function main() {
   const modules = JSON.parse(fs.readFileSync(DATA_PATH, 'utf-8'));
   console.log(`Loaded ${modules.length} modules.\n`);
 
-  // ── Normalise to level-relative order_index + derive mini_test_id ──────
+  // ── Normalise to level-relative order_index + derive is_mock_exam + mini_test_id ──
   // The source JSON numbers modules globally (A1: 1-13, A2: 14-25, …).
   // The DB schema and the dashboard use level-relative numbering (each level
-  // restarts at 1), and mini_test_id follows the file naming convention
-  // 'mini-test-<level>-<n>.html' except for mock-exam modules which have no
-  // Quick Test (NULL).
-  const isMockExam = (m) =>
+  // restarts at 1). The JSON has no is_mock_exam field, so we detect it from
+  // slug/filename/title at seed time; the DB column is then the source of
+  // truth post-seed. mini_test_id follows the file naming convention
+  // 'mini-test-<level>-<n>.html' for non-mock-exam modules; mock-exam modules
+  // get NULL (no Quick Test page exists for them).
+  const detectMockExam = (m) =>
     /mock\s*-?\s*exam|prüfungssimulation/i.test(
       (m.slug || '') + ' ' + (m.filename || '') + ' ' + (m.title || '')
     );
@@ -175,7 +178,8 @@ async function main() {
     byLevel[level].sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
     byLevel[level].forEach((m, i) => {
       m.order_index  = i + 1;
-      m.mini_test_id = isMockExam(m)
+      m.is_mock_exam = detectMockExam(m);
+      m.mini_test_id = m.is_mock_exam
         ? null
         : `mini-test-${level.toLowerCase()}-${i + 1}.html`;
     });
