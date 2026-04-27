@@ -96,6 +96,15 @@
   }
   .body-text.empty { color:#9CA3AF; font-style:italic; }
 
+  /* ── STRUCTURED LESSON CONTENT (content_json) ── */
+  .lesson-intro   { font-size:16px; font-weight:600; color:#1e3a5f; margin-bottom:16px; line-height:1.6; }
+  .lesson-text    { font-size:15px; line-height:1.7; color:#374151; margin-bottom:12px; }
+  .lesson-example { background:#f0f9ff; border-left:3px solid #3b82f6; padding:10px 14px; margin:10px 0; border-radius:0 8px 8px 0; }
+  .lesson-example .de { display:block; font-weight:700; color:#1e3a5f; font-size:15px; }
+  .lesson-example .en { display:block; color:#6b7280; font-size:13px; margin-top:2px; }
+  .lesson-tip     { background:#f0fdf4; border-left:3px solid #22c55e; padding:10px 14px; margin:10px 0; border-radius:0 8px 8px 0; font-size:14px; color:#166534; line-height:1.6; }
+  .lesson-warning { background:#fff7ed; border-left:3px solid #f97316; padding:10px 14px; margin:10px 0; border-radius:0 8px 8px 0; font-size:14px; color:#9a3412; line-height:1.6; }
+
   /* ── BUTTONS ── */
   .btn {
     display:inline-block; padding:12px 24px; border-radius:12px;
@@ -259,6 +268,33 @@
       .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
 
+  // Render a content_json array of structured blocks into HTML. Each block is
+  // wrapped in a div whose class lines up with the .lesson-* CSS rules.
+  function renderContent(blocks) {
+    if (!blocks || !Array.isArray(blocks) || blocks.length === 0) {
+      return '<div class="body-text empty">Content coming soon.</div>';
+    }
+    return blocks.map(function (block) {
+      switch (block && block.type) {
+        case 'intro':
+          return '<div class="lesson-intro">' + escapeHtml(block.content) + '</div>';
+        case 'text':
+          return '<div class="lesson-text">' + escapeHtml(block.content) + '</div>';
+        case 'example':
+          return '<div class="lesson-example">' +
+                   '<span class="de">' + escapeHtml(block.german)  + '</span>' +
+                   '<span class="en">' + escapeHtml(block.english) + '</span>' +
+                 '</div>';
+        case 'tip':
+          return '<div class="lesson-tip">💡 '     + escapeHtml(block.content) + '</div>';
+        case 'warning':
+          return '<div class="lesson-warning">⚠️ ' + escapeHtml(block.content) + '</div>';
+        default:
+          return '';
+      }
+    }).join('');
+  }
+
   function showError(title, sub) {
     var loading = document.getElementById('loadingScreen');
     var errEl   = document.getElementById('errorScreen');
@@ -309,7 +345,7 @@
       // 2. Lessons
       var lessonRes = await dwSupabase
         .from('lessons')
-        .select('id, title, order_index, content_text')
+        .select('id, title, order_index, content_text, content_json')
         .eq('module_id', id)
         .order('order_index', { ascending: true });
 
@@ -388,7 +424,10 @@
       var lessonNo   = lesson.order_index || (idx + 1);
       var lessonTitle = lesson.title || ('Lesson ' + lessonNo);
       var contentHtml;
-      if (lesson.content_text && String(lesson.content_text).trim().length > 0) {
+      // Prefer structured content_json; fall back to plain content_text; finally a placeholder.
+      if (Array.isArray(lesson.content_json) && lesson.content_json.length > 0) {
+        contentHtml = renderContent(lesson.content_json);
+      } else if (lesson.content_text && String(lesson.content_text).trim().length > 0) {
         contentHtml = '<div class="body-text">' + escapeHtml(lesson.content_text) + '</div>';
       } else {
         contentHtml = '<div class="body-text empty">Content for this lesson is being added.</div>';
