@@ -295,12 +295,14 @@
   var XP_PER_CORRECT = 10;
 
   var state = {
-    module:       null,
-    lessons:      [],   // sorted by order_index
-    exercises:    {},   // lessonId -> [exercises sorted by order_index]
-    lessonIdx:    0,
-    xp:           0,
-    answeredKeys: {},   // `${lessonIdx}-${exIdx}` -> true (avoids double-counting XP on review)
+    module:        null,
+    lessons:       [],   // sorted by order_index
+    exercises:     {},   // lessonId -> [exercises sorted by order_index]
+    lessonIdx:     0,
+    xp:            0,
+    answeredKeys:  {},   // `${lessonIdx}-${exIdx}` -> true (avoids double-counting XP on review)
+    user:          null, // logged-in user (null = anonymous)
+    completedIds:  {},   // lessonId -> true for lessons already marked completed
   };
 
   function escapeHtml(s) {
@@ -437,13 +439,38 @@
       state.lessons   = lessonRes.data || [];
       state.exercises = exercisesByLesson;
 
+      // 4. Auth (non-blocking) + progress for this user/module. Anonymous users
+      //    skip — they still get the lesson content, just no completion tracking.
+      try {
+        var userRes = await dwSupabase.auth.getUser();
+        var user = userRes && userRes.data && userRes.data.user;
+        if (user) {
+          state.user = user;
+          var lessonIdsArr = state.lessons.map(function(l){ return l.id; });
+          if (lessonIdsArr.length > 0) {
+            var progRes = await dwSupabase
+              .from('user_progress')
+              .select('lesson_id, status')
+              .eq('user_id', user.id)
+              .eq('status', 'completed')
+              .in('lesson_id', lessonIdsArr);
+            if (!progRes.error && Array.isArray(progRes.data)) {
+              progRes.data.forEach(function(r) { if (r.lesson_id) state.completedIds[r.lesson_id] = true; });
+            }
+          }
+        }
+      } catch (authErr) {
+        console.warn('[module.html] auth/progress fetch failed (continuing as anonymous):', authErr && authErr.message);
+      }
+
       // Diagnostic — confirms how many lessons + exercises actually arrived.
       console.log('[module.html] loaded module "' + (modRes.data.title || '?') +
         '" with ' + state.lessons.length + ' lessons (' +
         state.lessons.map(function(l){
           return 'L' + l.order_index + ':' + (Array.isArray(l.content_json) ? l.content_json.length + 'b' : 'no-json') +
                  '/' + ((exercisesByLesson[l.id] || []).length) + 'q';
-        }).join(', ') + ')');
+        }).join(', ') + ')' +
+        (state.user ? ' — user signed in, ' + Object.keys(state.completedIds).length + ' lesson(s) already completed' : ' — anonymous, no progress tracking'));
 
       render();
     } catch (e) {
@@ -523,7 +550,7 @@
           '<button class="nav-prev" ' + (prevDisabled ? 'disabled' : '') +
             ' onclick="dwModule.goToLesson(' + (idx - 1) + ')">← Vorherige</button>' +
           '<button class="nav-next" ' + (nextDisabled ? 'disabled' : '') +
-            ' onclick="dwModule.goToLesson(' + (idx + 1) + ')">Weiter →</button>' +
+            ' onclick="dwModule.weiter(' + idx + ')">Weiter →</button>' +
         '</div>';
 
       var contentStep = document.createElement('div');
@@ -601,12 +628,32 @@
     document.getElementById('progFill').style.width = pct + '%';
     document.getElementById('xpDisp').textContent = '⚡ ' + state.xp + ' XP';
 
-    state.lessons.forEach(function(_, i) {
+    state.lessons.forEach(function(lesson, i) {
       var d = document.getElementById('dot-' + i);
       if (!d) return;
       d.classList.remove('active', 'done');
-      if (i < state.lessonIdx)      d.classList.add('done');
-      else if (i === state.lessonIdx) d.classList.add('active');
+      // Green if (a) the user has completed this lesson in a prior session,
+      // or (b) the user has advanced past it in the current session.
+      var alreadyCompleted = !!state.completedIds[lesson.id];
+      if (alreadyCompleted || i < state.lessonIdx) d.classList.add('done');
+      if (i === state.lessonIdx) d.classList.add('active');
+    });
+  }
+
+  // Persist a "lesson completed" row for the signed-in user. No-op if anonymous.
+  // Errors are non-fatal — never block the UI on a write.
+  function markLessonComplete(lesson) {
+    if (!state.user || !lesson || !lesson.id) return;
+    if (state.completedIds[lesson.id]) return; // already known complete
+    state.completedIds[lesson.id] = true;
+    dwSupabase.from('user_progress').upsert({
+      user_id:      state.user.id,
+      module_id:    state.module.id,
+      lesson_id:    lesson.id,
+      status:       'completed',
+      completed_at: new Date().toISOString()
+    }, { onConflict: 'user_id,lesson_id' }).then(function(res) {
+      if (res.error) console.warn('[module.html] progress write failed:', res.error.message);
     });
   }
 
@@ -705,6 +752,10 @@
     },
 
     nextLesson: function(lIdx) {
+      // The user finished lesson lIdx (either via the quiz flow or by clicking
+      // "Next Lesson →" on a quiz-less lesson). Mark it complete before moving.
+      markLessonComplete(state.lessons[lIdx]);
+
       var current = document.getElementById('lesson-' + lIdx);
       if (current) current.classList.remove('active');
 
@@ -728,9 +779,21 @@
     },
 
     /**
+     * Click handler for the "Weiter →" button on a lesson. Marks the source
+     * lesson complete, then jumps to the next lesson. Distinct from raw
+     * dot clicks so jumping back-and-forth via dots doesn't auto-complete
+     * lessons.
+     */
+    weiter: function(fromIdx) {
+      markLessonComplete(state.lessons[fromIdx]);
+      this.goToLesson(fromIdx + 1);
+    },
+
+    /**
      * Jump directly to a lesson by index (0-based). Used by clickable
-     * progress dots and the explicit Prev/Next nav. Bypasses quiz flow
-     * — users can navigate freely without finishing every quiz first.
+     * progress dots and the explicit Prev nav. Bypasses quiz flow —
+     * users can navigate freely without finishing every quiz first.
+     * Does NOT mark anything complete (use weiter() for that).
      */
     goToLesson: function(targetIdx) {
       if (targetIdx < 0 || targetIdx >= state.lessons.length) return;
