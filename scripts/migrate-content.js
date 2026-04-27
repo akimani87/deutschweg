@@ -309,6 +309,58 @@ function extractStepBlocks(stepHtml) {
     };
   });
 
+  // verb-grid: A1/A2 verb sample cards. Each card has vc-de (verb), vc-en
+  // (translation), vc-ex (example), and onclick="speakVerb(this,'sentence')".
+  scanBalanced(opener(/<div\s+class="verb-grid"[^>]*>/g), 'verb-grid', (inner) => {
+    const cards = [];
+    const cardRe = /<div\s+class="verb-card"[^>]*?(?:onclick="speakVerb\(this,\s*'([^']+)'\)")?[^>]*>([\s\S]*?)<\/div>(?=\s*(?:<div\s+class="verb-card"|<\/div>))/g;
+    let cm;
+    while ((cm = cardRe.exec(inner)) !== null) {
+      const audio = cm[1] ? decodeEntities(cm[1]) : null;
+      const ci = cm[2];
+      const de = stripTags((ci.match(/<div\s+class="vc-de"[^>]*>([\s\S]*?)<\/div>/) || [, ''])[1]);
+      const en = stripTags((ci.match(/<div\s+class="vc-en"[^>]*>([\s\S]*?)<\/div>/) || [, ''])[1]);
+      const ex = stripTags((ci.match(/<div\s+class="vc-ex"[^>]*>([\s\S]*?)<\/div>/) || [, ''])[1]);
+      if (de) cards.push({ de, en, ex, audio });
+    }
+    return cards;
+  });
+
+  // prep-pair-wrap: A2 two-way preposition pairs. Each has pp-prep-title,
+  // pp-prep-eng, pp-akk-row (with pp-sent + pp-eng), pp-dat-row.
+  scanBalanced(opener(/<div\s+class="prep-pair-wrap"[^>]*>/g), 'prep-pair', (inner) => {
+    const title  = stripTags((inner.match(/<div\s+class="pp-prep-title"[^>]*>([\s\S]*?)<\/div>/)  || [, ''])[1]);
+    const engLab = stripTags((inner.match(/<div\s+class="pp-prep-eng"[^>]*>([\s\S]*?)<\/div>/)    || [, ''])[1]);
+    const akkRow = (inner.match(/<div\s+class="pp-akk-row"[^>]*>([\s\S]*?)<\/div>\s*<div\s+class="pp-dat-row"/) || [, ''])[1];
+    const datRow = (inner.match(/<div\s+class="pp-dat-row"[^>]*>([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>\s*$/) || [, ''])[1] ||
+                   (inner.match(/<div\s+class="pp-dat-row"[^>]*>([\s\S]*?)$/) || [, ''])[1];
+    const pickSent = (h) => stripTags((h.match(/<div\s+class="pp-sent"[^>]*>([\s\S]*?)<\/div>/) || [, ''])[1]);
+    const pickEng  = (h) => stripTags((h.match(/<div\s+class="pp-eng"[^>]*>([\s\S]*?)<\/div>/)  || [, ''])[1]);
+    return {
+      title, engLab,
+      akkSent: pickSent(akkRow), akkEng: pickEng(akkRow),
+      datSent: pickSent(datRow), datEng: pickEng(datRow),
+    };
+  });
+
+  // transform-box: B1/B2 source→transformed pair (e.g. RELATIV → PARTIZ.).
+  // Each trn-row has the fixed shape:
+  //   <div class="trn-row"><div class="trn-label">LAB</div><div class="trn-text">TXT</div></div>
+  // We match that whole shape directly (a non-greedy outer regex would stop
+  // at the first nested </div> because the nested divs aren't balanced).
+  scanBalanced(opener(/<div\s+class="transform-box"[^>]*>/g), 'transform-box', (inner) => {
+    const rows  = [];
+    const rowRe = /<div\s+class="trn-row"[^>]*><div\s+class="trn-label"[^>]*>([\s\S]*?)<\/div>\s*<div\s+class="trn-text"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/g;
+    let rm;
+    while ((rm = rowRe.exec(inner)) !== null) {
+      const lab = stripTags(rm[1]);
+      const txt = stripTags(rm[2]);
+      if (txt) rows.push({ lab, txt });
+    }
+    const arrow = stripTags((inner.match(/<div\s+class="trn-arrow"[^>]*>([\s\S]*?)<\/div>/) || [, ''])[1]);
+    return { rows, arrow };
+  });
+
   // ex-card: B1/B2 example markup. <div class="ex-card"><div class="ex-de">DE</div><div class="ex-note">EN/note</div></div>
   scanBalanced(opener(/<div\s+class="ex-card"[^>]*>/g), 'ex-card', (inner) => {
     const de   = stripTags((inner.match(/<div\s+class="ex-de"[^>]*>([\s\S]*?)<\/div>/)   || [, ''])[1]);
@@ -445,6 +497,37 @@ function extractStepBlocks(stepHtml) {
       if (c.german) blocks.push({ type: 'example', german: c.german, english: c.english || '' });
     } else if (f.kind === 'comp-table') {
       if (c && c.rows && c.rows.length > 0) blocks.push({ type: 'table', headers: c.headers, rows: c.rows });
+    } else if (f.kind === 'verb-grid') {
+      // One example block per verb-card, with audio if the speakVerb handler captured a sentence.
+      (c || []).forEach(card => {
+        if (card.de) {
+          blocks.push({
+            type: 'example',
+            german: card.ex || card.de,
+            english: card.de + (card.en ? ' — ' + card.en : '')
+          });
+          if (card.audio) blocks.push({ type: 'audio', text: card.audio });
+        }
+      });
+    } else if (f.kind === 'prep-pair') {
+      // Each preposition pair → one short text block (heading) + 2 example
+      // blocks (Akkusativ + Dativ usage).
+      if (c.title) {
+        blocks.push({
+          type: 'text',
+          content: c.title + (c.engLab ? ' — ' + c.engLab : '')
+        });
+        if (c.akkSent) blocks.push({ type: 'example', german: c.akkSent, english: 'WOHIN? AKK' + (c.akkEng ? ' — ' + c.akkEng : '') });
+        if (c.datSent) blocks.push({ type: 'example', german: c.datSent, english: 'WO? DAT'    + (c.datEng ? ' — ' + c.datEng : '') });
+      }
+    } else if (f.kind === 'transform-box') {
+      // Pairs like RELATIV: ... → PARTIZ.: ... combined into a single example.
+      if (c && c.rows && c.rows.length >= 2) {
+        const a = c.rows[0], b = c.rows[1];
+        const german  = (a.lab ? a.lab + ': ' : '') + a.txt + ' → ' + (b.lab ? b.lab + ': ' : '') + b.txt;
+        const english = c.arrow || '';
+        blocks.push({ type: 'example', german, english });
+      }
     }
   }
   flushTrap();
