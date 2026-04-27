@@ -643,11 +643,11 @@
         return this.nextLesson(lIdx);
       }
 
-      // stepNum >= 1: show question (stepNum-1) — but we passed eIdx + 1 as stepNum from quiz next-button,
-      // so we want to display the question with eIdx = stepNum - 1.
-      var nextEIdx = stepNum - 1;
-      if (nextEIdx < exCount) {
-        var nextStep = document.getElementById('s-' + lIdx + '-q-' + nextEIdx);
+      // The Next button on quiz q-N calls advance(lIdx, N+1) — the encoded
+      // intent is "show question stepNum, otherwise we're past the last and
+      // should move on". Show q-stepNum if it exists; else next lesson.
+      if (stepNum < exCount) {
+        var nextStep = document.getElementById('s-' + lIdx + '-q-' + stepNum);
         if (nextStep) {
           nextStep.classList.add('active');
           window.scrollTo({ top: 0, behavior: 'smooth' });
