@@ -416,6 +416,14 @@
       state.lessons   = lessonRes.data || [];
       state.exercises = exercisesByLesson;
 
+      // Diagnostic — confirms how many lessons + exercises actually arrived.
+      console.log('[module.html] loaded module "' + (modRes.data.title || '?') +
+        '" with ' + state.lessons.length + ' lessons (' +
+        state.lessons.map(function(l){
+          return 'L' + l.order_index + ':' + (Array.isArray(l.content_json) ? l.content_json.length + 'b' : 'no-json') +
+                 '/' + ((exercisesByLesson[l.id] || []).length) + 'q';
+        }).join(', ') + ')');
+
       render();
     } catch (e) {
       console.error('[module.html] load error:', e);
