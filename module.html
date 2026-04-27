@@ -62,11 +62,32 @@
   }
   .dot-row { display:flex; gap:6px; flex-wrap:wrap; }
   .dot {
-    width:8px; height:8px; border-radius:50%; background:#E5E7EB;
-    transition:all .3s ease;
+    width:10px; height:10px; border-radius:50%; background:#E5E7EB;
+    transition:all .3s ease; border:none; padding:0; cursor:pointer;
   }
+  .dot:hover { background:#94A3B8; transform:scale(1.2); }
   .dot.done { background:#10B981; }
-  .dot.active { background:#3B82F6; width:22px; border-radius:4px; }
+  .dot.done:hover { background:#059669; }
+  .dot.active { background:#3B82F6; width:24px; border-radius:5px; }
+  .dot.active:hover { background:#2563EB; transform:none; }
+
+  /* ── EXPLICIT LESSON NAV (always visible at bottom of lesson screen) ── */
+  .lesson-nav {
+    display:flex; gap:10px; margin-top:18px; padding-top:16px;
+    border-top:1px solid #E5E7EB;
+  }
+  .lesson-nav .nav-prev,
+  .lesson-nav .nav-next {
+    flex:1; padding:11px 18px; border-radius:10px;
+    font-family:inherit; font-size:14px; font-weight:700; cursor:pointer;
+    border:1px solid #E5E7EB; background:#fff; color:#374151;
+    transition:all .18s ease;
+  }
+  .lesson-nav .nav-prev:hover:not(:disabled),
+  .lesson-nav .nav-next:hover:not(:disabled) { border-color:#3B82F6; color:#3B82F6; }
+  .lesson-nav .nav-next { background:#3B82F6; color:#fff; border-color:#3B82F6; }
+  .lesson-nav .nav-next:hover { background:#2563EB; }
+  .lesson-nav button:disabled { opacity:0.4; cursor:not-allowed; }
   .xp-disp { font-family:'DM Mono',monospace; font-size:13px; color:#3B82F6; font-weight:600; }
 
   /* ── STEPS / SCREENS ── */
@@ -438,13 +459,16 @@
     document.getElementById('modTag').textContent =
       (m.level || '') + ' · Module ' + (m.order_index || '');
 
-    // Build progress dots
+    // Build progress dots — clickable, jump to any lesson
     var dotRow = document.getElementById('dotRow');
     dotRow.innerHTML = '';
     state.lessons.forEach(function(_, i) {
-      var dot = document.createElement('div');
+      var dot = document.createElement('button');
       dot.className = 'dot' + (i === 0 ? ' active' : '');
       dot.id = 'dot-' + i;
+      dot.title = 'Lesson ' + (i + 1);
+      dot.setAttribute('aria-label', 'Go to lesson ' + (i + 1));
+      dot.onclick = (function(targetIdx){ return function(){ dwModule.goToLesson(targetIdx); }; })(i);
       dotRow.appendChild(dot);
     });
 
@@ -489,6 +513,19 @@
         : (idx < state.lessons.length - 1 ? 'Next Lesson →' : 'Finish →');
 
       // Step 0: lesson content
+      // Three buttons: primary action (Start Quiz / Next Lesson / Finish),
+      // and an always-visible Prev / Next pair so users can skip the quiz
+      // and navigate freely between lessons regardless of quiz progress.
+      var prevDisabled = idx === 0;
+      var nextDisabled = idx >= state.lessons.length - 1;
+      var navHtml =
+        '<div class="lesson-nav">' +
+          '<button class="nav-prev" ' + (prevDisabled ? 'disabled' : '') +
+            ' onclick="dwModule.goToLesson(' + (idx - 1) + ')">← Vorherige</button>' +
+          '<button class="nav-next" ' + (nextDisabled ? 'disabled' : '') +
+            ' onclick="dwModule.goToLesson(' + (idx + 1) + ')">Weiter →</button>' +
+        '</div>';
+
       var contentStep = document.createElement('div');
       contentStep.className = 'step active';
       contentStep.id = 's-' + idx + '-content';
@@ -498,6 +535,7 @@
           '<h1 class="lesson-h">' + escapeHtml(lessonTitle) + '</h1>' +
           contentHtml +
           '<button class="btn btn-primary" onclick="dwModule.advance(' + idx + ', 0)">' + nextLabel + '</button>' +
+          navHtml +
         '</div>';
       screen.appendChild(contentStep);
 
@@ -685,6 +723,41 @@
         var firstStep = document.getElementById('s-' + nextIdx + '-content');
         if (firstStep) firstStep.classList.add('active');
       }
+      updateProgress();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+
+    /**
+     * Jump directly to a lesson by index (0-based). Used by clickable
+     * progress dots and the explicit Prev/Next nav. Bypasses quiz flow
+     * — users can navigate freely without finishing every quiz first.
+     */
+    goToLesson: function(targetIdx) {
+      if (targetIdx < 0 || targetIdx >= state.lessons.length) return;
+
+      // Hide the currently visible lesson
+      state.lessons.forEach(function(_, i) {
+        var s = document.getElementById('lesson-' + i);
+        if (s) s.classList.remove('active');
+      });
+
+      state.lessonIdx = targetIdx;
+
+      var target = document.getElementById('lesson-' + targetIdx);
+      if (target) {
+        target.classList.add('active');
+        // Always start a freshly-jumped lesson on its content step
+        target.querySelectorAll('.step').forEach(function(s) { s.classList.remove('active'); });
+        var first = document.getElementById('s-' + targetIdx + '-content');
+        if (first) first.classList.add('active');
+      }
+
+      // Make sure the completion screen is hidden if we jump back from it
+      var completion = document.getElementById('completeScreen');
+      if (completion) completion.classList.remove('active');
+      var lessonContainer = document.getElementById('lessonContainer');
+      if (lessonContainer) lessonContainer.style.display = '';
+
       updateProgress();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     },
