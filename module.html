@@ -107,6 +107,12 @@
   .lesson-audio   { margin:8px 0; }
   .audio-btn      { background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; padding:8px 16px; border-radius:20px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit; }
   .audio-btn:hover{ background:#dbeafe; }
+  .lesson-infobox { background:#fefce8; border-left:3px solid #eab308; padding:12px 14px; margin:10px 0; border-radius:0 8px 8px 0; font-size:14px; color:#713f12; line-height:1.7; }
+  .lesson-table-wrap { margin:12px 0; overflow-x:auto; border-radius:10px; border:1px solid #E5E7EB; }
+  .lesson-table   { width:100%; border-collapse:collapse; font-size:14px; }
+  .lesson-table th{ text-align:left; padding:10px 14px; background:#F8FAFC; color:#475569; font-weight:700; border-bottom:1px solid #E5E7EB; font-size:12px; letter-spacing:0.5px; text-transform:uppercase; }
+  .lesson-table td{ padding:10px 14px; border-bottom:1px solid #F1F5F9; color:#1F2937; }
+  .lesson-table tr:last-child td { border-bottom:none; }
 
   /* ── BUTTONS ── */
   .btn {
@@ -313,6 +319,19 @@
                      '🔊 ' + escapeHtml(block.text) +
                    '</button>' +
                  '</div>';
+        case 'infobox':
+          return '<div class="lesson-infobox">' + escapeHtml(block.content) + '</div>';
+        case 'table':
+          var headers = Array.isArray(block.headers) ? block.headers : [];
+          var rows    = Array.isArray(block.rows)    ? block.rows    : [];
+          var thead = headers.length
+            ? '<thead><tr>' + headers.map(function(h){ return '<th>' + escapeHtml(h) + '</th>'; }).join('') + '</tr></thead>'
+            : '';
+          var tbody = '<tbody>' + rows.map(function(r){
+            var cells = Array.isArray(r) ? r : [];
+            return '<tr>' + cells.map(function(c){ return '<td>' + escapeHtml(c) + '</td>'; }).join('') + '</tr>';
+          }).join('') + '</tbody>';
+          return '<div class="lesson-table-wrap"><table class="lesson-table">' + thead + tbody + '</table></div>';
         default:
           return '';
       }
