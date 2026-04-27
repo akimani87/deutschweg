@@ -677,14 +677,46 @@
     B2: { border:'rgba(139,92,246,0.25)', icon:'rgba(139,92,246,0.08)', iconBorder:'rgba(139,92,246,0.25)',     num:'#8B5CF6',         bg:''                                                            }
   };
 
+  // Section dividers — render the label *before* the card at this (level, order_index).
+  var SECTION_LABELS = {
+    'A1-1':  { text: 'FOUNDATION — START HERE',                       color: null      },
+    'A1-5':  { text: 'GRAMMAR CORE — CASES & STRUCTURE',              color: null      },
+    'A1-9':  { text: 'VERBS & PRONOUNS',                              color: null      },
+    'A1-11': { text: 'EXAM GRAMMAR — HIGH IMPACT',                    color: null      },
+    'B1-1':  { text: 'GRAMMAR CORE — B1 FOUNDATIONS',                 color: '#3498db' },
+    'B2-1':  { text: 'B2.1 — GRAMMATIK & STRUKTUREN (MODULE 1–7)',    color: '#8B5CF6' },
+    'B2-8':  { text: 'B2.2 — PRÜFUNGSFERTIGKEITEN (MODULE 8–14)',     color: '#8B5CF6' }
+  };
+
+  // Quick-test mapping. Mirrors `mini_test_id` once that column is backfilled —
+  // until then this is the source of truth. Mock-exam modules (A2-12, B1-13)
+  // intentionally have no Quick Test.
+  var MINI_TEST_MAP = {};
+  (function () {
+    var i;
+    for (i = 1; i <= 13; i++) MINI_TEST_MAP['A1-' + i] = 'mini-test-a1-' + i + '.html';
+    for (i = 1; i <= 11; i++) MINI_TEST_MAP['A2-' + i] = 'mini-test-a2-' + i + '.html';
+    for (i = 1; i <= 12; i++) MINI_TEST_MAP['B1-' + i] = 'mini-test-b1-' + i + '.html';
+    for (i = 1; i <= 14; i++) MINI_TEST_MAP['B2-' + i] = 'mini-test-b2-' + i + '.html';
+  })();
+
+  // Mock-exam modules need their bespoke HTML pages (timer, sections, etc.)
+  // — the generic module.html template can't run that logic.
+  var SPECIAL_HREFS = {
+    'A2-12': './module24-mock-exam.html',
+    'B1-13': './module-b1-13-mock-exam.html'
+  };
+
   function renderCard(m) {
     var style = LEVEL_STYLE[m.level] || {};
+    var key   = m.level + '-' + m.order_index;
     var cardStyle = style.border ? ' style="border-color:' + style.border + ';"' : '';
     var iconStyle = style.icon ? ' style="background:' + style.icon + ';border-color:' + style.iconBorder + ';"' : '';
     var numStyle  = style.num  ? ' style="color:' + style.num + ';"' : '';
     var icon = (m.icon && m.icon.length) ? m.icon : '📘';
+    var href = SPECIAL_HREFS[key] || ('./module.html?id=' + m.id);
     return (
-      '<a class="module-card" href="./module.html?id=' + m.id + '"' + cardStyle + '>' +
+      '<a class="module-card" href="' + href + '"' + cardStyle + '>' +
         '<div class="mc-icon"' + iconStyle + '>' + escapeHtml(icon) + '</div>' +
         '<div class="mc-body">' +
           '<div class="mc-num"' + numStyle + '>' + escapeHtml(m.level) + ' · MODULE ' + (m.order_index || '') + '</div>' +
@@ -696,6 +728,31 @@
         '</div>' +
       '</a>'
     );
+  }
+
+  function renderItems(level, items) {
+    var parts = [];
+    items.forEach(function(m) {
+      var key = m.level + '-' + m.order_index;
+
+      // 1. Section label (if this card opens a new section)
+      var sec = SECTION_LABELS[key];
+      if (sec) {
+        var colorAttr = sec.color ? ' style="color:' + sec.color + ';"' : '';
+        parts.push('<div class="sec-label"' + colorAttr + '>' + escapeHtml(sec.text) + '</div>');
+      }
+
+      // 2. The module card
+      parts.push(renderCard(m));
+
+      // 3. Quick Test button (if there's one for this module)
+      var miniTest = MINI_TEST_MAP[key];
+      if (miniTest) {
+        var btnClass = 'mt-quick-btn' + (level === 'A1' ? '' : ' ' + level.toLowerCase());
+        parts.push('<a href="./' + miniTest + '" class="' + btnClass + '" onclick="event.stopPropagation()">Quick Test →</a>');
+      }
+    });
+    return parts.join('');
   }
 
   function renderLoading(el) {
@@ -730,7 +787,7 @@
         var level = el.getAttribute('data-level');
         var items = byLevel[level] || [];
         if (items.length === 0) { renderEmpty(el, level); return; }
-        el.innerHTML = items.map(renderCard).join('');
+        el.innerHTML = renderItems(level, items);
       });
     })
     .catch(function(e) {
