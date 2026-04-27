@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Module — DeutschWeg</title>
+<link rel="stylesheet" href="./deutschweg-theme.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:#F8FAFC; color:#1F2937;
+    font-family:'Plus Jakarta Sans','DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    min-height:100vh; padding-bottom:100px;
+    opacity:0; transition:opacity .25s ease;
+  }
+  body.ready { opacity:1; }
+
+  /* ── LOADING / ERROR STATES ── */
+  .state-screen {
+    min-height:100vh; display:none; flex-direction:column;
+    align-items:center; justify-content:center;
+    text-align:center; padding:24px;
+  }
+  .state-screen.active { display:flex; }
+  .spinner {
+    width:42px; height:42px; border-radius:50%;
+    border:3px solid #E5E7EB; border-top-color:#3B82F6;
+    animation:spin .9s linear infinite; margin-bottom:18px;
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .state-msg { font-size:14px; color:#6B7280; }
+  .state-icon { font-size:54px; margin-bottom:14px; }
+  .state-title { font-size:22px; font-weight:800; color:#111827; margin-bottom:8px; }
+  .state-sub { font-size:14px; color:#6B7280; line-height:1.65; max-width:420px; margin:0 auto 22px; }
+
+  /* ── TOP NAV ── */
+  .top-nav {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 20px; background:#fff; border-bottom:1px solid #E5E7EB;
+    position:sticky; top:0; z-index:50;
+  }
+  .back-btn {
+    background:#F8FAFC; border:1px solid #E5E7EB; color:#1F2937;
+    padding:8px 14px; border-radius:20px; cursor:pointer;
+    font-size:13px; font-weight:600; text-decoration:none;
+    transition:all .18s ease;
+  }
+  .back-btn:hover { border-color:#3B82F6; color:#3B82F6; }
+  .mod-tag { font-family:'DM Mono',monospace; font-size:11px; color:#3B82F6; letter-spacing:2px; text-transform:uppercase; max-width:60%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar { height:3px; background:#E5E7EB; }
+  .progress-fill { height:100%; background:#3B82F6; transition:width .5s ease; width:0%; }
+
+  /* ── LAYOUT ── */
+  .wrap { max-width:720px; margin:0 auto; padding:24px 20px 40px; }
+  .meta-row {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:16px; gap:12px; flex-wrap:wrap;
+  }
+  .dot-row { display:flex; gap:6px; flex-wrap:wrap; }
+  .dot {
+    width:8px; height:8px; border-radius:50%; background:#E5E7EB;
+    transition:all .3s ease;
+  }
+  .dot.done { background:#10B981; }
+  .dot.active { background:#3B82F6; width:22px; border-radius:4px; }
+  .xp-disp { font-family:'DM Mono',monospace; font-size:13px; color:#3B82F6; font-weight:600; }
+
+  /* ── STEPS / SCREENS ── */
+  .lesson-screen { display:none; animation:fadeIn .3s ease; }
+  .lesson-screen.active { display:block; }
+  .step { display:none; animation:fadeIn .3s ease; }
+  .step.active { display:block; }
+  @keyframes fadeIn { from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+
+  /* ── CARDS / TYPOGRAPHY ── */
+  .card {
+    background:#fff; border:1px solid #E5E7EB; border-radius:18px;
+    padding:24px; margin-bottom:14px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.03);
+  }
+  .concept-tag {
+    font-size:11px; letter-spacing:2.5px; text-transform:uppercase;
+    color:#3B82F6; margin-bottom:8px; font-weight:700;
+  }
+  .lesson-h {
+    font-size:26px; font-weight:800; line-height:1.25;
+    margin-bottom:14px; letter-spacing:-0.3px; color:#111827;
+  }
+  .body-text {
+    color:#374151; line-height:1.8; font-size:15px;
+    margin-bottom:18px; white-space:pre-wrap; word-break:break-word;
+  }
+  .body-text.empty { color:#9CA3AF; font-style:italic; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display:inline-block; padding:12px 24px; border-radius:12px;
+    font-family:inherit; font-size:14px; font-weight:700; cursor:pointer;
+    border:none; transition:all .18s ease; text-align:center;
+    text-decoration:none;
+  }
+  .btn-primary {
+    background:#3B82F6; color:#fff; width:100%;
+    box-shadow:0 2px 8px rgba(59,130,246,0.25);
+  }
+  .btn-primary:hover { background:#2563EB; transform:translateY(-1px); }
+  .btn-outline {
+    background:#fff; border:1px solid #E5E7EB; color:#374151;
+  }
+  .btn-outline:hover { border-color:#3B82F6; color:#3B82F6; }
+
+  /* ── QUIZ (green-card style) ── */
+  .quiz-card {
+    background:linear-gradient(180deg,#F0FDF4 0%,#fff 60%);
+    border:1px solid #BBF7D0;
+  }
+  .quiz-qnum {
+    font-family:'DM Mono',monospace; font-size:11px;
+    color:#059669; letter-spacing:2px; margin-bottom:10px; font-weight:700;
+  }
+  .quiz-q {
+    font-size:19px; font-weight:700; margin-bottom:8px;
+    line-height:1.4; color:#111827;
+  }
+  .quiz-opts { display:flex; flex-direction:column; gap:10px; margin:18px 0 14px; }
+  .qopt {
+    padding:13px 16px; border:1.5px solid #E5E7EB; border-radius:12px;
+    cursor:pointer; transition:all .18s ease; font-size:14px;
+    background:#fff; color:#1F2937; font-family:inherit;
+    text-align:left; display:flex; align-items:center; gap:12px;
+    width:100%;
+  }
+  .qopt:hover:not([disabled]) { border-color:#3B82F6; background:#EFF6FF; }
+  .qopt:disabled { cursor:default; }
+  .qopt.correct { border-color:#10B981; background:#ECFDF5; }
+  .qopt.wrong   { border-color:#EF4444; background:#FEF2F2; }
+  .qletter {
+    width:26px; height:26px; border-radius:50%;
+    background:#F1F5F9; color:#475569;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:700; font-family:'DM Mono',monospace;
+    flex-shrink:0;
+  }
+  .qopt.correct .qletter { background:#10B981; color:#fff; }
+  .qopt.wrong   .qletter { background:#EF4444; color:#fff; }
+
+  .qfeedback { display:none; padding:14px 16px; border-radius:12px; margin-bottom:12px; font-size:14px; }
+  .qfeedback.show { display:block; animation:fadeIn .3s ease; }
+  .qfeedback.ok { background:#ECFDF5; border:1px solid #BBF7D0; }
+  .qfeedback.no { background:#FEF2F2; border:1px solid #FECACA; }
+  .qft  { font-weight:700; margin-bottom:6px; }
+  .qft.ok { color:#059669; }
+  .qft.no { color:#DC2626; }
+  .qfb  { color:#374151; line-height:1.65; }
+  .qfr  {
+    margin-top:10px; padding:8px 12px; background:#EFF6FF;
+    border-radius:8px; font-size:12px; color:#1D4ED8;
+    font-family:'DM Mono',monospace;
+  }
+
+  .qnext { display:none; }
+  .qnext.show { display:block; }
+
+  /* ── COMPLETION ── */
+  .complete-wrap {
+    display:none; flex-direction:column; align-items:center;
+    text-align:center; padding:48px 24px;
+  }
+  .complete-wrap.active { display:flex; }
+  .complete-icon { font-size:68px; margin-bottom:18px; animation:popIn .5s ease both; }
+  @keyframes popIn { from{transform:scale(0.5); opacity:0;} to{transform:scale(1); opacity:1;} }
+  .complete-title { font-size:28px; font-weight:800; margin-bottom:10px; letter-spacing:-0.3px; color:#111827; }
+  .complete-sub   { font-size:15px; color:#6B7280; margin-bottom:18px; max-width:360px; line-height:1.7; }
+  .xp-badge {
+    display:inline-flex; align-items:center; gap:8px;
+    background:#EFF6FF; border:1px solid #3B82F6;
+    border-radius:50px; padding:10px 24px;
+    font-weight:700; color:#3B82F6; font-size:18px; margin:14px 0 24px;
+  }
+  .complete-actions { display:flex; flex-direction:column; gap:10px; width:100%; max-width:280px; }
+
+  @media (max-width:600px) {
+    .lesson-h { font-size:22px; }
+    .quiz-q   { font-size:17px; }
+    .wrap     { padding:18px 14px 30px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="state-screen active" id="loadingScreen">
+  <div class="spinner"></div>
+  <div class="state-msg">Loading module…</div>
+</div>
+
+<!-- ERROR -->
+<div class="state-screen" id="errorScreen">
+  <div class="state-icon">⚠️</div>
+  <div class="state-title" id="errorTitle">Module not found</div>
+  <div class="state-sub" id="errorSub">We couldn't load this module. It may have been moved or removed.</div>
+  <a href="/dashboard" class="btn btn-primary" style="max-width:280px;">← Back to Dashboard</a>
+</div>
+
+<!-- MAIN -->
+<div id="mainContent" style="display:none;">
+  <nav class="top-nav">
+    <a href="/dashboard" class="back-btn">← Dashboard</a>
+    <div class="mod-tag" id="modTag">—</div>
+  </nav>
+  <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
+
+  <div class="wrap">
+    <div class="meta-row">
+      <div class="dot-row" id="dotRow"></div>
+      <div class="xp-disp" id="xpDisp">⚡ 0 XP</div>
+    </div>
+
+    <div id="lessonContainer"></div>
+
+    <div class="complete-wrap" id="completeScreen">
+      <div class="complete-icon">🎉</div>
+      <div class="complete-title">Module complete!</div>
+      <div class="complete-sub" id="completeSub">Great work — you've finished every lesson in this module.</div>
+      <div class="xp-badge">⚡ <span id="xpEarnedFinal">0</span> XP earned</div>
+      <div class="complete-actions">
+        <a href="/dashboard" class="btn btn-primary">Back to Dashboard</a>
+        <button class="btn btn-outline" onclick="dwModule.restart()">Review module</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="./ai-pal-widget.js"></script>
+
+<script>
+(function() {
+  'use strict';
+
+  var XP_PER_CORRECT = 10;
+
+  var state = {
+    module:       null,
+    lessons:      [],   // sorted by order_index
+    exercises:    {},   // lessonId -> [exercises sorted by order_index]
+    lessonIdx:    0,
+    xp:           0,
+    answeredKeys: {},   // `${lessonIdx}-${exIdx}` -> true (avoids double-counting XP on review)
+  };
+
+  function escapeHtml(s) {
+    if (s === null || s === undefined) return '';
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  function showError(title, sub) {
+    var loading = document.getElementById('loadingScreen');
+    var errEl   = document.getElementById('errorScreen');
+    if (loading) loading.classList.remove('active');
+    if (errEl)   errEl.classList.add('active');
+    if (title) document.getElementById('errorTitle').textContent = title;
+    if (sub)   document.getElementById('errorSub').textContent   = sub;
+    document.body.classList.add('ready');
+  }
+
+  // ── Boot ────────────────────────────────────────────────────────────────
+  var params   = new URLSearchParams(location.search);
+  var moduleId = params.get('id');
+
+  if (!moduleId) {
+    showError('No module specified', 'Add ?id=<module-uuid> to the URL.');
+    return;
+  }
+
+  // Quick UUID sanity check (8-4-4-4-12 hex)
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(moduleId)) {
+    showError('Invalid module ID', 'The id parameter doesn\'t look like a valid UUID.');
+    return;
+  }
+
+  if (typeof dwSupabase === 'undefined') {
+    showError('Connection error', 'Supabase client failed to load. Refresh the page.');
+    return;
+  }
+
+  loadModule(moduleId);
+
+  async function loadModule(id) {
+    try {
+      // 1. Module
+      var modRes = await dwSupabase
+        .from('modules')
+        .select('id, level, title, description, order_index')
+        .eq('id', id)
+        .maybeSingle();
+
+      if (modRes.error) throw modRes.error;
+      if (!modRes.data) {
+        showError('Module not found', 'No module exists with this ID.');
+        return;
+      }
+
+      // 2. Lessons
+      var lessonRes = await dwSupabase
+        .from('lessons')
+        .select('id, title, order_index, content_text')
+        .eq('module_id', id)
+        .order('order_index', { ascending: true });
+
+      if (lessonRes.error) throw lessonRes.error;
+
+      // 3. Exercises (one round-trip via .in())
+      var lessonIds = (lessonRes.data || []).map(function(l) { return l.id; });
+      var exercisesByLesson = {};
+      lessonIds.forEach(function(lid) { exercisesByLesson[lid] = []; });
+
+      if (lessonIds.length > 0) {
+        var exRes = await dwSupabase
+          .from('lesson_exercises')
+          .select('id, lesson_id, type, question, options, correct_answer, explanation, rule_hint, order_index')
+          .in('lesson_id', lessonIds)
+          .order('order_index', { ascending: true });
+
+        if (exRes.error) throw exRes.error;
+        (exRes.data || []).forEach(function(e) {
+          if (exercisesByLesson[e.lesson_id]) exercisesByLesson[e.lesson_id].push(e);
+        });
+      }
+
+      state.module    = modRes.data;
+      state.lessons   = lessonRes.data || [];
+      state.exercises = exercisesByLesson;
+
+      render();
+    } catch (e) {
+      console.error('[module.html] load error:', e);
+      showError('Could not load module', e.message || 'Network or database error. Try again.');
+    }
+  }
+
+  // ── Render ──────────────────────────────────────────────────────────────
+  function render() {
+    var m = state.module;
+    document.title = (m.title || 'Module') + ' — DeutschWeg';
+    document.getElementById('modTag').textContent =
+      (m.level || '') + ' · Module ' + (m.order_index || '');
+
+    // Build progress dots
+    var dotRow = document.getElementById('dotRow');
+    dotRow.innerHTML = '';
+    state.lessons.forEach(function(_, i) {
+      var dot = document.createElement('div');
+      dot.className = 'dot' + (i === 0 ? ' active' : '');
+      dot.id = 'dot-' + i;
+      dotRow.appendChild(dot);
+    });
+
+    // Build lesson screens
+    var container = document.getElementById('lessonContainer');
+    container.innerHTML = '';
+
+    if (state.lessons.length === 0) {
+      // Module exists but has no lessons (e.g. a mock-exam stub) — show description + go-back
+      container.innerHTML =
+        '<div class="card">' +
+          '<div class="concept-tag">' + escapeHtml(m.level) + ' · MODULE</div>' +
+          '<h1 class="lesson-h">' + escapeHtml(m.title) + '</h1>' +
+          '<div class="body-text">' + (m.description ? escapeHtml(m.description) : 'This module has no lessons yet.') + '</div>' +
+          '<a href="/dashboard" class="btn btn-primary">Back to Dashboard</a>' +
+        '</div>';
+      // No completion screen; no progress to track
+      finalizeBoot();
+      return;
+    }
+
+    state.lessons.forEach(function(lesson, idx) {
+      var screen = document.createElement('div');
+      screen.className = 'lesson-screen' + (idx === 0 ? ' active' : '');
+      screen.id = 'lesson-' + idx;
+
+      var exercises  = state.exercises[lesson.id] || [];
+      var lessonNo   = lesson.order_index || (idx + 1);
+      var lessonTitle = lesson.title || ('Lesson ' + lessonNo);
+      var contentHtml;
+      if (lesson.content_text && String(lesson.content_text).trim().length > 0) {
+        contentHtml = '<div class="body-text">' + escapeHtml(lesson.content_text) + '</div>';
+      } else {
+        contentHtml = '<div class="body-text empty">Content for this lesson is being added.</div>';
+      }
+
+      var nextLabel = exercises.length > 0
+        ? 'Start Quiz →'
+        : (idx < state.lessons.length - 1 ? 'Next Lesson →' : 'Finish →');
+
+      // Step 0: lesson content
+      var contentStep = document.createElement('div');
+      contentStep.className = 'step active';
+      contentStep.id = 's-' + idx + '-content';
+      contentStep.innerHTML =
+        '<div class="card">' +
+          '<div class="concept-tag">' + escapeHtml(m.level) + ' · LESSON ' + lessonNo + '</div>' +
+          '<h1 class="lesson-h">' + escapeHtml(lessonTitle) + '</h1>' +
+          contentHtml +
+          '<button class="btn btn-primary" onclick="dwModule.advance(' + idx + ', 0)">' + nextLabel + '</button>' +
+        '</div>';
+      screen.appendChild(contentStep);
+
+      // Steps 1..N: one per exercise
+      exercises.forEach(function(ex, ei) {
+        var step = document.createElement('div');
+        step.className = 'step';
+        step.id = 's-' + idx + '-q-' + ei;
+        step.innerHTML = renderQuiz(ex, idx, ei, exercises.length);
+        screen.appendChild(step);
+      });
+
+      container.appendChild(screen);
+    });
+
+    finalizeBoot();
+  }
+
+  function renderQuiz(ex, lIdx, eIdx, total) {
+    var opts = Array.isArray(ex.options) ? ex.options : [];
+    var correctIdx = opts.findIndex(function(o) {
+      return String(o) === String(ex.correct_answer);
+    });
+
+    var optsHtml = opts.map(function(o, i) {
+      return (
+        '<button type="button" class="qopt" id="opt-' + lIdx + '-' + eIdx + '-' + i + '" ' +
+          'onclick="dwModule.answer(' + lIdx + ',' + eIdx + ',' + i + ',' + correctIdx + ')">' +
+          '<span class="qletter">' + String.fromCharCode(65 + i) + '</span>' +
+          '<span>' + escapeHtml(String(o)) + '</span>' +
+        '</button>'
+      );
+    }).join('');
+
+    var nextLabel = (eIdx < total - 1) ? 'Next question →' : 'Continue →';
+
+    return (
+      '<div class="card quiz-card">' +
+        '<div class="quiz-qnum">QUESTION ' + (eIdx + 1) + ' OF ' + total + '</div>' +
+        '<div class="quiz-q">' + escapeHtml(ex.question) + '</div>' +
+        '<div class="quiz-opts">' + optsHtml + '</div>' +
+        '<div class="qfeedback" id="fb-' + lIdx + '-' + eIdx + '">' +
+          '<div class="qft"  id="ft-' + lIdx + '-' + eIdx + '"></div>' +
+          '<div class="qfb"  id="fbb-' + lIdx + '-' + eIdx + '"></div>' +
+          '<div class="qfr"  id="fr-' + lIdx + '-' + eIdx + '" style="display:none;"></div>' +
+        '</div>' +
+        '<button class="btn btn-primary qnext" id="next-' + lIdx + '-' + eIdx + '" ' +
+          'onclick="dwModule.advance(' + lIdx + ',' + (eIdx + 1) + ')">' + nextLabel + '</button>' +
+      '</div>'
+    );
+  }
+
+  function finalizeBoot() {
+    document.getElementById('loadingScreen').classList.remove('active');
+    document.getElementById('mainContent').style.display = 'block';
+    document.body.classList.add('ready');
+    updateProgress();
+  }
+
+  function updateProgress() {
+    var totalLessons = state.lessons.length || 1;
+    var pct = Math.round((state.lessonIdx / totalLessons) * 100);
+    document.getElementById('progFill').style.width = pct + '%';
+    document.getElementById('xpDisp').textContent = '⚡ ' + state.xp + ' XP';
+
+    state.lessons.forEach(function(_, i) {
+      var d = document.getElementById('dot-' + i);
+      if (!d) return;
+      d.classList.remove('active', 'done');
+      if (i < state.lessonIdx)      d.classList.add('done');
+      else if (i === state.lessonIdx) d.classList.add('active');
+    });
+  }
+
+  // ── Public handlers ─────────────────────────────────────────────────────
+  window.dwModule = {
+    answer: function(lIdx, eIdx, choiceIdx, correctIdx) {
+      var key = lIdx + '-' + eIdx;
+      var first = !state.answeredKeys[key];
+      state.answeredKeys[key] = true;
+
+      var ex = state.exercises[state.lessons[lIdx].id][eIdx];
+      var isCorrect = (choiceIdx === correctIdx);
+
+      // Lock all options, mark correct/wrong
+      var opts = document.querySelectorAll('#s-' + lIdx + '-q-' + eIdx + ' .qopt');
+      opts.forEach(function(btn, i) {
+        btn.disabled = true;
+        if (i === correctIdx) btn.classList.add('correct');
+        else if (i === choiceIdx && !isCorrect) btn.classList.add('wrong');
+      });
+
+      // Feedback
+      var fb  = document.getElementById('fb-'  + lIdx + '-' + eIdx);
+      var ft  = document.getElementById('ft-'  + lIdx + '-' + eIdx);
+      var fbb = document.getElementById('fbb-' + lIdx + '-' + eIdx);
+      var fr  = document.getElementById('fr-'  + lIdx + '-' + eIdx);
+
+      fb.classList.remove('ok','no');
+      fb.classList.add('show', isCorrect ? 'ok' : 'no');
+      ft.className = 'qft ' + (isCorrect ? 'ok' : 'no');
+      ft.textContent = isCorrect ? '✓ Correct' : '✗ Not quite';
+      fbb.textContent = ex.explanation || '';
+      if (ex.rule_hint) {
+        fr.textContent  = '💡 ' + ex.rule_hint;
+        fr.style.display = '';
+      } else {
+        fr.style.display = 'none';
+      }
+
+      var nextBtn = document.getElementById('next-' + lIdx + '-' + eIdx);
+      if (nextBtn) nextBtn.classList.add('show');
+
+      if (isCorrect && first) {
+        state.xp += XP_PER_CORRECT;
+        document.getElementById('xpDisp').textContent = '⚡ ' + state.xp + ' XP';
+      }
+    },
+
+    /**
+     * advance(lIdx, stepNum)
+     *   stepNum 0 = content; 1..N = i-th question (0-indexed in state but 1-based in UI step naming).
+     *   Goes to step `stepNum` within lesson lIdx; if past the last question, moves to next lesson;
+     *   if past the last lesson, shows completion.
+     */
+    advance: function(lIdx, stepNum) {
+      var lesson  = state.lessons[lIdx];
+      var exCount = (state.exercises[lesson.id] || []).length;
+
+      // Hide all steps in this lesson
+      var screen = document.getElementById('lesson-' + lIdx);
+      if (!screen) return;
+      screen.querySelectorAll('.step').forEach(function(s) { s.classList.remove('active'); });
+
+      if (stepNum === 0) {
+        var contentStep = document.getElementById('s-' + lIdx + '-content');
+        if (contentStep) contentStep.classList.add('active');
+        // Note: stepNum=0 from advance() means "show quiz" since content's button calls advance(idx, 0)
+        // before the user has progressed. We treat the *click* as "move past content".
+        // Re-route: if there are exercises, show the first one; else move to next lesson.
+        if (exCount > 0) {
+          var first = document.getElementById('s-' + lIdx + '-q-0');
+          if (first) {
+            screen.querySelectorAll('.step').forEach(function(s) { s.classList.remove('active'); });
+            first.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+          }
+        }
+        // No exercises — advance to next lesson
+        return this.nextLesson(lIdx);
+      }
+
+      // stepNum >= 1: show question (stepNum-1) — but we passed eIdx + 1 as stepNum from quiz next-button,
+      // so we want to display the question with eIdx = stepNum - 1.
+      var nextEIdx = stepNum - 1;
+      if (nextEIdx < exCount) {
+        var nextStep = document.getElementById('s-' + lIdx + '-q-' + nextEIdx);
+        if (nextStep) {
+          nextStep.classList.add('active');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        return;
+      }
+      // Past last question — go to next lesson
+      this.nextLesson(lIdx);
+    },
+
+    nextLesson: function(lIdx) {
+      var current = document.getElementById('lesson-' + lIdx);
+      if (current) current.classList.remove('active');
+
+      var nextIdx = lIdx + 1;
+      if (nextIdx >= state.lessons.length) {
+        this.complete();
+        return;
+      }
+
+      state.lessonIdx = nextIdx;
+      var nextScreen = document.getElementById('lesson-' + nextIdx);
+      if (nextScreen) {
+        nextScreen.classList.add('active');
+        // Reset which step is active inside the new lesson
+        nextScreen.querySelectorAll('.step').forEach(function(s) { s.classList.remove('active'); });
+        var firstStep = document.getElementById('s-' + nextIdx + '-content');
+        if (firstStep) firstStep.classList.add('active');
+      }
+      updateProgress();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+
+    complete: function() {
+      state.lessonIdx = state.lessons.length;
+      updateProgress();
+      document.getElementById('lessonContainer').style.display = 'none';
+      var done = document.getElementById('completeScreen');
+      done.classList.add('active');
+      document.getElementById('xpEarnedFinal').textContent = state.xp;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+
+    restart: function() {
+      // Soft reset: restart from lesson 0 without re-fetching.
+      state.lessonIdx = 0;
+      state.xp = 0;
+      state.answeredKeys = {};
+      document.getElementById('lessonContainer').style.display = '';
+      document.getElementById('completeScreen').classList.remove('active');
+      document.getElementById('xpDisp').textContent = '⚡ 0 XP';
+
+      state.lessons.forEach(function(_, i) {
+        var screen = document.getElementById('lesson-' + i);
+        if (!screen) return;
+        screen.classList.toggle('active', i === 0);
+        screen.querySelectorAll('.step').forEach(function(s, j) {
+          s.classList.toggle('active', j === 0);
+        });
+      });
+
+      // Re-enable any locked options
+      document.querySelectorAll('.qopt').forEach(function(btn) {
+        btn.disabled = false;
+        btn.classList.remove('correct','wrong');
+      });
+      document.querySelectorAll('.qfeedback').forEach(function(fb) { fb.classList.remove('show'); });
+      document.querySelectorAll('.qnext').forEach(function(b) { b.classList.remove('show'); });
+
+      updateProgress();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+})();
+</script>
+
+</body>
+</html>
