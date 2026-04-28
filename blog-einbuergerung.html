@@ -66,24 +66,39 @@
   .post-card ul, .post-card ol { margin: 0 0 14px 22px; }
   .post-card li { margin-bottom: 6px; }
   .post-card strong { color: var(--dark); font-weight: 700; }
-  .post-card a { color: var(--blue); text-decoration: underline; }
-  .post-card a:hover { color: var(--blue-dark); }
+  /* Body links only — scoped to paragraphs/lists so the rule doesn't
+     bleed into the CTA wrapper-link below (which would turn the button
+     text blue-on-blue). */
+  .post-card p a, .post-card li a { color: var(--blue); text-decoration: underline; }
+  .post-card p a:hover, .post-card li a:hover { color: var(--blue-dark); }
 
+  /* Entire CTA box is a single clickable link. The inner "button" is
+     visual only (a styled span) — clicking anywhere in the strip
+     navigates. text-decoration:none + color:inherit prevent the
+     underlined-blue link defaults from leaking through. */
   .post-cta {
     background: var(--blue-light); border-left: 4px solid var(--blue);
     border-radius: 0 var(--radius-md) var(--radius-md) 0;
     padding: 18px 22px; margin-top: 28px;
     display: flex; align-items: center; justify-content: space-between; gap: 18px;
     flex-wrap: wrap;
+    text-decoration: none; color: inherit; cursor: pointer;
+    transition: background .18s, transform .18s, box-shadow .18s;
+  }
+  .post-cta:hover {
+    background: var(--blue-mid);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(59,130,246,0.18);
   }
   .post-cta-text { font-size: 14.5px; color: #1E3A5F; font-weight: 600; line-height: 1.55; flex: 1; min-width: 200px; }
   .post-cta-btn {
-    background: var(--blue); color: #fff; padding: 10px 20px;
-    border-radius: 10px; text-decoration: none; font-size: 14px; font-weight: 700;
+    background: var(--blue); color: #fff; padding: 10px 22px;
+    border-radius: 10px; font-size: 14px; font-weight: 700;
     box-shadow: 0 2px 8px rgba(59,130,246,0.3); white-space: nowrap;
-    transition: all .18s;
+    display: inline-flex; align-items: center; gap: 4px;
+    transition: background .18s;
   }
-  .post-cta-btn:hover { background: var(--blue-dark); transform: translateY(-1px); }
+  .post-cta:hover .post-cta-btn { background: var(--blue-dark); }
 
   .pw-pill {
     display: inline-flex; font-size: 11px; font-weight: 800; letter-spacing: 0.5px;
@@ -140,14 +155,14 @@
     <h2>Other Einbürgerung requirements</h2>
     <ul><li>5+ years of legal residence in Germany</li><li>Financial self-sufficiency (no Bürgergeld/social welfare)</li><li>No serious criminal record</li><li>Commitment to Germany's democratic values</li><li>Passing the Einbürgerungstest (citizenship knowledge test)</li></ul>
 
-    <div class="post-cta">
-      <div class="post-cta-text">B1 is the gateway to German citizenship. DeutschWeg prepares you for the Goethe B1 exam. Start free.</div>
-      <a class="post-cta-btn" href="signup.html">Start free →</a>
-    </div>
+    <a class="post-cta" href="https://deutschweg.de/login">
+      <span class="post-cta-text">B1 is the gateway to German citizenship. DeutschWeg prepares you for the Goethe B1 exam. Start free.</span>
+      <span class="post-cta-btn">Start Free →</span>
+    </a>
   </article>
 
   <div class="post-related">
-    Read more pathway guides → <a href="blog.html">All seven posts</a>
+    Read more pathway guides → <a href="https://deutschweg.de/blog">All seven posts</a>
   </div>
 
   <div class="post-footer">
