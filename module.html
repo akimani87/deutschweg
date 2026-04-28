@@ -818,34 +818,66 @@
     console.log('[progress] module-completion check: ' + doneCount + '/' + totalLessons);
     if (doneCount < totalLessons) return;
 
-    var payload = {
-      user_id:      state.user.id,
-      module_id:    state.module.id,
-      lesson_id:    null,
-      status:       'completed',
-      score:        null,
-      completed_at: new Date().toISOString()
-    };
-    console.log('[progress] module-completion upsert →', payload);
+    // Module-completion rows have lesson_id = NULL. We can't upsert on
+    // (user_id, module_id) because no non-partial unique constraint
+    // exists on that pair (it would conflict with multi-lesson rows),
+    // and PostgREST's onConflict parameter doesn't support partial-
+    // index predicates. So: SELECT first, INSERT only if missing. The
+    // existence check also doubles as cross-session safety in case
+    // state.moduleAwarded wasn't restored on boot.
+    dwSupabase.from('user_progress')
+      .select('id')
+      .eq('user_id',   state.user.id)
+      .eq('module_id', state.module.id)
+      .is('lesson_id', null)
+      .eq('status',    'completed')
+      .limit(1)
+      .then(function(check) {
+        if (check.error) {
+          console.error('[progress] module-completion existence check FAILED', {
+            message: check.error.message,
+            code:    check.error.code,
+            details: check.error.details,
+            hint:    check.error.hint,
+            status:  check.status
+          });
+          return;
+        }
+        if (check.data && check.data.length > 0) {
+          console.log('[progress] module-completion row already exists — no double XP');
+          state.moduleAwarded = true;
+          return;
+        }
 
-    dwSupabase.from('user_progress').upsert(payload, { onConflict: 'user_id,module_id' }).select().then(function(res) {
-      if (res.error) {
-        console.error('[progress] module-completion write FAILED', {
-          message: res.error.message,
-          code:    res.error.code,
-          details: res.error.details,
-          hint:    res.error.hint,
-          status:  res.status
+        var payload = {
+          user_id:      state.user.id,
+          module_id:    state.module.id,
+          lesson_id:    null,
+          status:       'completed',
+          score:        null,
+          completed_at: new Date().toISOString()
+        };
+        console.log('[progress] module-completion insert →', payload);
+
+        dwSupabase.from('user_progress').insert(payload).select().then(function(res) {
+          if (res.error) {
+            console.error('[progress] module-completion write FAILED', {
+              message: res.error.message,
+              code:    res.error.code,
+              details: res.error.details,
+              hint:    res.error.hint,
+              status:  res.status
+            });
+            return;
+          }
+          console.log('[progress] ✓ module-completion saved', res.data && res.data[0]);
+          state.moduleAwarded = true;
+          dwSupabase.rpc('increment_xp', { uid: state.user.id, amt: 50 }).then(function(r) {
+            if (r.error) console.error('[progress] +50 XP module bonus FAILED', r.error);
+            else         console.log('[progress] 🎉 Module complete — +50 XP, total=' + r.data);
+          });
         });
-        return;
-      }
-      console.log('[progress] ✓ module-completion saved', res.data && res.data[0]);
-      state.moduleAwarded = true;
-      dwSupabase.rpc('increment_xp', { uid: state.user.id, amt: 50 }).then(function(r) {
-        if (r.error) console.error('[progress] +50 XP module bonus FAILED', r.error);
-        else         console.log('[progress] 🎉 Module complete — +50 XP, total=' + r.data);
       });
-    });
   }
 
   // ── Public handlers ─────────────────────────────────────────────────────
