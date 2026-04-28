@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Germany's Integration Course — DeutschWeg</title>
+<meta name="description" content="The Integrationskurs takes you from A1 to B1 in Germany. Preparing before you arrive gives you a major advantage — here's how it works.">
+<link rel="stylesheet" href="deutschweg-theme.css">
+<style>
+  body { background: var(--bg); }
+  .post-header {
+    background: #fff; border-bottom: 1px solid var(--border);
+    padding: 14px 24px; display: flex; align-items: center; gap: 14px;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .post-back {
+    color: var(--mid); font-size: 13px; font-weight: 600;
+    text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 8px; transition: all .18s;
+  }
+  .post-back:hover { color: var(--blue); background: var(--blue-light); }
+  .post-logo {
+    display: flex; align-items: center; gap: 9px; text-decoration: none;
+    margin-left: auto;
+  }
+  .post-logo-icon {
+    width: 30px; height: 30px; background: var(--blue); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 15px; font-weight: 800;
+  }
+  .post-logo-text { font-size: 16px; font-weight: 800; color: var(--dark); letter-spacing: -0.3px; }
+  .post-logo-text span { color: var(--blue); }
+
+  .post-wrap { max-width: 760px; margin: 0 auto; padding: 36px 20px 80px; }
+  .post-cat {
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    color: var(--blue); text-transform: uppercase; margin-bottom: 12px;
+  }
+  .post-title {
+    font-size: 30px; font-weight: 800; color: var(--dark);
+    letter-spacing: -0.5px; margin-bottom: 14px; line-height: 1.25;
+  }
+  .post-level-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--blue-light); color: #1D4ED8;
+    border: 1px solid var(--blue-mid);
+    border-radius: 50px; padding: 5px 14px;
+    font-size: 12.5px; font-weight: 700;
+    margin-bottom: 22px;
+  }
+  .post-lead { font-size: 16px; color: var(--mid); line-height: 1.75; margin-bottom: 28px; }
+
+  .post-card {
+    background: #fff; border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 36px 32px;
+    box-shadow: var(--shadow-sm);
+  }
+  .post-card h2 {
+    font-size: 13px; font-weight: 800; letter-spacing: 1.2px;
+    color: var(--blue); text-transform: uppercase;
+    margin: 28px 0 10px;
+  }
+  .post-card h2:first-child { margin-top: 0; }
+  .post-card p, .post-card li { font-size: 15px; color: var(--mid); line-height: 1.75; }
+  .post-card p { margin-bottom: 12px; }
+  .post-card ul, .post-card ol { margin: 0 0 14px 22px; }
+  .post-card li { margin-bottom: 6px; }
+  .post-card strong { color: var(--dark); font-weight: 700; }
+  .post-card a { color: var(--blue); text-decoration: underline; }
+  .post-card a:hover { color: var(--blue-dark); }
+
+  .post-cta {
+    background: var(--blue-light); border-left: 4px solid var(--blue);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    padding: 18px 22px; margin-top: 28px;
+    display: flex; align-items: center; justify-content: space-between; gap: 18px;
+    flex-wrap: wrap;
+  }
+  .post-cta-text { font-size: 14.5px; color: #1E3A5F; font-weight: 600; line-height: 1.55; flex: 1; min-width: 200px; }
+  .post-cta-btn {
+    background: var(--blue); color: #fff; padding: 10px 20px;
+    border-radius: 10px; text-decoration: none; font-size: 14px; font-weight: 700;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.3); white-space: nowrap;
+    transition: all .18s;
+  }
+  .post-cta-btn:hover { background: var(--blue-dark); transform: translateY(-1px); }
+
+  .pw-pill {
+    display: inline-flex; font-size: 11px; font-weight: 800; letter-spacing: 0.5px;
+    padding: 2px 9px; border-radius: 50px;
+  }
+  .pw-pill.a1 { background: #ECFDF5; color: #059669; }
+  .pw-pill.a2 { background: #EFF6FF; color: #1D4ED8; }
+  .pw-pill.b1 { background: #FFFBEB; color: #92400E; }
+  .pw-pill.b2 { background: #F5F3FF; color: #5B21B6; }
+
+  .post-related { margin-top: 28px; font-size: 14px; color: var(--mid); text-align: center; }
+  .post-related a { color: var(--blue); text-decoration: none; font-weight: 600; }
+  .post-related a:hover { text-decoration: underline; }
+
+  .post-footer {
+    margin-top: 28px; text-align: center;
+    font-size: 13px; color: var(--light);
+  }
+  .post-footer a { color: var(--mid); text-decoration: none; margin: 0 10px; }
+  .post-footer a:hover { color: var(--blue); }
+
+  @media (max-width: 600px) {
+    .post-wrap { padding: 22px 14px 80px; }
+    .post-card { padding: 24px 20px; }
+    .post-title { font-size: 24px; }
+    .post-cta { flex-direction: column; align-items: stretch; }
+    .post-cta-btn { text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<header class="post-header">
+  <a href="blog.html" class="post-back">← All posts</a>
+  <a href="index.html" class="post-logo">
+    <div class="post-logo-icon">D</div>
+    <span class="post-logo-text">Deutsch<span>Weg</span></span>
+  </a>
+</header>
+
+<main class="post-wrap">
+  <div class="post-cat">Integration Course</div>
+  <h1 class="post-title">Germany's Integration Course — What It Is and How to Prepare Before You Arrive</h1>
+  <div class="post-level-tag"><span class="pw-pill b1">A1 → B1</span> Takes you from A1 to B1</div>
+  <p class="post-lead">If you are moving to Germany, you will likely be required — or strongly encouraged — to complete an integration course. Understanding what it involves helps you prepare before you even arrive.</p>
+
+  <article class="post-card">
+    <h2>What is the integration course?</h2>
+    <p>The Integrationskurs is a government-funded language and civics programme. It consists of two parts: a German language course (600 lessons from A1 to B1) and an orientation course (100 lessons covering German society, law, and history).</p>
+
+    <h2>Who must attend?</h2>
+    <ul><li>New arrivals with a residence permit who cannot prove B1 German</li><li>Those who receive social welfare benefits</li><li>Anyone referred by the Ausländerbehörde (immigration office)</li></ul>
+
+    <h2>Who can attend voluntarily?</h2>
+    <p>Even if not required, you can apply to attend the integration course. It is heavily subsidised — you pay only €1.20 per lesson, and the cost can be waived if you receive social support.</p>
+
+    <h2>The final exam — DTZ</h2>
+    <p>The integration course ends with the Deutsch-Test für Zuwanderer (DTZ), which tests B1 level. Passing this exam is required to receive your Integrationskurs certificate — which is needed for many residence permits and Einbürgerung.</p>
+
+    <h2>Why prepare before you arrive?</h2>
+    <p>Starting German before you arrive in Germany gives you a massive advantage. Students who arrive with A1 or A2 progress through the integration course faster, perform better in the DTZ, and settle into German life more quickly.</p>
+
+    <div class="post-cta">
+      <div class="post-cta-text">Prepare for Germany before you arrive. DeutschWeg covers A1 through B1 — exactly the integration course curriculum. Start free.</div>
+      <a class="post-cta-btn" href="signup.html">Start free →</a>
+    </div>
+  </article>
+
+  <div class="post-related">
+    Read more pathway guides → <a href="blog.html">All seven posts</a>
+  </div>
+
+  <div class="post-footer">
+    <a href="privacy-policy.html">Privacy</a> ·
+    <a href="terms.html">Terms</a> ·
+    <a href="impressum.html">Impressum</a>
+  </div>
+</main>
+
+<script src="./cookie-banner.js"></script>
+</body>
+</html>

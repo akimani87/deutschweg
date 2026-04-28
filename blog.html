@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Blog — Pathways to Germany | DeutschWeg</title>
+<meta name="description" content="Family reunification, Au-Pair, Ausbildung, university, citizenship, skilled worker — every pathway to Germany and the German level you need.">
+<link rel="stylesheet" href="deutschweg-theme.css">
+<style>
+  body { background: var(--bg); }
+  .blog-header {
+    background: #fff; border-bottom: 1px solid var(--border);
+    padding: 14px 24px; display: flex; align-items: center; gap: 14px;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .blog-back {
+    color: var(--mid); font-size: 13px; font-weight: 600;
+    text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 8px; transition: all .18s;
+  }
+  .blog-back:hover { color: var(--blue); background: var(--blue-light); }
+  .blog-logo {
+    display: flex; align-items: center; gap: 9px; text-decoration: none;
+    margin-left: auto;
+  }
+  .blog-logo-icon {
+    width: 30px; height: 30px; background: var(--blue); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 15px; font-weight: 800;
+  }
+  .blog-logo-text { font-size: 16px; font-weight: 800; color: var(--dark); letter-spacing: -0.3px; }
+  .blog-logo-text span { color: var(--blue); }
+
+  .blog-wrap { max-width: 880px; margin: 0 auto; padding: 36px 20px 80px; }
+  .blog-eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    color: var(--blue); text-transform: uppercase; margin-bottom: 10px;
+  }
+  .blog-title {
+    font-size: 36px; font-weight: 800; color: var(--dark);
+    letter-spacing: -0.7px; margin-bottom: 10px; line-height: 1.2;
+  }
+  .blog-sub { font-size: 15.5px; color: var(--mid); line-height: 1.7; max-width: 640px; margin-bottom: 36px; }
+
+  /* ── Pathway grid ─────────────────────────────────────────── */
+  .pw-section-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    color: var(--blue); text-transform: uppercase;
+    display: flex; align-items: center; gap: 12px;
+    margin: 0 0 18px;
+  }
+  .pw-section-label::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+  .pw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 44px; }
+  .pw-card {
+    background: #fff; border: 1px solid var(--border);
+    border-radius: var(--radius-md); padding: 16px 18px;
+    box-shadow: var(--shadow-sm);
+  }
+  .pw-card h4 {
+    font-size: 14.5px; font-weight: 800; color: var(--dark);
+    margin-bottom: 6px; line-height: 1.35; display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  }
+  .pw-card p { font-size: 13px; color: var(--mid); line-height: 1.6; margin: 0; }
+  .pw-pill {
+    display: inline-flex; font-size: 10px; font-weight: 800; letter-spacing: 0.5px;
+    padding: 2px 8px; border-radius: 50px;
+  }
+  .pw-pill.a1 { background: #ECFDF5; color: #059669; }
+  .pw-pill.a2 { background: #EFF6FF; color: #1D4ED8; }
+  .pw-pill.b1 { background: #FFFBEB; color: #92400E; }
+  .pw-pill.b2 { background: #F5F3FF; color: #5B21B6; }
+  @media (max-width: 600px) { .pw-grid { grid-template-columns: 1fr; } }
+
+  /* ── Blog post cards ──────────────────────────────────────── */
+  .post-list { display: flex; flex-direction: column; gap: 14px; }
+  .post-card {
+    background: #fff; border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 22px 24px;
+    box-shadow: var(--shadow-sm);
+    text-decoration: none; color: inherit;
+    transition: all .2s ease; display: block;
+  }
+  .post-card:hover {
+    border-color: var(--blue-mid); transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(59,130,246,0.08);
+  }
+  .post-card-meta {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .post-card-cat {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 1.5px;
+    color: var(--blue); text-transform: uppercase;
+  }
+  .post-card h3 {
+    font-size: 19px; font-weight: 800; color: var(--dark);
+    margin-bottom: 6px; line-height: 1.35; letter-spacing: -0.2px;
+  }
+  .post-card p { font-size: 14.5px; color: var(--mid); line-height: 1.65; margin-bottom: 10px; }
+  .post-card-arrow {
+    font-size: 13px; font-weight: 700; color: var(--blue);
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+
+  .blog-footer {
+    margin-top: 36px; text-align: center;
+    font-size: 13px; color: var(--light);
+  }
+  .blog-footer a { color: var(--mid); text-decoration: none; margin: 0 10px; }
+  .blog-footer a:hover { color: var(--blue); }
+
+  @media (max-width: 600px) {
+    .blog-wrap { padding: 22px 14px 80px; }
+    .blog-title { font-size: 28px; }
+    .post-card { padding: 18px 18px; }
+    .post-card h3 { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="blog-header">
+  <a href="index.html" class="blog-back">← Back</a>
+  <a href="index.html" class="blog-logo">
+    <div class="blog-logo-icon">D</div>
+    <span class="blog-logo-text">Deutsch<span>Weg</span></span>
+  </a>
+</header>
+
+<main class="blog-wrap">
+  <div class="blog-eyebrow">DeutschWeg Blog</div>
+  <h1 class="blog-title">Pathways to Germany</h1>
+  <p class="blog-sub">Family reunification, Au-Pair, Ausbildung, university studies, citizenship, skilled-worker visa, integration course — every route to Germany comes with a German language requirement. Here's exactly which level you need, and what each path involves.</p>
+
+  <div class="pw-section-label">Your Goethe certificate opens these doors</div>
+  <div class="pw-grid">
+
+    <a class="pw-card" href="blog-family-reunification.html" style="text-decoration:none;">
+      <h4>👨‍👩‍👧 Family Reunification <span class="pw-pill a1">A1</span></h4>
+      <p>Joining a spouse or parent in Germany requires Goethe A1 — the entry point for family visas.</p>
+    </a>
+
+    <a class="pw-card" href="blog-au-pair.html" style="text-decoration:none;">
+      <h4>🧒 Au-Pair <span class="pw-pill a1">A1</span> <span class="pw-pill a2">A2</span></h4>
+      <p>Most host families and agencies require at least A1. A2 gives you a stronger application.</p>
+    </a>
+
+    <a class="pw-card" href="blog-ausbildung.html" style="text-decoration:none;">
+      <h4>🔧 Ausbildung (Vocational Training) <span class="pw-pill b1">B1</span></h4>
+      <p>Germany's dual-education system is open to Africans. B1 is the standard entry requirement.</p>
+    </a>
+
+    <a class="pw-card" href="blog-university-studies.html" style="text-decoration:none;">
+      <h4>🎓 University Studies <span class="pw-pill b2">B2</span></h4>
+      <p>Most German universities require B2 or C1 for degree programmes taught in German.</p>
+    </a>
+
+    <a class="pw-card" href="blog-einbuergerung.html" style="text-decoration:none;">
+      <h4>🏛️ Einbürgerung (Citizenship) <span class="pw-pill b1">B1</span></h4>
+      <p>Applying for German citizenship after 5–8 years of residence requires B1 minimum.</p>
+    </a>
+
+    <a class="pw-card" href="blog-skilled-worker-visa.html" style="text-decoration:none;">
+      <h4>💼 Skilled Worker Visa <span class="pw-pill b1">B1</span> <span class="pw-pill b2">B2</span></h4>
+      <p>Germany's Fachkräfteeinwanderungsgesetz welcomes skilled workers. Level depends on profession.</p>
+    </a>
+
+    <a class="pw-card" href="blog-integration-course.html" style="text-decoration:none;">
+      <h4>🤝 Integration Course <span class="pw-pill b1">B1</span></h4>
+      <p>After arriving in Germany, integration courses take you from zero to B1 — required for many residence permits.</p>
+    </a>
+
+  </div>
+
+  <div class="pw-section-label">All seven pathway guides</div>
+  <div class="post-list">
+
+    <a class="post-card" href="blog-family-reunification.html">
+      <div class="post-card-meta">
+        <span class="post-card-cat">Family Reunification</span>
+        <span class="pw-pill a1">A1</span>
+      </div>
+      <h3>How to Come to Germany for Family Reunification — What German Level Do You Need?</h3>
+      <p>If your spouse, parent, or child lives in Germany, you may be eligible to join them through family reunification — one of the most common pathways from Africa.</p>
+      <span class="post-card-arrow">Read more →</span>
+    </a>
+
+    <a class="post-card" href="blog-au-pair.html">
+      <div class="post-card-meta">
+        <span class="post-card-cat">Au-Pair Programme</span>
+        <span class="pw-pill a1">A1</span>
+        <span class="pw-pill a2">A2</span>
+      </div>
+      <h3>Coming to Germany as an Au-Pair — Language Requirements and How to Prepare</h3>
+      <p>The Au-Pair programme is one of the most accessible ways for young Africans to live and work in Germany legally. Language preparation is essential.</p>
+      <span class="post-card-arrow">Read more →</span>
+    </a>
+
+    <a class="post-card" href="blog-ausbildung.html">
+      <div class="post-card-meta">
+        <span class="post-card-cat">Vocational Training</span>
+        <span class="pw-pill b1">B1</span>
+      </div>
+      <h3>Ausbildung in Germany — How Africans Can Apply and What German Level is Required</h3>
+      <p>Germany's Ausbildung (dual vocational training) system is one of the best in the world — and it is now open to applicants from Africa.</p>
+      <span class="post-card-arrow">Read more →</span>
+    </a>
+
+    <a class="post-card" href="blog-university-studies.html">
+      <div class="post-card-meta">
+        <span class="post-card-cat">University Studies</span>
+        <span class="pw-pill b2">B2</span>
+      </div>
+      <h3>Studying at a German University — Language Requirements for African Students</h3>
+      <p>Germany has some of the best universities in the world — and many charge no tuition fees. Getting in requires strong German language skills.</p>
+      <span class="post-card-arrow">Read more →</span>
+    </a>
+
+    <a class="post-card" href="blog-einbuergerung.html">
+      <div class="post-card-meta">
+        <span class="post-card-cat">German Citizenship</span>
+        <span class="pw-pill b1">B1</span>
+      </div>
+      <h3>Applying for German Citizenship (Einbürgerung) — Language Requirements Explained</h3>
+      <p>Germany reformed its citizenship law in 2024, making Einbürgerung faster and more accessible. B1 German is one of the key requirements.</p>
+      <span class="post-card-arrow">Read more →</span>
+    </a>
+
+    <a class="post-card" href="blog-skilled-worker-visa.html">
+      <div class="post-card-meta">
+        <span class="post-card-cat">Skilled Worker Visa</span>
+        <span class="pw-pill b1">B1</span>
+        <span class="pw-pill b2">B2</span>
+      </div>
+      <h3>Germany's Skilled Worker Visa — What African Professionals Need to Know</h3>
+      <p>Germany is actively recruiting skilled workers from outside the EU — including from Africa. The Fachkräfteeinwanderungsgesetz makes this easier than ever.</p>
+      <span class="post-card-arrow">Read more →</span>
+    </a>
+
+    <a class="post-card" href="blog-integration-course.html">
+      <div class="post-card-meta">
+        <span class="post-card-cat">Integration Course</span>
+        <span class="pw-pill b1">A1 → B1</span>
+      </div>
+      <h3>Germany's Integration Course — What It Is and How to Prepare Before You Arrive</h3>
+      <p>If you are moving to Germany, you will likely be required to complete an integration course. Understanding it helps you prepare before you arrive.</p>
+      <span class="post-card-arrow">Read more →</span>
+    </a>
+
+  </div>
+
+  <div class="blog-footer">
+    <a href="privacy-policy.html">Privacy</a> ·
+    <a href="terms.html">Terms</a> ·
+    <a href="impressum.html">Impressum</a>
+  </div>
+</main>
+
+<script src="./cookie-banner.js"></script>
+</body>
+</html>
