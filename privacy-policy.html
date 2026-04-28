@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Privacy Policy — DeutschWeg</title>
+<meta name="description" content="How DeutschWeg collects, uses, and protects your personal data.">
+<link rel="stylesheet" href="deutschweg-theme.css">
+<style>
+  body { background: var(--bg); }
+  .legal-header {
+    background: #fff; border-bottom: 1px solid var(--border);
+    padding: 14px 24px; display: flex; align-items: center; gap: 14px;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .legal-back {
+    color: var(--mid); font-size: 13px; font-weight: 600;
+    text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 8px; transition: all .18s;
+  }
+  .legal-back:hover { color: var(--blue); background: var(--blue-light); }
+  .legal-logo {
+    display: flex; align-items: center; gap: 9px; text-decoration: none;
+    margin-left: auto;
+  }
+  .legal-logo-icon {
+    width: 30px; height: 30px; background: var(--blue); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 15px; font-weight: 800;
+  }
+  .legal-logo-text { font-size: 16px; font-weight: 800; color: var(--dark); letter-spacing: -0.3px; }
+  .legal-logo-text span { color: var(--blue); }
+
+  .legal-wrap { max-width: 760px; margin: 0 auto; padding: 36px 20px 80px; }
+  .legal-title {
+    font-size: 32px; font-weight: 800; color: var(--dark);
+    letter-spacing: -0.6px; margin-bottom: 6px;
+  }
+  .legal-updated { font-size: 13px; color: var(--light); margin-bottom: 28px; }
+  .legal-card {
+    background: #fff; border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 36px 32px;
+    box-shadow: var(--shadow-sm);
+  }
+  .legal-card h2 {
+    font-size: 18px; font-weight: 800; color: var(--dark);
+    margin: 28px 0 10px; letter-spacing: -0.2px;
+  }
+  .legal-card h2:first-child { margin-top: 0; }
+  .legal-card p, .legal-card li { font-size: 14.5px; color: var(--mid); line-height: 1.75; }
+  .legal-card p { margin-bottom: 12px; }
+  .legal-card ul, .legal-card ol { margin: 0 0 14px 22px; }
+  .legal-card li { margin-bottom: 6px; }
+  .legal-card strong { color: var(--dark); font-weight: 700; }
+  .legal-card a { color: var(--blue); text-decoration: underline; }
+  .legal-card a:hover { color: var(--blue-dark); }
+  .legal-footer {
+    margin-top: 28px; text-align: center;
+    font-size: 13px; color: var(--light);
+  }
+  .legal-footer a { color: var(--mid); text-decoration: none; margin: 0 10px; }
+  .legal-footer a:hover { color: var(--blue); }
+  @media (max-width: 600px) {
+    .legal-wrap { padding: 22px 14px 80px; }
+    .legal-card { padding: 24px 18px; }
+    .legal-title { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="legal-header">
+  <a href="/dashboard" class="legal-back">← Back</a>
+  <a href="index.html" class="legal-logo">
+    <div class="legal-logo-icon">D</div>
+    <span class="legal-logo-text">Deutsch<span>Weg</span></span>
+  </a>
+</header>
+
+<main class="legal-wrap">
+  <h1 class="legal-title">Privacy Policy</h1>
+  <p class="legal-updated">Last updated: 28 April 2026</p>
+
+  <div class="legal-card">
+    <h2>1. Who we are</h2>
+    <p>DeutschWeg ("we", "our", "us") provides an online German language learning platform
+    aimed at learners preparing for Goethe-Institut examinations. This Privacy Policy
+    explains what data we collect, how we use it, who we share it with, and the rights you
+    have over it.</p>
+
+    <h2>2. Data we collect</h2>
+    <p>When you create an account and use DeutschWeg, we collect:</p>
+    <ul>
+      <li><strong>Account information</strong> — your name, email address, country, and password (the password is hashed by Supabase Auth; we never see the plaintext).</li>
+      <li><strong>Learning progress</strong> — XP earned, lessons completed, exercise scores, and which modules you have started or finished.</li>
+      <li><strong>AI Pal usage</strong> — messages you send to the AI assistant, the German language patterns the system flags from those messages, the module you were on, and the timestamps.</li>
+      <li><strong>Local preferences</strong> — your selected level, day-streak counter, and similar UI settings stored on your device via browser localStorage.</li>
+    </ul>
+    <p>We do not knowingly collect personal data from children under 13.</p>
+
+    <h2>3. How we use it</h2>
+    <ul>
+      <li>To deliver the learning experience — track which modules you have completed, what XP you have earned, and tailor AI Pal feedback to mistakes you have made before.</li>
+      <li>To operate the AI Pal and AI Tutor features (your messages are sent to Anthropic for processing — see "Third parties" below).</li>
+      <li>To send essential service emails (account confirmation, password reset).</li>
+      <li>To improve the product — anonymised, aggregated patterns only.</li>
+    </ul>
+
+    <h2>4. Third parties</h2>
+    <p>We rely on a small number of providers to operate DeutschWeg. Each handles only the data needed for its role:</p>
+    <ul>
+      <li><strong>Supabase</strong> — authentication, database, and file storage.</li>
+      <li><strong>Anthropic</strong> — processes the messages you send to AI Pal and AI Tutor. Under Anthropic's API terms, your inputs are not used to train their models.</li>
+      <li><strong>Cloudflare Pages</strong> — serves the website and handles edge caching.</li>
+      <li><strong>Render</strong> — hosts the API server used by AI Pal and AI Tutor.</li>
+      <li><strong>Google Fonts</strong> — serves the website typeface.</li>
+    </ul>
+
+    <h2>5. Cookies and local storage</h2>
+    <p>We use browser cookies and localStorage to:</p>
+    <ul>
+      <li>Keep you signed in (authentication tokens issued by Supabase).</li>
+      <li>Remember your selected level and other UI preferences.</li>
+      <li>Record that you have seen and answered the cookie consent banner.</li>
+    </ul>
+    <p>We do not use third-party advertising or behavioural tracking cookies.</p>
+
+    <h2>6. Data retention</h2>
+    <p>We keep your account and learning progress for as long as your account exists.
+    AI Pal error logs are retained so we can give you better feedback over time. You can
+    request deletion at any time — see "Your rights".</p>
+
+    <h2>7. Your rights</h2>
+    <p>If you are in the EU, UK, or another jurisdiction with similar laws (GDPR, UK GDPR,
+    or equivalent), you have the right to:</p>
+    <ul>
+      <li>Access the personal data we hold about you.</li>
+      <li>Correct inaccurate data.</li>
+      <li>Delete your account and the personal data tied to it.</li>
+      <li>Export your data in a portable format.</li>
+      <li>Object to processing in certain cases.</li>
+      <li>Lodge a complaint with your local data protection authority.</li>
+    </ul>
+    <p>To exercise any of these rights, email us at
+    <a href="mailto:leisure.ish@gmail.com">leisure.ish@gmail.com</a>. We aim to respond within 30 days.</p>
+
+    <h2>8. Security</h2>
+    <p>Authentication is handled by Supabase, which uses industry-standard hashing and
+    encryption. All traffic between your browser and our servers uses HTTPS. No system is
+    perfectly secure, but we treat data security seriously and act promptly on any
+    suspected breach.</p>
+
+    <h2>9. International transfers</h2>
+    <p>Our providers (Supabase, Anthropic, Cloudflare, Render, Google) operate globally
+    and your data may be processed in countries outside your own, including the United
+    States. Where required, we rely on Standard Contractual Clauses or equivalent
+    safeguards that those providers maintain.</p>
+
+    <h2>10. Changes to this policy</h2>
+    <p>We may update this policy from time to time. The "Last updated" date at the top
+    will reflect the most recent revision. Material changes will be notified by email
+    to active users.</p>
+
+    <h2>11. Contact</h2>
+    <p>Questions or concerns? Reach us at
+    <a href="mailto:leisure.ish@gmail.com">leisure.ish@gmail.com</a>.</p>
+  </div>
+
+  <div class="legal-footer">
+    <a href="privacy-policy.html">Privacy</a> ·
+    <a href="terms.html">Terms</a> ·
+    <a href="impressum.html">Impressum</a>
+  </div>
+</main>
+
+<script src="./cookie-banner.js"></script>
+</body>
+</html>
