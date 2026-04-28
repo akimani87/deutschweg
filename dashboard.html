@@ -119,6 +119,10 @@
   .mc-progress{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;background:#F1F5F9;color:#64748B;border:1px solid #E5E7EB;font-variant-numeric:tabular-nums;}
   .mc-progress.has{background:#EFF6FF;color:#1D4ED8;border-color:#BFDBFE;}
   .mc-progress.done{background:#ECFDF5;color:#059669;border-color:#A7F3D0;}
+  /* Progress bar inside mc-body — visual fill of % lessons completed */
+  .mc-progress-bar { width:100%; height:4px; background:#E5E7EB; border-radius:3px; margin-top:10px; overflow:hidden; }
+  .mc-progress-bar-fill { height:100%; background:#10B981; transition:width .4s ease; border-radius:3px; }
+  .mc-progress-bar-fill.partial { background:#3B82F6; }
   .badge-unlocked{background:#ECFDF5;border:1px solid #A7F3D0;color:#10B981;}
   .badge-done{background:#EFF6FF;border:1px solid #DBEAFE;color:#3B82F6;}
   .badge-a2{background:#F5F3FF;border:1px solid #DDD6FE;color:#7C3AED;}
@@ -708,16 +712,26 @@
     var icon = (m.icon && m.icon.length) ? m.icon : '📘';
     var href = SPECIAL_HREFS[key] || ('./module.html?id=' + m.id);
 
-    // Progress chip: only renders when the user is signed in AND we have a
-    // total > 0 for this module. progressByMod is populated by loadAll().
-    var progressHtml = '';
+    // Progress UI — only when user is signed in AND module has lessons.
+    // Renders both a compact chip (in mc-right) and a thin fill bar
+    // (in mc-body) so the dashboard reads at a glance without needing
+    // to count chips.
+    var chipHtml = '';
+    var barHtml  = '';
     var p = progressByMod[m.id];
     if (p && p.total > 0) {
-      var done = p.completed.size;
+      var done    = p.completed.size;
       var allDone = done >= p.total;
+      var pct     = Math.round((done / p.total) * 100);
+
       var chipClass = 'mc-progress' + (done > 0 ? ' has' : '') + (allDone ? ' done' : '');
       var chipText  = allDone ? '✓ ' + done + '/' + p.total : done + '/' + p.total;
-      progressHtml = '<span class="' + chipClass + '">' + chipText + '</span>';
+      chipHtml = '<span class="' + chipClass + '">' + chipText + '</span>';
+
+      if (done > 0) {
+        var fillClass = allDone ? '' : 'partial';
+        barHtml = '<div class="mc-progress-bar"><div class="mc-progress-bar-fill ' + fillClass + '" style="width:' + pct + '%"></div></div>';
+      }
     }
 
     return (
@@ -726,9 +740,10 @@
         '<div class="mc-body">' +
           '<div class="mc-num"' + numStyle + '>' + escapeHtml(m.level) + ' · MODULE ' + (m.order_index || '') + '</div>' +
           '<div class="mc-title">' + escapeHtml(m.title || 'Untitled') + '</div>' +
+          barHtml +
         '</div>' +
         '<div class="mc-right">' +
-          progressHtml +
+          chipHtml +
           '<span class="mc-badge ' + (m.level === 'A1' ? 'badge-unlocked' : 'badge-' + m.level.toLowerCase()) + '">' + escapeHtml(m.level) + '</span>' +
           '<span class="mc-arrow">→</span>' +
         '</div>' +

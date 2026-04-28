@@ -68,6 +68,8 @@
   .dot:hover { background:#94A3B8; transform:scale(1.2); }
   .dot.done { background:#10B981; }
   .dot.done:hover { background:#059669; }
+  .dot.in-progress { background:#FCD34D; box-shadow:0 0 0 2px #FEF3C7 inset; }
+  .dot.in-progress:hover { background:#F59E0B; }
   .dot.active { background:#3B82F6; width:24px; border-radius:5px; }
   .dot.active:hover { background:#2563EB; transform:none; }
 
@@ -313,7 +315,10 @@
     xp:            0,
     answeredKeys:  {},   // `${lessonIdx}-${exIdx}` -> true (avoids double-counting XP on review)
     user:          null, // logged-in user (null = anonymous)
-    completedIds:  {},   // lessonId -> true for lessons already marked completed
+    completedIds:  {},   // lessonId -> true for lessons marked 'completed'
+    inProgressIds: {},   // lessonId -> true for lessons marked 'in_progress' (and NOT completed)
+    correctByLesson: {}, // lessonId -> count of correct answers this session
+    moduleAwarded: false,// 50-XP module bonus given this session?
   };
 
   function escapeHtml(s) {
@@ -484,16 +489,32 @@
           state.user = user;
           var lessonIdsArr = state.lessons.map(function(l){ return l.id; });
           if (lessonIdsArr.length > 0) {
+            // Per-lesson rows
             var progRes = await dwSupabase
               .from('user_progress')
               .select('lesson_id, status')
               .eq('user_id', user.id)
-              .eq('status', 'completed')
               .in('lesson_id', lessonIdsArr);
             if (!progRes.error && Array.isArray(progRes.data)) {
-              progRes.data.forEach(function(r) { if (r.lesson_id) state.completedIds[r.lesson_id] = true; });
+              progRes.data.forEach(function(r) {
+                if (!r.lesson_id) return;
+                if (r.status === 'completed')   state.completedIds[r.lesson_id]  = true;
+                else if (r.status === 'in_progress') state.inProgressIds[r.lesson_id] = true;
+              });
+              // A completed lesson supersedes any in_progress entry for the same id.
+              Object.keys(state.completedIds).forEach(function(id) { delete state.inProgressIds[id]; });
             }
           }
+          // Module-completion row (lesson_id IS NULL). If present, the 50-XP
+          // bonus has already been awarded — don't award again this session.
+          var modProg = await dwSupabase
+            .from('user_progress')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('module_id', state.module.id)
+            .is('lesson_id', null)
+            .maybeSingle();
+          if (modProg && modProg.data) state.moduleAwarded = true;
         }
       } catch (authErr) {
         console.warn('[module.html] auth/progress fetch failed (continuing as anonymous):', authErr && authErr.message);
@@ -667,29 +688,100 @@
     state.lessons.forEach(function(lesson, i) {
       var d = document.getElementById('dot-' + i);
       if (!d) return;
-      d.classList.remove('active', 'done');
-      // Green if (a) the user has completed this lesson in a prior session,
-      // or (b) the user has advanced past it in the current session.
-      var alreadyCompleted = !!state.completedIds[lesson.id];
-      if (alreadyCompleted || i < state.lessonIdx) d.classList.add('done');
+      d.classList.remove('active', 'done', 'in-progress');
+      var done       = !!state.completedIds[lesson.id];
+      var inProgress = !!state.inProgressIds[lesson.id];
+      // Priority: done > in-progress > active. The 'active' override on
+      // .dot.active is just visual emphasis — it can sit alongside .done.
+      if (done) d.classList.add('done');
+      else if (inProgress) d.classList.add('in-progress');
       if (i === state.lessonIdx) d.classList.add('active');
     });
   }
 
-  // Persist a "lesson completed" row for the signed-in user. No-op if anonymous.
-  // Errors are non-fatal — never block the UI on a write.
+  // ── Progress writes (auth-aware, non-blocking) ─────────────────────────
+  // All three helpers no-op for anonymous users and on errors so the UI
+  // never blocks on Supabase. completed > in_progress: writes never
+  // downgrade a lesson that's already marked completed.
+
+  function markLessonInProgress(lesson) {
+    if (!state.user || !lesson || !lesson.id) return;
+    if (state.completedIds[lesson.id])  return; // don't downgrade
+    if (state.inProgressIds[lesson.id]) return; // already in_progress
+    state.inProgressIds[lesson.id] = true;
+    dwSupabase.from('user_progress').upsert({
+      user_id:      state.user.id,
+      module_id:    state.module.id,
+      lesson_id:    lesson.id,
+      status:       'in_progress',
+      score:        null,
+      completed_at: null
+    }, { onConflict: 'user_id,lesson_id' }).then(function(res) {
+      if (res.error) console.warn('[module.html] in_progress write failed:', res.error.message);
+    });
+  }
+
+  // Compute and persist a quiz score for this lesson; award 10 XP for a
+  // first-time completion. Triggers module-completion check at the end.
   function markLessonComplete(lesson) {
     if (!state.user || !lesson || !lesson.id) return;
-    if (state.completedIds[lesson.id]) return; // already known complete
-    state.completedIds[lesson.id] = true;
+    if (state.completedIds[lesson.id]) return; // already complete — no double XP
+
+    var exercises = state.exercises[lesson.id] || [];
+    var correct   = state.correctByLesson[lesson.id] || 0;
+    var score     = exercises.length > 0
+      ? Math.round((correct / exercises.length) * 100)
+      : null; // no quiz → null score (not 0%)
+
+    state.completedIds[lesson.id]  = true;
+    delete state.inProgressIds[lesson.id];
+
     dwSupabase.from('user_progress').upsert({
       user_id:      state.user.id,
       module_id:    state.module.id,
       lesson_id:    lesson.id,
       status:       'completed',
+      score:        score,
       completed_at: new Date().toISOString()
     }, { onConflict: 'user_id,lesson_id' }).then(function(res) {
-      if (res.error) console.warn('[module.html] progress write failed:', res.error.message);
+      if (res.error) {
+        console.warn('[module.html] completed write failed:', res.error.message);
+        return;
+      }
+      // Award lesson XP, then check module completion.
+      dwSupabase.rpc('increment_xp', { uid: state.user.id, amt: 10 }).then(function(r) {
+        if (r.error) console.warn('[module.html] +10 XP failed:', r.error.message);
+        checkModuleCompletion();
+      });
+    });
+  }
+
+  function checkModuleCompletion() {
+    if (state.moduleAwarded) return;
+    var totalLessons = state.lessons.length;
+    if (totalLessons === 0) return;
+    var doneCount = 0;
+    state.lessons.forEach(function(l){ if (state.completedIds[l.id]) doneCount++; });
+    if (doneCount < totalLessons) return;
+
+    // Mark module-completion + award 50 XP bonus, idempotently.
+    state.moduleAwarded = true;
+    dwSupabase.from('user_progress').upsert({
+      user_id:      state.user.id,
+      module_id:    state.module.id,
+      lesson_id:    null,
+      status:       'completed',
+      score:        null,
+      completed_at: new Date().toISOString()
+    }, { onConflict: 'user_id,module_id' }).then(function(res) {
+      if (res.error) {
+        console.warn('[module.html] module-completion write failed:', res.error.message);
+        return;
+      }
+      dwSupabase.rpc('increment_xp', { uid: state.user.id, amt: 50 }).then(function(r) {
+        if (r.error) console.warn('[module.html] +50 XP module bonus failed:', r.error.message);
+        else console.log('[module.html] 🎉 Module complete — +50 XP bonus awarded');
+      });
     });
   }
 
@@ -735,6 +827,12 @@
       if (isCorrect && first) {
         state.xp += XP_PER_CORRECT;
         document.getElementById('xpDisp').textContent = '⚡ ' + state.xp + ' XP';
+        // Track per-lesson correct count for the score we'll persist
+        // when the lesson hits its quiz-finish path (nextLesson).
+        var lessonId = state.lessons[lIdx] && state.lessons[lIdx].id;
+        if (lessonId) {
+          state.correctByLesson[lessonId] = (state.correctByLesson[lessonId] || 0) + 1;
+        }
       }
     },
 
@@ -830,13 +928,13 @@
     },
 
     /**
-     * Click handler for the "Weiter →" button on a lesson. Marks the source
-     * lesson complete, then jumps to the next lesson. Distinct from raw
-     * dot clicks so jumping back-and-forth via dots doesn't auto-complete
-     * lessons.
+     * Click handler for the "Weiter →" button on a lesson. The student has
+     * read the content but is skipping the quiz — mark the source lesson
+     * as 'in_progress' (won't downgrade if already completed), then jump.
+     * Quiz-driven completion writes happen in nextLesson() instead.
      */
     weiter: function(fromIdx) {
-      markLessonComplete(state.lessons[fromIdx]);
+      markLessonInProgress(state.lessons[fromIdx]);
       this.goToLesson(fromIdx + 1);
     },
 
