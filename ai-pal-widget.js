@@ -50,6 +50,109 @@
     if (history.length > 6) history = history.slice(history.length - 6);
   }
 
+  // ── Shared verb-form set ────────────────────────────────────────────────
+  // Comprehensive list of finite verb forms + past participles that
+  // commonly sit at the end of a German subordinate clause. Used by
+  // hasSubordinateClauseError to decide whether the last word of a
+  // weil/dass/wenn/obwohl clause is a verb (correct) or something else
+  // (likely word-order error). Stored as a hash for O(1) lookup.
+  var FINITE_VERBS_SET = (function(){
+    var list = (
+      // sein / haben / werden — all conjugations + participles
+      'bin bist ist sind seid war warst waren wart gewesen ' +
+      'habe hast hat haben habt hatte hattest hatten hattet gehabt ' +
+      'werde wirst wird werden werdet wurde wurdest wurden wurdet geworden ' +
+      // 6 modal verbs
+      'kann kannst können könnt konnte konnten gekonnt ' +
+      'muss musst müssen müsst musste mussten gemusst ' +
+      'will willst wollen wollt wollte wollten gewollt ' +
+      'darf darfst dürfen dürft durfte durften gedurft ' +
+      'soll sollst sollen sollt sollte sollten gesollt ' +
+      'mag magst mögen mögt mochte mochten gemocht ' +
+      'möchte möchtest möchten möchtet ' +
+      // common A1–B1 verbs in 1st/2nd/3rd sg + pl + past + participle
+      'gehe gehst geht gehen ging gingen gegangen ' +
+      'komme kommst kommt kommen kam kamen gekommen ' +
+      'mache machst macht machen machte machten gemacht ' +
+      'sage sagst sagt sagen sagte sagten gesagt ' +
+      'sehe siehst sieht sehen sah sahen gesehen ' +
+      'gebe gibst gibt geben gab gaben gegeben ' +
+      'nehme nimmst nimmt nehmen nahm nahmen genommen ' +
+      'finde findest findet finden fand fanden gefunden ' +
+      'bleibe bleibst bleibt bleiben blieb blieben geblieben ' +
+      'lebe lebst lebt leben lebte lebten gelebt ' +
+      'wohne wohnst wohnt wohnen wohnte wohnten gewohnt ' +
+      'arbeite arbeitest arbeitet arbeiten arbeitete arbeiteten gearbeitet ' +
+      'lerne lernst lernt lernen lernte lernten gelernt ' +
+      'spiele spielst spielt spielen spielte spielten gespielt ' +
+      'esse isst essen esst aß aßen gegessen ' +
+      'trinke trinkst trinkt trinken trank tranken getrunken ' +
+      'kaufe kaufst kauft kaufen kaufte kauften gekauft ' +
+      'fahre fährst fährt fahren fuhr fuhren gefahren ' +
+      'laufe läufst läuft laufen lief liefen gelaufen ' +
+      'bringe bringst bringt bringen brachte brachten gebracht ' +
+      'denke denkst denkt denken dachte dachten gedacht ' +
+      'glaube glaubst glaubt glauben glaubte glaubten geglaubt ' +
+      'weiß weißt wissen wisst wusste wussten gewusst ' +
+      'kenne kennst kennt kennen kannte kannten gekannt ' +
+      'lese liest lest lesen las lasen gelesen ' +
+      'schreibe schreibst schreibt schreiben schrieb schrieben geschrieben ' +
+      'spreche sprichst spricht sprechen sprach sprachen gesprochen ' +
+      'verstehe verstehst versteht verstehen verstand verstanden ' +
+      'höre hörst hört hören hörte hörten gehört ' +
+      'liebe liebst liebt lieben liebte liebten geliebt ' +
+      'brauche brauchst braucht brauchen brauchte brauchten gebraucht ' +
+      'helfe hilfst hilft helfen half halfen geholfen ' +
+      'schlafe schläfst schläft schlafen schlief schliefen geschlafen ' +
+      'regne regnest regnet regnen regnete regneten geregnet ' +
+      'scheine scheinst scheint scheinen schien schienen geschienen ' +
+      'tanze tanzt tanzen tanzte tanzten getanzt ' +
+      'singe singst singt singen sang sangen gesungen ' +
+      'reise reist reisen reiste reisten gereist ' +
+      'warte wartest wartet warten wartete warteten gewartet ' +
+      'koche kochst kocht kochen kochte kochten gekocht ' +
+      'treffe triffst trifft treffen traf trafen getroffen ' +
+      'öffne öffnest öffnet öffnen öffnete öffneten geöffnet ' +
+      'schließe schließt schließen schloss schlossen geschlossen ' +
+      'stehe stehst steht stehen stand standen gestanden ' +
+      'sitze sitzt sitzen saß saßen gesessen ' +
+      'liege liegst liegt liegen lag lagen gelegen ' +
+      'tue tust tut tun tat taten getan ' +
+      'antworte antwortest antwortet antworten antwortete antworteten geantwortet ' +
+      'frage fragst fragt fragen fragte fragten gefragt ' +
+      'rufe rufst ruft rufen rief riefen gerufen ' +
+      'lache lachst lacht lachen lachte lachten gelacht ' +
+      'trage trägst trägt tragen trug trugen getragen'
+    ).toLowerCase().split(/\s+/);
+    var set = {};
+    list.forEach(function(v){ if (v) set[v] = true; });
+    return set;
+  })();
+
+  // ── Subordinate-clause detector (function-based) ────────────────────────
+  // Returns true when the input contains a subordinate conjunction whose
+  // clause (from the conjunction up to the next comma or terminal
+  // punctuation) doesn't end in a recognised verb form.
+  // Catches all three patterns the user asked for:
+  //   • verb in middle (not at end):    "weil ich bin krank"
+  //   • verb missing entirely:          "Ich esse weil ich dick"
+  //   • after dass / wenn / obwohl too: "Sie sagt dass es schön"
+  function hasSubordinateClauseError(text){
+    var t = String(text || '');
+    var m = t.match(/\b(weil|dass|daß|wenn|obwohl|damit|während|nachdem|falls|als|sobald|bevor|seitdem|sodass)\b/i);
+    if (!m) return false;
+    var rest     = t.slice(m.index + m[0].length);
+    var boundary = rest.search(/[,.!?]/);
+    var clause   = (boundary === -1 ? rest : rest.slice(0, boundary))
+      .replace(/[.!?,;:"\s]+$/g, '')
+      .replace(/^\s+/, '');
+    if (!clause) return false;
+    var words = clause.split(/\s+/);
+    if (words.length < 2) return false;            // need subject + something
+    var lastWord = words[words.length - 1].toLowerCase();
+    return !FINITE_VERBS_SET[lastWord];
+  }
+
   // ── ERROR CATEGORIES (dual-layer tracker) ───────────────────────────────
   var ERROR_CATEGORIES = {
     article_masculine_accusative: {
@@ -61,7 +164,10 @@
       session: 0, dbCount: 0
     },
     verb_conjugation: {
-      patterns: [/\bich\s+(gehen|kommen|machen|haben|sein|spielen|lernen|arbeiten)\b/i],
+      // ich + bare infinitive (subject-verb agreement). Broadened from
+      // 8 to ~75 common A1–B2 infinitives so natural sentences like
+      // "ich essen", "ich verstehen", "ich bezahlen" all surface.
+      patterns: [/\bich\s+(gehen|kommen|machen|haben|sein|spielen|lernen|arbeiten|essen|trinken|laufen|fahren|sehen|geben|nehmen|finden|lieben|brauchen|wohnen|schreiben|lesen|sprechen|denken|verstehen|sagen|fragen|kennen|wissen|hören|glauben|leben|schlafen|helfen|kaufen|kochen|tanzen|singen|reisen|warten|treffen|öffnen|schließen|stehen|sitzen|liegen|tragen|fallen|steigen|fliegen|schwimmen|bezahlen|verlieren|gewinnen|reden|antworten|bestellen|reservieren|tun|werden|bringen|holen|stellen|legen|setzen|hängen|wählen|möchten|können|müssen|wollen|dürfen|sollen|mögen|rufen|lachen|bleiben|heißen|regnen|scheinen)\b/i],
       session: 0, dbCount: 0
     },
     perfekt_auxiliary: {
@@ -69,16 +175,12 @@
       session: 0, dbCount: 0
     },
     subordinate_clause_word_order: {
-      patterns: [
-        // Verb in 3rd position right after subordinate conjunction (verb
-        // should be at the END of the subordinate clause).
-        // Example: "weil ich bin müde" → bin in 3rd position is wrong.
-        /\b(weil|dass|wenn|obwohl|damit|während|nachdem|falls)\s+\w+\s+(bin|bist|ist|sind|seid|war|warst|waren|wart|habe|hast|hat|haben|habt|hatte|hattest|hatten|wird|wirst|werde|werden|werdet|kann|kannst|können|könnt|muss|musst|müssen|müsst|will|willst|wollen|wollt|darf|darfst|dürfen|soll|sollst|sollen|geht|gehe|gehen|macht|mache|machen|spielt|spiele|spielen|lernt|lerne|lernen|esse|isst|essen|esst|trinkt|trinke|trinken|fährt|fahre|fahren|kommt|komme|kommen|sieht|sehe|sehen)\b/i,
-        // Subordinate clause ending in an adjective/state word with no
-        // verb at the end (verb missing entirely).
-        // Example: "Ich esse weil ich dick" → adj at end, verb missing.
-        /\b(weil|dass|wenn|obwohl|damit|während|nachdem|falls)\s+\w+\s+(dick|dünn|groß|klein|schön|hässlich|alt|jung|neu|müde|krank|gesund|traurig|glücklich|hungrig|durstig|heiß|kalt|warm|schnell|langsam|reich|arm|laut|leise|rot|blau|grün|gelb|gut|schlecht|toll|wichtig|interessant|langweilig|lustig|einfach|schwer|schwierig|leicht|teuer|billig|fertig|bereit|sicher|nervös|stark|schwach|wach|fit)\b\s*[.!?,]?\s*$/i
-      ],
+      // Function detector: fires whenever a subordinate clause introduced
+      // by weil/dass/wenn/obwohl/damit/während/nachdem/falls/als/sobald/
+      // bevor/seitdem/sodass doesn't end with a recognised verb form.
+      // Subsumes the previous two narrow regexes — handles verb-in-3rd-
+      // position, missing-verb-entirely, and any non-verb at clause end.
+      patterns: [hasSubordinateClauseError],
       session: 0, dbCount: 0
     },
     preposition_pattern: {
@@ -98,13 +200,21 @@
     var detected = null;
     Object.keys(ERROR_CATEGORIES).forEach(function(category){
       var data = ERROR_CATEGORIES[category];
-      data.patterns.forEach(function(pattern, i){
-        if (pattern.test(userMessage)){
+      // Walk patterns in order; one hit per category counts as one
+      // session occurrence — break to avoid double-counting if multiple
+      // patterns within the same category match the same input.
+      for (var i = 0; i < data.patterns.length; i++){
+        var pattern = data.patterns[i];
+        var hit = (typeof pattern === 'function')
+          ? !!pattern(userMessage)
+          : pattern.test(userMessage);
+        if (hit){
           data.session++;
           detected = { category: category, sessionCount: data.session };
           console.log('[ai-pal-widget] ✓ matched category=' + category + ' (pattern #' + i + ', session count=' + data.session + ')');
+          break;
         }
-      });
+      }
     });
     if (!detected) console.log('[ai-pal-widget] no error category matched');
     return detected;
