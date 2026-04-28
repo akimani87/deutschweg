@@ -703,29 +703,67 @@
   // All three helpers no-op for anonymous users and on errors so the UI
   // never blocks on Supabase. completed > in_progress: writes never
   // downgrade a lesson that's already marked completed.
+  //
+  // IMPORTANT: optimistic state flags (state.completedIds /
+  // state.inProgressIds) are only flipped AFTER the DB upsert returns
+  // without error. If the write fails, local state stays as-is so the
+  // UI can't lie about progress that didn't actually save.
 
   function markLessonInProgress(lesson) {
-    if (!state.user || !lesson || !lesson.id) return;
+    if (!state.user) {
+      console.log('[progress] in_progress skipped — anonymous (no user)');
+      return;
+    }
+    if (!lesson || !lesson.id) {
+      console.warn('[progress] in_progress skipped — missing lesson/id', lesson);
+      return;
+    }
     if (state.completedIds[lesson.id])  return; // don't downgrade
     if (state.inProgressIds[lesson.id]) return; // already in_progress
-    state.inProgressIds[lesson.id] = true;
-    dwSupabase.from('user_progress').upsert({
+
+    var payload = {
       user_id:      state.user.id,
       module_id:    state.module.id,
       lesson_id:    lesson.id,
       status:       'in_progress',
       score:        null,
       completed_at: null
-    }, { onConflict: 'user_id,lesson_id' }).then(function(res) {
-      if (res.error) console.warn('[module.html] in_progress write failed:', res.error.message);
+    };
+    console.log('[progress] in_progress upsert →', payload);
+
+    dwSupabase.from('user_progress').upsert(payload, { onConflict: 'user_id,lesson_id' }).select().then(function(res) {
+      if (res.error) {
+        console.error('[progress] in_progress write FAILED', {
+          message: res.error.message,
+          code:    res.error.code,
+          details: res.error.details,
+          hint:    res.error.hint,
+          status:  res.status
+        });
+        return;
+      }
+      console.log('[progress] ✓ in_progress saved', res.data && res.data[0]);
+      // Confirmed — flip local state and re-render dots
+      state.inProgressIds[lesson.id] = true;
+      updateProgress();
     });
   }
 
   // Compute and persist a quiz score for this lesson; award 10 XP for a
   // first-time completion. Triggers module-completion check at the end.
   function markLessonComplete(lesson) {
-    if (!state.user || !lesson || !lesson.id) return;
-    if (state.completedIds[lesson.id]) return; // already complete — no double XP
+    if (!state.user) {
+      console.log('[progress] complete skipped — anonymous (no user)');
+      return;
+    }
+    if (!lesson || !lesson.id) {
+      console.warn('[progress] complete skipped — missing lesson/id', lesson);
+      return;
+    }
+    if (state.completedIds[lesson.id]) {
+      console.log('[progress] complete skipped — already completed', lesson.id);
+      return;
+    }
 
     var exercises = state.exercises[lesson.id] || [];
     var correct   = state.correctByLesson[lesson.id] || 0;
@@ -733,54 +771,79 @@
       ? Math.round((correct / exercises.length) * 100)
       : null; // no quiz → null score (not 0%)
 
-    state.completedIds[lesson.id]  = true;
-    delete state.inProgressIds[lesson.id];
-
-    dwSupabase.from('user_progress').upsert({
+    var payload = {
       user_id:      state.user.id,
       module_id:    state.module.id,
       lesson_id:    lesson.id,
       status:       'completed',
       score:        score,
       completed_at: new Date().toISOString()
-    }, { onConflict: 'user_id,lesson_id' }).then(function(res) {
+    };
+    console.log('[progress] completed upsert →', payload);
+
+    dwSupabase.from('user_progress').upsert(payload, { onConflict: 'user_id,lesson_id' }).select().then(function(res) {
       if (res.error) {
-        console.warn('[module.html] completed write failed:', res.error.message);
+        console.error('[progress] completed write FAILED', {
+          message: res.error.message,
+          code:    res.error.code,
+          details: res.error.details,
+          hint:    res.error.hint,
+          status:  res.status
+        });
         return;
       }
-      // Award lesson XP, then check module completion.
+      console.log('[progress] ✓ completed saved', res.data && res.data[0]);
+      // Confirmed — flip local state, re-render, then award XP
+      state.completedIds[lesson.id] = true;
+      delete state.inProgressIds[lesson.id];
+      updateProgress();
+
       dwSupabase.rpc('increment_xp', { uid: state.user.id, amt: 10 }).then(function(r) {
-        if (r.error) console.warn('[module.html] +10 XP failed:', r.error.message);
+        if (r.error) console.error('[progress] +10 XP FAILED', r.error);
+        else         console.log('[progress] ✓ +10 XP, total=' + r.data);
         checkModuleCompletion();
       });
     });
   }
 
   function checkModuleCompletion() {
-    if (state.moduleAwarded) return;
+    if (state.moduleAwarded) {
+      console.log('[progress] module-completion check skipped — already awarded this session');
+      return;
+    }
     var totalLessons = state.lessons.length;
     if (totalLessons === 0) return;
     var doneCount = 0;
     state.lessons.forEach(function(l){ if (state.completedIds[l.id]) doneCount++; });
+    console.log('[progress] module-completion check: ' + doneCount + '/' + totalLessons);
     if (doneCount < totalLessons) return;
 
-    // Mark module-completion + award 50 XP bonus, idempotently.
-    state.moduleAwarded = true;
-    dwSupabase.from('user_progress').upsert({
+    var payload = {
       user_id:      state.user.id,
       module_id:    state.module.id,
       lesson_id:    null,
       status:       'completed',
       score:        null,
       completed_at: new Date().toISOString()
-    }, { onConflict: 'user_id,module_id' }).then(function(res) {
+    };
+    console.log('[progress] module-completion upsert →', payload);
+
+    dwSupabase.from('user_progress').upsert(payload, { onConflict: 'user_id,module_id' }).select().then(function(res) {
       if (res.error) {
-        console.warn('[module.html] module-completion write failed:', res.error.message);
+        console.error('[progress] module-completion write FAILED', {
+          message: res.error.message,
+          code:    res.error.code,
+          details: res.error.details,
+          hint:    res.error.hint,
+          status:  res.status
+        });
         return;
       }
+      console.log('[progress] ✓ module-completion saved', res.data && res.data[0]);
+      state.moduleAwarded = true;
       dwSupabase.rpc('increment_xp', { uid: state.user.id, amt: 50 }).then(function(r) {
-        if (r.error) console.warn('[module.html] +50 XP module bonus failed:', r.error.message);
-        else console.log('[module.html] 🎉 Module complete — +50 XP bonus awarded');
+        if (r.error) console.error('[progress] +50 XP module bonus FAILED', r.error);
+        else         console.log('[progress] 🎉 Module complete — +50 XP, total=' + r.data);
       });
     });
   }
