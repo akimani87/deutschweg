@@ -12,6 +12,13 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 
+// Sitemap-style canonical paths (kept short for URLs that humans share).
+// Two posts use trimmed slugs in the sitemap — explicit map handles those.
+const CANONICAL_SLUGS = {
+  'university-studies':  'university',
+  'skilled-worker-visa': 'skilled-worker'
+};
+
 const POSTS = [
   {
     slug:        'family-reunification',
@@ -278,14 +285,47 @@ function renderSections(sections) {
   ).join('\n\n');
 }
 
+function escapeAttr(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+}
+
 function renderPage(post) {
+  const titleShort = post.h1.replace(/—.*$/, '').trim();
+  const titleFull  = `${titleShort} — DeutschWeg`;
+  const canonicalSlug = CANONICAL_SLUGS[post.slug] || post.slug;
+  const canonicalUrl  = `https://deutschweg.de/blog/${canonicalSlug}`;
+  const description   = post.metaDesc;
+  const ogImage       = 'https://deutschweg.de/og-image.png';
+  const keywords      = 'Goethe exam, German exam Africa, learn German Kenya, Goethe A1 B1, German certificate, Ausbildung German, family reunification German';
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>${post.h1.replace(/—.*$/, '').trim()} — DeutschWeg</title>
-<meta name="description" content="${post.metaDesc}">
+
+<!-- DW SEO INJECT -->
+<title>${escapeAttr(titleFull)}</title>
+<meta name="title" content="${escapeAttr(titleFull)}">
+<meta name="description" content="${escapeAttr(description)}">
+<meta name="keywords" content="${keywords}">
+<meta name="robots" content="index, follow">
+<meta name="language" content="English">
+<meta name="author" content="DeutschWeg">
+<link rel="canonical" href="${canonicalUrl}">
+
+<meta property="og:type" content="article">
+<meta property="og:url" content="${canonicalUrl}">
+<meta property="og:title" content="${escapeAttr(titleFull)}">
+<meta property="og:description" content="${escapeAttr(description)}">
+<meta property="og:image" content="${ogImage}">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${escapeAttr(titleShort)}">
+<meta name="twitter:description" content="${escapeAttr(description)}">
+<meta name="twitter:image" content="${ogImage}">
+<!-- /DW SEO INJECT -->
+
 <link rel="stylesheet" href="deutschweg-theme.css">
 <style>
   body { background: var(--bg); }
