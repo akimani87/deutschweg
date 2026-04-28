@@ -116,6 +116,9 @@
   .mc-arrow{font-size:14px;color:#3B82F6;opacity:0.5;transition:all 0.2s;}
   .module-card:hover .mc-arrow{opacity:1;transform:translateX(3px);}
   .mc-badge{font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 10px;border-radius:20px;}
+  .mc-progress{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;background:#F1F5F9;color:#64748B;border:1px solid #E5E7EB;font-variant-numeric:tabular-nums;}
+  .mc-progress.has{background:#EFF6FF;color:#1D4ED8;border-color:#BFDBFE;}
+  .mc-progress.done{background:#ECFDF5;color:#059669;border-color:#A7F3D0;}
   .badge-unlocked{background:#ECFDF5;border:1px solid #A7F3D0;color:#10B981;}
   .badge-done{background:#EFF6FF;border:1px solid #DBEAFE;color:#3B82F6;}
   .badge-a2{background:#F5F3FF;border:1px solid #DDD6FE;color:#7C3AED;}
@@ -704,6 +707,19 @@
     var numStyle  = style.num  ? ' style="color:' + style.num + ';"' : '';
     var icon = (m.icon && m.icon.length) ? m.icon : '📘';
     var href = SPECIAL_HREFS[key] || ('./module.html?id=' + m.id);
+
+    // Progress chip: only renders when the user is signed in AND we have a
+    // total > 0 for this module. progressByMod is populated by loadAll().
+    var progressHtml = '';
+    var p = progressByMod[m.id];
+    if (p && p.total > 0) {
+      var done = p.completed.size;
+      var allDone = done >= p.total;
+      var chipClass = 'mc-progress' + (done > 0 ? ' has' : '') + (allDone ? ' done' : '');
+      var chipText  = allDone ? '✓ ' + done + '/' + p.total : done + '/' + p.total;
+      progressHtml = '<span class="' + chipClass + '">' + chipText + '</span>';
+    }
+
     return (
       '<a class="module-card" href="' + href + '"' + cardStyle + '>' +
         '<div class="mc-icon"' + iconStyle + '>' + escapeHtml(icon) + '</div>' +
@@ -712,6 +728,7 @@
           '<div class="mc-title">' + escapeHtml(m.title || 'Untitled') + '</div>' +
         '</div>' +
         '<div class="mc-right">' +
+          progressHtml +
           '<span class="mc-badge ' + (m.level === 'A1' ? 'badge-unlocked' : 'badge-' + m.level.toLowerCase()) + '">' + escapeHtml(m.level) + '</span>' +
           '<span class="mc-arrow">→</span>' +
         '</div>' +
@@ -753,35 +770,76 @@
     el.innerHTML = '<div style="padding:24px 16px;text-align:center;color:#9CA3AF;font-size:13px;">No modules yet for ' + level + '.</div>';
   }
 
+  // Module-level cache so renderCard can read it without param threading.
+  // Shape: { [moduleId]: { completed: Set<lesson_id>, total: number } }
+  var progressByMod = {};
+
   lists.forEach(renderLoading);
 
-  dwSupabase
-    .from('modules')
-    .select('id, level, title, order_index, icon, is_published, mini_test_id, is_mock_exam')
-    .eq('is_published', true)
-    .order('level',       { ascending: true })
-    .order('order_index', { ascending: true })
-    .then(function(res) {
-      if (res.error) {
-        console.error('[dashboard] modules fetch error:', res.error.message);
+  (function loadAll() {
+    Promise.all([
+      dwSupabase.from('modules')
+        .select('id, level, title, order_index, icon, is_published, mini_test_id, is_mock_exam')
+        .eq('is_published', true)
+        .order('level',       { ascending: true })
+        .order('order_index', { ascending: true }),
+      dwSupabase.auth.getUser().catch(function(){ return { data: { user: null } }; })
+    ]).then(function(arr) {
+      var modRes = arr[0];
+      var userRes = arr[1];
+      if (modRes.error) {
+        console.error('[dashboard] modules fetch error:', modRes.error.message);
         lists.forEach(function(el) { renderError(el, 'Could not load modules.'); });
         return;
       }
-      var byLevel = { A1: [], A2: [], B1: [], B2: [] };
-      (res.data || []).forEach(function(m) {
-        if (byLevel[m.level]) byLevel[m.level].push(m);
+
+      var user = userRes && userRes.data && userRes.data.user;
+      var afterProgress;
+      if (!user) {
+        afterProgress = Promise.resolve(); // anonymous — render immediately
+      } else {
+        // Logged in: fetch lesson counts + completed rows, populate progressByMod
+        afterProgress = Promise.all([
+          dwSupabase.from('lessons').select('id, module_id'),
+          dwSupabase.from('user_progress').select('module_id, lesson_id')
+            .eq('user_id', user.id).eq('status', 'completed')
+        ]).then(function(p) {
+          var lessonsRes = p[0];
+          var progRes    = p[1];
+          if (!lessonsRes.error && lessonsRes.data) {
+            lessonsRes.data.forEach(function(l) {
+              if (!progressByMod[l.module_id]) progressByMod[l.module_id] = { completed: new Set(), total: 0 };
+              progressByMod[l.module_id].total++;
+            });
+          }
+          if (!progRes.error && progRes.data) {
+            progRes.data.forEach(function(r) {
+              if (!progressByMod[r.module_id]) progressByMod[r.module_id] = { completed: new Set(), total: 0 };
+              if (r.lesson_id) progressByMod[r.module_id].completed.add(r.lesson_id);
+            });
+          }
+        }).catch(function(e) {
+          console.warn('[dashboard] progress fetch failed (rendering without):', e && e.message);
+        });
+      }
+
+      afterProgress.then(function() {
+        var byLevel = { A1: [], A2: [], B1: [], B2: [] };
+        (modRes.data || []).forEach(function(m) {
+          if (byLevel[m.level]) byLevel[m.level].push(m);
+        });
+        lists.forEach(function(el) {
+          var level = el.getAttribute('data-level');
+          var items = byLevel[level] || [];
+          if (items.length === 0) { renderEmpty(el, level); return; }
+          el.innerHTML = renderItems(level, items);
+        });
       });
-      lists.forEach(function(el) {
-        var level = el.getAttribute('data-level');
-        var items = byLevel[level] || [];
-        if (items.length === 0) { renderEmpty(el, level); return; }
-        el.innerHTML = renderItems(level, items);
-      });
-    })
-    .catch(function(e) {
+    }).catch(function(e) {
       console.error('[dashboard] modules fetch threw:', e);
       lists.forEach(function(el) { renderError(el, 'Could not load modules.'); });
     });
+  })();
 })();
 
 document.addEventListener('DOMContentLoaded', function() {
