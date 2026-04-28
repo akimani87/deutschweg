@@ -83,6 +83,19 @@
     return detected;
   }
 
+  // Cached top-3 weak spots, sent into the system prompt on every request.
+  // Populated once on session start; kept fresh by the optimistic bump in
+  // saveErrorToDatabase so the next message reflects the just-made error.
+  var topErrors = [];
+
+  function recomputeTopErrors(){
+    var rows = Object.keys(ERROR_CATEGORIES).map(function(cat){
+      return { category: cat, count: ERROR_CATEGORIES[cat].dbCount || 0 };
+    }).filter(function(r){ return r.count > 0; });
+    rows.sort(function(a, b){ return b.count - a.count; });
+    topErrors = rows.slice(0, 3);
+  }
+
   function saveErrorToDatabase(category, moduleId, userLevel){
     var sb = getSupabase();
     if (!sb) return Promise.resolve(null);
@@ -103,6 +116,10 @@
         ignoreDuplicates: false
       }).then(function(out){
         if (!out.error){
+          if (ERROR_CATEGORIES[category]){
+            ERROR_CATEGORIES[category].dbCount = (ERROR_CATEGORIES[category].dbCount || 0) + 1;
+            recomputeTopErrors();
+          }
           return sb.rpc('increment_pal_error', {
             p_user_id:  user.id,
             p_category: category
@@ -116,6 +133,8 @@
     });
   }
 
+  // One-shot load on session start: populates dbCount per category and
+  // seeds the topErrors cache used in every API call.
   function loadErrorsFromDatabase(){
     var sb = getSupabase();
     if (!sb) return Promise.resolve();
@@ -127,6 +146,7 @@
       return sb.from('pal_errors')
         .select('error_category, count')
         .eq('user_id', user.id)
+        .order('count', { ascending: false })
         .then(function(out){
           if (out.data){
             out.data.forEach(function(row){
@@ -134,12 +154,17 @@
                 ERROR_CATEGORIES[row.error_category].dbCount = row.count;
               }
             });
+            recomputeTopErrors();
+            console.log('[ai-pal-widget] loaded ' + out.data.length + ' past error categories, top 3:', topErrors);
           }
         });
     }).catch(function(e){
       console.error('Error loading errors:', e);
     });
   }
+
+  // Kick off the one-shot load now (session start).
+  loadErrorsFromDatabase();
 
   function getErrorContext(detected){
     if (!detected) return '';
@@ -157,14 +182,15 @@
     return '\n\nNOTE: Student made a "' + category + '" mistake. Use Template 1 (Correction).';
   }
 
+  // loadErrorsFromDatabase already ran once at session start, so we rely
+  // on the cached dbCounts here (kept fresh by saveErrorToDatabase's
+  // optimistic bump). No per-message round trip.
   function handleUserMessage(userMessage, moduleId, userLevel){
-    return loadErrorsFromDatabase().then(function(){
-      var detected = detectError(userMessage);
-      if (detected){
-        saveErrorToDatabase(detected.category, moduleId, userLevel);
-      }
-      return getErrorContext(detected);
-    });
+    var detected = detectError(userMessage);
+    if (detected){
+      saveErrorToDatabase(detected.category, moduleId, userLevel);
+    }
+    return Promise.resolve(getErrorContext(detected));
   }
 
   // ── CSS ─────────────────────────────────────────────────────────────────
@@ -401,10 +427,11 @@
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({
-          messages:     history,
-          level:        levelNow,
-          module:       moduleName,
-          errorContext: errorContext || ''
+          messages:       history,
+          level:          levelNow,
+          module:         moduleName,
+          errorContext:   errorContext || '',
+          userTopErrors:  topErrors
         })
       });
     })

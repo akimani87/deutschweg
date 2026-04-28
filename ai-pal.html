@@ -488,6 +488,20 @@
   }
 
   // ── DATABASE LAYER ──────────────────────────────────────────────────────
+  // topErrors is the cached "user's top 3 weak spots" sent into the system
+  // prompt on every request. Populated once on session start by loadErrors-
+  // FromDatabase(); kept fresh by recomputeTopErrors() whenever a category's
+  // dbCount changes (after a save or on session start).
+  var topErrors = [];
+
+  function recomputeTopErrors(){
+    var rows = Object.keys(ERROR_CATEGORIES).map(function(cat){
+      return { category: cat, count: ERROR_CATEGORIES[cat].dbCount || 0 };
+    }).filter(function(r){ return r.count > 0; });
+    rows.sort(function(a, b){ return b.count - a.count; });
+    topErrors = rows.slice(0, 3);
+  }
+
   function saveErrorToDatabase(category, moduleId, userLevel){
     var sb = getSupabase();
     if (!sb) return Promise.resolve(null);
@@ -508,6 +522,13 @@
         ignoreDuplicates: false
       }).then(function(out){
         if (!out.error){
+          // Optimistically bump local count + refresh top-3 ranking so the
+          // next message's prompt reflects the just-made error without a
+          // round trip.
+          if (ERROR_CATEGORIES[category]){
+            ERROR_CATEGORIES[category].dbCount = (ERROR_CATEGORIES[category].dbCount || 0) + 1;
+            recomputeTopErrors();
+          }
           return sb.rpc('increment_pal_error', {
             p_user_id:  user.id,
             p_category: category
@@ -521,6 +542,8 @@
     });
   }
 
+  // Load all error counts once at session start, populate ERROR_CATEGORIES
+  // dbCount values, and seed the topErrors cache.
   function loadErrorsFromDatabase(){
     var sb = getSupabase();
     if (!sb) return Promise.resolve();
@@ -532,6 +555,7 @@
       return sb.from('pal_errors')
         .select('error_category, count')
         .eq('user_id', user.id)
+        .order('count', { ascending: false })
         .then(function(out){
           if (out.data){
             out.data.forEach(function(row){
@@ -539,12 +563,17 @@
                 ERROR_CATEGORIES[row.error_category].dbCount = row.count;
               }
             });
+            recomputeTopErrors();
+            console.log('[ai-pal] loaded ' + out.data.length + ' past error categories, top 3:', topErrors);
           }
         });
     }).catch(function(e){
       console.error('Error loading errors:', e);
     });
   }
+
+  // Kick off the one-shot load now (session start).
+  loadErrorsFromDatabase();
 
   // ── CONTEXT BUILDER ─────────────────────────────────────────────────────
   function getErrorContext(detected){
@@ -564,14 +593,15 @@
   }
 
   // ── MAIN HANDLER (called before every API call) ─────────────────────────
+  // Note: loadErrorsFromDatabase already ran once at session start, so we
+  // rely on the cached dbCounts here (kept fresh by saveErrorToDatabase's
+  // optimistic bump). No per-message round trip.
   function handleUserMessage(userMessage, moduleId, userLevel){
-    return loadErrorsFromDatabase().then(function(){
-      var detected = detectError(userMessage);
-      if (detected){
-        saveErrorToDatabase(detected.category, moduleId, userLevel);
-      }
-      return getErrorContext(detected);
-    });
+    var detected = detectError(userMessage);
+    if (detected){
+      saveErrorToDatabase(detected.category, moduleId, userLevel);
+    }
+    return Promise.resolve(getErrorContext(detected));
   }
 
   // ── Send ────────────────────────────────────────────────────────────────
@@ -595,10 +625,11 @@
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({
-          messages:     history,
-          level:        level,
-          module:       'general German practice',
-          errorContext: errorContext || ''
+          messages:       history,
+          level:          level,
+          module:         'general German practice',
+          errorContext:   errorContext || '',
+          userTopErrors:  topErrors
         })
       });
     })

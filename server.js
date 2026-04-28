@@ -475,6 +475,32 @@ Remember: short, warm, African-context, one German example at the end.`;
 // ── POST /api/aipal ──────────────────────────────────────────────────────────
 const AIPAL_VALID_LEVELS = ['A1', 'A2', 'B1', 'B2'];
 
+// Friendly labels for error categories the client tracks. Used to build
+// the "weak spots" context block from the userTopErrors payload.
+const AIPAL_ERROR_LABELS = {
+  article_masculine_accusative:  'Masculine accusative articles (der/den, ein/einen confusion)',
+  verb_position:                 'Verb position (verb must be 2nd in main clauses)',
+  verb_conjugation:              'Verb conjugation (matching verb ending to subject)',
+  perfekt_auxiliary:             'Perfekt auxiliary (haben vs sein selection)',
+  subordinate_clause_word_order: 'Subordinate clause word order (verb at end after weil/dass/wenn)',
+  preposition_pattern:           'Preposition patterns (in/zu/nach with destinations)'
+};
+
+function buildAipalWeakSpotsBlock(userTopErrors) {
+  if (!Array.isArray(userTopErrors) || userTopErrors.length === 0) return '';
+  const lines = userTopErrors
+    .filter(e => e && AIPAL_ERROR_LABELS[e.category] && Number(e.count) > 0)
+    .slice(0, 3)
+    .map((e, i) => `${i + 1}. ${AIPAL_ERROR_LABELS[e.category]} — ${e.count}x`);
+  if (lines.length === 0) return '';
+  return `
+
+STUDENT'S RECURRING WEAK SPOTS (from past sessions):
+${lines.join('\n')}
+
+When one of these patterns surfaces in this conversation, prefer Template 4 (⚠️ Same pattern again) and reinforce the fix concretely. Don't lecture about it pre-emptively — only react when it actually shows up.`;
+}
+
 function buildAipalPrompt(level, moduleName) {
   return `You are AI Pal, a friendly lesson companion for African learners studying German for the Goethe exam. The student's level is ${level}. They are currently studying: ${moduleName}.
 
@@ -615,7 +641,7 @@ RESPONSE CHECKLIST before sending:
 }
 
 app.post('/api/aipal', async (req, res) => {
-  const { messages, level, module: moduleName, errorContext } = req.body;
+  const { messages, level, module: moduleName, errorContext, userTopErrors } = req.body;
   const safeLevel  = AIPAL_VALID_LEVELS.includes(level) ? level : 'A1';
   const safeModule = (typeof moduleName === 'string' && moduleName.trim())
     ? moduleName.trim().slice(0, 200)
@@ -623,8 +649,9 @@ app.post('/api/aipal', async (req, res) => {
   const safeErrorContext = (typeof errorContext === 'string' && errorContext.trim())
     ? errorContext.slice(0, 500)
     : '';
+  const weakSpotsBlock = buildAipalWeakSpotsBlock(userTopErrors);
 
-  console.log(`[/api/aipal] Request — level: ${safeLevel}, module: "${safeModule}", msgs: ${Array.isArray(messages) ? messages.length : 'invalid'}, errCtx: ${safeErrorContext ? 'yes' : 'no'}, origin: ${req.headers.origin || 'none'}`);
+  console.log(`[/api/aipal] Request — level: ${safeLevel}, module: "${safeModule}", msgs: ${Array.isArray(messages) ? messages.length : 'invalid'}, errCtx: ${safeErrorContext ? 'yes' : 'no'}, weakSpots: ${weakSpotsBlock ? 'yes' : 'no'}, origin: ${req.headers.origin || 'none'}`);
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'No messages provided.' });
@@ -652,7 +679,7 @@ app.post('/api/aipal', async (req, res) => {
       body: JSON.stringify({
         model:      'claude-sonnet-4-20250514',
         max_tokens: 150,
-        system:     buildAipalPrompt(safeLevel, safeModule) + safeErrorContext,
+        system:     buildAipalPrompt(safeLevel, safeModule) + weakSpotsBlock + safeErrorContext,
         messages:   trimmed,
       }),
     });
