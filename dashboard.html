@@ -925,9 +925,10 @@ document.addEventListener('DOMContentLoaded', function() {
   function initDashboard() {
   document.body.classList.add('ready');
 
-  // Read XP from localStorage (shared with module files)
-  var xp = parseInt(localStorage.getItem('dw_xp') || '0');
-  document.getElementById('xpDisp').textContent = xp + ' XP';
+  // Pull XP from Supabase profiles.xp (single source of truth, written
+  // atomically by increment_xp from the module page). Falls back to
+  // 0 for anonymous users or transient errors so the badge never blanks.
+  refreshXpFromSupabase();
 
   // Read per-module completion from localStorage
   var done = 0;
@@ -1119,8 +1120,33 @@ function closeModule() {
     document.getElementById('moduleFrame').src = '';
   }, 300);
   // Refresh XP display in case student earned XP inside module
-  var xp = parseInt(localStorage.getItem('dw_xp') || '0');
-  document.getElementById('xpDisp').textContent = xp + ' XP';
+  refreshXpFromSupabase();
+}
+
+// Read profiles.xp for the signed-in user; fall back to 0 silently.
+function refreshXpFromSupabase() {
+  var disp = document.getElementById('xpDisp');
+  if (!disp) return;
+  if (typeof dwSupabase === 'undefined') { disp.textContent = '0 XP'; return; }
+
+  dwSupabase.auth.getUser().then(function(authRes) {
+    var user = authRes && authRes.data && authRes.data.user;
+    if (!user) { disp.textContent = '0 XP'; return; }
+
+    dwSupabase.from('profiles')
+      .select('xp')
+      .eq('id', user.id)
+      .single()
+      .then(function(res) {
+        if (res.error) {
+          console.warn('[dashboard] xp fetch failed:', res.error.message);
+          disp.textContent = '0 XP';
+          return;
+        }
+        var xp = (res.data && typeof res.data.xp === 'number') ? res.data.xp : 0;
+        disp.textContent = xp + ' XP';
+      });
+  });
 }
 </script>
 </body>
