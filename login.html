@@ -155,6 +155,35 @@
 
     <div class="error-banner" id="errorBanner"></div>
 
+    <!-- Password reset form — only shown when the URL is a Supabase recovery link.
+         Hidden by default so the normal login flow is unaffected. -->
+    <form id="resetForm" novalidate style="display:none;">
+      <div style="background:#EFF6FF;border:1px solid #BFDBFE;color:#1E40AF;padding:12px 14px;border-radius:10px;margin-bottom:18px;font-size:14px;line-height:1.5;">
+        🔐 <strong>Set a new password</strong><br>
+        You followed a password reset link. Choose a new password below.
+      </div>
+
+      <div class="field">
+        <label for="newPassword">New password</label>
+        <div class="pw-wrap">
+          <input type="password" id="newPassword" class="dw-input" placeholder="At least 8 characters" autocomplete="new-password" minlength="8">
+          <button type="button" class="pw-toggle" id="newPwToggle">👁</button>
+        </div>
+        <div class="field-err" id="newPasswordErr">Password must be at least 8 characters.</div>
+      </div>
+
+      <div class="field">
+        <label for="newPasswordConfirm">Confirm new password</label>
+        <input type="password" id="newPasswordConfirm" class="dw-input" placeholder="Repeat your new password" autocomplete="new-password" minlength="8">
+        <div class="field-err" id="newPasswordConfirmErr">Passwords don't match.</div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="resetBtn">
+        <span id="resetBtnText">Update password →</span>
+        <span class="spinner" id="resetSpinner"></span>
+      </button>
+    </form>
+
     <form id="loginForm" novalidate>
       <div class="field">
         <label for="email">Email address</label>
@@ -202,12 +231,42 @@
 document.addEventListener('DOMContentLoaded', function() {
   document.body.classList.add('ready');
 
-  // If already logged in, redirect
-  dwSupabase.auth.getSession().then(function(res) {
-    if (res.data && res.data.session) {
-      window.location.href = 'dashboard.html';
+  // ── Password recovery detection ────────────────────────────────────────
+  // Supabase recovery links arrive at this page with tokens in the URL hash
+  // (e.g. #access_token=...&type=recovery&...). When supabase-js processes
+  // the hash on load it auto-creates a session AND emits a PASSWORD_RECOVERY
+  // event. We must NOT redirect to dashboard in that case — the user needs
+  // to set a new password first.
+  var isRecoveryFlow =
+    /[#&?]type=recovery/.test(window.location.hash) ||
+    /[#&?]type=recovery/.test(window.location.search);
+
+  // Belt-and-braces: also flip the flag if Supabase emits the recovery event
+  // (handles the case where supabase-js processes the hash slightly later).
+  dwSupabase.auth.onAuthStateChange(function(event /*, session*/) {
+    if (event === 'PASSWORD_RECOVERY') {
+      isRecoveryFlow = true;
+      showResetForm();
     }
   });
+
+  function showResetForm() {
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('resetForm').style.display = '';
+    var heading = document.querySelector('.auth-h, h1');
+    if (heading) heading.textContent = 'Set new password';
+  }
+
+  if (isRecoveryFlow) {
+    showResetForm();
+  } else {
+    // Normal flow: if already logged in, go straight to dashboard.
+    dwSupabase.auth.getSession().then(function(res) {
+      if (res.data && res.data.session) {
+        window.location.href = 'dashboard.html';
+      }
+    });
+  }
 
   var emailI   = document.getElementById('email');
   var passI    = document.getElementById('password');
@@ -216,6 +275,82 @@ document.addEventListener('DOMContentLoaded', function() {
   var spinner  = document.getElementById('spinner');
   var pwToggle = document.getElementById('pwToggle');
   var errorBanner = document.getElementById('errorBanner');
+
+  // Reset form refs + handlers
+  var newPassI    = document.getElementById('newPassword');
+  var newPassC    = document.getElementById('newPasswordConfirm');
+  var newPwToggle = document.getElementById('newPwToggle');
+  var resetForm   = document.getElementById('resetForm');
+  var resetBtn    = document.getElementById('resetBtn');
+  var resetBtnTxt = document.getElementById('resetBtnText');
+  var resetSpin   = document.getElementById('resetSpinner');
+
+  if (newPwToggle) {
+    newPwToggle.addEventListener('click', function() {
+      var isText = newPassI.type === 'text';
+      newPassI.type = isText ? 'password' : 'text';
+      newPassC.type = isText ? 'password' : 'text';
+      newPwToggle.textContent = isText ? '👁' : '🙈';
+    });
+  }
+
+  if (resetForm) {
+    resetForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      hideBanner();
+      document.getElementById('newPasswordErr').classList.remove('show');
+      document.getElementById('newPasswordConfirmErr').classList.remove('show');
+
+      var pw  = newPassI.value;
+      var pw2 = newPassC.value;
+      if (pw.length < 8) {
+        document.getElementById('newPasswordErr').classList.add('show');
+        newPassI.focus();
+        return;
+      }
+      if (pw !== pw2) {
+        document.getElementById('newPasswordConfirmErr').classList.add('show');
+        newPassC.focus();
+        return;
+      }
+
+      resetBtn.disabled = true;
+      resetBtnTxt.style.display = 'none';
+      resetSpin.classList.add('show');
+
+      dwSupabase.auth.updateUser({ password: pw }).then(function(res) {
+        if (res.error) {
+          resetBtn.disabled = false;
+          resetBtnTxt.style.display = '';
+          resetSpin.classList.remove('show');
+          showBanner(res.error.message || 'Could not update password.');
+          return;
+        }
+        // Success — clear the recovery hash so a refresh doesn't loop us
+        // back into the reset form, then sign out so the user explicitly
+        // logs in with their new password.
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        dwSupabase.auth.signOut().then(function() {
+          showBanner('✅ Password updated. Please log in with your new password.');
+          errorBanner.style.color = 'var(--green)';
+          // Restore the login form
+          resetForm.style.display = 'none';
+          document.getElementById('loginForm').style.display = '';
+          var heading = document.querySelector('.auth-h, h1');
+          if (heading) heading.textContent = 'Welcome back';
+          newPassI.value = '';
+          newPassC.value = '';
+        });
+      }).catch(function(err) {
+        resetBtn.disabled = false;
+        resetBtnTxt.style.display = '';
+        resetSpin.classList.remove('show');
+        showBanner((err && err.message) || 'Network error. Try again.');
+      });
+    });
+  }
 
   pwToggle.addEventListener('click', function() {
     var isText = passI.type === 'text';
