@@ -14,9 +14,24 @@
   var LEVELS   = ['A1','A2','B1','B2'];
 
   // ── Module name ─────────────────────────────────────────────────────────
+  // Friendly title from <title>, used to give the AI prompt human context.
   function getModuleName() {
     var t = (document.title || '').replace(/^DeutschWeg\s*[—–-]\s*/i, '').trim();
     return t || 'general German practice';
+  }
+
+  // ── Module UUID ─────────────────────────────────────────────────────────
+  // Read the module's UUID from the URL's ?id= parameter (set by the
+  // dynamic module.html loader). Returns null on pages that don't carry
+  // an id (e.g. ai-pal.html standalone, sprechen-prep.html, etc.) — the
+  // pal_errors upsert is skipped in that case.
+  function getModuleId() {
+    try {
+      var v = new URLSearchParams(window.location.search).get('id');
+      return v && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v) ? v : null;
+    } catch (_) {
+      return null;
+    }
   }
 
   // ── Level (read from localStorage, default A1) ──────────────────────────
@@ -110,16 +125,25 @@
 
   function saveErrorToDatabase(category, moduleId, userLevel){
     console.log('[ai-pal-widget] saveErrorToDatabase START — category=' + category + ', module=' + moduleId + ', level=' + userLevel);
+
+    // Skip-silent guards. The pal_errors upsert needs both a real
+    // module UUID (from ?id= on a module page) and an authenticated
+    // user. If either is missing, we never even build a payload —
+    // session-layer counters keep ticking, but no DB write happens.
+    if (!moduleId) {
+      console.log('[ai-pal-widget] save skipped — no module UUID (page has no ?id= or it is malformed)');
+      return Promise.resolve(null);
+    }
     var sb = getSupabase();
     if (!sb) {
-      console.warn('[ai-pal-widget] save aborted — dwSupabase global is missing (supabase-config.js not loaded?)');
+      console.log('[ai-pal-widget] save skipped — dwSupabase global is missing');
       return Promise.resolve(null);
     }
 
     return sb.auth.getUser().then(function(res){
       var user = res && res.data && res.data.user;
       if (!user) {
-        console.warn('[ai-pal-widget] save aborted — no authenticated user (auth.getUser returned null)');
+        console.log('[ai-pal-widget] save skipped — no authenticated user');
         return null;
       }
       console.log('[ai-pal-widget] auth.getUser OK — user.id=' + user.id);
@@ -129,7 +153,7 @@
         error_category: category,
         count:          1,
         last_seen:      new Date().toISOString(),
-        module_id:      moduleId || null,
+        module_id:      moduleId,
         user_level:     userLevel || 'A1'
       };
       console.log('[ai-pal-widget] upsert pal_errors →', payload);
@@ -466,10 +490,11 @@
     pushHistory('user', text);
     showTyping();
 
-    var moduleName = getModuleName();
+    var moduleName = getModuleName();   // friendly title — for the AI prompt only
+    var moduleId   = getModuleId();      // UUID from ?id= — for the pal_errors row
     var levelNow   = getLevel();
 
-    handleUserMessage(text, moduleName, levelNow).then(function(errorContext){
+    handleUserMessage(text, moduleId, levelNow).then(function(errorContext){
       return fetch(API_BASE + '/api/aipal', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
