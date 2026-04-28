@@ -125,6 +125,17 @@
   .lesson-example .en { display:block; color:#6b7280; font-size:13px; margin-top:2px; }
   .lesson-tip     { background:#f0fdf4; border-left:3px solid #22c55e; padding:10px 14px; margin:10px 0; border-radius:0 8px 8px 0; font-size:14px; color:#166534; line-height:1.6; }
   .lesson-warning { background:#fff7ed; border-left:3px solid #f97316; padding:10px 14px; margin:10px 0; border-radius:0 8px 8px 0; font-size:14px; color:#9a3412; line-height:1.6; }
+
+  /* Collapsible explanation blocks */
+  .collapsible-preview { cursor:pointer; }
+  .collapsible-full    { display:none; }
+  .collapsible-full.open { display:inline; }
+  .toggle-btn {
+    background:none; border:none; color:#2563eb;
+    font-size:13px; font-weight:600; cursor:pointer;
+    padding:4px 0; margin-left:6px; font-family:inherit;
+  }
+  .toggle-btn:hover { color:#1d4ed8; text-decoration:underline; }
   .lesson-audio   { margin:8px 0; }
   .audio-btn      { background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; padding:8px 16px; border-radius:20px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit; }
   .audio-btn:hover{ background:#dbeafe; }
@@ -318,6 +329,28 @@
     if (!blocks || !Array.isArray(blocks) || blocks.length === 0) {
       return '<div class="body-text empty">Content coming soon.</div>';
     }
+    // Counter so each collapsible block gets a unique DOM id for the toggle.
+    var cIdSeed = 0;
+    function nextCId() { return 'cb-' + (++cIdSeed) + '-' + Math.random().toString(36).slice(2, 7); }
+
+    // Long-form explanation blocks (tip, warning, infobox, explanation,
+    // collapsible) — show first 80 chars and a toggle when content is long.
+    function renderCollapsible(wrapperClass, prefix, content) {
+      var safe = String(content == null ? '' : content);
+      // Short blocks render inline — no toggle clutter.
+      if (safe.length <= 100) {
+        return '<div class="' + wrapperClass + '">' + (prefix || '') + escapeHtml(safe) + '</div>';
+      }
+      var id = nextCId();
+      var preview = safe.slice(0, 80).replace(/\s+\S*$/, '') + '…';
+      return '<div class="' + wrapperClass + ' collapsible">' +
+               (prefix || '') +
+               '<span class="collapsible-preview" id="' + id + '-p">' + escapeHtml(preview) + '</span>' +
+               '<span class="collapsible-full"    id="' + id + '-f">' + escapeHtml(safe)    + '</span>' +
+               '<button type="button" class="toggle-btn" onclick="dwModule.toggleBlock(\'' + id + '\')" id="' + id + '-b">Show more ↓</button>' +
+             '</div>';
+    }
+
     return blocks.map(function (block) {
       switch (block && block.type) {
         case 'intro':
@@ -330,9 +363,12 @@
                    '<span class="en">' + escapeHtml(block.english) + '</span>' +
                  '</div>';
         case 'tip':
-          return '<div class="lesson-tip">💡 '     + escapeHtml(block.content) + '</div>';
+          return renderCollapsible('lesson-tip',     '💡 ', block.content);
         case 'warning':
-          return '<div class="lesson-warning">⚠️ ' + escapeHtml(block.content) + '</div>';
+          return renderCollapsible('lesson-warning', '⚠️ ', block.content);
+        case 'explanation':
+        case 'collapsible':
+          return renderCollapsible('lesson-infobox', '',   block.content);
         case 'audio':
           // Single quotes in text would break the inline onclick string literal,
           // so escape them. Visible label is HTML-escaped separately.
@@ -343,7 +379,7 @@
                    '</button>' +
                  '</div>';
         case 'infobox':
-          return '<div class="lesson-infobox">' + escapeHtml(block.content) + '</div>';
+          return renderCollapsible('lesson-infobox', '', block.content);
         case 'table':
           var headers = Array.isArray(block.headers) ? block.headers : [];
           var rows    = Array.isArray(block.rows)    ? block.rows    : [];
@@ -776,6 +812,21 @@
       }
       updateProgress();
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+
+    /**
+     * Show/hide the full content of a collapsible explanation block.
+     * Block IDs are generated in renderCollapsible() — the preview, full
+     * content, and toggle button are id-{p,f,b} respectively.
+     */
+    toggleBlock: function(blockId) {
+      var preview = document.getElementById(blockId + '-p');
+      var full    = document.getElementById(blockId + '-f');
+      var btn     = document.getElementById(blockId + '-b');
+      if (!full || !btn) return;
+      var open = full.classList.toggle('open');
+      if (preview) preview.style.display = open ? 'none' : '';
+      btn.textContent = open ? 'Show less ↑' : 'Show more ↓';
     },
 
     /**
