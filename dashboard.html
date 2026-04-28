@@ -794,6 +794,7 @@
       }
 
       var user = userRes && userRes.data && userRes.data.user;
+      console.log('[dashboard] auth state: ' + (user ? 'signed in as ' + (user.email || user.id) : 'ANONYMOUS — sign in to see progress chips'));
       var afterProgress;
       if (!user) {
         afterProgress = Promise.resolve(); // anonymous — render immediately
@@ -824,6 +825,11 @@
       }
 
       afterProgress.then(function() {
+        if (user) {
+          var modIds = Object.keys(progressByMod);
+          var withProgress = modIds.filter(function(id){ return progressByMod[id].completed.size > 0; }).length;
+          console.log('[dashboard] progress loaded: ' + modIds.length + ' modules, ' + withProgress + ' with at least one completed lesson');
+        }
         var byLevel = { A1: [], A2: [], B1: [], B2: [] };
         (modRes.data || []).forEach(function(m) {
           if (byLevel[m.level]) byLevel[m.level].push(m);
