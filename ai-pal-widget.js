@@ -54,7 +54,16 @@
       session: 0, dbCount: 0
     },
     subordinate_clause_word_order: {
-      patterns: [/\b(weil|dass|wenn|obwohl|damit)\s+\w+\s+(bin|habe|ist|hat|war|hatte)\b/i],
+      patterns: [
+        // Verb in 3rd position right after subordinate conjunction (verb
+        // should be at the END of the subordinate clause).
+        // Example: "weil ich bin müde" → bin in 3rd position is wrong.
+        /\b(weil|dass|wenn|obwohl|damit|während|nachdem|falls)\s+\w+\s+(bin|bist|ist|sind|seid|war|warst|waren|wart|habe|hast|hat|haben|habt|hatte|hattest|hatten|wird|wirst|werde|werden|werdet|kann|kannst|können|könnt|muss|musst|müssen|müsst|will|willst|wollen|wollt|darf|darfst|dürfen|soll|sollst|sollen|geht|gehe|gehen|macht|mache|machen|spielt|spiele|spielen|lernt|lerne|lernen|esse|isst|essen|esst|trinkt|trinke|trinken|fährt|fahre|fahren|kommt|komme|kommen|sieht|sehe|sehen)\b/i,
+        // Subordinate clause ending in an adjective/state word with no
+        // verb at the end (verb missing entirely).
+        // Example: "Ich esse weil ich dick" → adj at end, verb missing.
+        /\b(weil|dass|wenn|obwohl|damit|während|nachdem|falls)\s+\w+\s+(dick|dünn|groß|klein|schön|hässlich|alt|jung|neu|müde|krank|gesund|traurig|glücklich|hungrig|durstig|heiß|kalt|warm|schnell|langsam|reich|arm|laut|leise|rot|blau|grün|gelb|gut|schlecht|toll|wichtig|interessant|langweilig|lustig|einfach|schwer|schwierig|leicht|teuer|billig|fertig|bereit|sicher|nervös|stark|schwach|wach|fit)\b\s*[.!?,]?\s*$/i
+      ],
       session: 0, dbCount: 0
     },
     preposition_pattern: {
@@ -70,16 +79,19 @@
   }
 
   function detectError(userMessage){
+    console.log('[ai-pal-widget] detectError scanning:', JSON.stringify(userMessage));
     var detected = null;
     Object.keys(ERROR_CATEGORIES).forEach(function(category){
       var data = ERROR_CATEGORIES[category];
-      data.patterns.forEach(function(pattern){
+      data.patterns.forEach(function(pattern, i){
         if (pattern.test(userMessage)){
           data.session++;
           detected = { category: category, sessionCount: data.session };
+          console.log('[ai-pal-widget] ✓ matched category=' + category + ' (pattern #' + i + ', session count=' + data.session + ')');
         }
       });
     });
+    if (!detected) console.log('[ai-pal-widget] no error category matched');
     return detected;
   }
 
@@ -97,38 +109,62 @@
   }
 
   function saveErrorToDatabase(category, moduleId, userLevel){
+    console.log('[ai-pal-widget] saveErrorToDatabase START — category=' + category + ', module=' + moduleId + ', level=' + userLevel);
     var sb = getSupabase();
-    if (!sb) return Promise.resolve(null);
+    if (!sb) {
+      console.warn('[ai-pal-widget] save aborted — dwSupabase global is missing (supabase-config.js not loaded?)');
+      return Promise.resolve(null);
+    }
 
     return sb.auth.getUser().then(function(res){
       var user = res && res.data && res.data.user;
-      if (!user) return null;
+      if (!user) {
+        console.warn('[ai-pal-widget] save aborted — no authenticated user (auth.getUser returned null)');
+        return null;
+      }
+      console.log('[ai-pal-widget] auth.getUser OK — user.id=' + user.id);
 
-      return sb.from('pal_errors').upsert({
+      var payload = {
         user_id:        user.id,
         error_category: category,
         count:          1,
         last_seen:      new Date().toISOString(),
         module_id:      moduleId || null,
         user_level:     userLevel || 'A1'
-      }, {
+      };
+      console.log('[ai-pal-widget] upsert pal_errors →', payload);
+
+      return sb.from('pal_errors').upsert(payload, {
         onConflict:       'user_id,error_category',
         ignoreDuplicates: false
-      }).then(function(out){
-        if (!out.error){
-          if (ERROR_CATEGORIES[category]){
-            ERROR_CATEGORIES[category].dbCount = (ERROR_CATEGORIES[category].dbCount || 0) + 1;
-            recomputeTopErrors();
-          }
-          return sb.rpc('increment_pal_error', {
-            p_user_id:  user.id,
-            p_category: category
+      }).select().then(function(out){
+        if (out.error){
+          console.error('[ai-pal-widget] upsert FAILED', {
+            message: out.error.message,
+            code:    out.error.code,
+            details: out.error.details,
+            hint:    out.error.hint,
+            status:  out.status
           });
+          return null;
         }
-        return null;
+        console.log('[ai-pal-widget] ✓ upsert OK — row:', out.data && out.data[0]);
+
+        if (ERROR_CATEGORIES[category]){
+          ERROR_CATEGORIES[category].dbCount = (ERROR_CATEGORIES[category].dbCount || 0) + 1;
+          recomputeTopErrors();
+        }
+        return sb.rpc('increment_pal_error', {
+          p_user_id:  user.id,
+          p_category: category
+        }).then(function(rpcRes){
+          if (rpcRes.error) console.error('[ai-pal-widget] increment_pal_error RPC FAILED', rpcRes.error);
+          else               console.log('[ai-pal-widget] ✓ increment_pal_error RPC OK');
+          return rpcRes;
+        });
       });
     }).catch(function(e){
-      console.error('Error saving to DB:', e);
+      console.error('[ai-pal-widget] save threw:', e);
       return null;
     });
   }
@@ -136,30 +172,41 @@
   // One-shot load on session start: populates dbCount per category and
   // seeds the topErrors cache used in every API call.
   function loadErrorsFromDatabase(){
+    console.log('[ai-pal-widget] loadErrorsFromDatabase START');
     var sb = getSupabase();
-    if (!sb) return Promise.resolve();
+    if (!sb) {
+      console.warn('[ai-pal-widget] load aborted — dwSupabase global is missing');
+      return Promise.resolve();
+    }
 
     return sb.auth.getUser().then(function(res){
       var user = res && res.data && res.data.user;
-      if (!user) return;
+      if (!user) {
+        console.warn('[ai-pal-widget] load aborted — no authenticated user');
+        return;
+      }
+      console.log('[ai-pal-widget] load auth OK — user.id=' + user.id);
 
       return sb.from('pal_errors')
         .select('error_category, count')
         .eq('user_id', user.id)
         .order('count', { ascending: false })
         .then(function(out){
-          if (out.data){
-            out.data.forEach(function(row){
-              if (ERROR_CATEGORIES[row.error_category]){
-                ERROR_CATEGORIES[row.error_category].dbCount = row.count;
-              }
-            });
-            recomputeTopErrors();
-            console.log('[ai-pal-widget] loaded ' + out.data.length + ' past error categories, top 3:', topErrors);
+          if (out.error){
+            console.error('[ai-pal-widget] load FAILED', out.error);
+            return;
           }
+          var rows = out.data || [];
+          rows.forEach(function(row){
+            if (ERROR_CATEGORIES[row.error_category]){
+              ERROR_CATEGORIES[row.error_category].dbCount = row.count;
+            }
+          });
+          recomputeTopErrors();
+          console.log('[ai-pal-widget] ✓ loaded ' + rows.length + ' past error categories, top 3:', topErrors);
         });
     }).catch(function(e){
-      console.error('Error loading errors:', e);
+      console.error('[ai-pal-widget] load threw:', e);
     });
   }
 
