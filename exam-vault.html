@@ -192,6 +192,128 @@
   .submit-note {
     font-size: 12.5px; color: var(--light); margin-top: 10px;
   }
+  .submit-note.ready { color: var(--green); font-weight: 600; }
+
+  /* ── Grading state ───────────────────────────────────────── */
+  .grading-card {
+    background: #fff; border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 40px 28px;
+    box-shadow: var(--shadow-sm); margin-top: 18px; text-align: center;
+  }
+  .grading-card .spinner {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 3px solid var(--border); border-top-color: var(--blue);
+    animation: dwSpin .9s linear infinite; margin: 0 auto 14px;
+  }
+  .grading-text {
+    font-size: 15px; font-weight: 700; color: var(--dark); margin-bottom: 4px;
+  }
+  .grading-sub { font-size: 13px; color: var(--light); }
+
+  /* ── Results ─────────────────────────────────────────────── */
+  .results-hero {
+    background: linear-gradient(135deg, #1D4ED8 0%, #3B82F6 100%);
+    color: #fff;
+    border-radius: var(--radius-lg);
+    padding: 26px 28px;
+    margin-bottom: 18px;
+    box-shadow: 0 10px 30px rgba(59,130,246,0.18);
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  }
+  .results-eyebrow {
+    font-size: 11px; font-weight: 800; letter-spacing: 2px;
+    color: rgba(255,255,255,0.85); text-transform: uppercase; margin-bottom: 4px;
+  }
+  .results-total-num {
+    font-size: 38px; font-weight: 900; line-height: 1; letter-spacing: -1px;
+  }
+  .results-total-num span { color: rgba(255,255,255,0.55); font-weight: 700; }
+  .results-pct {
+    font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.92);
+    margin-top: 4px;
+  }
+  .results-task-scores {
+    display: flex; gap: 10px; margin-left: auto; flex-wrap: wrap;
+  }
+  .results-task-pill {
+    background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.22);
+    color: #fff; padding: 8px 14px; border-radius: 12px;
+    font-size: 13px; font-weight: 700; letter-spacing: 0.2px;
+    display: inline-flex; flex-direction: column; gap: 2px; min-width: 110px;
+  }
+  .results-task-pill .pill-label {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 1px;
+    color: rgba(255,255,255,0.82); text-transform: uppercase;
+  }
+  .results-task-pill .pill-num { font-size: 16px; font-weight: 800; }
+
+  .results-section {
+    background: #fff; border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 24px 26px;
+    box-shadow: var(--shadow-sm); margin-bottom: 14px;
+  }
+  .results-h {
+    font-size: 13px; font-weight: 800; letter-spacing: 1.2px;
+    color: var(--blue); text-transform: uppercase;
+    margin: 0 0 12px;
+  }
+  .results-feedback {
+    font-size: 15px; color: var(--dark); line-height: 1.75; margin: 0;
+  }
+  .results-list { margin: 0; padding-left: 22px; }
+  .results-list li {
+    font-size: 14.5px; color: var(--mid); line-height: 1.7; margin-bottom: 6px;
+  }
+  .results-next {
+    font-size: 14.5px; color: var(--dark); line-height: 1.7;
+    background: var(--blue-light); border-left: 4px solid var(--blue);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    padding: 14px 18px; margin: 0; font-weight: 600;
+  }
+
+  .task1-note {
+    font-size: 13.5px; color: var(--mid); line-height: 1.7;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    margin: 4px 0 0;
+  }
+
+  /* Rubric breakdown — 4 cards, 2x2 on desktop, single column on mobile */
+  .rubric-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  }
+  .rubric-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+  }
+  .rubric-row {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 10px; margin-bottom: 6px;
+  }
+  .rubric-label {
+    font-size: 13.5px; font-weight: 700; color: var(--dark);
+  }
+  .rubric-score {
+    font-size: 13px; font-weight: 800; color: var(--blue);
+    font-variant-numeric: tabular-nums;
+  }
+  .rubric-explanation {
+    font-size: 13px; color: var(--mid); line-height: 1.6; margin: 0 0 8px;
+  }
+  .rubric-tip {
+    font-size: 12.5px; color: #1E3A5F; line-height: 1.55;
+    background: #fff; border: 1px solid var(--blue-mid);
+    border-radius: 8px; padding: 7px 10px;
+  }
+  @media (max-width: 600px) {
+    .rubric-grid { grid-template-columns: 1fr; }
+    .results-hero { padding: 22px 20px; }
+    .results-task-scores { margin-left: 0; width: 100%; }
+    .results-task-pill { flex: 1; min-width: 0; }
+  }
 
   /* ── Footer links ────────────────────────────────────────── */
   .exam-footer {
@@ -237,7 +359,7 @@
   <div id="examContent" style="display:none;">
     <div class="exam-eyebrow">A1 · Schreiben</div>
     <h1 class="exam-title" id="examTitle"></h1>
-    <p class="exam-sub">Goethe-format Schreiben practice with two tasks. Take your time and write naturally — submission and grading are coming in the next loop.</p>
+    <p class="exam-sub">Goethe-format Schreiben practice with two tasks. Fill in all six form fields and write at least 20 words for the message — then submit for instant AI grading.</p>
 
     <!-- Task 1: form fill -->
     <section class="task-card" id="task1Card">
@@ -267,9 +389,62 @@
     </section>
 
     <!-- Submit -->
-    <div class="exam-submit">
+    <div class="exam-submit" id="submitArea">
       <button class="submit-btn" id="submitBtn" disabled>Submit Exam →</button>
-      <p class="submit-note">Submission &amp; grading arrive in the next loop.</p>
+      <p class="submit-note" id="submitNote">Fill all 6 fields and write at least 20 words to enable submit.</p>
+    </div>
+  </div>
+
+  <!-- Grading state (shown while Claude is scoring) -->
+  <div id="gradingState" class="grading-card" style="display:none;">
+    <div class="spinner"></div>
+    <div class="grading-text">Grading your exam…</div>
+    <div class="grading-sub">Usually 10–20 seconds. Don't refresh the page.</div>
+  </div>
+
+  <!-- Results -->
+  <div id="resultsArea" style="display:none;">
+    <div class="results-hero">
+      <div>
+        <div class="results-eyebrow">Your Score</div>
+        <div class="results-total-num"><span id="resTotal">—</span><span> / 20</span></div>
+        <div class="results-pct" id="resPct"></div>
+      </div>
+      <div class="results-task-scores">
+        <div class="results-task-pill">
+          <span class="pill-label">Task 1</span>
+          <span class="pill-num"><span id="resT1">—</span> / 8</span>
+        </div>
+        <div class="results-task-pill">
+          <span class="pill-label">Task 2</span>
+          <span class="pill-num"><span id="resT2">—</span> / 12</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="results-section">
+      <h3 class="results-h">Task 1 — Form Fill</h3>
+      <p class="task1-note" id="resT1Note"></p>
+    </div>
+
+    <div class="results-section">
+      <h3 class="results-h">Task 2 — Rubric Breakdown</h3>
+      <div class="rubric-grid" id="rubricGrid"></div>
+    </div>
+
+    <div class="results-section">
+      <h3 class="results-h">Overall Feedback</h3>
+      <p class="results-feedback" id="resFeedback"></p>
+    </div>
+
+    <div class="results-section">
+      <h3 class="results-h">Top Mistakes to Fix</h3>
+      <ul class="results-list" id="resMistakes"></ul>
+    </div>
+
+    <div class="results-section">
+      <h3 class="results-h">Next Practice</h3>
+      <p class="results-next" id="resNext"></p>
     </div>
   </div>
 
@@ -284,9 +459,16 @@
 (function () {
   'use strict';
 
-  var EXAM_LEVEL   = 'A1';
-  var EXAM_SECTION = 'schreiben';
-  var WORD_TARGET  = 40;
+  var EXAM_LEVEL    = 'A1';
+  var EXAM_SECTION  = 'schreiben';
+  var WORD_TARGET   = 40;
+  var WORD_MIN_OK   = 20;       // minimum to enable submit
+  var WORD_GREEN_LO = 30;       // green band lower bound
+  var API_BASE      = 'https://deutschweg.onrender.com';
+
+  // Field labels in the order they're rendered (populated after Task 1
+  // renders). Used for collecting the form into a name-keyed object.
+  var task1Fields = [];
 
   function el(id) { return document.getElementById(id); }
   function show(id) { el(id).style.display = ''; }
@@ -298,23 +480,54 @@
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
-  function showError(msg) {
+  function showLoadError(msg) {
     hide('loadingState');
     show('errorState');
     el('errorMsg').textContent = msg || 'Unknown error';
   }
 
-  // ── Renderers ──────────────────────────────────────────────
+  function wordCount(s) {
+    var v = String(s || '').trim();
+    return v ? v.split(/\s+/).filter(Boolean).length : 0;
+  }
+
+  // ── Validation ──────────────────────────────────────────────
+  function checkSubmitState() {
+    var allFilled = task1Fields.every(function (label, i) {
+      var input = el('t1f' + i);
+      return input && input.value.trim().length > 0;
+    });
+    var n = wordCount(el('task2Response').value);
+    var enough = n >= WORD_MIN_OK;
+
+    var btn  = el('submitBtn');
+    var note = el('submitNote');
+    var ok   = allFilled && enough;
+    btn.disabled = !ok;
+
+    if (ok) {
+      note.textContent = 'Ready to submit. Grading will take 10–20 seconds.';
+      note.classList.add('ready');
+    } else {
+      note.classList.remove('ready');
+      var missing = [];
+      if (!allFilled) missing.push('all 6 fields');
+      if (!enough)    missing.push('at least ' + WORD_MIN_OK + ' words in Task 2 (' + n + ' so far)');
+      note.textContent = 'Fill ' + missing.join(' and ') + ' to enable submit.';
+    }
+  }
+
+  // ── Renderers (load-time) ──────────────────────────────────
   function renderTask1(task) {
     el('task1Instructions').textContent = task.instructions || '';
     el('task1Points').textContent = (task.max_score != null ? task.max_score : '—') + ' points';
 
     var fields = (task.stimulus && Array.isArray(task.stimulus.fields)) ? task.stimulus.fields : [];
+    task1Fields = fields.slice();
     var grid = el('task1Form');
     grid.innerHTML = fields.map(function (field, i) {
       var id = 't1f' + i;
-      // The "Warum lernen Sie Deutsch?" field is wider — give it the
-      // full row so the question fits comfortably.
+      // Open-ended fields ending in "?" get a full row so the label fits.
       var fullRow = /\?$/.test(field);
       return '<div class="form-row' + (fullRow ? ' full' : '') + '">'
         +    '<label class="form-label" for="' + id + '">' + escapeHtml(field) + '</label>'
@@ -322,6 +535,12 @@
         +    ' name="' + escapeHtml(field) + '" autocomplete="off">'
         +  '</div>';
     }).join('');
+
+    // Wire validation listeners after the inputs exist
+    fields.forEach(function (_, i) {
+      var input = el('t1f' + i);
+      if (input) input.addEventListener('input', checkSubmitState);
+    });
   }
 
   function renderTask2(task) {
@@ -331,26 +550,137 @@
     var stim = task.stimulus || {};
     el('task2Message').textContent = stim.message || '';
 
-    // Live word counter
     var ta      = el('task2Response');
     var counter = el('wordCount');
     var wrap    = counter.parentNode;
     function update() {
-      var v = ta.value.trim();
-      var n = v ? v.split(/\s+/).filter(Boolean).length : 0;
+      var n = wordCount(ta.value);
       counter.textContent = n;
       wrap.classList.remove('in-range', 'over');
-      if (n >= 30 && n <= WORD_TARGET) wrap.classList.add('in-range');
-      else if (n > WORD_TARGET)        wrap.classList.add('over');
+      if (n >= WORD_GREEN_LO && n <= WORD_TARGET) wrap.classList.add('in-range');
+      else if (n > WORD_TARGET)                   wrap.classList.add('over');
+      checkSubmitState();
     }
     ta.addEventListener('input', update);
     update();
   }
 
-  // ── Loader ─────────────────────────────────────────────────
+  // ── Submit + grading ────────────────────────────────────────
+  function collectTask1() {
+    var data = {};
+    task1Fields.forEach(function (label, i) {
+      var input = el('t1f' + i);
+      data[label] = input ? input.value.trim() : '';
+    });
+    return data;
+  }
+
+  function setFormDisabled(disabled) {
+    task1Fields.forEach(function (_, i) {
+      var input = el('t1f' + i);
+      if (input) input.disabled = disabled;
+    });
+    el('task2Response').disabled = disabled;
+  }
+
+  function submitExam() {
+    var btn = el('submitBtn');
+    if (btn.disabled) return;
+
+    var task1 = collectTask1();
+    var task2 = el('task2Response').value.trim();
+
+    // Move from form → grading state
+    hide('submitArea');
+    setFormDisabled(true);
+    show('gradingState');
+
+    fetch(API_BASE + '/api/exam-grade', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ task1: task1, task2: task2 })
+    })
+      .then(function (r) {
+        return r.json().then(function (j) { return { ok: r.ok, body: j }; });
+      })
+      .then(function (res) {
+        hide('gradingState');
+        if (res.ok && res.body && typeof res.body.total === 'object') {
+          renderResults(res.body);
+          show('resultsArea');
+          // Scroll the results into view
+          el('resultsArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+          showGradingError(res.body && res.body.error);
+        }
+      })
+      .catch(function (err) {
+        hide('gradingState');
+        showGradingError('Connection issue: ' + (err && err.message ? err.message : 'try again'));
+      });
+  }
+
+  function showGradingError(msg) {
+    // Re-enable the form and show the error inline above the submit button
+    setFormDisabled(false);
+    show('submitArea');
+    var note = el('submitNote');
+    note.classList.remove('ready');
+    note.textContent = (msg || 'Grading failed.') + ' Click submit to try again.';
+    checkSubmitState();
+  }
+
+  // ── Results renderer ────────────────────────────────────────
+  var RUBRIC_LABELS = {
+    task_completion: 'Task completion',
+    grammar:         'Grammar',
+    vocabulary:      'Vocabulary',
+    clarity:         'Clarity'
+  };
+
+  function renderResults(g) {
+    var totalScore = (g.total && typeof g.total.score === 'number') ? g.total.score : '—';
+    el('resTotal').textContent = totalScore;
+
+    if (typeof totalScore === 'number') {
+      var pct = Math.round((totalScore / 20) * 100);
+      el('resPct').textContent = pct + '% — ' + (totalScore >= 12 ? 'pass' : 'keep practising');
+    }
+
+    el('resT1').textContent = (g.task1 && typeof g.task1.score === 'number') ? g.task1.score : '—';
+    el('resT2').textContent = (g.task2 && typeof g.task2.score === 'number') ? g.task2.score : '—';
+    el('resT1Note').textContent = (g.task1 && g.task1.explanation) || '';
+
+    // Rubric breakdown
+    var rubric = (g.task2 && g.task2.rubric) || {};
+    el('rubricGrid').innerHTML = Object.keys(RUBRIC_LABELS).map(function (key) {
+      var r = rubric[key] || {};
+      var score = (typeof r.score === 'number') ? r.score : '—';
+      var max   = (typeof r.max   === 'number') ? r.max   : '—';
+      return '<div class="rubric-card">'
+        + '<div class="rubric-row">'
+        +   '<span class="rubric-label">' + escapeHtml(RUBRIC_LABELS[key]) + '</span>'
+        +   '<span class="rubric-score">' + escapeHtml(score) + ' / ' + escapeHtml(max) + '</span>'
+        + '</div>'
+        + '<p class="rubric-explanation">' + escapeHtml(r.explanation || '') + '</p>'
+        + (r.tip ? '<div class="rubric-tip">💡 ' + escapeHtml(r.tip) + '</div>' : '')
+        + '</div>';
+    }).join('');
+
+    el('resFeedback').textContent = g.overall_feedback || '';
+
+    var mistakes = Array.isArray(g.top_mistakes) ? g.top_mistakes : [];
+    el('resMistakes').innerHTML = mistakes.map(function (m) {
+      return '<li>' + escapeHtml(m) + '</li>';
+    }).join('') || '<li>None — great work!</li>';
+
+    el('resNext').textContent = g.next_recommendation || '';
+  }
+
+  // ── Loader (initial data fetch) ─────────────────────────────
   function load() {
     if (typeof dwSupabase === 'undefined') {
-      showError('Supabase client not initialised. Check that supabase-config.js is loading.');
+      showLoadError('Supabase client not initialised. Check that supabase-config.js is loading.');
       return;
     }
 
@@ -363,8 +693,8 @@
       .limit(1)
       .maybeSingle()
       .then(function (res) {
-        if (res.error) { showError(res.error.message); return null; }
-        if (!res.data) { showError('No published A1 Schreiben exam found.'); return null; }
+        if (res.error) { showLoadError(res.error.message); return null; }
+        if (!res.data) { showLoadError('No published A1 Schreiben exam found.'); return null; }
 
         var exam = res.data;
         el('examTitle').textContent = exam.title || 'A1 Schreiben';
@@ -376,13 +706,13 @@
       })
       .then(function (tres) {
         if (!tres) return;
-        if (tres.error) { showError(tres.error.message); return; }
+        if (tres.error) { showLoadError(tres.error.message); return; }
 
         var tasks = tres.data || [];
         var task1 = tasks.find(function (t) { return t.task_number === 1; });
         var task2 = tasks.find(function (t) { return t.task_number === 2; });
         if (!task1 || !task2) {
-          showError('Exam tasks are missing or incomplete.');
+          showLoadError('Exam tasks are missing or incomplete.');
           return;
         }
 
@@ -391,6 +721,14 @@
 
         hide('loadingState');
         show('examContent');
+
+        // Wire the submit button + initial validation pass
+        el('submitBtn').addEventListener('click', submitExam);
+        checkSubmitState();
+
+        // Wake the Render server early so the first grading request
+        // doesn't pay cold-start latency.
+        fetch(API_BASE + '/').catch(function () {});
       });
   }
 

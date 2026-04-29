@@ -800,11 +800,148 @@ app.post('/api/aitutor', async (req, res) => {
   }
 });
 
+// ── POST /api/exam-grade ─────────────────────────────────────────────────────
+// Grades a structured A1 Schreiben exam submission (form fill + short message).
+// Returns a JSON response with per-task scores, rubric breakdown, top mistakes,
+// and a next-step recommendation. The client renders this verbatim — no
+// post-processing beyond shape validation here.
+
+const EXAM_GRADE_SYSTEM_PROMPT = `You are a friendly Goethe A1 exam grader. Grade this student's Schreiben submission.
+
+Task 1 is form filling — 8 points total. Award 1 point per correctly filled field. Deduct for empty or nonsense answers.
+
+Task 2 is a short message — 12 points total. Use this rubric:
+
+- Task completion (greeting, name, origin, one thing they like, one question, closing): 5 points
+- Grammar (correct A1 verb conjugation, word order, articles): 3 points
+- Vocabulary (appropriate A1 words): 2 points
+- Clarity (message is understandable): 2 points
+
+For each rubric category provide:
+- Score out of maximum
+- One sentence explanation
+- One improvement tip
+
+End with:
+- Total score out of 20
+- Overall feedback in 2 encouraging sentences
+- Top 2 mistakes to fix
+- One next practice recommendation
+
+Keep all feedback in simple English. Be encouraging. Use the student's name from Task 1 if available.
+
+Respond as a single raw JSON object — no markdown, no code fences, no text outside the JSON. Use this exact shape:
+
+{
+  "task1": {
+    "score":       <integer 0–8>,
+    "max":         8,
+    "explanation": "One sentence on how Task 1 went."
+  },
+  "task2": {
+    "score": <integer 0–12, equal to the sum of the four rubric scores>,
+    "max":   12,
+    "rubric": {
+      "task_completion": { "score": <0–5>, "max": 5, "explanation": "...", "tip": "..." },
+      "grammar":         { "score": <0–3>, "max": 3, "explanation": "...", "tip": "..." },
+      "vocabulary":      { "score": <0–2>, "max": 2, "explanation": "...", "tip": "..." },
+      "clarity":         { "score": <0–2>, "max": 2, "explanation": "...", "tip": "..." }
+    }
+  },
+  "total":               { "score": <task1.score + task2.score>, "max": 20 },
+  "overall_feedback":    "Two encouraging sentences combined here.",
+  "top_mistakes":        ["First mistake to fix.", "Second mistake to fix."],
+  "next_recommendation": "One concrete next-practice activity."
+}`;
+
+app.post('/api/exam-grade', async (req, res) => {
+  const { task1, task2 } = req.body || {};
+
+  if (!task1 || typeof task1 !== 'object') {
+    return res.status(400).json({ error: 'Missing task1 form data.' });
+  }
+  if (!task2 || typeof task2 !== 'string' || task2.trim().length < 1) {
+    return res.status(400).json({ error: 'Missing task2 response.' });
+  }
+  if (!process.env.CLAUDE_API_KEY) {
+    console.error('[/api/exam-grade] CLAUDE_API_KEY is not set');
+    return res.status(500).json({ error: 'API key not configured.' });
+  }
+
+  // Format the form into a readable block, capping each value to keep
+  // the payload bounded.
+  const task1Block = Object.entries(task1)
+    .map(([k, v]) => `${String(k).slice(0, 80)}: ${String(v == null ? '' : v).slice(0, 200)}`)
+    .join('\n');
+  const task2Block = String(task2).slice(0, 2000).trim();
+
+  const userMessage = `Task 1 (Form):\n${task1Block}\n\nTask 2 (Short message to Lukas, 30–40 words target):\n"""\n${task2Block}\n"""`;
+
+  console.log(`[/api/exam-grade] Request — task2 length: ${task2Block.length} chars, origin: ${req.headers.origin || 'none'}`);
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method:  'POST',
+      headers: {
+        'Content-Type':      'application/json',
+        'x-api-key':         process.env.CLAUDE_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model:      'claude-sonnet-4-6',
+        max_tokens: 2000,
+        system:     EXAM_GRADE_SYSTEM_PROMPT,
+        messages:   [{ role: 'user', content: userMessage }],
+      }),
+    });
+
+    if (!response.ok) {
+      const errBody = await response.json().catch(() => ({}));
+      const message = errBody?.error?.message || `Claude API returned ${response.status}`;
+      console.error('[/api/exam-grade] Claude API error:', message);
+      return res.status(502).json({ error: message });
+    }
+
+    const data = await response.json();
+    const raw  = (data?.content?.[0]?.text ?? '')
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*```$/, '')
+      .trim();
+
+    let result;
+    try { result = JSON.parse(raw); }
+    catch (parseErr) {
+      console.error('[/api/exam-grade] JSON parse error. Raw response:\n', raw);
+      return res.status(502).json({ error: 'Could not parse grading response. Try again.' });
+    }
+
+    // Light shape validation — leave content untouched so the client
+    // sees exactly what Claude produced.
+    if (
+      !result.task1 || typeof result.task1.score !== 'number' ||
+      !result.task2 || typeof result.task2.score !== 'number' ||
+      !result.task2.rubric ||
+      !result.total || typeof result.total.score !== 'number'
+    ) {
+      console.error('[/api/exam-grade] Unexpected response shape:', result);
+      return res.status(502).json({ error: 'Unexpected response format from grader. Try again.' });
+    }
+
+    console.log(`[/api/exam-grade] Success — total: ${result.total.score}/20`);
+    return res.json(result);
+
+  } catch (err) {
+    console.error('[/api/exam-grade] Server error:', err.message);
+    return res.status(500).json({ error: 'Server error: ' + err.message });
+  }
+});
+
 // ── Start ────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log('');
   console.log('  ✦ DeutschWeg Exam Whisperer API');
   console.log(`  ✦ Running at http://localhost:${PORT}`);
   console.log('  ✦ POST /api/score to score a Schreiben submission');
+  console.log('  ✦ POST /api/exam-grade to grade a Schreiben exam');
   console.log('');
 });
