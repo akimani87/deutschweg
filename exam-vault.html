@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
 <!-- DW SEO INJECT -->
-<meta name="title" content="Exam Vault — DeutschWeg">
-<meta name="description" content="Prepare for your Goethe German exam with AI-powered lessons. A1, A2, B1, B2 — built for African learners. Start free today.">
+<title>A1 Schreiben — DeutschWeg</title>
+<meta name="title" content="A1 Schreiben — Prüfungsvorbereitung | DeutschWeg">
+<meta name="description" content="Practise the A1 Schreiben (writing) section of the Goethe exam. Two tasks: a form fill and a short message. Built for African learners.">
 <meta name="keywords" content="Goethe exam, German exam Africa, learn German Kenya, Goethe A1 B1, German certificate, Ausbildung German, family reunification German">
 <meta name="robots" content="index, follow">
 <meta name="language" content="English">
@@ -15,500 +16,392 @@
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://deutschweg.de/exam-vault">
-<meta property="og:title" content="Exam Vault — DeutschWeg">
-<meta property="og:description" content="Prepare for your Goethe German exam with AI-powered lessons. A1, A2, B1, B2 — built for African learners. Start free today.">
+<meta property="og:title" content="A1 Schreiben — Prüfungsvorbereitung | DeutschWeg">
+<meta property="og:description" content="Goethe-format Schreiben practice with two tasks. Take it like the real exam.">
 <meta property="og:image" content="https://deutschweg.de/og-image.png">
 
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Exam Vault — DeutschWeg">
-<meta name="twitter:description" content="AI-powered German exam prep for African learners. A1 to B2. Start free.">
+<meta name="twitter:title" content="A1 Schreiben — DeutschWeg">
+<meta name="twitter:description" content="Goethe-format A1 Schreiben practice. Two tasks. Built for African learners.">
 <meta name="twitter:image" content="https://deutschweg.de/og-image.png">
 <!-- /DW SEO INJECT -->
-<title>Exam Vault — DeutschWeg</title>
+
 <link rel="stylesheet" href="./deutschweg-theme.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
 <style>
-body{background:#F8FAFC;min-height:100vh;}
+  body { background: var(--bg); }
 
-/* ── HERO ── */
-.vault-hero{
-  background:linear-gradient(135deg,#1D4ED8 0%,#2563EB 50%,#3B82F6 100%);
-  padding:48px 24px 40px;
-  text-align:center;
-  position:relative;
-  overflow:hidden;
-}
-.vault-hero::before{
-  content:'';position:absolute;inset:0;
-  background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-}
-.vault-hero-content{position:relative;z-index:1;max-width:600px;margin:0 auto;}
-.vault-title{font-size:38px;font-weight:900;color:#fff;line-height:1.15;margin-bottom:12px;letter-spacing:-0.5px;}
-.vault-subtitle{font-size:16px;color:rgba(255,255,255,0.85);line-height:1.7;margin-bottom:0;max-width:480px;margin:0 auto;}
+  /* ── Header ──────────────────────────────────────────────── */
+  .exam-header {
+    background: #fff; border-bottom: 1px solid var(--border);
+    padding: 14px 24px; display: flex; align-items: center; gap: 14px;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .exam-back {
+    color: var(--mid); font-size: 13px; font-weight: 600;
+    text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 8px; transition: all .18s;
+  }
+  .exam-back:hover { color: var(--blue); background: var(--blue-light); }
+  .exam-logo {
+    display: flex; align-items: center; gap: 9px; text-decoration: none;
+    margin-left: auto;
+  }
+  .exam-logo-icon {
+    width: 30px; height: 30px; background: var(--blue); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 15px; font-weight: 800;
+  }
+  .exam-logo-text { font-size: 16px; font-weight: 800; color: var(--dark); letter-spacing: -0.3px; }
+  .exam-logo-text span { color: var(--blue); }
 
-/* ── STATS BAR ── */
-.vault-stats{
-  background:#fff;
-  border-bottom:1px solid #E5E7EB;
-  padding:0 24px;
-}
-.vault-stats-inner{
-  max-width:800px;margin:0 auto;
-  display:grid;grid-template-columns:repeat(4,1fr);
-  border-left:1px solid #E5E7EB;
-}
-.stat-item{
-  padding:16px 20px;
-  border-right:1px solid #E5E7EB;
-  text-align:center;
-}
-.stat-num{font-size:22px;font-weight:800;color:#1D4ED8;line-height:1;}
-.stat-label{font-size:11px;color:#6B7280;font-weight:600;margin-top:4px;text-transform:uppercase;letter-spacing:0.5px;}
+  /* ── Page wrap + intro ───────────────────────────────────── */
+  .exam-wrap { max-width: 760px; margin: 0 auto; padding: 36px 20px 80px; }
+  .exam-eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    color: var(--blue); text-transform: uppercase; margin-bottom: 10px;
+  }
+  .exam-title {
+    font-size: 30px; font-weight: 800; color: var(--dark);
+    letter-spacing: -0.5px; line-height: 1.25; margin-bottom: 10px;
+  }
+  .exam-sub { font-size: 15px; color: var(--mid); line-height: 1.7; margin-bottom: 28px; }
 
-/* ── TABS ── */
-.vault-wrap{max-width:800px;margin:0 auto;padding:0 24px 80px;}
-.level-tabs{
-  display:flex;
-  gap:0;
-  margin:28px 0 24px;
-  background:#fff;
-  border:1px solid #E5E7EB;
-  border-radius:14px;
-  padding:4px;
-  overflow:hidden;
-}
-.level-tab{
-  flex:1;
-  padding:10px 16px;
-  border:none;
-  background:none;
-  cursor:pointer;
-  font-size:14px;
-  font-weight:700;
-  color:#6B7280;
-  border-radius:10px;
-  transition:all .18s;
-  letter-spacing:0.3px;
-}
-.level-tab:hover{background:#F3F4F6;color:#374151;}
-.level-tab.active{background:#1D4ED8;color:#fff;box-shadow:0 2px 8px rgba(29,78,216,0.3);}
-.level-tab .tab-badge{
-  display:inline-block;font-size:9px;font-weight:700;
-  padding:1px 5px;border-radius:10px;margin-left:5px;
-  background:rgba(255,255,255,0.25);vertical-align:middle;
-}
-.level-tab:not(.active) .tab-badge{background:#E5E7EB;color:#6B7280;}
+  /* ── Loading + error states ──────────────────────────────── */
+  .state {
+    background: #fff; border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 36px 28px;
+    text-align: center; box-shadow: var(--shadow-sm);
+  }
+  .state .spinner {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 3px solid var(--border); border-top-color: var(--blue);
+    animation: dwSpin .9s linear infinite; margin: 0 auto 14px;
+  }
+  @keyframes dwSpin { to { transform: rotate(360deg); } }
+  .state-text { font-size: 14px; color: var(--mid); }
+  .state-error strong { color: var(--red); display: block; margin-bottom: 6px; font-size: 15px; }
+  .state-error p { color: var(--mid); font-size: 13.5px; margin: 0; }
 
-/* ── LEVEL PANEL ── */
-.level-panel{display:none;}
-.level-panel.active{display:block;}
+  /* ── Task cards ──────────────────────────────────────────── */
+  .task-card {
+    background: #fff; border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 28px 28px 26px;
+    box-shadow: var(--shadow-sm); margin-bottom: 18px;
+  }
+  .task-header {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; margin-bottom: 14px;
+  }
+  .task-num {
+    font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
+    color: var(--blue); text-transform: uppercase;
+  }
+  .task-points {
+    background: var(--blue-light); color: #1D4ED8;
+    border: 1px solid var(--blue-mid);
+    font-size: 11.5px; font-weight: 700;
+    padding: 4px 11px; border-radius: 50px;
+    letter-spacing: 0.3px;
+  }
+  .task-instructions {
+    font-size: 14.5px; color: var(--dark); line-height: 1.7;
+    margin-bottom: 18px;
+  }
 
-/* ── SECTION HEADING ── */
-.vault-section-head{
-  display:flex;align-items:center;gap:10px;
-  margin-bottom:16px;margin-top:28px;
-}
-.vault-section-head:first-child{margin-top:0;}
-.vsh-line{flex:1;height:1px;background:#E5E7EB;}
-.vsh-label{font-size:10px;font-weight:800;color:#9CA3AF;text-transform:uppercase;letter-spacing:2px;white-space:nowrap;}
+  /* ── Task 1 form grid ────────────────────────────────────── */
+  .form-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px;
+  }
+  .form-row { display: flex; flex-direction: column; gap: 6px; }
+  .form-row.full { grid-column: 1 / -1; }
+  .form-label {
+    font-size: 12.5px; font-weight: 700; color: var(--dark);
+    letter-spacing: 0.2px;
+  }
+  .form-input {
+    width: 100%; padding: 11px 14px;
+    background: var(--bg);
+    border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    font-family: inherit; font-size: 14px; color: var(--dark);
+    outline: none;
+    transition: border-color .18s, box-shadow .18s, background .18s;
+  }
+  .form-input:focus {
+    border-color: var(--blue); background: #fff;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.10);
+  }
+  .form-input::placeholder { color: var(--light); }
 
-/* ── EXAM CARDS ── */
-.exam-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;margin-bottom:8px;}
-@media(max-width:600px){.exam-cards{grid-template-columns:1fr;}}
+  /* ── Task 2 stimulus + textarea ──────────────────────────── */
+  .stimulus-box {
+    background: var(--blue-light); border: 1px solid var(--blue-mid);
+    border-radius: var(--radius-md); padding: 14px 18px;
+    margin-bottom: 16px;
+  }
+  .stimulus-label {
+    font-size: 10.5px; font-weight: 800; letter-spacing: 1.5px;
+    color: var(--blue); text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .stimulus-text {
+    font-size: 14.5px; color: #1E3A5F; line-height: 1.7;
+    margin: 0; font-style: italic;
+  }
+  .response-area {
+    width: 100%; min-height: 150px; resize: vertical;
+    padding: 14px 16px;
+    background: var(--bg);
+    border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    font-family: inherit; font-size: 14.5px; line-height: 1.7;
+    color: var(--dark); outline: none;
+    transition: border-color .18s, box-shadow .18s, background .18s;
+  }
+  .response-area:focus {
+    border-color: var(--blue); background: #fff;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.10);
+  }
+  .word-counter {
+    text-align: right; margin-top: 8px;
+    font-size: 12.5px; font-weight: 600; color: var(--light);
+    font-variant-numeric: tabular-nums;
+  }
+  .word-counter.in-range { color: var(--green); }
+  .word-counter.over     { color: var(--amber); }
 
-.exam-card{
-  background:#fff;
-  border:1px solid #E5E7EB;
-  border-radius:16px;
-  padding:20px;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-  transition:box-shadow .18s,border-color .18s;
-  position:relative;
-  overflow:hidden;
-}
-.exam-card:hover{box-shadow:0 4px 20px rgba(0,0,0,0.08);border-color:#BFDBFE;}
-.exam-card.official{border-color:#BFDBFE;background:linear-gradient(135deg,#EFF6FF 0%,#fff 60%);}
-.exam-card.coming-soon{opacity:.7;background:#F9FAFB;border-color:#E5E7EB;}
-.exam-card.coming-soon:hover{box-shadow:none;border-color:#E5E7EB;}
+  /* ── Submit ──────────────────────────────────────────────── */
+  .exam-submit {
+    margin-top: 26px; text-align: center;
+  }
+  .submit-btn {
+    background: var(--blue); color: #fff;
+    border: none; cursor: pointer;
+    padding: 13px 28px; border-radius: 12px;
+    font-family: inherit; font-size: 15px; font-weight: 700;
+    box-shadow: 0 4px 14px rgba(59,130,246,0.30);
+    transition: all .18s;
+  }
+  .submit-btn:hover:not(:disabled) {
+    background: var(--blue-dark); transform: translateY(-1px);
+  }
+  .submit-btn:disabled {
+    opacity: 0.55; cursor: not-allowed;
+    background: var(--mid); box-shadow: none;
+  }
+  .submit-note {
+    font-size: 12.5px; color: var(--light); margin-top: 10px;
+  }
 
-.ec-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
-.ec-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
-.ec-icon.official-icon{background:#DBEAFE;}
-.ec-icon.practice-icon{background:#ECFDF5;}
-.ec-icon.module-icon{background:#FEF3C7;}
-.ec-icon.soon-icon{background:#F3F4F6;}
+  /* ── Footer links ────────────────────────────────────────── */
+  .exam-footer {
+    margin-top: 36px; text-align: center;
+    font-size: 13px; color: var(--light);
+  }
+  .exam-footer a { color: var(--mid); text-decoration: none; margin: 0 10px; }
+  .exam-footer a:hover { color: var(--blue); }
 
-.ec-badge{
-  font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;
-  padding:3px 9px;border-radius:20px;white-space:nowrap;flex-shrink:0;
-}
-.badge-official{background:#1D4ED8;color:#fff;}
-.badge-practice{background:#ECFDF5;color:#065f46;border:1px solid #A7F3D0;}
-.badge-module{background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;}
-.badge-soon{background:#F3F4F6;color:#9CA3AF;border:1px solid #E5E7EB;}
-.badge-b1{background:#7C3AED;color:#fff;}
-
-.ec-name{font-size:16px;font-weight:800;color:#111827;line-height:1.3;margin-bottom:2px;}
-.ec-sub{font-size:12px;color:#6B7280;line-height:1.5;}
-.ec-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.ec-meta-item{
-  display:flex;align-items:center;gap:4px;
-  font-size:11px;color:#6B7280;font-weight:600;
-}
-.ec-meta-item::before{content:'•';color:#D1D5DB;}
-.ec-meta-item:first-child::before{content:none;}
-
-.ec-sections{display:flex;flex-wrap:wrap;gap:5px;}
-.ec-sec-tag{
-  font-size:10px;font-weight:700;letter-spacing:0.5px;
-  padding:3px 9px;border-radius:20px;
-  background:#F3F4F6;color:#374151;
-  border:1px solid #E5E7EB;
-}
-.ec-sec-tag.has-audio{background:#EFF6FF;color:#1D4ED8;border-color:#BFDBFE;}
-
-.ec-footer{margin-top:auto;padding-top:4px;}
-.ec-start-btn{
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  width:100%;padding:12px 20px;
-  background:#1D4ED8;color:#fff;
-  border:none;border-radius:10px;
-  font-size:14px;font-weight:700;cursor:pointer;
-  text-decoration:none;transition:opacity .18s;
-}
-.ec-start-btn:hover{opacity:.88;}
-.ec-soon-btn{
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  width:100%;padding:12px 20px;
-  background:#F3F4F6;color:#9CA3AF;
-  border:none;border-radius:10px;
-  font-size:14px;font-weight:700;cursor:default;
-}
-
-/* ── B2 COMING SOON ── */
-.b2-banner{
-  text-align:center;padding:40px 24px;
-  background:#fff;border:1px solid #E5E7EB;
-  border-radius:16px;margin-bottom:20px;
-}
-.b2-banner-icon{font-size:48px;margin-bottom:12px;}
-.b2-banner-title{font-size:20px;font-weight:800;color:#111827;margin-bottom:8px;}
-.b2-banner-sub{font-size:14px;color:#6B7280;line-height:1.6;max-width:400px;margin:0 auto;}
-
-/* ── PLACEHOLDER BANNER (for sections under construction) ── */
-.vault-placeholder{
-  text-align:center;padding:28px 24px;
-  background:#FAFAF7;border:1px dashed #D1D5DB;
-  border-radius:14px;margin-bottom:20px;
-  color:#4B5563;font-size:14px;line-height:1.65;
-  max-width:560px;margin-left:auto;margin-right:auto;
-}
-.vault-placeholder strong{display:block;font-size:15px;color:#111827;margin-bottom:4px;font-weight:700;}
-
-/* ── BOTTOM NAV ── */
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #E5E7EB;display:flex;justify-content:space-around;padding:10px 0 18px;z-index:100;box-shadow:0 -4px 20px rgba(0,0,0,0.06);}
-.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 16px;border-radius:10px;transition:all .2s;border:none;background:none;color:#9CA3AF;text-decoration:none;}
-.nav-item:hover,.nav-item.active{color:#3B82F6;}
-.nav-icon{font-size:20px;}
-.nav-label{font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;}
-
-/* ── RESPONSIVE ── */
-@media(max-width:600px){
-  .vault-title{font-size:28px;}
-  .vault-stats-inner{grid-template-columns:repeat(2,1fr);}
-  .level-tab{font-size:13px;padding:8px 10px;}
-  .vault-hero{padding:36px 20px 32px;}
-}
+  @media (max-width: 600px) {
+    .exam-wrap { padding: 22px 14px 80px; }
+    .task-card { padding: 22px 18px 20px; }
+    .exam-title { font-size: 24px; }
+    .form-grid { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
 
-<nav class="dw-nav">
-  <div class="dw-nav-inner" style="display:flex;align-items:center;justify-content:space-between;height:56px;">
-    <a href="/dashboard" class="dw-logo">DeutschWeg</a>
-    <div style="display:flex;align-items:center;gap:10px;">
-      <a href="./exam-vault.html" style="font-size:13px;font-weight:700;color:#1D4ED8;text-decoration:none;">📝 Exam Vault</a>
-      <a href="/dashboard" class="dw-btn" style="font-size:13px;padding:7px 16px;">← Dashboard</a>
-    </div>
-  </div>
-</nav>
-
-<!-- HERO -->
-<div class="vault-hero">
-  <div class="vault-hero-content">
-    <div class="vault-title">Exam Vault 🏛️</div>
-    <div class="vault-subtitle">Full Goethe-format mock simulations with auto-scoring and AI feedback. Prepare like it's the real thing.</div>
-  </div>
-</div>
-
-<!-- STATS BAR -->
-<div class="vault-stats">
-  <div class="vault-stats-inner">
-    <div class="stat-item">
-      <div class="stat-num">A1→B1</div>
-      <div class="stat-label">Mock Exams</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-num">4</div>
-      <div class="stat-label">Sections per exam</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-num">✓</div>
-      <div class="stat-label">Goethe Format</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-num">⚡</div>
-      <div class="stat-label">Instant Scoring</div>
-    </div>
-  </div>
-</div>
-
-<!-- MAIN CONTENT -->
-<div class="vault-wrap">
-
-  <!-- LEVEL TABS -->
-  <div class="level-tabs" role="tablist">
-    <button class="level-tab active" onclick="showLevel('a1')" id="tab-a1">A1 <span class="tab-badge">1</span></button>
-    <button class="level-tab" onclick="showLevel('a2')" id="tab-a2">A2 <span class="tab-badge">1</span></button>
-    <button class="level-tab" onclick="showLevel('b1')" id="tab-b1">B1 <span class="tab-badge">2</span></button>
-    <button class="level-tab" onclick="showLevel('b2')" id="tab-b2">B2 <span class="tab-badge">soon</span></button>
-  </div>
-
-  <!-- ══ A1 PANEL ══ -->
-  <div class="level-panel active" id="panel-a1">
-
-    <div class="vault-placeholder">
-      <strong>🚧 New practice exams coming soon</strong>
-      Original Goethe-format tests designed for you.
-    </div>
-
-    <div class="vault-section-head">
-      <div class="vsh-label">Practice Exams</div>
-      <div class="vsh-line"></div>
-    </div>
-
-    <div class="exam-cards">
-
-      <!-- A1 Practice -->
-      <div class="exam-card">
-        <div class="ec-top">
-          <div class="ec-icon practice-icon">📋</div>
-          <span class="ec-badge badge-practice">Practice</span>
-        </div>
-        <div>
-          <div class="ec-name">A1 Complete Mock Exam</div>
-          <div class="ec-sub">Full simulation with auto-scoring and AI feedback</div>
-        </div>
-        <div class="ec-meta">
-          <span class="ec-meta-item">65 minutes</span>
-          <span class="ec-meta-item">Start Deutsch 1</span>
-          <span class="ec-meta-item">60% to pass</span>
-        </div>
-        <div class="ec-sections">
-          <span class="ec-sec-tag">Hören</span>
-          <span class="ec-sec-tag">Lesen</span>
-          <span class="ec-sec-tag">Schreiben</span>
-          <span class="ec-sec-tag">Sprechen</span>
-          <span class="ec-sec-tag has-audio">🤖 AI Feedback</span>
-        </div>
-        <div class="ec-footer">
-          <a href="./mock-exam-a1.html" class="ec-start-btn">Start Exam →</a>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ══ A2 PANEL ══ -->
-  <div class="level-panel" id="panel-a2">
-
-    <div class="vault-section-head">
-      <div class="vsh-label">Practice Exams</div>
-      <div class="vsh-line"></div>
-    </div>
-
-    <div class="exam-cards">
-
-      <div class="exam-card">
-        <div class="ec-top">
-          <div class="ec-icon practice-icon">📋</div>
-          <span class="ec-badge badge-practice">Practice</span>
-        </div>
-        <div>
-          <div class="ec-name">A2 Complete Mock Exam</div>
-          <div class="ec-sub">Full Goethe A2 simulation with auto-scoring</div>
-        </div>
-        <div class="ec-meta">
-          <span class="ec-meta-item">70 minutes</span>
-          <span class="ec-meta-item">Zertifikat A2</span>
-          <span class="ec-meta-item">60% to pass</span>
-        </div>
-        <div class="ec-sections">
-          <span class="ec-sec-tag">Hören</span>
-          <span class="ec-sec-tag">Lesen</span>
-          <span class="ec-sec-tag">Schreiben</span>
-          <span class="ec-sec-tag">Sprechen</span>
-          <span class="ec-sec-tag has-audio">🤖 AI Feedback</span>
-        </div>
-        <div class="ec-footer">
-          <a href="./mock-exam-a2.html" class="ec-start-btn">Start Exam →</a>
-        </div>
-      </div>
-
-    </div>
-
-    <div class="vault-placeholder">
-      <strong>🚧 New practice exams coming soon</strong>
-      Original Goethe-format tests designed for you.
-    </div>
-  </div>
-
-  <!-- ══ B1 PANEL ══ -->
-  <div class="level-panel" id="panel-b1">
-
-    <div class="vault-section-head">
-      <div class="vsh-label">Practice Exams</div>
-      <div class="vsh-line"></div>
-    </div>
-
-    <div class="exam-cards">
-
-      <div class="exam-card">
-        <div class="ec-top">
-          <div class="ec-icon practice-icon">📋</div>
-          <span class="ec-badge badge-practice">Practice</span>
-        </div>
-        <div>
-          <div class="ec-name">B1 Complete Mock Exam</div>
-          <div class="ec-sub">Full Goethe B1 simulation with auto-scoring</div>
-        </div>
-        <div class="ec-meta">
-          <span class="ec-meta-item">90 minutes</span>
-          <span class="ec-meta-item">Zertifikat B1</span>
-          <span class="ec-meta-item">60% to pass</span>
-        </div>
-        <div class="ec-sections">
-          <span class="ec-sec-tag">Hören</span>
-          <span class="ec-sec-tag">Lesen</span>
-          <span class="ec-sec-tag">Schreiben</span>
-          <span class="ec-sec-tag">Sprechen</span>
-          <span class="ec-sec-tag has-audio">🤖 AI Feedback</span>
-        </div>
-        <div class="ec-footer">
-          <a href="./mock-exam-b1.html" class="ec-start-btn">Start Exam →</a>
-        </div>
-      </div>
-
-      <div class="exam-card">
-        <div class="ec-top">
-          <div class="ec-icon module-icon">📝</div>
-          <span class="ec-badge badge-b1">B1 Module Exam</span>
-        </div>
-        <div>
-          <div class="ec-name">B1 Module 13 — Final Mock</div>
-          <div class="ec-sub">Comprehensive B1 exam covering all strategy modules</div>
-        </div>
-        <div class="ec-meta">
-          <span class="ec-meta-item">Full exam</span>
-          <span class="ec-meta-item">All 4 skills</span>
-        </div>
-        <div class="ec-sections">
-          <span class="ec-sec-tag">Hören</span>
-          <span class="ec-sec-tag">Lesen</span>
-          <span class="ec-sec-tag">Schreiben</span>
-          <span class="ec-sec-tag">Sprechen</span>
-        </div>
-        <div class="ec-footer">
-          <a href="./module-b1-13-mock-exam.html" class="ec-start-btn">Start Exam →</a>
-        </div>
-      </div>
-
-    </div>
-
-    <div class="vault-placeholder">
-      <strong>🚧 New practice exams coming soon</strong>
-      Original Goethe-format tests designed for you.
-    </div>
-  </div>
-
-  <!-- ══ B2 PANEL ══ -->
-  <div class="level-panel" id="panel-b2">
-
-    <div class="b2-banner">
-      <div class="b2-banner-icon">🚀</div>
-      <div class="b2-banner-title">B2 content launching soon</div>
-      <div class="b2-banner-sub">We're building B2 mock simulations. Complete A1 → B1 to unlock early access.</div>
-    </div>
-
-    <div class="vault-placeholder">
-      <strong>🚧 New practice exams coming soon</strong>
-      Original Goethe-format tests designed for you.
-    </div>
-
-    <div class="exam-cards">
-
-      <div class="exam-card coming-soon">
-        <div class="ec-top">
-          <div class="ec-icon soon-icon">🔒</div>
-          <span class="ec-badge badge-soon">Coming Soon</span>
-        </div>
-        <div>
-          <div class="ec-name">B2 Complete Mock Exam</div>
-          <div class="ec-sub">Full B2 simulation with auto-scoring and feedback</div>
-        </div>
-        <div class="ec-sections">
-          <span class="ec-sec-tag">Hören</span>
-          <span class="ec-sec-tag">Lesen</span>
-          <span class="ec-sec-tag">Schreiben</span>
-          <span class="ec-sec-tag">Sprechen</span>
-        </div>
-        <div class="ec-footer">
-          <div class="ec-soon-btn">🔒 Coming Soon</div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-</div><!-- /vault-wrap -->
-
-<!-- BOTTOM NAV -->
-<div class="bottom-nav">
-  <a class="nav-item" href="/dashboard">
-    <span class="nav-icon">📚</span>
-    <span class="nav-label">Modules</span>
+<header class="exam-header">
+  <a href="/dashboard" class="exam-back">← Dashboard</a>
+  <a href="index.html" class="exam-logo">
+    <div class="exam-logo-icon">D</div>
+    <span class="exam-logo-text">Deutsch<span>Weg</span></span>
   </a>
-  <a class="nav-item" href="ai-tutor.html">
-    <span class="nav-icon">👩‍🏫</span>
-    <span class="nav-label">AI Tutor</span>
-  </a>
-  <a class="nav-item" href="ai-pal.html">
-    <span class="nav-icon">🤗</span>
-    <span class="nav-label">AI Pal</span>
-  </a>
-  <a class="nav-item" href="sprechen-prep.html">
-    <span class="nav-icon">🎤</span>
-    <span class="nav-label">Sprechen</span>
-  </a>
-  <a class="nav-item active" href="exam-vault.html">
-    <span class="nav-icon">📝</span>
-    <span class="nav-label">Exam Vault</span>
-  </a>
-</div>
+</header>
+
+<main class="exam-wrap">
+
+  <!-- Loading state -->
+  <div id="loadingState" class="state">
+    <div class="spinner"></div>
+    <div class="state-text">Loading exam…</div>
+  </div>
+
+  <!-- Error state -->
+  <div id="errorState" class="state state-error" style="display:none;">
+    <strong>Couldn't load the exam</strong>
+    <p id="errorMsg"></p>
+  </div>
+
+  <!-- Exam content -->
+  <div id="examContent" style="display:none;">
+    <div class="exam-eyebrow">A1 · Schreiben</div>
+    <h1 class="exam-title" id="examTitle"></h1>
+    <p class="exam-sub">Goethe-format Schreiben practice with two tasks. Take your time and write naturally — submission and grading are coming in the next loop.</p>
+
+    <!-- Task 1: form fill -->
+    <section class="task-card" id="task1Card">
+      <header class="task-header">
+        <span class="task-num">Task 1</span>
+        <span class="task-points" id="task1Points">— points</span>
+      </header>
+      <p class="task-instructions" id="task1Instructions"></p>
+      <div class="form-grid" id="task1Form"></div>
+    </section>
+
+    <!-- Task 2: short message -->
+    <section class="task-card" id="task2Card">
+      <header class="task-header">
+        <span class="task-num">Task 2</span>
+        <span class="task-points" id="task2Points">— points</span>
+      </header>
+      <p class="task-instructions" id="task2Instructions"></p>
+      <div class="stimulus-box">
+        <div class="stimulus-label">Message from Lukas</div>
+        <p class="stimulus-text" id="task2Message"></p>
+      </div>
+      <textarea class="response-area" id="task2Response" rows="6" placeholder="Schreib deine Antwort hier…"></textarea>
+      <div class="word-counter">
+        <span id="wordCount">0</span> / 40 words
+      </div>
+    </section>
+
+    <!-- Submit -->
+    <div class="exam-submit">
+      <button class="submit-btn" id="submitBtn" disabled>Submit Exam →</button>
+      <p class="submit-note">Submission &amp; grading arrive in the next loop.</p>
+    </div>
+  </div>
+
+  <div class="exam-footer">
+    <a href="privacy-policy.html">Privacy</a> ·
+    <a href="terms.html">Terms</a> ·
+    <a href="impressum.html">Impressum</a>
+  </div>
+</main>
 
 <script>
-function showLevel(level) {
-  document.querySelectorAll('.level-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.level-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('panel-' + level).classList.add('active');
-  document.getElementById('tab-' + level).classList.add('active');
-}
+(function () {
+  'use strict';
 
-// Open tab from URL hash e.g. exam-vault.html#a2
-const hash = location.hash.replace('#','');
-if (['a1','a2','b1','b2'].includes(hash)) showLevel(hash);
+  var EXAM_LEVEL   = 'A1';
+  var EXAM_SECTION = 'schreiben';
+  var WORD_TARGET  = 40;
+
+  function el(id) { return document.getElementById(id); }
+  function show(id) { el(id).style.display = ''; }
+  function hide(id) { el(id).style.display = 'none'; }
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function showError(msg) {
+    hide('loadingState');
+    show('errorState');
+    el('errorMsg').textContent = msg || 'Unknown error';
+  }
+
+  // ── Renderers ──────────────────────────────────────────────
+  function renderTask1(task) {
+    el('task1Instructions').textContent = task.instructions || '';
+    el('task1Points').textContent = (task.max_score != null ? task.max_score : '—') + ' points';
+
+    var fields = (task.stimulus && Array.isArray(task.stimulus.fields)) ? task.stimulus.fields : [];
+    var grid = el('task1Form');
+    grid.innerHTML = fields.map(function (field, i) {
+      var id = 't1f' + i;
+      // The "Warum lernen Sie Deutsch?" field is wider — give it the
+      // full row so the question fits comfortably.
+      var fullRow = /\?$/.test(field);
+      return '<div class="form-row' + (fullRow ? ' full' : '') + '">'
+        +    '<label class="form-label" for="' + id + '">' + escapeHtml(field) + '</label>'
+        +    '<input type="text" class="form-input" id="' + id + '"'
+        +    ' name="' + escapeHtml(field) + '" autocomplete="off">'
+        +  '</div>';
+    }).join('');
+  }
+
+  function renderTask2(task) {
+    el('task2Instructions').textContent = task.instructions || '';
+    el('task2Points').textContent = (task.max_score != null ? task.max_score : '—') + ' points';
+
+    var stim = task.stimulus || {};
+    el('task2Message').textContent = stim.message || '';
+
+    // Live word counter
+    var ta      = el('task2Response');
+    var counter = el('wordCount');
+    var wrap    = counter.parentNode;
+    function update() {
+      var v = ta.value.trim();
+      var n = v ? v.split(/\s+/).filter(Boolean).length : 0;
+      counter.textContent = n;
+      wrap.classList.remove('in-range', 'over');
+      if (n >= 30 && n <= WORD_TARGET) wrap.classList.add('in-range');
+      else if (n > WORD_TARGET)        wrap.classList.add('over');
+    }
+    ta.addEventListener('input', update);
+    update();
+  }
+
+  // ── Loader ─────────────────────────────────────────────────
+  function load() {
+    if (typeof dwSupabase === 'undefined') {
+      showError('Supabase client not initialised. Check that supabase-config.js is loading.');
+      return;
+    }
+
+    dwSupabase.from('exams')
+      .select('id, level, title, section, is_published, created_at')
+      .eq('level',        EXAM_LEVEL)
+      .eq('section',      EXAM_SECTION)
+      .eq('is_published', true)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(function (res) {
+        if (res.error) { showError(res.error.message); return null; }
+        if (!res.data) { showError('No published A1 Schreiben exam found.'); return null; }
+
+        var exam = res.data;
+        el('examTitle').textContent = exam.title || 'A1 Schreiben';
+
+        return dwSupabase.from('exam_tasks')
+          .select('task_number, task_type, instructions, stimulus, max_score, order_index')
+          .eq('exam_id', exam.id)
+          .order('order_index', { ascending: true });
+      })
+      .then(function (tres) {
+        if (!tres) return;
+        if (tres.error) { showError(tres.error.message); return; }
+
+        var tasks = tres.data || [];
+        var task1 = tasks.find(function (t) { return t.task_number === 1; });
+        var task2 = tasks.find(function (t) { return t.task_number === 2; });
+        if (!task1 || !task2) {
+          showError('Exam tasks are missing or incomplete.');
+          return;
+        }
+
+        renderTask1(task1);
+        renderTask2(task2);
+
+        hide('loadingState');
+        show('examContent');
+      });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', load);
+  } else {
+    load();
+  }
+})();
 </script>
+
 <script src="./cookie-banner.js"></script>
 </body>
 </html>
