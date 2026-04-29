@@ -131,6 +131,14 @@
   .task-instructions {
     font-size: 14.5px; color: var(--dark); line-height: 1.7;
     margin-bottom: 18px;
+    /* Newlines in the data — used to render the bilingual
+       🇩🇪 / 🇬🇧 lines on separate rows — must be preserved. */
+    white-space: pre-line;
+  }
+  .task-instructions .lang-en {
+    display: block;
+    color: var(--mid); font-size: 13px; font-style: italic;
+    margin-top: 4px;
   }
 
   /* ── Task: form fill (Schreiben) ─────────────────────────── */
@@ -612,7 +620,7 @@
     <div id="taskCards"></div>
 
     <div class="exam-submit" id="submitArea">
-      <button class="submit-btn" id="submitBtn" disabled>Submit Exam →</button>
+      <button class="submit-btn" id="submitBtn" disabled>Prüfung abgeben →</button>
       <p class="submit-note" id="submitNote">Complete all questions to enable submit.</p>
     </div>
   </div>
@@ -628,7 +636,7 @@
   <div id="resultsArea" style="display:none;">
     <div class="results-hero">
       <div>
-        <div class="results-eyebrow">Your Score</div>
+        <div class="results-eyebrow">Dein Ergebnis</div>
         <div class="results-total-num">
           <span id="resTotal">—</span><span class="total-max"> / <span id="resTotalMax">—</span></span>
         </div>
@@ -674,11 +682,12 @@
   var API_BASE      = 'https://deutschweg.onrender.com';
 
   // ── Module state ───────────────────────────────────────────
-  var currentSection = 'schreiben'; // 'schreiben' | 'lesen'
-  var currentExamId  = null;
-  var currentExamMax = 20;          // sum of task max_scores (set after load)
-  var currentTasks   = [];          // ordered tasks from Supabase
-  var task1Fields    = [];          // Schreiben Task 1 field labels (form_fill)
+  var currentSection    = 'schreiben'; // 'schreiben' | 'lesen'
+  var currentExamId     = null;
+  var currentExamLevel  = 'A1';        // 'A1' | 'A2' | 'B1' | 'B2'
+  var currentExamMax    = 20;          // sum of task max_scores (set after load)
+  var currentTasks      = [];          // ordered tasks from Supabase
+  var task1Fields       = [];          // Schreiben Task 1 field labels (form_fill)
 
   // ── Utilities ──────────────────────────────────────────────
   function el(id) { return document.getElementById(id); }
@@ -707,6 +716,34 @@
     el('pillLesen').classList.toggle('active',     section === 'lesen');
   }
 
+  // ── Bilingual instruction helper ───────────────────────────
+  // Source data stores instructions in two-line form:
+  //   🇩🇪 <German line>\n🇬🇧 <English line>
+  // Rendering rules:
+  //   A1 → show both lines (German bold + English italic clarifier)
+  //   A2 → show both lines (kept; data is allowed to omit the English
+  //        line when not needed — just renders a single line)
+  //   B1, B2 → strip the 🇬🇧 line entirely; German only
+  // Returns an HTML string ready to drop into a .task-instructions
+  // element (escaped + tagged with .lang-en for the English line).
+  function formatInstructions(raw, level) {
+    var text = String(raw == null ? '' : raw);
+    var lines = text.split(/\r?\n/);
+    var stripEnglish = (level === 'B1' || level === 'B2');
+    var out = [];
+    lines.forEach(function (line) {
+      var trimmed = line.trim();
+      if (!trimmed) return;
+      if (/^🇬🇧/.test(trimmed)) {
+        if (stripEnglish) return;
+        out.push('<span class="lang-en">' + escapeHtml(trimmed) + '</span>');
+      } else {
+        out.push(escapeHtml(trimmed));
+      }
+    });
+    return out.join('\n');
+  }
+
   // ── Renderers (per task_type) ──────────────────────────────
   function renderTaskCards(tasks) {
     var container = el('taskCards');
@@ -715,13 +752,14 @@
       var card = document.createElement('section');
       card.className = 'task-card';
       var tNum = task.task_number || (i + 1);
-      var pts  = (task.max_score != null ? task.max_score : '—') + ' points';
+      var pts  = (task.max_score != null ? task.max_score : '—') + ' Punkte';
+      var insHtml = formatInstructions(task.instructions, currentExamLevel);
       card.innerHTML =
         '<header class="task-header">'
-      +   '<span class="task-num">Task ' + tNum + '</span>'
+      +   '<span class="task-num">Aufgabe ' + tNum + '</span>'
       +   '<span class="task-points">' + pts + '</span>'
       + '</header>'
-      + '<p class="task-instructions">' + escapeHtml(task.instructions || '') + '</p>'
+      + '<p class="task-instructions">' + insHtml + '</p>'
       + '<div class="task-body" data-task-num="' + tNum + '" data-task-type="' + task.task_type + '"></div>';
       container.appendChild(card);
       var body = card.querySelector('.task-body');
@@ -757,11 +795,11 @@
     var stim = task.stimulus || {};
     body.innerHTML =
         '<div class="stimulus-box">'
-      +   '<div class="stimulus-label">Message from Lukas</div>'
+      +   '<div class="stimulus-label">Nachricht von Lukas</div>'
       +   '<p class="stimulus-text">' + escapeHtml(stim.message || '') + '</p>'
       + '</div>'
       + '<textarea class="response-area" id="task2Response" rows="6" placeholder="Schreib deine Antwort hier…"></textarea>'
-      + '<div class="word-counter"><span id="wordCount">0</span> / 40 words</div>';
+      + '<div class="word-counter"><span id="wordCount">0</span> / 40 Wörter</div>';
 
     var ta      = el('task2Response');
     var counter = el('wordCount');
@@ -853,7 +891,7 @@
     var stim = task.stimulus || {};
     var people = stim.people || [];
     var places = stim.places || [];
-    var optionsHtml = '<option value="">— Choose —</option>'
+    var optionsHtml = '<option value="">— Auswählen —</option>'
       + places.map(function (p) { return '<option value="' + escapeHtml(p) + '">' + escapeHtml(p) + '</option>'; }).join('');
     body.innerHTML =
         '<div class="match-grid">'
@@ -1161,7 +1199,7 @@
     if (typeof total === 'number' && typeof max === 'number' && max > 0) {
       var pct = Math.round((total / max) * 100);
       var passed = (total / max) >= PASS_RATIO;
-      el('resPct').textContent = pct + '% — ' + (passed ? 'pass' : 'keep practising');
+      el('resPct').textContent = pct + '% — ' + (passed ? 'bestanden' : 'weiter üben');
     } else {
       el('resPct').textContent = '';
     }
@@ -1190,8 +1228,8 @@
     var t1 = (g.task1 && typeof g.task1.score === 'number') ? g.task1.score : '—';
     var t2 = (g.task2 && typeof g.task2.score === 'number') ? g.task2.score : '—';
     setTaskPills([
-      { label: 'Task 1', score: t1, max: 8 },
-      { label: 'Task 2', score: t2, max: 12 }
+      { label: 'Aufgabe 1', score: t1, max: 8 },
+      { label: 'Aufgabe 2', score: t2, max: 12 }
     ]);
 
     var rubric = (g.task2 && g.task2.rubric) || {};
@@ -1241,21 +1279,18 @@
     setHero(graded.total, graded.max);
 
     setTaskPills(graded.details.map(function (d) {
-      var label = d.type === 'multiple_choice' ? 'Multiple Choice'
-                : d.type === 'true_false'      ? 'True / False'
-                :                                'Matching';
-      return { label: 'Task ' + d.task_number, score: d.score, max: d.max };
+      return { label: 'Aufgabe ' + d.task_number, score: d.score, max: d.max };
     }));
 
     var bodyHtml = graded.details.map(function (d) {
-      var typeLabel = d.type === 'multiple_choice' ? 'Multiple Choice'
-                    : d.type === 'true_false'      ? 'True / False'
-                    :                                'Matching';
+      var typeLabel = d.type === 'multiple_choice' ? 'Multiple-Choice'
+                    : d.type === 'true_false'      ? 'Richtig / Falsch'
+                    :                                'Zuordnung';
       var rowsHtml = d.items.map(function (item) {
         return renderLesenReviewRow(d.type, item);
       }).join('');
       return '<div class="results-section">'
-        + '<h3 class="results-h">Task ' + d.task_number + ' — ' + typeLabel + ' (' + d.score + ' / ' + d.max + ')</h3>'
+        + '<h3 class="results-h">Aufgabe ' + d.task_number + ' — ' + typeLabel + ' (' + d.score + ' / ' + d.max + ')</h3>'
         + '<div class="lesen-review">' + rowsHtml + '</div>'
         + '</div>';
     }).join('');
@@ -1275,25 +1310,25 @@
       qText = item.q;
       var your = item.your ? item.your.toUpperCase() : '—';
       var yourTxt = item.your_text ? ' (' + item.your_text + ')' : '';
-      yourLine = '<div class="lr-yours">Your answer: <strong>' + escapeHtml(your) + escapeHtml(yourTxt) + '</strong></div>';
+      yourLine = '<div class="lr-yours">Deine Antwort: <strong>' + escapeHtml(your) + escapeHtml(yourTxt) + '</strong></div>';
       if (!ok) {
-        correctLine = '<div class="lr-correct">Correct: <strong>' + escapeHtml((item.correct || '').toUpperCase())
+        correctLine = '<div class="lr-correct">Richtige Antwort: <strong>' + escapeHtml((item.correct || '').toUpperCase())
           + (item.correct_text ? ' (' + escapeHtml(item.correct_text) + ')' : '') + '</strong></div>';
       }
     }
     else if (type === 'true_false') {
       qText = item.s;
       var yourTxt = item.your === null ? '—' : (item.your ? '✓ Richtig' : '✗ Falsch');
-      yourLine = '<div class="lr-yours">Your answer: <strong>' + escapeHtml(yourTxt) + '</strong></div>';
+      yourLine = '<div class="lr-yours">Deine Antwort: <strong>' + escapeHtml(yourTxt) + '</strong></div>';
       if (!ok) {
-        correctLine = '<div class="lr-correct">Correct: <strong>' + (item.correct ? '✓ Richtig' : '✗ Falsch') + '</strong></div>';
+        correctLine = '<div class="lr-correct">Richtige Antwort: <strong>' + (item.correct ? '✓ Richtig' : '✗ Falsch') + '</strong></div>';
       }
     }
     else if (type === 'matching') {
       qText = '<strong>' + escapeHtml(item.person) + ':</strong> ' + escapeHtml(item.text || '');
-      yourLine = '<div class="lr-yours">Your answer: <strong>' + escapeHtml(item.your || '—') + '</strong></div>';
+      yourLine = '<div class="lr-yours">Deine Antwort: <strong>' + escapeHtml(item.your || '—') + '</strong></div>';
       if (!ok) {
-        correctLine = '<div class="lr-correct">Correct: <strong>' + escapeHtml(item.correct || '—') + '</strong></div>';
+        correctLine = '<div class="lr-correct">Richtige Antwort: <strong>' + escapeHtml(item.correct || '—') + '</strong></div>';
       }
     }
 
@@ -1448,7 +1483,8 @@
         if (!res.data) { showLoadError('No published A1 ' + currentSection + ' exam found.'); return null; }
 
         var exam = res.data;
-        currentExamId = exam.id;
+        currentExamId    = exam.id;
+        currentExamLevel = exam.level || 'A1';
         el('examTitle').textContent = exam.title || ('A1 ' + currentSection);
         el('examSub').textContent = currentSection === 'schreiben'
           ? 'Goethe-format Schreiben practice with two tasks. Fill in all 6 form fields and write at least 20 words for the message — then submit for instant AI grading.'
