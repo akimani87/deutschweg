@@ -279,6 +279,59 @@
     margin: 4px 0 0;
   }
 
+  /* "Your attempt has been saved" notice — appears after a successful
+     write to exam_attempts. Hidden when the user is anonymous. */
+  .saved-notice {
+    margin-top: 14px;
+    background: var(--green-light); border: 1px solid var(--green-border);
+    border-radius: var(--radius-md);
+    padding: 10px 16px;
+    font-size: 13.5px; font-weight: 700; color: #065F46;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .saved-notice .saved-check {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--green); color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  /* Exam history — last 3 attempts at the bottom of the page. Each row
+     has a date on the left, a score in the middle, and a pass/fail
+     badge on the right. */
+  .history-empty {
+    font-size: 13.5px; color: var(--mid); line-height: 1.7;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .history-list { display: flex; flex-direction: column; gap: 8px; }
+  .history-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    background: var(--bg);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+  }
+  .history-date {
+    font-size: 13.5px; color: var(--mid); font-weight: 600; flex: 1;
+  }
+  .history-score {
+    font-size: 14px; font-weight: 800; color: var(--dark);
+    font-variant-numeric: tabular-nums;
+    min-width: 60px; text-align: right;
+  }
+  .history-status {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.5px;
+    padding: 4px 10px; border-radius: 50px;
+    display: inline-flex; align-items: center; gap: 4px;
+    min-width: 70px; justify-content: center;
+  }
+  .history-status.pass { background: var(--green-light); color: #065F46; border: 1px solid var(--green-border); }
+  .history-status.fail { background: var(--red-light);   color: #991B1B; border: 1px solid #FECACA; }
+
   /* Rubric breakdown — 4 cards, 2x2 on desktop, single column on mobile */
   .rubric-grid {
     display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
@@ -446,7 +499,24 @@
       <h3 class="results-h">Next Practice</h3>
       <p class="results-next" id="resNext"></p>
     </div>
+
+    <!-- Save confirmation — appears only after a successful Supabase
+         insert (anonymous users see results but no save notice). -->
+    <div id="savedNotice" class="saved-notice" style="display:none;">
+      <span class="saved-check">✓</span>
+      <span>Your attempt has been saved</span>
+    </div>
   </div>
+
+  <!-- Exam history — last 3 attempts for the signed-in user. Hidden
+       entirely for anonymous users. -->
+  <section id="historyArea" class="results-section" style="display:none; margin-top: 28px;">
+    <h3 class="results-h">Your Recent Attempts</h3>
+    <div id="historyEmpty" class="history-empty" style="display:none;">
+      No attempts yet — take your first exam above.
+    </div>
+    <div id="historyList" class="history-list"></div>
+  </section>
 
   <div class="exam-footer">
     <a href="privacy-policy.html">Privacy</a> ·
@@ -464,11 +534,17 @@
   var WORD_TARGET   = 40;
   var WORD_MIN_OK   = 20;       // minimum to enable submit
   var WORD_GREEN_LO = 30;       // green band lower bound
+  var PASS_SCORE    = 14;       // pass = 14/20 or above
+  var MAX_SCORE     = 20;
   var API_BASE      = 'https://deutschweg.onrender.com';
 
   // Field labels in the order they're rendered (populated after Task 1
   // renders). Used for collecting the form into a name-keyed object.
   var task1Fields = [];
+
+  // Captured at load time so submitExam / loadHistory can reference the
+  // current exam without re-querying.
+  var currentExamId = null;
 
   function el(id) { return document.getElementById(id); }
   function show(id) { el(id).style.display = ''; }
@@ -590,7 +666,10 @@
     var task1 = collectTask1();
     var task2 = el('task2Response').value.trim();
 
-    // Move from form → grading state
+    // Move from form → grading state. Reset any leftover results /
+    // saved-notice state from a previous retry attempt.
+    hide('resultsArea');
+    hide('savedNotice');
     hide('submitArea');
     setFormDisabled(true);
     show('gradingState');
@@ -610,6 +689,14 @@
           show('resultsArea');
           // Scroll the results into view
           el('resultsArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // Persist the attempt for signed-in users (silent no-op for
+          // anonymous). Refresh the history list if the save lands.
+          saveAttempt(res.body, task1, task2).then(function (saved) {
+            if (saved) {
+              show('savedNotice');
+              loadHistory();
+            }
+          });
         } else {
           showGradingError(res.body && res.body.error);
         }
@@ -618,6 +705,128 @@
         hide('gradingState');
         showGradingError('Connection issue: ' + (err && err.message ? err.message : 'try again'));
       });
+  }
+
+  // ── Save attempt to Supabase ────────────────────────────────
+  // Skips silently for anonymous users (no error surfaced — results
+  // still render). Returns the inserted row on success, null otherwise.
+  function saveAttempt(grading, task1, task2) {
+    if (typeof dwSupabase === 'undefined' || !currentExamId) {
+      console.log('[exam] save skipped — Supabase or exam_id missing');
+      return Promise.resolve(null);
+    }
+
+    return dwSupabase.auth.getUser().then(function (authRes) {
+      var user = authRes && authRes.data && authRes.data.user;
+      if (!user) {
+        console.log('[exam] save skipped — anonymous user');
+        return null;
+      }
+
+      var totalScore = (grading.total && typeof grading.total.score === 'number')
+        ? grading.total.score : null;
+      var task1Score = (grading.task1 && typeof grading.task1.score === 'number')
+        ? grading.task1.score : null;
+      var task2Score = (grading.task2 && typeof grading.task2.score === 'number')
+        ? grading.task2.score : null;
+
+      var payload = {
+        user_id:      user.id,
+        exam_id:      currentExamId,
+        answers:      { task1: task1, task2: task2 },
+        scores:       { task1_score: task1Score, task2_score: task2Score, total_score: totalScore },
+        feedback:     grading,
+        total_score:  totalScore,
+        max_score:    MAX_SCORE,
+        completed_at: new Date().toISOString()
+      };
+      console.log('[exam] saveAttempt → inserting payload', payload);
+
+      return dwSupabase.from('exam_attempts').insert(payload).select().then(function (res) {
+        if (res.error) {
+          console.error('[exam] save FAILED', {
+            message: res.error.message, code: res.error.code,
+            details: res.error.details, hint: res.error.hint, status: res.status
+          });
+          return null;
+        }
+        console.log('[exam] ✓ attempt saved', res.data && res.data[0]);
+        return res.data && res.data[0];
+      });
+    }).catch(function (e) {
+      console.error('[exam] save threw:', e);
+      return null;
+    });
+  }
+
+  // ── History (last 3 attempts) ───────────────────────────────
+  function loadHistory() {
+    if (typeof dwSupabase === 'undefined' || !currentExamId) return;
+
+    dwSupabase.auth.getUser().then(function (authRes) {
+      var user = authRes && authRes.data && authRes.data.user;
+      if (!user) {
+        // Anonymous — no history to show. Hide the section entirely.
+        hide('historyArea');
+        return;
+      }
+
+      dwSupabase.from('exam_attempts')
+        .select('id, total_score, max_score, completed_at')
+        .eq('user_id', user.id)
+        .eq('exam_id', currentExamId)
+        .order('completed_at', { ascending: false })
+        .limit(3)
+        .then(function (res) {
+          if (res.error) {
+            console.error('[exam] history load failed', res.error);
+            hide('historyArea');
+            return;
+          }
+          renderHistory(res.data || []);
+          show('historyArea');
+        });
+    });
+  }
+
+  function formatDate(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    if (isNaN(d)) return iso;
+    try {
+      return new Intl.DateTimeFormat('en-GB', {
+        day: 'numeric', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      }).format(d);
+    } catch (_) {
+      return d.toISOString().slice(0, 16).replace('T', ' ');
+    }
+  }
+
+  function renderHistory(rows) {
+    var listEl  = el('historyList');
+    var emptyEl = el('historyEmpty');
+    if (!rows.length) {
+      listEl.innerHTML = '';
+      hide('historyList');
+      show('historyEmpty');
+      emptyEl.textContent = 'No attempts yet — take your first exam above.';
+      return;
+    }
+    hide('historyEmpty');
+    show('historyList');
+    listEl.innerHTML = rows.map(function (r) {
+      var score = (typeof r.total_score === 'number') ? r.total_score : '—';
+      var max   = (typeof r.max_score   === 'number') ? r.max_score   : MAX_SCORE;
+      var passed = (typeof r.total_score === 'number') && r.total_score >= PASS_SCORE;
+      var statusCls = passed ? 'pass' : 'fail';
+      var statusTxt = passed ? '✓ Pass' : '✗ Retry';
+      return '<div class="history-row">'
+        + '<span class="history-date">' + escapeHtml(formatDate(r.completed_at)) + '</span>'
+        + '<span class="history-score">' + escapeHtml(score) + ' / ' + escapeHtml(max) + '</span>'
+        + '<span class="history-status ' + statusCls + '">' + statusTxt + '</span>'
+        + '</div>';
+    }).join('');
   }
 
   function showGradingError(msg) {
@@ -697,6 +906,7 @@
         if (!res.data) { showLoadError('No published A1 Schreiben exam found.'); return null; }
 
         var exam = res.data;
+        currentExamId = exam.id;
         el('examTitle').textContent = exam.title || 'A1 Schreiben';
 
         return dwSupabase.from('exam_tasks')
@@ -729,6 +939,9 @@
         // Wake the Render server early so the first grading request
         // doesn't pay cold-start latency.
         fetch(API_BASE + '/').catch(function () {});
+
+        // Load past attempts (only renders for signed-in users).
+        loadHistory();
       });
   }
 
