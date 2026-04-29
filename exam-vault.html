@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
 <!-- DW SEO INJECT -->
-<title>A1 Schreiben — DeutschWeg</title>
-<meta name="title" content="A1 Schreiben — Prüfungsvorbereitung | DeutschWeg">
-<meta name="description" content="Practise the A1 Schreiben (writing) section of the Goethe exam. Two tasks: a form fill and a short message. Built for African learners.">
+<title>Exam Vault — DeutschWeg</title>
+<meta name="title" content="Exam Vault — Goethe A1 Schreiben + Lesen | DeutschWeg">
+<meta name="description" content="Practise the Goethe A1 Schreiben (writing) and Lesen (reading) sections. Auto-graded with detailed feedback. Built for African learners.">
 <meta name="keywords" content="Goethe exam, German exam Africa, learn German Kenya, Goethe A1 B1, German certificate, Ausbildung German, family reunification German">
 <meta name="robots" content="index, follow">
 <meta name="language" content="English">
@@ -16,13 +16,13 @@
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://deutschweg.de/exam-vault">
-<meta property="og:title" content="A1 Schreiben — Prüfungsvorbereitung | DeutschWeg">
-<meta property="og:description" content="Goethe-format Schreiben practice with two tasks. Take it like the real exam.">
+<meta property="og:title" content="Exam Vault — Goethe A1 Schreiben + Lesen | DeutschWeg">
+<meta property="og:description" content="Goethe-format Schreiben + Lesen practice with auto-grading. Take it like the real exam.">
 <meta property="og:image" content="https://deutschweg.de/og-image.png">
 
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="A1 Schreiben — DeutschWeg">
-<meta name="twitter:description" content="Goethe-format A1 Schreiben practice. Two tasks. Built for African learners.">
+<meta name="twitter:title" content="Exam Vault — DeutschWeg">
+<meta name="twitter:description" content="Goethe A1 Schreiben + Lesen practice. Built for African learners.">
 <meta name="twitter:image" content="https://deutschweg.de/og-image.png">
 <!-- /DW SEO INJECT -->
 
@@ -66,7 +66,30 @@
     font-size: 30px; font-weight: 800; color: var(--dark);
     letter-spacing: -0.5px; line-height: 1.25; margin-bottom: 10px;
   }
-  .exam-sub { font-size: 15px; color: var(--mid); line-height: 1.7; margin-bottom: 28px; }
+  .exam-sub { font-size: 15px; color: var(--mid); line-height: 1.7; margin-bottom: 22px; }
+
+  /* ── Exam selector (Schreiben / Lesen) ───────────────────── */
+  .exam-selector {
+    display: flex; gap: 6px;
+    background: #fff; border: 1px solid var(--border);
+    border-radius: 14px; padding: 5px;
+    margin-bottom: 26px;
+    box-shadow: var(--shadow-sm);
+  }
+  .exam-pill {
+    flex: 1; padding: 10px 14px;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--mid); font-weight: 700; font-size: 13.5px;
+    text-decoration: none; text-align: center;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    transition: all .18s;
+    border: 1.5px solid transparent;
+  }
+  .exam-pill:hover { color: var(--blue); background: var(--blue-light); }
+  .exam-pill.active {
+    background: var(--blue-light); color: var(--blue); border-color: var(--blue-mid);
+  }
 
   /* ── Loading + error states ──────────────────────────────── */
   .state {
@@ -110,7 +133,7 @@
     margin-bottom: 18px;
   }
 
-  /* ── Task 1 form grid ────────────────────────────────────── */
+  /* ── Task: form fill (Schreiben) ─────────────────────────── */
   .form-grid {
     display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px;
   }
@@ -132,9 +155,9 @@
     border-color: var(--blue); background: #fff;
     box-shadow: 0 0 0 3px rgba(59,130,246,0.10);
   }
-  .form-input::placeholder { color: var(--light); }
+  .form-input:disabled { background: var(--bg); color: var(--mid); }
 
-  /* ── Task 2 stimulus + textarea ──────────────────────────── */
+  /* ── Task: short message (Schreiben) ─────────────────────── */
   .stimulus-box {
     background: var(--blue-light); border: 1px solid var(--blue-mid);
     border-radius: var(--radius-md); padding: 14px 18px;
@@ -162,6 +185,7 @@
     border-color: var(--blue); background: #fff;
     box-shadow: 0 0 0 3px rgba(59,130,246,0.10);
   }
+  .response-area:disabled { background: var(--bg); color: var(--mid); }
   .word-counter {
     text-align: right; margin-top: 8px;
     font-size: 12.5px; font-weight: 600; color: var(--light);
@@ -170,10 +194,148 @@
   .word-counter.in-range { color: var(--green); }
   .word-counter.over     { color: var(--amber); }
 
-  /* ── Submit ──────────────────────────────────────────────── */
-  .exam-submit {
-    margin-top: 26px; text-align: center;
+  /* ── Task: multiple choice (Lesen) ───────────────────────── */
+  .notice-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+    font-family: 'Plus Jakarta Sans', monospace;
+    font-size: 14px; color: var(--dark);
+    white-space: pre-wrap; line-height: 1.75;
   }
+  .mc-questions { list-style: none; padding: 0; margin: 0; counter-reset: q; }
+  .mc-question { margin-bottom: 18px; counter-increment: q; }
+  .mc-question:last-child { margin-bottom: 0; }
+  .mc-q-text {
+    font-size: 14.5px; font-weight: 700; color: var(--dark);
+    margin: 0 0 10px; line-height: 1.5;
+  }
+  .mc-q-text::before { content: counter(q) ". "; color: var(--blue); }
+  .mc-options { display: flex; flex-direction: column; gap: 8px; }
+  .mc-option {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer; transition: all .18s;
+  }
+  .mc-option:hover { border-color: var(--blue); background: var(--blue-light); }
+  .mc-option.selected {
+    background: var(--blue-light);
+    border-color: var(--blue);
+  }
+  .mc-option input[type="radio"] {
+    position: absolute; opacity: 0; pointer-events: none;
+  }
+  .mc-letter {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: #fff;
+    border: 1.5px solid var(--border);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 12px; color: var(--mid);
+    flex-shrink: 0;
+    transition: all .18s;
+  }
+  .mc-option.selected .mc-letter {
+    background: var(--blue); border-color: var(--blue); color: #fff;
+  }
+  .mc-text { font-size: 14px; color: var(--dark); }
+
+  /* ── Task: true/false (Lesen) ────────────────────────────── */
+  .chat-bubble {
+    background: #DCF8C6;
+    border-radius: 16px 16px 16px 4px;
+    padding: 12px 16px;
+    margin-bottom: 18px;
+    max-width: 92%;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+  .chat-meta {
+    font-size: 11px; font-weight: 700; color: #527250;
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+  }
+  .chat-text {
+    font-size: 14.5px; color: #1F2937; line-height: 1.65;
+    white-space: pre-wrap;
+    margin: 0;
+  }
+  .tf-statements { list-style: none; padding: 0; margin: 0; counter-reset: s; }
+  .tf-statement {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    padding: 11px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-bottom: 8px;
+    counter-increment: s;
+  }
+  .tf-statement:last-child { margin-bottom: 0; }
+  .tf-text {
+    font-size: 14px; color: var(--dark); flex: 1; line-height: 1.5; margin: 0;
+  }
+  .tf-text::before { content: counter(s) ". "; color: var(--blue); font-weight: 700; }
+  .tf-buttons { display: flex; gap: 6px; flex-shrink: 0; }
+  .tf-btn {
+    padding: 7px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit; font-size: 12.5px; font-weight: 700;
+    background: #fff; color: var(--mid);
+    cursor: pointer; transition: all .18s;
+    white-space: nowrap;
+  }
+  .tf-btn:hover:not(:disabled) { color: var(--blue); border-color: var(--blue); }
+  .tf-btn.selected.tf-true {
+    background: var(--green-light); border-color: var(--green); color: #047857;
+  }
+  .tf-btn.selected.tf-false {
+    background: var(--red-light); border-color: var(--red); color: #B91C1C;
+  }
+  .tf-btn:disabled { cursor: not-allowed; }
+
+  /* ── Task: matching (Lesen) ──────────────────────────────── */
+  .match-grid { display: flex; flex-direction: column; gap: 10px; }
+  .match-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+  .match-person { flex: 1; min-width: 0; }
+  .match-name {
+    font-size: 13.5px; font-weight: 800; color: var(--blue);
+    margin-bottom: 4px;
+  }
+  .match-text {
+    font-size: 13.5px; color: var(--dark); line-height: 1.5; margin: 0;
+    font-style: italic;
+  }
+  .match-select {
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 9px 12px;
+    font-family: inherit; font-size: 13.5px;
+    color: var(--dark);
+    outline: none; cursor: pointer;
+    min-width: 150px; flex-shrink: 0;
+    transition: border-color .18s, box-shadow .18s;
+  }
+  .match-select:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.10);
+  }
+  .match-select:disabled { background: var(--bg); color: var(--mid); cursor: not-allowed; }
+
+  /* ── Submit ──────────────────────────────────────────────── */
+  .exam-submit { margin-top: 26px; text-align: center; }
   .submit-btn {
     background: var(--blue); color: #fff;
     border: none; cursor: pointer;
@@ -189,9 +351,7 @@
     opacity: 0.55; cursor: not-allowed;
     background: var(--mid); box-shadow: none;
   }
-  .submit-note {
-    font-size: 12.5px; color: var(--light); margin-top: 10px;
-  }
+  .submit-note { font-size: 12.5px; color: var(--light); margin-top: 10px; }
   .submit-note.ready { color: var(--green); font-weight: 600; }
 
   /* ── Grading state ───────────────────────────────────────── */
@@ -227,7 +387,7 @@
   .results-total-num {
     font-size: 38px; font-weight: 900; line-height: 1; letter-spacing: -1px;
   }
-  .results-total-num span { color: rgba(255,255,255,0.55); font-weight: 700; }
+  .results-total-num span.total-max { color: rgba(255,255,255,0.55); font-weight: 700; }
   .results-pct {
     font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.92);
     margin-top: 4px;
@@ -270,7 +430,6 @@
     border-radius: 0 var(--radius-md) var(--radius-md) 0;
     padding: 14px 18px; margin: 0; font-weight: 600;
   }
-
   .task1-note {
     font-size: 13.5px; color: var(--mid); line-height: 1.7;
     background: var(--bg);
@@ -279,60 +438,7 @@
     margin: 4px 0 0;
   }
 
-  /* "Your attempt has been saved" notice — appears after a successful
-     write to exam_attempts. Hidden when the user is anonymous. */
-  .saved-notice {
-    margin-top: 14px;
-    background: var(--green-light); border: 1px solid var(--green-border);
-    border-radius: var(--radius-md);
-    padding: 10px 16px;
-    font-size: 13.5px; font-weight: 700; color: #065F46;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .saved-notice .saved-check {
-    width: 22px; height: 22px; border-radius: 50%;
-    background: var(--green); color: #fff;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 800;
-    flex-shrink: 0;
-  }
-
-  /* Exam history — last 3 attempts at the bottom of the page. Each row
-     has a date on the left, a score in the middle, and a pass/fail
-     badge on the right. */
-  .history-empty {
-    font-size: 13.5px; color: var(--mid); line-height: 1.7;
-    background: var(--bg);
-    border-radius: var(--radius-sm);
-    padding: 14px 16px;
-    text-align: center;
-  }
-  .history-list { display: flex; flex-direction: column; gap: 8px; }
-  .history-row {
-    display: flex; align-items: center; gap: 12px;
-    padding: 12px 14px;
-    background: var(--bg);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border);
-  }
-  .history-date {
-    font-size: 13.5px; color: var(--mid); font-weight: 600; flex: 1;
-  }
-  .history-score {
-    font-size: 14px; font-weight: 800; color: var(--dark);
-    font-variant-numeric: tabular-nums;
-    min-width: 60px; text-align: right;
-  }
-  .history-status {
-    font-size: 11px; font-weight: 800; letter-spacing: 0.5px;
-    padding: 4px 10px; border-radius: 50px;
-    display: inline-flex; align-items: center; gap: 4px;
-    min-width: 70px; justify-content: center;
-  }
-  .history-status.pass { background: var(--green-light); color: #065F46; border: 1px solid var(--green-border); }
-  .history-status.fail { background: var(--red-light);   color: #991B1B; border: 1px solid #FECACA; }
-
-  /* Rubric breakdown — 4 cards, 2x2 on desktop, single column on mobile */
+  /* ── Schreiben rubric breakdown ──────────────────────────── */
   .rubric-grid {
     display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
   }
@@ -361,14 +467,88 @@
     background: #fff; border: 1px solid var(--blue-mid);
     border-radius: 8px; padding: 7px 10px;
   }
-  @media (max-width: 600px) {
-    .rubric-grid { grid-template-columns: 1fr; }
-    .results-hero { padding: 22px 20px; }
-    .results-task-scores { margin-left: 0; width: 100%; }
-    .results-task-pill { flex: 1; min-width: 0; }
-  }
 
-  /* ── Footer links ────────────────────────────────────────── */
+  /* ── Lesen review (per-question correctness) ─────────────── */
+  .lesen-review { display: flex; flex-direction: column; gap: 8px; }
+  .lr-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+  }
+  .lr-row.correct { border-color: var(--green-border); background: var(--green-light); }
+  .lr-row.wrong   { border-color: #FECACA;             background: var(--red-light); }
+  .lr-icon {
+    width: 22px; height: 22px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; color: #fff; flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .lr-row.correct .lr-icon { background: var(--green); }
+  .lr-row.wrong   .lr-icon { background: var(--red); }
+  .lr-body { flex: 1; min-width: 0; }
+  .lr-q   { font-size: 13.5px; font-weight: 700; color: var(--dark); margin-bottom: 4px; line-height: 1.5; }
+  .lr-yours { font-size: 12.5px; color: var(--mid); }
+  .lr-yours strong { color: var(--dark); }
+  .lr-correct {
+    font-size: 12.5px; font-weight: 700; color: #047857;
+    margin-top: 4px;
+  }
+  .lr-correct strong { color: #065F46; }
+
+  /* ── Save notice + history ───────────────────────────────── */
+  .saved-notice {
+    margin-top: 14px;
+    background: var(--green-light); border: 1px solid var(--green-border);
+    border-radius: var(--radius-md);
+    padding: 10px 16px;
+    font-size: 13.5px; font-weight: 700; color: #065F46;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .saved-notice .saved-check {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--green); color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800;
+    flex-shrink: 0;
+  }
+  .history-empty {
+    font-size: 13.5px; color: var(--mid); line-height: 1.7;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .history-list { display: flex; flex-direction: column; gap: 8px; }
+  .history-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    background: var(--bg);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+  }
+  .history-icon {
+    font-size: 18px; flex-shrink: 0;
+  }
+  .history-meta { flex: 1; min-width: 0; }
+  .history-title { font-size: 13.5px; font-weight: 700; color: var(--dark); margin-bottom: 2px; }
+  .history-date { font-size: 12px; color: var(--light); }
+  .history-score {
+    font-size: 14px; font-weight: 800; color: var(--dark);
+    font-variant-numeric: tabular-nums;
+    min-width: 60px; text-align: right;
+  }
+  .history-status {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.5px;
+    padding: 4px 10px; border-radius: 50px;
+    display: inline-flex; align-items: center; gap: 4px;
+    min-width: 70px; justify-content: center;
+  }
+  .history-status.pass { background: var(--green-light); color: #065F46; border: 1px solid var(--green-border); }
+  .history-status.fail { background: var(--red-light);   color: #991B1B; border: 1px solid #FECACA; }
+
+  /* ── Footer ──────────────────────────────────────────────── */
   .exam-footer {
     margin-top: 36px; text-align: center;
     font-size: 13px; color: var(--light);
@@ -381,6 +561,14 @@
     .task-card { padding: 22px 18px 20px; }
     .exam-title { font-size: 24px; }
     .form-grid { grid-template-columns: 1fr; }
+    .rubric-grid { grid-template-columns: 1fr; }
+    .results-hero { padding: 22px 20px; }
+    .results-task-scores { margin-left: 0; width: 100%; }
+    .results-task-pill { flex: 1; min-width: 0; }
+    .match-row { flex-direction: column; align-items: stretch; }
+    .match-select { width: 100%; }
+    .tf-statement { flex-direction: column; align-items: stretch; }
+    .tf-buttons { justify-content: flex-end; }
   }
 </style>
 </head>
@@ -396,6 +584,17 @@
 
 <main class="exam-wrap">
 
+  <!-- Eyebrow + page-level title (consistent across both exams) -->
+  <div class="exam-eyebrow">A1 · Exam Vault</div>
+  <h1 class="exam-title" id="examTitle">Loading…</h1>
+  <p class="exam-sub" id="examSub">Goethe-format A1 practice with auto-grading. Pick an exam and take it like the real thing.</p>
+
+  <!-- Exam selector -->
+  <div class="exam-selector" role="tablist" aria-label="Choose exam">
+    <a href="?section=schreiben" class="exam-pill" id="pillSchreiben" role="tab">📝 Schreiben</a>
+    <a href="?section=lesen"     class="exam-pill" id="pillLesen"     role="tab">📖 Lesen</a>
+  </div>
+
   <!-- Loading state -->
   <div id="loadingState" class="state">
     <div class="spinner"></div>
@@ -408,108 +607,45 @@
     <p id="errorMsg"></p>
   </div>
 
-  <!-- Exam content -->
+  <!-- Exam content (task cards rendered dynamically) -->
   <div id="examContent" style="display:none;">
-    <div class="exam-eyebrow">A1 · Schreiben</div>
-    <h1 class="exam-title" id="examTitle"></h1>
-    <p class="exam-sub">Goethe-format Schreiben practice with two tasks. Fill in all six form fields and write at least 20 words for the message — then submit for instant AI grading.</p>
+    <div id="taskCards"></div>
 
-    <!-- Task 1: form fill -->
-    <section class="task-card" id="task1Card">
-      <header class="task-header">
-        <span class="task-num">Task 1</span>
-        <span class="task-points" id="task1Points">— points</span>
-      </header>
-      <p class="task-instructions" id="task1Instructions"></p>
-      <div class="form-grid" id="task1Form"></div>
-    </section>
-
-    <!-- Task 2: short message -->
-    <section class="task-card" id="task2Card">
-      <header class="task-header">
-        <span class="task-num">Task 2</span>
-        <span class="task-points" id="task2Points">— points</span>
-      </header>
-      <p class="task-instructions" id="task2Instructions"></p>
-      <div class="stimulus-box">
-        <div class="stimulus-label">Message from Lukas</div>
-        <p class="stimulus-text" id="task2Message"></p>
-      </div>
-      <textarea class="response-area" id="task2Response" rows="6" placeholder="Schreib deine Antwort hier…"></textarea>
-      <div class="word-counter">
-        <span id="wordCount">0</span> / 40 words
-      </div>
-    </section>
-
-    <!-- Submit -->
     <div class="exam-submit" id="submitArea">
       <button class="submit-btn" id="submitBtn" disabled>Submit Exam →</button>
-      <p class="submit-note" id="submitNote">Fill all 6 fields and write at least 20 words to enable submit.</p>
+      <p class="submit-note" id="submitNote">Complete all questions to enable submit.</p>
     </div>
   </div>
 
-  <!-- Grading state (shown while Claude is scoring) -->
+  <!-- Grading state (Schreiben → Claude API) -->
   <div id="gradingState" class="grading-card" style="display:none;">
     <div class="spinner"></div>
     <div class="grading-text">Grading your exam…</div>
     <div class="grading-sub">Usually 10–20 seconds. Don't refresh the page.</div>
   </div>
 
-  <!-- Results -->
+  <!-- Results (shape varies per exam section, populated dynamically) -->
   <div id="resultsArea" style="display:none;">
     <div class="results-hero">
       <div>
         <div class="results-eyebrow">Your Score</div>
-        <div class="results-total-num"><span id="resTotal">—</span><span> / 20</span></div>
+        <div class="results-total-num">
+          <span id="resTotal">—</span><span class="total-max"> / <span id="resTotalMax">—</span></span>
+        </div>
         <div class="results-pct" id="resPct"></div>
       </div>
-      <div class="results-task-scores">
-        <div class="results-task-pill">
-          <span class="pill-label">Task 1</span>
-          <span class="pill-num"><span id="resT1">—</span> / 8</span>
-        </div>
-        <div class="results-task-pill">
-          <span class="pill-label">Task 2</span>
-          <span class="pill-num"><span id="resT2">—</span> / 12</span>
-        </div>
-      </div>
+      <div class="results-task-scores" id="resTaskPills"></div>
     </div>
 
-    <div class="results-section">
-      <h3 class="results-h">Task 1 — Form Fill</h3>
-      <p class="task1-note" id="resT1Note"></p>
-    </div>
+    <div id="resultsBody"></div>
 
-    <div class="results-section">
-      <h3 class="results-h">Task 2 — Rubric Breakdown</h3>
-      <div class="rubric-grid" id="rubricGrid"></div>
-    </div>
-
-    <div class="results-section">
-      <h3 class="results-h">Overall Feedback</h3>
-      <p class="results-feedback" id="resFeedback"></p>
-    </div>
-
-    <div class="results-section">
-      <h3 class="results-h">Top Mistakes to Fix</h3>
-      <ul class="results-list" id="resMistakes"></ul>
-    </div>
-
-    <div class="results-section">
-      <h3 class="results-h">Next Practice</h3>
-      <p class="results-next" id="resNext"></p>
-    </div>
-
-    <!-- Save confirmation — appears only after a successful Supabase
-         insert (anonymous users see results but no save notice). -->
     <div id="savedNotice" class="saved-notice" style="display:none;">
       <span class="saved-check">✓</span>
       <span>Your attempt has been saved</span>
     </div>
   </div>
 
-  <!-- Exam history — last 3 attempts for the signed-in user. Hidden
-       entirely for anonymous users. -->
+  <!-- Exam history -->
   <section id="historyArea" class="results-section" style="display:none; margin-top: 28px;">
     <h3 class="results-h">Your Recent Attempts</h3>
     <div id="historyEmpty" class="history-empty" style="display:none;">
@@ -529,102 +665,103 @@
 (function () {
   'use strict';
 
+  // ── Constants ──────────────────────────────────────────────
   var EXAM_LEVEL    = 'A1';
-  var EXAM_SECTION  = 'schreiben';
   var WORD_TARGET   = 40;
-  var WORD_MIN_OK   = 20;       // minimum to enable submit
+  var WORD_MIN_OK   = 20;       // submit-enable threshold for Task 2 message
   var WORD_GREEN_LO = 30;       // green band lower bound
-  var PASS_SCORE    = 14;       // pass = 14/20 or above
-  var MAX_SCORE     = 20;
+  var PASS_RATIO    = 0.7;      // pass = 70% of max — works for both exams
   var API_BASE      = 'https://deutschweg.onrender.com';
 
-  // Field labels in the order they're rendered (populated after Task 1
-  // renders). Used for collecting the form into a name-keyed object.
-  var task1Fields = [];
+  // ── Module state ───────────────────────────────────────────
+  var currentSection = 'schreiben'; // 'schreiben' | 'lesen'
+  var currentExamId  = null;
+  var currentExamMax = 20;          // sum of task max_scores (set after load)
+  var currentTasks   = [];          // ordered tasks from Supabase
+  var task1Fields    = [];          // Schreiben Task 1 field labels (form_fill)
 
-  // Captured at load time so submitExam / loadHistory can reference the
-  // current exam without re-querying.
-  var currentExamId = null;
-
+  // ── Utilities ──────────────────────────────────────────────
   function el(id) { return document.getElementById(id); }
   function show(id) { el(id).style.display = ''; }
   function hide(id) { el(id).style.display = 'none'; }
-
   function escapeHtml(s) {
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
-
   function showLoadError(msg) {
     hide('loadingState');
     show('errorState');
     el('errorMsg').textContent = msg || 'Unknown error';
   }
-
   function wordCount(s) {
     var v = String(s || '').trim();
     return v ? v.split(/\s+/).filter(Boolean).length : 0;
   }
-
-  // ── Validation ──────────────────────────────────────────────
-  function checkSubmitState() {
-    var allFilled = task1Fields.every(function (label, i) {
-      var input = el('t1f' + i);
-      return input && input.value.trim().length > 0;
-    });
-    var n = wordCount(el('task2Response').value);
-    var enough = n >= WORD_MIN_OK;
-
-    var btn  = el('submitBtn');
-    var note = el('submitNote');
-    var ok   = allFilled && enough;
-    btn.disabled = !ok;
-
-    if (ok) {
-      note.textContent = 'Ready to submit. Grading will take 10–20 seconds.';
-      note.classList.add('ready');
-    } else {
-      note.classList.remove('ready');
-      var missing = [];
-      if (!allFilled) missing.push('all 6 fields');
-      if (!enough)    missing.push('at least ' + WORD_MIN_OK + ' words in Task 2 (' + n + ' so far)');
-      note.textContent = 'Fill ' + missing.join(' and ') + ' to enable submit.';
-    }
+  function getActiveSection() {
+    var p = new URLSearchParams(location.search).get('section');
+    return (p === 'lesen' || p === 'schreiben') ? p : 'schreiben';
+  }
+  function activatePill(section) {
+    el('pillSchreiben').classList.toggle('active', section === 'schreiben');
+    el('pillLesen').classList.toggle('active',     section === 'lesen');
   }
 
-  // ── Renderers (load-time) ──────────────────────────────────
-  function renderTask1(task) {
-    el('task1Instructions').textContent = task.instructions || '';
-    el('task1Points').textContent = (task.max_score != null ? task.max_score : '—') + ' points';
+  // ── Renderers (per task_type) ──────────────────────────────
+  function renderTaskCards(tasks) {
+    var container = el('taskCards');
+    container.innerHTML = '';
+    tasks.forEach(function (task, i) {
+      var card = document.createElement('section');
+      card.className = 'task-card';
+      var tNum = task.task_number || (i + 1);
+      var pts  = (task.max_score != null ? task.max_score : '—') + ' points';
+      card.innerHTML =
+        '<header class="task-header">'
+      +   '<span class="task-num">Task ' + tNum + '</span>'
+      +   '<span class="task-points">' + pts + '</span>'
+      + '</header>'
+      + '<p class="task-instructions">' + escapeHtml(task.instructions || '') + '</p>'
+      + '<div class="task-body" data-task-num="' + tNum + '" data-task-type="' + task.task_type + '"></div>';
+      container.appendChild(card);
+      var body = card.querySelector('.task-body');
+      switch (task.task_type) {
+        case 'form_fill':       renderFormFill(task, body); break;
+        case 'short_message':   renderShortMessage(task, body); break;
+        case 'multiple_choice': renderMultipleChoice(task, body); break;
+        case 'true_false':      renderTrueFalse(task, body); break;
+        case 'matching':        renderMatching(task, body); break;
+      }
+    });
+  }
 
+  function renderFormFill(task, body) {
     var fields = (task.stimulus && Array.isArray(task.stimulus.fields)) ? task.stimulus.fields : [];
     task1Fields = fields.slice();
-    var grid = el('task1Form');
-    grid.innerHTML = fields.map(function (field, i) {
+    body.innerHTML = '<div class="form-grid">' + fields.map(function (field, i) {
       var id = 't1f' + i;
-      // Open-ended fields ending in "?" get a full row so the label fits.
       var fullRow = /\?$/.test(field);
       return '<div class="form-row' + (fullRow ? ' full' : '') + '">'
         +    '<label class="form-label" for="' + id + '">' + escapeHtml(field) + '</label>'
         +    '<input type="text" class="form-input" id="' + id + '"'
         +    ' name="' + escapeHtml(field) + '" autocomplete="off">'
         +  '</div>';
-    }).join('');
-
-    // Wire validation listeners after the inputs exist
+    }).join('') + '</div>';
     fields.forEach(function (_, i) {
       var input = el('t1f' + i);
       if (input) input.addEventListener('input', checkSubmitState);
     });
   }
 
-  function renderTask2(task) {
-    el('task2Instructions').textContent = task.instructions || '';
-    el('task2Points').textContent = (task.max_score != null ? task.max_score : '—') + ' points';
-
+  function renderShortMessage(task, body) {
     var stim = task.stimulus || {};
-    el('task2Message').textContent = stim.message || '';
+    body.innerHTML =
+        '<div class="stimulus-box">'
+      +   '<div class="stimulus-label">Message from Lukas</div>'
+      +   '<p class="stimulus-text">' + escapeHtml(stim.message || '') + '</p>'
+      + '</div>'
+      + '<textarea class="response-area" id="task2Response" rows="6" placeholder="Schreib deine Antwort hier…"></textarea>'
+      + '<div class="word-counter"><span id="wordCount">0</span> / 40 words</div>';
 
     var ta      = el('task2Response');
     var counter = el('wordCount');
@@ -641,33 +778,209 @@
     update();
   }
 
-  // ── Submit + grading ────────────────────────────────────────
-  function collectTask1() {
-    var data = {};
-    task1Fields.forEach(function (label, i) {
-      var input = el('t1f' + i);
-      data[label] = input ? input.value.trim() : '';
+  function renderMultipleChoice(task, body) {
+    var stim = task.stimulus || {};
+    var questions = stim.questions || [];
+    body.innerHTML =
+        '<div class="notice-box">' + escapeHtml(stim.text || '') + '</div>'
+      + '<ol class="mc-questions">'
+      + questions.map(function (q, qi) {
+          var opts = q.options || {};
+          var letters = ['a', 'b', 'c', 'd'];
+          var optsHtml = letters
+            .filter(function (l) { return opts[l] != null; })
+            .map(function (l) {
+              return '<label class="mc-option" data-q="' + qi + '" data-value="' + l + '">'
+                +   '<input type="radio" name="mc-q-' + qi + '" value="' + l + '">'
+                +   '<span class="mc-letter">' + l + '</span>'
+                +   '<span class="mc-text">' + escapeHtml(opts[l]) + '</span>'
+                + '</label>';
+            }).join('');
+          return '<li class="mc-question">'
+            + '<p class="mc-q-text">' + escapeHtml(q.q || '') + '</p>'
+            + '<div class="mc-options">' + optsHtml + '</div>'
+            + '</li>';
+        }).join('')
+      + '</ol>';
+
+    body.querySelectorAll('.mc-option').forEach(function (label) {
+      label.addEventListener('click', function () {
+        var qi = label.getAttribute('data-q');
+        // Clear sibling selection state, mark this one selected
+        body.querySelectorAll('.mc-option[data-q="' + qi + '"]').forEach(function (l) {
+          l.classList.remove('selected');
+        });
+        label.classList.add('selected');
+        var input = label.querySelector('input[type="radio"]');
+        if (input) input.checked = true;
+        checkSubmitState();
+      });
     });
-    return data;
+  }
+
+  function renderTrueFalse(task, body) {
+    var stim = task.stimulus || {};
+    var statements = stim.statements || [];
+    body.innerHTML =
+        '<div class="chat-bubble">'
+      +   '<div class="chat-meta">📱 WhatsApp · Amina</div>'
+      +   '<p class="chat-text">' + escapeHtml(stim.text || '') + '</p>'
+      + '</div>'
+      + '<ol class="tf-statements">'
+      + statements.map(function (st, si) {
+          return '<li class="tf-statement" data-s="' + si + '">'
+            + '<p class="tf-text">' + escapeHtml(st.s || '') + '</p>'
+            + '<div class="tf-buttons">'
+            +   '<button type="button" class="tf-btn tf-true"  data-value="true">✓ Richtig</button>'
+            +   '<button type="button" class="tf-btn tf-false" data-value="false">✗ Falsch</button>'
+            + '</div>'
+            + '</li>';
+        }).join('')
+      + '</ol>';
+
+    body.querySelectorAll('.tf-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var stmt = btn.closest('.tf-statement');
+        if (!stmt) return;
+        stmt.querySelectorAll('.tf-btn').forEach(function (b) { b.classList.remove('selected'); });
+        btn.classList.add('selected');
+        checkSubmitState();
+      });
+    });
+  }
+
+  function renderMatching(task, body) {
+    var stim = task.stimulus || {};
+    var people = stim.people || [];
+    var places = stim.places || [];
+    var optionsHtml = '<option value="">— Choose —</option>'
+      + places.map(function (p) { return '<option value="' + escapeHtml(p) + '">' + escapeHtml(p) + '</option>'; }).join('');
+    body.innerHTML =
+        '<div class="match-grid">'
+      + people.map(function (p) {
+          return '<div class="match-row">'
+            + '<div class="match-person">'
+            +   '<div class="match-name">' + escapeHtml(p.name || '') + '</div>'
+            +   '<p class="match-text">' + escapeHtml(p.text || '') + '</p>'
+            + '</div>'
+            + '<select class="match-select" data-person="' + escapeHtml(p.name || '') + '">'
+            +   optionsHtml
+            + '</select>'
+            + '</div>';
+        }).join('')
+      + '</div>';
+
+    body.querySelectorAll('.match-select').forEach(function (sel) {
+      sel.addEventListener('change', checkSubmitState);
+    });
+  }
+
+  // ── Validation (per section) ───────────────────────────────
+  function checkSubmitState() {
+    if (currentSection === 'schreiben') return validateSchreiben();
+    if (currentSection === 'lesen')     return validateLesen();
+  }
+
+  function validateSchreiben() {
+    var allFilled = task1Fields.length > 0 && task1Fields.every(function (_, i) {
+      var input = el('t1f' + i);
+      return input && input.value.trim().length > 0;
+    });
+    var ta = el('task2Response');
+    var n  = ta ? wordCount(ta.value) : 0;
+    var enough = n >= WORD_MIN_OK;
+
+    var btn  = el('submitBtn');
+    var note = el('submitNote');
+    var ok   = allFilled && enough;
+    btn.disabled = !ok;
+    note.classList.toggle('ready', ok);
+
+    if (ok) {
+      note.textContent = 'Ready to submit. Grading will take 10–20 seconds.';
+    } else {
+      var missing = [];
+      if (!allFilled) missing.push('all 6 fields');
+      if (!enough)    missing.push('at least ' + WORD_MIN_OK + ' words in Task 2 (' + n + ' so far)');
+      note.textContent = 'Fill ' + missing.join(' and ') + ' to enable submit.';
+    }
+  }
+
+  function validateLesen() {
+    // Count answered questions across all 3 tasks
+    var totalNeeded  = 0;
+    var totalAnswered = 0;
+
+    currentTasks.forEach(function (task) {
+      if (task.task_type === 'multiple_choice') {
+        var qs = (task.stimulus && task.stimulus.questions) || [];
+        totalNeeded += qs.length;
+        qs.forEach(function (_, qi) {
+          if (document.querySelector('input[name="mc-q-' + qi + '"]:checked')) totalAnswered++;
+        });
+      }
+      else if (task.task_type === 'true_false') {
+        var sts = (task.stimulus && task.stimulus.statements) || [];
+        totalNeeded += sts.length;
+        sts.forEach(function (_, si) {
+          if (document.querySelector('.tf-statement[data-s="' + si + '"] .tf-btn.selected')) totalAnswered++;
+        });
+      }
+      else if (task.task_type === 'matching') {
+        var ppl = (task.stimulus && task.stimulus.people) || [];
+        totalNeeded += ppl.length;
+        ppl.forEach(function (p) {
+          var sel = document.querySelector('.match-select[data-person="' + (p.name || '').replace(/"/g, '&quot;') + '"]');
+          if (sel && sel.value) totalAnswered++;
+        });
+      }
+    });
+
+    var btn  = el('submitBtn');
+    var note = el('submitNote');
+    var ok   = totalAnswered === totalNeeded && totalNeeded > 0;
+    btn.disabled = !ok;
+    note.classList.toggle('ready', ok);
+    note.textContent = ok
+      ? 'Ready to submit. Auto-grading is instant.'
+      : 'Answer all ' + totalNeeded + ' questions (' + totalAnswered + ' so far) to enable submit.';
+  }
+
+  // ── Submit dispatch ─────────────────────────────────────────
+  function submitExam() {
+    if (el('submitBtn').disabled) return;
+    if (currentSection === 'schreiben') return submitSchreiben();
+    if (currentSection === 'lesen')     return submitLesen();
   }
 
   function setFormDisabled(disabled) {
-    task1Fields.forEach(function (_, i) {
-      var input = el('t1f' + i);
-      if (input) input.disabled = disabled;
+    document.querySelectorAll('#taskCards input, #taskCards textarea, #taskCards select, #taskCards button').forEach(function (n) {
+      n.disabled = disabled;
     });
-    el('task2Response').disabled = disabled;
   }
 
-  function submitExam() {
-    var btn = el('submitBtn');
-    if (btn.disabled) return;
+  function showGradingError(msg) {
+    setFormDisabled(false);
+    show('submitArea');
+    var note = el('submitNote');
+    note.classList.remove('ready');
+    note.textContent = (msg || 'Grading failed.') + ' Click submit to try again.';
+    checkSubmitState();
+  }
 
-    var task1 = collectTask1();
-    var task2 = el('task2Response').value.trim();
+  // ── Submit: Schreiben (Claude API) ─────────────────────────
+  function collectSchreibenAnswers() {
+    var t1 = {};
+    task1Fields.forEach(function (label, i) {
+      var input = el('t1f' + i);
+      t1[label] = input ? input.value.trim() : '';
+    });
+    return { task1: t1, task2: (el('task2Response').value || '').trim() };
+  }
 
-    // Move from form → grading state. Reset any leftover results /
-    // saved-notice state from a previous retry attempt.
+  function submitSchreiben() {
+    var ans = collectSchreibenAnswers();
+
     hide('resultsArea');
     hide('savedNotice');
     hide('submitArea');
@@ -677,25 +990,22 @@
     fetch(API_BASE + '/api/exam-grade', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ task1: task1, task2: task2 })
+      body:    JSON.stringify(ans)
     })
-      .then(function (r) {
-        return r.json().then(function (j) { return { ok: r.ok, body: j }; });
-      })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
       .then(function (res) {
         hide('gradingState');
         if (res.ok && res.body && typeof res.body.total === 'object') {
-          renderResults(res.body);
+          renderSchreibenResults(res.body);
           show('resultsArea');
-          // Scroll the results into view
           el('resultsArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
-          // Persist the attempt for signed-in users (silent no-op for
-          // anonymous). Refresh the history list if the save lands.
-          saveAttempt(res.body, task1, task2).then(function (saved) {
-            if (saved) {
-              show('savedNotice');
-              loadHistory();
-            }
+          saveAttempt(
+            { task1: ans.task1, task2: ans.task2 },
+            { task1_score: res.body.task1.score, task2_score: res.body.task2.score, total_score: res.body.total.score },
+            res.body,
+            res.body.total.score
+          ).then(function (saved) {
+            if (saved) { show('savedNotice'); loadHistory(); }
           });
         } else {
           showGradingError(res.body && res.body.error);
@@ -707,41 +1017,319 @@
       });
   }
 
+  // ── Submit: Lesen (client-side scoring) ────────────────────
+  function submitLesen() {
+    hide('resultsArea');
+    hide('savedNotice');
+    hide('submitArea');
+    setFormDisabled(true);
+
+    var graded  = scoreLesen();
+    var answers = collectLesenAnswers();
+
+    renderLesenResults(graded);
+    show('resultsArea');
+    el('resultsArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    saveAttempt(
+      answers,
+      graded.scoresByTask,         // { task_1: 4, task_2: 5, ... , total_score: 12 }
+      { details: graded.details }, // full per-question breakdown for replay later
+      graded.total
+    ).then(function (saved) {
+      if (saved) { show('savedNotice'); loadHistory(); }
+    });
+  }
+
+  function collectLesenAnswers() {
+    var out = { tasks: [] };
+    currentTasks.forEach(function (task) {
+      if (task.task_type === 'multiple_choice') {
+        var qs = (task.stimulus && task.stimulus.questions) || [];
+        out.tasks.push({
+          task_number: task.task_number,
+          type: 'multiple_choice',
+          answers: qs.map(function (_, qi) {
+            var r = document.querySelector('input[name="mc-q-' + qi + '"]:checked');
+            return r ? r.value : null;
+          })
+        });
+      }
+      else if (task.task_type === 'true_false') {
+        var sts = (task.stimulus && task.stimulus.statements) || [];
+        out.tasks.push({
+          task_number: task.task_number,
+          type: 'true_false',
+          answers: sts.map(function (_, si) {
+            var b = document.querySelector('.tf-statement[data-s="' + si + '"] .tf-btn.selected');
+            return b ? (b.getAttribute('data-value') === 'true') : null;
+          })
+        });
+      }
+      else if (task.task_type === 'matching') {
+        var ppl = (task.stimulus && task.stimulus.people) || [];
+        var pairs = {};
+        ppl.forEach(function (p) {
+          var sel = document.querySelector('.match-select[data-person="' + (p.name || '').replace(/"/g, '&quot;') + '"]');
+          pairs[p.name] = sel ? sel.value : '';
+        });
+        out.tasks.push({ task_number: task.task_number, type: 'matching', answers: pairs });
+      }
+    });
+    return out;
+  }
+
+  function scoreLesen() {
+    var details = [];
+    var scoresByTask = { total_score: 0 };
+    var taskMaxes = [];
+
+    currentTasks.forEach(function (task) {
+      var taskKey = 'task_' + task.task_number;
+
+      if (task.task_type === 'multiple_choice') {
+        var qs = (task.stimulus && task.stimulus.questions) || [];
+        var score = 0;
+        var items = qs.map(function (q, qi) {
+          var radio = document.querySelector('input[name="mc-q-' + qi + '"]:checked');
+          var your = radio ? radio.value : null;
+          var ok = your === q.answer;
+          if (ok) score++;
+          return {
+            q: q.q,
+            your: your,
+            your_text: your ? (q.options && q.options[your]) : null,
+            correct: q.answer,
+            correct_text: q.options && q.options[q.answer],
+            ok: ok
+          };
+        });
+        scoresByTask[taskKey] = score;
+        details.push({
+          task_number: task.task_number, type: 'multiple_choice',
+          score: score, max: task.max_score, items: items
+        });
+      }
+      else if (task.task_type === 'true_false') {
+        var sts = (task.stimulus && task.stimulus.statements) || [];
+        var score = 0;
+        var items = sts.map(function (st, si) {
+          var b = document.querySelector('.tf-statement[data-s="' + si + '"] .tf-btn.selected');
+          var your = b ? (b.getAttribute('data-value') === 'true') : null;
+          var ok = your === st.answer;
+          if (ok) score++;
+          return { s: st.s, your: your, correct: st.answer, ok: ok };
+        });
+        scoresByTask[taskKey] = score;
+        details.push({
+          task_number: task.task_number, type: 'true_false',
+          score: score, max: task.max_score, items: items
+        });
+      }
+      else if (task.task_type === 'matching') {
+        var ppl = (task.stimulus && task.stimulus.people) || [];
+        var correctMap = (task.stimulus && task.stimulus.answers) || {};
+        var score = 0;
+        var items = ppl.map(function (p) {
+          var sel = document.querySelector('.match-select[data-person="' + (p.name || '').replace(/"/g, '&quot;') + '"]');
+          var your = sel ? sel.value : '';
+          var correct = correctMap[p.name] || '';
+          var ok = your === correct && your !== '';
+          if (ok) score++;
+          return { person: p.name, text: p.text, your: your, correct: correct, ok: ok };
+        });
+        scoresByTask[taskKey] = score;
+        details.push({
+          task_number: task.task_number, type: 'matching',
+          score: score, max: task.max_score, items: items
+        });
+      }
+      taskMaxes.push(task.max_score || 0);
+    });
+
+    var total = details.reduce(function (acc, d) { return acc + d.score; }, 0);
+    var maxTotal = taskMaxes.reduce(function (acc, n) { return acc + n; }, 0);
+    scoresByTask.total_score = total;
+
+    return { details: details, total: total, max: maxTotal, scoresByTask: scoresByTask };
+  }
+
+  // ── Results renderers ───────────────────────────────────────
+  function setHero(total, max) {
+    el('resTotal').textContent = total != null ? total : '—';
+    el('resTotalMax').textContent = max != null ? max : '—';
+    if (typeof total === 'number' && typeof max === 'number' && max > 0) {
+      var pct = Math.round((total / max) * 100);
+      var passed = (total / max) >= PASS_RATIO;
+      el('resPct').textContent = pct + '% — ' + (passed ? 'pass' : 'keep practising');
+    } else {
+      el('resPct').textContent = '';
+    }
+  }
+  function setTaskPills(pills) {
+    el('resTaskPills').innerHTML = pills.map(function (p) {
+      return '<div class="results-task-pill">'
+        + '<span class="pill-label">' + escapeHtml(p.label) + '</span>'
+        + '<span class="pill-num">' + escapeHtml(p.score) + ' / ' + escapeHtml(p.max) + '</span>'
+        + '</div>';
+    }).join('');
+  }
+
+  // Schreiben rubric labels (UI-side; server returns the same keys).
+  var RUBRIC_LABELS = {
+    task_completion: 'Task completion',
+    grammar:         'Grammar',
+    vocabulary:      'Vocabulary',
+    clarity:         'Clarity'
+  };
+
+  function renderSchreibenResults(g) {
+    var total = (g.total && typeof g.total.score === 'number') ? g.total.score : null;
+    setHero(total, 20);
+
+    var t1 = (g.task1 && typeof g.task1.score === 'number') ? g.task1.score : '—';
+    var t2 = (g.task2 && typeof g.task2.score === 'number') ? g.task2.score : '—';
+    setTaskPills([
+      { label: 'Task 1', score: t1, max: 8 },
+      { label: 'Task 2', score: t2, max: 12 }
+    ]);
+
+    var rubric = (g.task2 && g.task2.rubric) || {};
+    var rubricHtml = Object.keys(RUBRIC_LABELS).map(function (key) {
+      var r = rubric[key] || {};
+      var sc = (typeof r.score === 'number') ? r.score : '—';
+      var mx = (typeof r.max   === 'number') ? r.max   : '—';
+      return '<div class="rubric-card">'
+        + '<div class="rubric-row">'
+        +   '<span class="rubric-label">' + escapeHtml(RUBRIC_LABELS[key]) + '</span>'
+        +   '<span class="rubric-score">' + escapeHtml(sc) + ' / ' + escapeHtml(mx) + '</span>'
+        + '</div>'
+        + '<p class="rubric-explanation">' + escapeHtml(r.explanation || '') + '</p>'
+        + (r.tip ? '<div class="rubric-tip">💡 ' + escapeHtml(r.tip) + '</div>' : '')
+        + '</div>';
+    }).join('');
+
+    var mistakes = Array.isArray(g.top_mistakes) ? g.top_mistakes : [];
+    var mistakesHtml = mistakes.length
+      ? mistakes.map(function (m) { return '<li>' + escapeHtml(m) + '</li>'; }).join('')
+      : '<li>None — great work!</li>';
+
+    el('resultsBody').innerHTML =
+        '<div class="results-section">'
+      +   '<h3 class="results-h">Task 1 — Form Fill</h3>'
+      +   '<p class="task1-note">' + escapeHtml((g.task1 && g.task1.explanation) || '') + '</p>'
+      + '</div>'
+      + '<div class="results-section">'
+      +   '<h3 class="results-h">Task 2 — Rubric Breakdown</h3>'
+      +   '<div class="rubric-grid">' + rubricHtml + '</div>'
+      + '</div>'
+      + '<div class="results-section">'
+      +   '<h3 class="results-h">Overall Feedback</h3>'
+      +   '<p class="results-feedback">' + escapeHtml(g.overall_feedback || '') + '</p>'
+      + '</div>'
+      + '<div class="results-section">'
+      +   '<h3 class="results-h">Top Mistakes to Fix</h3>'
+      +   '<ul class="results-list">' + mistakesHtml + '</ul>'
+      + '</div>'
+      + '<div class="results-section">'
+      +   '<h3 class="results-h">Next Practice</h3>'
+      +   '<p class="results-next">' + escapeHtml(g.next_recommendation || '') + '</p>'
+      + '</div>';
+  }
+
+  function renderLesenResults(graded) {
+    setHero(graded.total, graded.max);
+
+    setTaskPills(graded.details.map(function (d) {
+      var label = d.type === 'multiple_choice' ? 'Multiple Choice'
+                : d.type === 'true_false'      ? 'True / False'
+                :                                'Matching';
+      return { label: 'Task ' + d.task_number, score: d.score, max: d.max };
+    }));
+
+    var bodyHtml = graded.details.map(function (d) {
+      var typeLabel = d.type === 'multiple_choice' ? 'Multiple Choice'
+                    : d.type === 'true_false'      ? 'True / False'
+                    :                                'Matching';
+      var rowsHtml = d.items.map(function (item) {
+        return renderLesenReviewRow(d.type, item);
+      }).join('');
+      return '<div class="results-section">'
+        + '<h3 class="results-h">Task ' + d.task_number + ' — ' + typeLabel + ' (' + d.score + ' / ' + d.max + ')</h3>'
+        + '<div class="lesen-review">' + rowsHtml + '</div>'
+        + '</div>';
+    }).join('');
+
+    el('resultsBody').innerHTML = bodyHtml;
+  }
+
+  function renderLesenReviewRow(type, item) {
+    var ok = !!item.ok;
+    var iconCls = ok ? 'correct' : 'wrong';
+    var icon    = ok ? '✓' : '✗';
+    var qText   = '';
+    var yourLine= '';
+    var correctLine = '';
+
+    if (type === 'multiple_choice') {
+      qText = item.q;
+      var your = item.your ? item.your.toUpperCase() : '—';
+      var yourTxt = item.your_text ? ' (' + item.your_text + ')' : '';
+      yourLine = '<div class="lr-yours">Your answer: <strong>' + escapeHtml(your) + escapeHtml(yourTxt) + '</strong></div>';
+      if (!ok) {
+        correctLine = '<div class="lr-correct">Correct: <strong>' + escapeHtml((item.correct || '').toUpperCase())
+          + (item.correct_text ? ' (' + escapeHtml(item.correct_text) + ')' : '') + '</strong></div>';
+      }
+    }
+    else if (type === 'true_false') {
+      qText = item.s;
+      var yourTxt = item.your === null ? '—' : (item.your ? '✓ Richtig' : '✗ Falsch');
+      yourLine = '<div class="lr-yours">Your answer: <strong>' + escapeHtml(yourTxt) + '</strong></div>';
+      if (!ok) {
+        correctLine = '<div class="lr-correct">Correct: <strong>' + (item.correct ? '✓ Richtig' : '✗ Falsch') + '</strong></div>';
+      }
+    }
+    else if (type === 'matching') {
+      qText = '<strong>' + escapeHtml(item.person) + ':</strong> ' + escapeHtml(item.text || '');
+      yourLine = '<div class="lr-yours">Your answer: <strong>' + escapeHtml(item.your || '—') + '</strong></div>';
+      if (!ok) {
+        correctLine = '<div class="lr-correct">Correct: <strong>' + escapeHtml(item.correct || '—') + '</strong></div>';
+      }
+    }
+
+    return '<div class="lr-row ' + iconCls + '">'
+      + '<span class="lr-icon">' + icon + '</span>'
+      + '<div class="lr-body">'
+      +   '<div class="lr-q">' + qText + '</div>'
+      +   yourLine
+      +   correctLine
+      + '</div>'
+      + '</div>';
+  }
+
   // ── Save attempt to Supabase ────────────────────────────────
-  // Skips silently for anonymous users (no error surfaced — results
-  // still render). Returns the inserted row on success, null otherwise.
-  function saveAttempt(grading, task1, task2) {
+  function saveAttempt(answers, scores, feedback, totalScore) {
     if (typeof dwSupabase === 'undefined' || !currentExamId) {
       console.log('[exam] save skipped — Supabase or exam_id missing');
       return Promise.resolve(null);
     }
-
     return dwSupabase.auth.getUser().then(function (authRes) {
       var user = authRes && authRes.data && authRes.data.user;
       if (!user) {
         console.log('[exam] save skipped — anonymous user');
         return null;
       }
-
-      var totalScore = (grading.total && typeof grading.total.score === 'number')
-        ? grading.total.score : null;
-      var task1Score = (grading.task1 && typeof grading.task1.score === 'number')
-        ? grading.task1.score : null;
-      var task2Score = (grading.task2 && typeof grading.task2.score === 'number')
-        ? grading.task2.score : null;
-
       var payload = {
         user_id:      user.id,
         exam_id:      currentExamId,
-        answers:      { task1: task1, task2: task2 },
-        scores:       { task1_score: task1Score, task2_score: task2Score, total_score: totalScore },
-        feedback:     grading,
+        answers:      answers,
+        scores:       scores,
+        feedback:     feedback,
         total_score:  totalScore,
-        max_score:    MAX_SCORE,
+        max_score:    currentExamMax,
         completed_at: new Date().toISOString()
       };
       console.log('[exam] saveAttempt → inserting payload', payload);
-
       return dwSupabase.from('exam_attempts').insert(payload).select().then(function (res) {
         if (res.error) {
           console.error('[exam] save FAILED', {
@@ -759,22 +1347,21 @@
     });
   }
 
-  // ── History (last 3 attempts) ───────────────────────────────
+  // ── History (last 3 attempts across all exams) ──────────────
   function loadHistory() {
-    if (typeof dwSupabase === 'undefined' || !currentExamId) return;
+    if (typeof dwSupabase === 'undefined') return;
 
     dwSupabase.auth.getUser().then(function (authRes) {
       var user = authRes && authRes.data && authRes.data.user;
       if (!user) {
-        // Anonymous — no history to show. Hide the section entirely.
         hide('historyArea');
         return;
       }
-
+      // Embed the related exam row via the exam_id FK so each history
+      // line can show the exam title + section (📝 / 📖 icon).
       dwSupabase.from('exam_attempts')
-        .select('id, total_score, max_score, completed_at')
+        .select('id, total_score, max_score, completed_at, exams(level, title, section)')
         .eq('user_id', user.id)
-        .eq('exam_id', currentExamId)
         .order('completed_at', { ascending: false })
         .limit(3)
         .then(function (res) {
@@ -816,78 +1403,33 @@
     hide('historyEmpty');
     show('historyList');
     listEl.innerHTML = rows.map(function (r) {
-      var score = (typeof r.total_score === 'number') ? r.total_score : '—';
-      var max   = (typeof r.max_score   === 'number') ? r.max_score   : MAX_SCORE;
-      var passed = (typeof r.total_score === 'number') && r.total_score >= PASS_SCORE;
+      var examTitle = (r.exams && r.exams.title)   || 'Exam';
+      var section   = (r.exams && r.exams.section) || '';
+      var icon      = section === 'lesen' ? '📖' : '📝';
+
+      var max = (typeof r.max_score === 'number' && r.max_score > 0) ? r.max_score : 20;
+      var sc  = (typeof r.total_score === 'number') ? r.total_score : 0;
+      var passed   = (sc / max) >= PASS_RATIO;
       var statusCls = passed ? 'pass' : 'fail';
       var statusTxt = passed ? '✓ Pass' : '✗ Retry';
+
       return '<div class="history-row">'
-        + '<span class="history-date">' + escapeHtml(formatDate(r.completed_at)) + '</span>'
-        + '<span class="history-score">' + escapeHtml(score) + ' / ' + escapeHtml(max) + '</span>'
+        + '<span class="history-icon">' + icon + '</span>'
+        + '<div class="history-meta">'
+        +   '<div class="history-title">' + escapeHtml(examTitle) + '</div>'
+        +   '<div class="history-date">' + escapeHtml(formatDate(r.completed_at)) + '</div>'
+        + '</div>'
+        + '<span class="history-score">' + escapeHtml(sc) + ' / ' + escapeHtml(max) + '</span>'
         + '<span class="history-status ' + statusCls + '">' + statusTxt + '</span>'
         + '</div>';
     }).join('');
   }
 
-  function showGradingError(msg) {
-    // Re-enable the form and show the error inline above the submit button
-    setFormDisabled(false);
-    show('submitArea');
-    var note = el('submitNote');
-    note.classList.remove('ready');
-    note.textContent = (msg || 'Grading failed.') + ' Click submit to try again.';
-    checkSubmitState();
-  }
-
-  // ── Results renderer ────────────────────────────────────────
-  var RUBRIC_LABELS = {
-    task_completion: 'Task completion',
-    grammar:         'Grammar',
-    vocabulary:      'Vocabulary',
-    clarity:         'Clarity'
-  };
-
-  function renderResults(g) {
-    var totalScore = (g.total && typeof g.total.score === 'number') ? g.total.score : '—';
-    el('resTotal').textContent = totalScore;
-
-    if (typeof totalScore === 'number') {
-      var pct = Math.round((totalScore / 20) * 100);
-      el('resPct').textContent = pct + '% — ' + (totalScore >= 12 ? 'pass' : 'keep practising');
-    }
-
-    el('resT1').textContent = (g.task1 && typeof g.task1.score === 'number') ? g.task1.score : '—';
-    el('resT2').textContent = (g.task2 && typeof g.task2.score === 'number') ? g.task2.score : '—';
-    el('resT1Note').textContent = (g.task1 && g.task1.explanation) || '';
-
-    // Rubric breakdown
-    var rubric = (g.task2 && g.task2.rubric) || {};
-    el('rubricGrid').innerHTML = Object.keys(RUBRIC_LABELS).map(function (key) {
-      var r = rubric[key] || {};
-      var score = (typeof r.score === 'number') ? r.score : '—';
-      var max   = (typeof r.max   === 'number') ? r.max   : '—';
-      return '<div class="rubric-card">'
-        + '<div class="rubric-row">'
-        +   '<span class="rubric-label">' + escapeHtml(RUBRIC_LABELS[key]) + '</span>'
-        +   '<span class="rubric-score">' + escapeHtml(score) + ' / ' + escapeHtml(max) + '</span>'
-        + '</div>'
-        + '<p class="rubric-explanation">' + escapeHtml(r.explanation || '') + '</p>'
-        + (r.tip ? '<div class="rubric-tip">💡 ' + escapeHtml(r.tip) + '</div>' : '')
-        + '</div>';
-    }).join('');
-
-    el('resFeedback').textContent = g.overall_feedback || '';
-
-    var mistakes = Array.isArray(g.top_mistakes) ? g.top_mistakes : [];
-    el('resMistakes').innerHTML = mistakes.map(function (m) {
-      return '<li>' + escapeHtml(m) + '</li>';
-    }).join('') || '<li>None — great work!</li>';
-
-    el('resNext').textContent = g.next_recommendation || '';
-  }
-
-  // ── Loader (initial data fetch) ─────────────────────────────
+  // ── Loader ─────────────────────────────────────────────────
   function load() {
+    currentSection = getActiveSection();
+    activatePill(currentSection);
+
     if (typeof dwSupabase === 'undefined') {
       showLoadError('Supabase client not initialised. Check that supabase-config.js is loading.');
       return;
@@ -896,18 +1438,21 @@
     dwSupabase.from('exams')
       .select('id, level, title, section, is_published, created_at')
       .eq('level',        EXAM_LEVEL)
-      .eq('section',      EXAM_SECTION)
+      .eq('section',      currentSection)
       .eq('is_published', true)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle()
       .then(function (res) {
         if (res.error) { showLoadError(res.error.message); return null; }
-        if (!res.data) { showLoadError('No published A1 Schreiben exam found.'); return null; }
+        if (!res.data) { showLoadError('No published A1 ' + currentSection + ' exam found.'); return null; }
 
         var exam = res.data;
         currentExamId = exam.id;
-        el('examTitle').textContent = exam.title || 'A1 Schreiben';
+        el('examTitle').textContent = exam.title || ('A1 ' + currentSection);
+        el('examSub').textContent = currentSection === 'schreiben'
+          ? 'Goethe-format Schreiben practice with two tasks. Fill in all 6 form fields and write at least 20 words for the message — then submit for instant AI grading.'
+          : 'Goethe-format Lesen practice with three tasks: multiple choice, true/false, and matching. Answer all questions to enable submit; auto-grading is instant.';
 
         return dwSupabase.from('exam_tasks')
           .select('task_number, task_type, instructions, stimulus, max_score, order_index')
@@ -918,29 +1463,27 @@
         if (!tres) return;
         if (tres.error) { showLoadError(tres.error.message); return; }
 
-        var tasks = tres.data || [];
-        var task1 = tasks.find(function (t) { return t.task_number === 1; });
-        var task2 = tasks.find(function (t) { return t.task_number === 2; });
-        if (!task1 || !task2) {
-          showLoadError('Exam tasks are missing or incomplete.');
+        currentTasks = tres.data || [];
+        if (!currentTasks.length) {
+          showLoadError('No tasks found for this exam.');
           return;
         }
+        currentExamMax = currentTasks.reduce(function (acc, t) { return acc + (t.max_score || 0); }, 0);
 
-        renderTask1(task1);
-        renderTask2(task2);
+        renderTaskCards(currentTasks);
 
         hide('loadingState');
         show('examContent');
 
-        // Wire the submit button + initial validation pass
         el('submitBtn').addEventListener('click', submitExam);
         checkSubmitState();
 
-        // Wake the Render server early so the first grading request
-        // doesn't pay cold-start latency.
-        fetch(API_BASE + '/').catch(function () {});
+        // Wake the Render server early — Schreiben's grading endpoint
+        // pays cold-start latency on the first request after idle.
+        if (currentSection === 'schreiben') {
+          fetch(API_BASE + '/').catch(function () {});
+        }
 
-        // Load past attempts (only renders for signed-in users).
         loadHistory();
       });
   }
