@@ -1533,10 +1533,16 @@
           // Only one Übungssatz published — keep the dropdown hidden.
           dropdown.style.display = 'none';
         } else {
-          // Populate options (id → title), select the first by default,
-          // and wire the change handler to swap exams in place.
-          select.innerHTML = exams.map(function (e) {
-            return '<option value="' + escapeHtml(e.id) + '">' + escapeHtml(e.title) + '</option>';
+          // Populate options as "Übungssatz N" (1-indexed by load order)
+          // rather than the raw exam title — every A1 exam now shares
+          // the same canonical title (e.g. "A1 Schreiben — Prüfungs-
+          // vorbereitung"), so the page header + attempt history stay
+          // consistent across sets while the dropdown surfaces the
+          // user's set choice.
+          select.innerHTML = exams.map(function (e, i) {
+            return '<option value="' + escapeHtml(e.id) + '">'
+              +    escapeHtml('Übungssatz ' + (i + 1))
+              + '</option>';
           }).join('');
           select.value = exams[0].id;
           dropdown.style.display = '';
