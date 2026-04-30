@@ -603,6 +603,14 @@
     <a href="?section=lesen"     class="exam-pill" id="pillLesen"     role="tab">📖 Lesen</a>
   </div>
 
+  <!-- Übungssatz dropdown — visible only when 2+ exams exist for the section -->
+  <div id="examSetSelector" style="display:none; margin-bottom: 20px;">
+    <label for="examSetSelect" style="font-size:12.5px; font-weight:700; color:var(--mid); display:block; margin-bottom:6px;">Übungssatz wählen</label>
+    <select id="examSetSelect" class="form-input" style="max-width: 280px;">
+      <option value="">— Übungssatz wählen —</option>
+    </select>
+  </div>
+
   <!-- Loading state -->
   <div id="loadingState" class="state">
     <div class="spinner"></div>
@@ -1480,6 +1488,10 @@
   }
 
   // ── Loader ─────────────────────────────────────────────────
+  // Top-level load: figures out which section the user picked,
+  // fetches the full list of published exams for that section,
+  // wires up the Übungssatz dropdown if there are 2+, and finally
+  // delegates to loadExam() to render the first one.
   function load() {
     currentSection = getActiveSection();
     activatePill(currentSection);
@@ -1489,35 +1501,96 @@
       return;
     }
 
+    // Wire submit + history once. loadExam() may be called multiple
+    // times if the user switches Übungssatz, but these only need
+    // to bind once.
+    el('submitBtn').addEventListener('click', submitExam);
+
+    el('examSub').textContent = currentSection === 'schreiben'
+      ? 'Goethe-format Schreiben practice with two tasks. Fill in all 6 form fields and write at least 20 words for the message — then submit for instant AI grading.'
+      : 'Goethe-format Lesen practice with three tasks: multiple choice, true/false, and matching. Answer all questions to enable submit; auto-grading is instant.';
+
     dwSupabase.from('exams')
       .select('id, level, title, section, is_published, created_at')
       .eq('level',        EXAM_LEVEL)
       .eq('section',      currentSection)
       .eq('is_published', true)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
+      .order('created_at', { ascending: true })
       .then(function (res) {
-        if (res.error) { showLoadError(res.error.message); return null; }
-        if (!res.data) { showLoadError('No published A1 ' + currentSection + ' exam found.'); return null; }
+        if (res.error) { showLoadError(res.error.message); return; }
+        var exams = (res.data || []);
+        if (!exams.length) {
+          showLoadError('No published A1 ' + currentSection + ' exam found.');
+          return;
+        }
 
-        var exam = res.data;
-        currentExamId    = exam.id;
-        currentExamLevel = exam.level || 'A1';
-        el('examTitle').textContent = exam.title || ('A1 ' + currentSection);
-        el('examSub').textContent = currentSection === 'schreiben'
-          ? 'Goethe-format Schreiben practice with two tasks. Fill in all 6 form fields and write at least 20 words for the message — then submit for instant AI grading.'
-          : 'Goethe-format Lesen practice with three tasks: multiple choice, true/false, and matching. Answer all questions to enable submit; auto-grading is instant.';
+        currentExamLevel = exams[0].level || 'A1';
 
-        return dwSupabase.from('exam_tasks')
-          .select('task_number, task_type, instructions, stimulus, max_score, order_index')
-          .eq('exam_id', exam.id)
-          .order('order_index', { ascending: true });
-      })
+        var dropdown = el('examSetSelector');
+        var select   = el('examSetSelect');
+
+        if (exams.length === 1) {
+          // Only one Übungssatz published — keep the dropdown hidden.
+          dropdown.style.display = 'none';
+        } else {
+          // Populate options (id → title), select the first by default,
+          // and wire the change handler to swap exams in place.
+          select.innerHTML = exams.map(function (e) {
+            return '<option value="' + escapeHtml(e.id) + '">' + escapeHtml(e.title) + '</option>';
+          }).join('');
+          select.value = exams[0].id;
+          dropdown.style.display = '';
+
+          select.addEventListener('change', function () {
+            var id = select.value;
+            var ex = exams.find(function (e) { return e.id === id; });
+            if (ex) loadExam(ex.id, ex.title);
+          });
+        }
+
+        // Wake the Render server early — Schreiben's grading endpoint
+        // pays cold-start latency on the first request after idle.
+        if (currentSection === 'schreiben') {
+          fetch(API_BASE + '/').catch(function () {});
+        }
+
+        // History is global to the user — load once per page visit.
+        loadHistory();
+
+        // Render the first exam by default.
+        loadExam(exams[0].id, exams[0].title);
+      });
+  }
+
+  // ── loadExam: swap in a single exam's tasks ────────────────
+  // Called by load() on initial render and again on every dropdown
+  // change. Resets every piece of stale UI/state — results, save
+  // notice, submit-button enabled-ness, helper note, word counter,
+  // task1Fields — before fetching + rendering the new task cards.
+  function loadExam(examId, examTitle) {
+    currentExamId = examId;
+    el('examTitle').textContent = examTitle || ('A1 ' + currentSection);
+
+    // Reset transient state so a previous attempt's results don't
+    // bleed into the new exam.
+    task1Fields = [];
+    hide('resultsArea');
+    hide('savedNotice');
+    hide('gradingState');
+    show('submitArea');
+
+    var btn  = el('submitBtn');
+    btn.disabled = true;
+    var note = el('submitNote');
+    note.classList.remove('ready');
+    note.textContent = 'Complete all questions to enable submit.';
+
+    return dwSupabase.from('exam_tasks')
+      .select('task_number, task_type, instructions, stimulus, max_score, order_index')
+      .eq('exam_id', examId)
+      .order('order_index', { ascending: true })
       .then(function (tres) {
-        if (!tres) return;
         if (tres.error) { showLoadError(tres.error.message); return; }
-
         currentTasks = tres.data || [];
         if (!currentTasks.length) {
           showLoadError('No tasks found for this exam.');
@@ -1530,16 +1603,10 @@
         hide('loadingState');
         show('examContent');
 
-        el('submitBtn').addEventListener('click', submitExam);
+        // Re-validate against the new task set (also resets the
+        // word counter for Schreiben since renderShortMessage's
+        // update() runs at render time and writes "0" into #wordCount).
         checkSubmitState();
-
-        // Wake the Render server early — Schreiben's grading endpoint
-        // pays cold-start latency on the first request after idle.
-        if (currentSection === 'schreiben') {
-          fetch(API_BASE + '/').catch(function () {});
-        }
-
-        loadHistory();
       });
   }
 
