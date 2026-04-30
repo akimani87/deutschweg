@@ -202,6 +202,30 @@
   .word-counter.in-range { color: var(--green); }
   .word-counter.over     { color: var(--amber); }
 
+  /* ── Task: discussion_post (B1 Schreiben — forum post + opinion) ─ */
+  .forum-post {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    margin: 0 0 16px;
+    box-shadow: var(--shadow-sm);
+  }
+  .forum-post-meta {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    font-size: 11px; color: var(--mid);
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    letter-spacing: 0.2px;
+  }
+  .forum-post-author { font-weight: 700; color: var(--blue); }
+  .forum-post-site, .forum-post-date { color: var(--light); }
+  .forum-post-text {
+    font-size: 14px; color: var(--dark); line-height: 1.7; margin: 0;
+    white-space: pre-wrap;
+  }
+
   /* ── Task: multiple choice (Lesen) ───────────────────────── */
   .notice-box {
     background: var(--bg);
@@ -872,6 +896,7 @@
       switch (task.task_type) {
         case 'form_fill':         renderFormFill(task, body); break;
         case 'short_message':     renderShortMessage(task, body, shortMsgIdx++); break;
+        case 'discussion_post':   renderDiscussionPost(task, body, shortMsgIdx++); break;
         case 'multiple_choice':   renderMultipleChoice(task, body); break;
         case 'true_false':        renderTrueFalse(task, body); break;
         case 'matching':          renderMatching(task, body); break;
@@ -913,7 +938,10 @@
     var idResp     = slotName + 'Response';
     var idWC       = 'wordCount_' + slotName;
     var wordTarget = (stim.word_target != null) ? stim.word_target : WORD_TARGET_DEFAULT;
-    var wordMin    = (stim.word_min    != null) ? stim.word_min    : WORD_MIN_DEFAULT;
+    // word_min default scales with word_target so B1's longer texts
+    // (target 80) demand more than 20 words to enable submit.
+    var wordMin    = (stim.word_min    != null) ? stim.word_min
+                                                : Math.max(WORD_MIN_DEFAULT, Math.floor(wordTarget / 3));
     // Green band: target − 10 to target.
     var greenLo    = Math.max(0, wordTarget - 10);
 
@@ -957,6 +985,72 @@
     // collector can find this task without re-walking currentTasks.
     ta.dataset.slot     = slotName;
     ta.dataset.wordMin  = String(wordMin);
+  }
+
+  // discussion_post — B1 Forum-Beitrag mit Meinung. Stimulus carries:
+  //   topic, context, forum_post {date, site, author, text}, word_target
+  // Renders the topic + context as the prompt, then a styled forum-post
+  // card showing the post the student is responding to, then a textarea
+  // + word counter. Plumbs through the same slot-name / wordMin dataset
+  // as renderShortMessage so validateSchreiben + collectSchreibenAnswers
+  // pick it up automatically — no changes needed in those.
+  function renderDiscussionPost(task, body, slotIdx) {
+    var stim       = task.stimulus || {};
+    var slotName   = (slotIdx === 2) ? 'task4'
+                   : (slotIdx === 1) ? 'task3'
+                   :                   'task2';
+    var idResp     = slotName + 'Response';
+    var idWC       = 'wordCount_' + slotName;
+    var wordTarget = (stim.word_target != null) ? stim.word_target : 80;
+    var wordMin    = (stim.word_min    != null) ? stim.word_min
+                                                : Math.max(WORD_MIN_DEFAULT, Math.floor(wordTarget / 3));
+    var greenLo    = Math.max(0, wordTarget - 20);
+
+    // Forum-post block — only render fields that actually have content.
+    var fp        = stim.forum_post || {};
+    var forumHtml = '';
+    if (fp.text || fp.author) {
+      var metaParts = [];
+      if (fp.author) metaParts.push('<span class="forum-post-author">' + escapeHtml(fp.author) + '</span>');
+      if (fp.site)   metaParts.push('<span class="forum-post-site">'   + escapeHtml(fp.site)   + '</span>');
+      if (fp.date)   metaParts.push('<span class="forum-post-date">'   + escapeHtml(fp.date)   + '</span>');
+      forumHtml =
+          '<div class="forum-post">'
+        +   (metaParts.length ? '<div class="forum-post-meta">' + metaParts.join('') + '</div>' : '')
+        +   '<p class="forum-post-text">' + escapeHtml(fp.text || '') + '</p>'
+        + '</div>';
+    }
+
+    // Stimulus heading: prefer the explicit topic, fall back to the
+    // task's instructions text or 'Aufgabenstellung'.
+    var label = stim.topic ? stim.topic : 'Aufgabenstellung';
+    var prompt = stim.context || stim.task || stim.message || '';
+
+    body.innerHTML =
+        '<div class="stimulus-box">'
+      +   '<div class="stimulus-label">' + escapeHtml(label) + '</div>'
+      +   (prompt ? '<p class="stimulus-text">' + escapeHtml(prompt) + '</p>' : '')
+      + '</div>'
+      + forumHtml
+      + '<textarea class="response-area" id="' + idResp + '" rows="8" placeholder="Schreib deine Meinung hier…"></textarea>'
+      + '<div class="word-counter"><span id="' + idWC + '">0</span> / ' + wordTarget + ' Wörter</div>';
+
+    var ta      = el(idResp);
+    var counter = el(idWC);
+    var wrap    = counter.parentNode;
+    function update() {
+      var n = wordCount(ta.value);
+      counter.textContent = n;
+      wrap.classList.remove('in-range', 'over');
+      if (n >= greenLo && n <= wordTarget) wrap.classList.add('in-range');
+      else if (n > wordTarget)             wrap.classList.add('over');
+      checkSubmitState();
+    }
+    ta.addEventListener('input', update);
+    update();
+
+    ta.dataset.slot    = slotName;
+    ta.dataset.wordMin = String(wordMin);
   }
 
   function renderMultipleChoice(task, body) {
