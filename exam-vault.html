@@ -676,6 +676,86 @@
   .history-status.pass { background: var(--green-light); color: #065F46; border: 1px solid var(--green-border); }
   .history-status.fail { background: var(--red-light);   color: #991B1B; border: 1px solid #FECACA; }
 
+  /* ── Weakness panel — averages across all attempts at the
+       current level + section. Per-criterion breakdown for
+       Schreiben (criteria are well-defined per level); Lesen
+       just gets the summary numbers. */
+  .weakness-summary {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .weakness-summary-block {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    flex: 1; min-width: 100px;
+    text-align: center;
+  }
+  .weakness-summary-num {
+    font-size: 22px; font-weight: 800; color: var(--blue);
+    line-height: 1.1; font-variant-numeric: tabular-nums;
+  }
+  .weakness-summary-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.6px;
+    color: var(--mid); text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .weakness-rows { display: flex; flex-direction: column; gap: 6px; }
+  .weakness-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .weakness-row:last-child { border-bottom: none; }
+  .weakness-label {
+    font-size: 13.5px; font-weight: 600; color: var(--dark);
+    flex: 1; min-width: 0;
+  }
+  .weakness-bar {
+    width: 180px; height: 10px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .weakness-bar-fill {
+    height: 100%; background: var(--blue);
+    border-radius: 50px;
+    transition: width .4s ease;
+  }
+  .weakness-bar-fill.strong { background: var(--green); }
+  .weakness-bar-fill.warn   { background: var(--amber); }
+  .weakness-bar-fill.fail   { background: var(--red); }
+  .weakness-score {
+    font-size: 12.5px; font-weight: 700; color: var(--mid);
+    min-width: 60px; text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .weakness-tag {
+    font-size: 10.5px; font-weight: 800; letter-spacing: 0.5px;
+    padding: 3px 9px; border-radius: 50px;
+    text-transform: uppercase;
+    min-width: 90px; text-align: center;
+  }
+  .weakness-tag.strong { background: var(--green-light); color: #065F46; border: 1px solid var(--green-border); }
+  .weakness-tag.warn   { background: #FFFBEB;            color: #92400E; border: 1px solid #FDE68A; }
+  .weakness-tag.fail   { background: var(--red-light);   color: #991B1B; border: 1px solid #FECACA; }
+  .weakness-empty {
+    font-size: 13.5px; color: var(--mid); line-height: 1.7;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+  }
+
+  @media (max-width: 600px) {
+    .weakness-row { flex-wrap: wrap; }
+    .weakness-label { width: 100%; }
+    .weakness-bar { width: 100%; flex: 1; }
+  }
+
   /* ── Footer ──────────────────────────────────────────────── */
   .exam-footer {
     margin-top: 36px; text-align: center;
@@ -796,6 +876,20 @@
       No attempts yet — take your first exam above.
     </div>
     <div id="historyList" class="history-list"></div>
+  </section>
+
+  <!-- Weakness panel — average performance across all attempts for
+       this (level, section). Hidden when the user is anonymous or has
+       no attempts yet. Per-criterion bars for Schreiben; Lesen gets
+       summary numbers only (per-task max isn't carried in attempt
+       rows). -->
+  <section id="weaknessArea" class="results-section" style="display:none; margin-top: 14px;">
+    <h3 class="results-h" id="weaknessTitle">Your Weakness Areas</h3>
+    <div id="weaknessSummary" class="weakness-summary"></div>
+    <div id="weaknessRows"  class="weakness-rows"></div>
+    <div id="weaknessEmpty" class="weakness-empty" style="display:none;">
+      Take a few exams to see where you're strongest and weakest.
+    </div>
   </section>
 
   <div class="exam-footer">
@@ -1722,7 +1816,7 @@
           if (typeof ans.task4 === 'string') answers.task4 = ans.task4;
 
           saveAttempt(answers, scores, res.body, totalInt, examMax).then(function (saved) {
-            if (saved) { show('savedNotice'); loadHistory(); }
+            if (saved) { show('savedNotice'); loadHistory(); loadWeakness(); }
           });
         } else {
           showGradingError(res.body && res.body.error);
@@ -1754,7 +1848,7 @@
       { details: graded.details }, // full per-question breakdown for replay later
       graded.total
     ).then(function (saved) {
-      if (saved) { show('savedNotice'); loadHistory(); }
+      if (saved) { show('savedNotice'); loadHistory(); loadWeakness(); }
     });
   }
 
@@ -2588,6 +2682,165 @@
     }).join('');
   }
 
+  // ── Weakness panel (Option 1) ──────────────────────────────
+  // Per-(level, section) criterion definitions. Each entry maps a
+  // scores-blob key from the exam_attempts row to a human label +
+  // the criterion's max. Lesen has no entry — its scores blob carries
+  // per-task numbers (task_1, task_2…) whose max isn't captured per-
+  // task in the attempt row, so we surface only the summary stats.
+  var CRITERION_DEFS = {
+    'A1-schreiben': [
+      { key: 'kommunikative_gestaltung', label: 'Kommunikative Gestaltung', max: 3 },
+      { key: 'formale_richtigkeit',      label: 'Formale Richtigkeit',      max: 3 }
+    ],
+    'A2-schreiben': [
+      { key: 'task2_aufgabe', label: 'Aufgabe 1 (SMS) — Aufgabenerfüllung', max: 5 },
+      { key: 'task2_sprache', label: 'Aufgabe 1 (SMS) — Sprache',           max: 5 },
+      { key: 'task3_aufgabe', label: 'Aufgabe 2 (E-Mail) — Aufgabenerfüllung', max: 5 },
+      { key: 'task3_sprache', label: 'Aufgabe 2 (E-Mail) — Sprache',           max: 5 }
+    ],
+    'B1-schreiben': [
+      { key: 'aufgabe1_erfuellung', label: 'Aufgabe 1 (E-Mail) — Erfüllung',   max: 5 },
+      { key: 'aufgabe1_sprache',    label: 'Aufgabe 1 (E-Mail) — Sprache',     max: 5 },
+      { key: 'aufgabe2_erfuellung', label: 'Aufgabe 2 (Meinung) — Erfüllung',  max: 5 },
+      { key: 'aufgabe2_sprache',    label: 'Aufgabe 2 (Meinung) — Sprache',    max: 5 },
+      { key: 'aufgabe3_erfuellung', label: 'Aufgabe 3 (formell) — Erfüllung',  max: 5 },
+      { key: 'aufgabe3_sprache',    label: 'Aufgabe 3 (formell) — Sprache',    max: 5 }
+    ],
+    'B2-schreiben': [
+      { key: 'task2_erfuellung', label: 'Aufgabe 1 (Forum) — Erfüllung',  max: 5 },
+      { key: 'task2_koherenz',   label: 'Aufgabe 1 (Forum) — Kohärenz',   max: 5 },
+      { key: 'task2_wortschatz', label: 'Aufgabe 1 (Forum) — Wortschatz', max: 5 },
+      { key: 'task2_strukturen', label: 'Aufgabe 1 (Forum) — Strukturen', max: 5 },
+      { key: 'task3_erfuellung', label: 'Aufgabe 2 (Brief) — Erfüllung',  max: 5 },
+      { key: 'task3_koherenz',   label: 'Aufgabe 2 (Brief) — Kohärenz',   max: 5 },
+      { key: 'task3_wortschatz', label: 'Aufgabe 2 (Brief) — Wortschatz', max: 5 },
+      { key: 'task3_strukturen', label: 'Aufgabe 2 (Brief) — Strukturen', max: 5 }
+    ]
+  };
+
+  // Bucket avg / max into a verdict — drives the bar fill colour and
+  // the text tag. Anchors are absolute percentages so they apply
+  // uniformly to /3, /5, /20, /100 criteria.
+  function weaknessVerdict(pct) {
+    if (pct >= 80) return { fill: 'strong', tag: 'strong', text: 'gut'         };
+    if (pct >= 60) return { fill: '',       tag: '',       text: 'okay'        };
+    if (pct >= 40) return { fill: 'warn',   tag: 'warn',   text: 'schwach'     };
+    return                  { fill: 'fail',   tag: 'fail',   text: 'weiter üben' };
+  }
+
+  // Pull every attempt for the signed-in user at the current level +
+  // section, compute averages, render the panel. Hidden for anonymous
+  // users or when no attempts exist yet.
+  function loadWeakness() {
+    if (typeof dwSupabase === 'undefined') return;
+
+    dwSupabase.auth.getUser().then(function (authRes) {
+      var user = authRes && authRes.data && authRes.data.user;
+      if (!user) {
+        hide('weaknessArea');
+        return;
+      }
+      // Inner-join filter: only attempts whose related exam matches
+      // the level + section the user is currently looking at.
+      dwSupabase.from('exam_attempts')
+        .select('id, total_score, max_score, scores, completed_at, exams!inner(level, section)')
+        .eq('user_id',       user.id)
+        .eq('exams.level',   currentLevel)
+        .eq('exams.section', currentSection)
+        .order('completed_at', { ascending: false })
+        .then(function (res) {
+          if (res.error) {
+            console.error('[weakness] load failed', res.error);
+            hide('weaknessArea');
+            return;
+          }
+          var rows = res.data || [];
+          if (!rows.length) {
+            hide('weaknessArea');
+            return;
+          }
+          renderWeakness(rows);
+          show('weaknessArea');
+        });
+    }).catch(function (e) {
+      console.error('[weakness] threw', e);
+      hide('weaknessArea');
+    });
+  }
+
+  function renderWeakness(rows) {
+    var n = rows.length;
+
+    // Section title carries the scope — clear at a glance which exam
+    // these numbers apply to.
+    var sectionLabel = currentSection === 'lesen' ? 'Lesen' : 'Schreiben';
+    el('weaknessTitle').textContent = 'Your Weakness Areas — ' + currentLevel + ' ' + sectionLabel;
+
+    // Aggregate totals to drive the summary cards.
+    var pcts = rows.map(function (r) {
+      return (typeof r.total_score === 'number' && typeof r.max_score === 'number' && r.max_score > 0)
+        ? (r.total_score / r.max_score)
+        : null;
+    }).filter(function (p) { return p !== null; });
+    var avgPct  = pcts.length ? Math.round(pcts.reduce(function (a, b) { return a + b; }, 0) / pcts.length * 100) : 0;
+    var bestPct = pcts.length ? Math.round(Math.max.apply(null, pcts) * 100) : 0;
+    var passes  = pcts.filter(function (p) { return p >= passRatioFor(currentLevel); }).length;
+
+    el('weaknessSummary').innerHTML =
+        '<div class="weakness-summary-block">'
+      +   '<div class="weakness-summary-num">' + n + '</div>'
+      +   '<div class="weakness-summary-label">Versuche</div>'
+      + '</div>'
+      + '<div class="weakness-summary-block">'
+      +   '<div class="weakness-summary-num">' + avgPct + '%</div>'
+      +   '<div class="weakness-summary-label">Durchschnitt</div>'
+      + '</div>'
+      + '<div class="weakness-summary-block">'
+      +   '<div class="weakness-summary-num">' + bestPct + '%</div>'
+      +   '<div class="weakness-summary-label">Beste</div>'
+      + '</div>'
+      + '<div class="weakness-summary-block">'
+      +   '<div class="weakness-summary-num">' + passes + ' / ' + n + '</div>'
+      +   '<div class="weakness-summary-label">Bestanden</div>'
+      + '</div>';
+
+    // Per-criterion bars — Schreiben only (Lesen has no def).
+    var key = currentLevel + '-' + currentSection;
+    var defs = CRITERION_DEFS[key] || [];
+    if (!defs.length) {
+      el('weaknessRows').innerHTML = '';
+      hide('weaknessEmpty');
+      return;
+    }
+
+    var rowsHtml = defs.map(function (c) {
+      var values = rows.map(function (r) {
+        return (r.scores && typeof r.scores[c.key] === 'number') ? r.scores[c.key] : null;
+      }).filter(function (v) { return v !== null; });
+      if (!values.length) return '';
+      var avg = values.reduce(function (a, b) { return a + b; }, 0) / values.length;
+      var pct = (avg / c.max) * 100;
+      var v   = weaknessVerdict(pct);
+      return '<div class="weakness-row">'
+        + '<span class="weakness-label">' + escapeHtml(c.label) + '</span>'
+        + '<div class="weakness-bar">'
+        +   '<div class="weakness-bar-fill ' + v.fill + '" style="width:' + Math.min(100, Math.round(pct)) + '%"></div>'
+        + '</div>'
+        + '<span class="weakness-score">' + avg.toFixed(1) + ' / ' + c.max + '</span>'
+        + '<span class="weakness-tag ' + v.tag + '">' + v.text + '</span>'
+        + '</div>';
+    }).filter(function (s) { return s; }).join('');
+
+    if (!rowsHtml) {
+      el('weaknessRows').innerHTML = '';
+      show('weaknessEmpty');
+    } else {
+      el('weaknessRows').innerHTML = rowsHtml;
+      hide('weaknessEmpty');
+    }
+  }
+
   // ── Loader ─────────────────────────────────────────────────
   // Top-level load: figures out which level + section the user picked
   // (from the URL), fetches the full list of published exams for that
@@ -2716,8 +2969,12 @@
         checkSubmitState();
 
         // Refresh history scoped to this exam — so switching the
-        // Übungssatz dropdown swaps the history panel too.
+        // Übungssatz dropdown swaps the history panel too. The
+        // weakness panel is scoped to (level, section) not exam_id,
+        // so it doesn't need to refresh on Übungssatz switch — but
+        // calling it on initial load is necessary to populate it.
         loadHistory();
+        loadWeakness();
       });
   }
 
