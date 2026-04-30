@@ -2120,6 +2120,11 @@
         });
       }
       taskMaxes.push(task.max_score || 0);
+      // Record the per-task max alongside the score so the weakness
+      // panel can compute a per-task percentage from history alone.
+      // Old attempts pre-dating this line won't have it — those are
+      // simply skipped from the per-task bars (summary stats still work).
+      scoresByTask['task_' + task.task_number + '_max'] = task.max_score || 0;
     });
 
     var total = details.reduce(function (acc, d) { return acc + d.score; }, 0);
@@ -2805,32 +2810,41 @@
       +   '<div class="weakness-summary-label">Bestanden</div>'
       + '</div>';
 
-    // Per-criterion bars — Schreiben only (Lesen has no def).
-    var key = currentLevel + '-' + currentSection;
+    // Per-criterion bars. Two paths:
+    //   - Schreiben: CRITERION_DEFS provides fixed-max criteria.
+    //   - Lesen:     derive task list dynamically from each attempt's
+    //                scores blob ('task_1', 'task_1_max', 'task_2',
+    //                'task_2_max', …). Per-attempt max is required —
+    //                attempts that pre-date the per-task-max patch
+    //                are simply omitted per-row but still contribute
+    //                to the summary cards.
+    var key  = currentLevel + '-' + currentSection;
     var defs = CRITERION_DEFS[key] || [];
-    if (!defs.length) {
-      el('weaknessRows').innerHTML = '';
-      hide('weaknessEmpty');
-      return;
-    }
 
-    var rowsHtml = defs.map(function (c) {
-      var values = rows.map(function (r) {
-        return (r.scores && typeof r.scores[c.key] === 'number') ? r.scores[c.key] : null;
-      }).filter(function (v) { return v !== null; });
-      if (!values.length) return '';
-      var avg = values.reduce(function (a, b) { return a + b; }, 0) / values.length;
-      var pct = (avg / c.max) * 100;
-      var v   = weaknessVerdict(pct);
-      return '<div class="weakness-row">'
-        + '<span class="weakness-label">' + escapeHtml(c.label) + '</span>'
-        + '<div class="weakness-bar">'
-        +   '<div class="weakness-bar-fill ' + v.fill + '" style="width:' + Math.min(100, Math.round(pct)) + '%"></div>'
-        + '</div>'
-        + '<span class="weakness-score">' + avg.toFixed(1) + ' / ' + c.max + '</span>'
-        + '<span class="weakness-tag ' + v.tag + '">' + v.text + '</span>'
-        + '</div>';
-    }).filter(function (s) { return s; }).join('');
+    var rowsHtml;
+    if (defs.length) {
+      rowsHtml = defs.map(function (c) {
+        var values = rows.map(function (r) {
+          return (r.scores && typeof r.scores[c.key] === 'number') ? r.scores[c.key] : null;
+        }).filter(function (v) { return v !== null; });
+        if (!values.length) return '';
+        var avg = values.reduce(function (a, b) { return a + b; }, 0) / values.length;
+        var pct = (avg / c.max) * 100;
+        var v   = weaknessVerdict(pct);
+        return '<div class="weakness-row">'
+          + '<span class="weakness-label">' + escapeHtml(c.label) + '</span>'
+          + '<div class="weakness-bar">'
+          +   '<div class="weakness-bar-fill ' + v.fill + '" style="width:' + Math.min(100, Math.round(pct)) + '%"></div>'
+          + '</div>'
+          + '<span class="weakness-score">' + avg.toFixed(1) + ' / ' + c.max + '</span>'
+          + '<span class="weakness-tag ' + v.tag + '">' + v.text + '</span>'
+          + '</div>';
+      }).filter(function (s) { return s; }).join('');
+    } else if (currentSection === 'lesen') {
+      rowsHtml = renderLesenWeaknessRows(rows);
+    } else {
+      rowsHtml = '';
+    }
 
     if (!rowsHtml) {
       el('weaknessRows').innerHTML = '';
@@ -2839,6 +2853,54 @@
       el('weaknessRows').innerHTML = rowsHtml;
       hide('weaknessEmpty');
     }
+  }
+
+  // Lesen per-task weakness — average each task's score / max across
+  // attempts. Requires the task_N_max keys added in submitLesen; older
+  // attempts (pre-patch) are filtered out per task so they don't skew
+  // averages with implicit-100% denominators.
+  function renderLesenWeaknessRows(rows) {
+    // Discover task numbers across attempts.
+    var taskNums = {};
+    rows.forEach(function (r) {
+      if (!r.scores) return;
+      Object.keys(r.scores).forEach(function (k) {
+        var m = k.match(/^task_(\d+)$/);
+        if (m) taskNums[m[1]] = true;
+      });
+    });
+    var nums = Object.keys(taskNums).map(Number).sort(function (a, b) { return a - b; });
+
+    return nums.map(function (n) {
+      var entries = rows.map(function (r) {
+        if (!r.scores) return null;
+        var score = r.scores['task_' + n];
+        var max   = r.scores['task_' + n + '_max'];
+        if (typeof score !== 'number' || typeof max !== 'number' || max <= 0) return null;
+        return { score: score, max: max, pct: (score / max) * 100 };
+      }).filter(function (e) { return e !== null; });
+      if (!entries.length) return '';
+
+      var avgScore = entries.reduce(function (a, b) { return a + b.score; }, 0) / entries.length;
+      var avgPct   = entries.reduce(function (a, b) { return a + b.pct;   }, 0) / entries.length;
+      // Most-common max within this slice — surfaces the canonical task
+      // max even if a few attempts had a different exam version.
+      var maxCounts = {};
+      entries.forEach(function (e) { maxCounts[e.max] = (maxCounts[e.max] || 0) + 1; });
+      var maxRef = Object.keys(maxCounts).sort(function (a, b) {
+        return maxCounts[b] - maxCounts[a];
+      })[0];
+
+      var v = weaknessVerdict(avgPct);
+      return '<div class="weakness-row">'
+        + '<span class="weakness-label">Aufgabe ' + n + '</span>'
+        + '<div class="weakness-bar">'
+        +   '<div class="weakness-bar-fill ' + v.fill + '" style="width:' + Math.min(100, Math.round(avgPct)) + '%"></div>'
+        + '</div>'
+        + '<span class="weakness-score">' + avgScore.toFixed(1) + ' / ' + escapeHtml(maxRef) + '</span>'
+        + '<span class="weakness-tag ' + v.tag + '">' + v.text + '</span>'
+        + '</div>';
+    }).filter(function (s) { return s; }).join('');
   }
 
   // ── Loader ─────────────────────────────────────────────────
