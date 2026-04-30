@@ -1079,12 +1079,12 @@
       +   '</ul>'
       + '</div>';
 
-    var optionsHtml = '<option value="">— Auswählen —</option>'
+    var optionsHtml = '<option value="">— Anzeige wählen —</option>'
       + adverts.map(function (a) {
           var l = (a.letter || '').toLowerCase();
-          return '<option value="' + escapeHtml(l) + '">' + escapeHtml(l + ' — ' + (a.title || '')) + '</option>';
+          return '<option value="' + escapeHtml(l) + '">' + escapeHtml(l + ': ' + (a.title || '')) + '</option>';
         }).join('')
-      + '<option value="keine">X — Keine passende Anzeige</option>';
+      + '<option value="keine">X: Keine passende Anzeige</option>';
 
     var peopleHtml =
         '<div class="adverts-people">'
@@ -1892,11 +1892,11 @@
     }
     else if (type === 'matching_adverts') {
       qText = '<strong>' + escapeHtml(item.person) + ':</strong> ' + escapeHtml(item.text || '');
-      var yourPretty = item.your === 'keine' ? 'X — Keine passende Anzeige'
+      var yourPretty = item.your === 'keine' ? 'X: Keine passende Anzeige'
                      : (item.your ? item.your.toUpperCase() : '—');
       yourLine = '<div class="lr-yours">Deine Antwort: <strong>' + escapeHtml(yourPretty) + '</strong></div>';
       if (!ok) {
-        var correctPretty = item.correct === 'keine' ? 'X — Keine passende Anzeige'
+        var correctPretty = item.correct === 'keine' ? 'X: Keine passende Anzeige'
                           : (item.correct ? item.correct.toUpperCase() : '—');
         correctLine = '<div class="lr-correct">Richtige Antwort: <strong>' + escapeHtml(correctPretty) + '</strong></div>';
       }
@@ -2086,17 +2086,17 @@
           // Only one Übungssatz published — keep the dropdown hidden.
           dropdown.style.display = 'none';
         } else {
-          // Populate options as "Übungssatz N" (1-indexed by load order)
-          // rather than the raw exam title — every A1 exam now shares
-          // the same canonical title (e.g. "A1 Schreiben — Prüfungs-
-          // vorbereitung"), so the page header + attempt history stay
-          // consistent across sets while the dropdown surfaces the
-          // user's set choice.
-          select.innerHTML = exams.map(function (e, i) {
-            return '<option value="' + escapeHtml(e.id) + '">'
-              +    escapeHtml('Übungssatz ' + (i + 1))
-              + '</option>';
-          }).join('');
+          // Populate options as "<LEVEL> Übungssatz N" (1-indexed by
+          // load order) — the level prefix makes the dropdown self-
+          // explanatory across A1/A2/B1/B2. The page header + attempt
+          // history still read the canonical exam title, so consistency
+          // across sets is preserved.
+          select.innerHTML = '<option value="">— Übungssatz wählen —</option>'
+            + exams.map(function (e, i) {
+                return '<option value="' + escapeHtml(e.id) + '">'
+                  +    escapeHtml(currentLevel + ' Übungssatz ' + (i + 1))
+                  + '</option>';
+              }).join('');
           select.value = exams[0].id;
           dropdown.style.display = '';
 
