@@ -307,7 +307,71 @@
   }
   .tf-btn:disabled { cursor: not-allowed; }
 
-  /* ── Task: matching (Lesen) ──────────────────────────────── */
+  /* ── Task: matching_adverts (A2 Lesen Teil 4) ───────────── */
+  .adverts-panel {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+  }
+  .adverts-panel-label {
+    font-size: 10.5px; font-weight: 800; letter-spacing: 1.5px;
+    color: var(--blue); text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .adverts-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+  .adverts-list li {
+    font-size: 13.5px; line-height: 1.55; color: var(--dark);
+  }
+  .adverts-list .adv-letter {
+    display: inline-block;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #fff; border: 1.5px solid var(--blue-mid);
+    font-weight: 800; font-size: 12px; color: var(--blue);
+    text-align: center; line-height: 19px;
+    margin-right: 8px; flex-shrink: 0;
+    text-transform: uppercase;
+  }
+  .adverts-list .adv-title { font-weight: 800; color: var(--dark); }
+  .adverts-list .adv-text  { color: var(--mid); margin-left: 30px; display: block; margin-top: 2px; }
+
+  .adverts-people { display: flex; flex-direction: column; gap: 10px; }
+  .adverts-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+  .adverts-row .person { flex: 1; min-width: 0; }
+  .adverts-row .person-name {
+    font-size: 13.5px; font-weight: 800; color: var(--blue);
+    margin-bottom: 4px;
+  }
+  .adverts-row .person-text {
+    font-size: 13.5px; color: var(--dark); line-height: 1.5; margin: 0;
+    font-style: italic;
+  }
+  .adverts-select {
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 9px 12px;
+    font-family: inherit; font-size: 13.5px;
+    color: var(--dark);
+    outline: none; cursor: pointer;
+    min-width: 200px; flex-shrink: 0;
+    transition: border-color .18s, box-shadow .18s;
+  }
+  .adverts-select:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.10);
+  }
+  .adverts-select:disabled { background: var(--bg); color: var(--mid); cursor: not-allowed; }
+
+  /* ── Task: matching (A1 Lesen Teil 3 — legacy) ───────────── */
   .match-grid { display: flex; flex-direction: column; gap: 10px; }
   .match-row {
     display: flex; align-items: center; gap: 14px;
@@ -593,14 +657,22 @@
 <main class="exam-wrap">
 
   <!-- Eyebrow + page-level title (consistent across both exams) -->
-  <div class="exam-eyebrow">A1 · Exam Vault</div>
+  <div class="exam-eyebrow" id="examEyebrow">A1 · Exam Vault</div>
   <h1 class="exam-title" id="examTitle">Loading…</h1>
   <p class="exam-sub" id="examSub">Goethe-format A1 practice with auto-grading. Pick an exam and take it like the real thing.</p>
 
-  <!-- Exam selector -->
-  <div class="exam-selector" role="tablist" aria-label="Choose exam">
-    <a href="?section=schreiben" class="exam-pill" id="pillSchreiben" role="tab">📝 Schreiben</a>
-    <a href="?section=lesen"     class="exam-pill" id="pillLesen"     role="tab">📖 Lesen</a>
+  <!-- Level selector — A1 / A2 / B1 / B2 -->
+  <div class="exam-selector" role="tablist" aria-label="Choose level" style="margin-bottom:10px;">
+    <a class="exam-pill" id="pillA1" role="tab" data-level="A1">A1</a>
+    <a class="exam-pill" id="pillA2" role="tab" data-level="A2">A2</a>
+    <a class="exam-pill" id="pillB1" role="tab" data-level="B1">B1</a>
+    <a class="exam-pill" id="pillB2" role="tab" data-level="B2">B2</a>
+  </div>
+
+  <!-- Section selector (Schreiben / Lesen) — filters within the chosen level -->
+  <div class="exam-selector" role="tablist" aria-label="Choose section">
+    <a class="exam-pill" id="pillSchreiben" role="tab">📝 Schreiben</a>
+    <a class="exam-pill" id="pillLesen"     role="tab">📖 Lesen</a>
   </div>
 
   <!-- Übungssatz dropdown — visible only when 2+ exams exist for the section -->
@@ -682,20 +754,25 @@
   'use strict';
 
   // ── Constants ──────────────────────────────────────────────
-  var EXAM_LEVEL    = 'A1';
-  var WORD_TARGET   = 40;
-  var WORD_MIN_OK   = 20;       // submit-enable threshold for Task 2 message
-  var WORD_GREEN_LO = 30;       // green band lower bound
-  var PASS_RATIO    = 0.5;      // pass = 50% of max — works for both exams
-  var API_BASE      = 'https://deutschweg.onrender.com';
+  // A1 message default targets; A2 short_message tasks override per-task
+  // via stimulus.word_target / word_min.
+  var WORD_TARGET_DEFAULT = 40;
+  var WORD_MIN_DEFAULT    = 20;
+  var API_BASE            = 'https://deutschweg.onrender.com';
+
+  // Pass thresholds per CEFR level (Goethe-aligned).
+  function passRatioFor(level) {
+    return level === 'A1' ? 0.5 : 0.6;
+  }
 
   // ── Module state ───────────────────────────────────────────
+  var currentLevel      = 'A1';        // 'A1' | 'A2' | 'B1' | 'B2'
   var currentSection    = 'schreiben'; // 'schreiben' | 'lesen'
   var currentExamId     = null;
-  var currentExamLevel  = 'A1';        // 'A1' | 'A2' | 'B1' | 'B2'
+  var currentExamLevel  = 'A1';        // mirrors exam.level — used by formatInstructions
   var currentExamMax    = 20;          // sum of task max_scores (set after load)
   var currentTasks      = [];          // ordered tasks from Supabase
-  var task1Fields       = [];          // Schreiben Task 1 field labels (form_fill)
+  var task1Fields       = [];          // Schreiben Task 1 field labels (form_fill — legacy A1)
 
   // ── Utilities ──────────────────────────────────────────────
   function el(id) { return document.getElementById(id); }
@@ -719,7 +796,23 @@
     var p = new URLSearchParams(location.search).get('section');
     return (p === 'lesen' || p === 'schreiben') ? p : 'schreiben';
   }
-  function activatePill(section) {
+  function getActiveLevel() {
+    var p = new URLSearchParams(location.search).get('level');
+    return ['A1', 'A2', 'B1', 'B2'].indexOf(p) !== -1 ? p : 'A1';
+  }
+
+  // Wire all 4 level pills + 2 section pills with hrefs that preserve
+  // the other axis. Changing level always resets section to schreiben
+  // (per spec) — so the new exam set is loaded fresh.
+  function wirePills(level, section) {
+    ['A1', 'A2', 'B1', 'B2'].forEach(function (l) {
+      var p = el('pill' + l);
+      if (!p) return;
+      p.href = '?level=' + l + '&section=schreiben';
+      p.classList.toggle('active', l === level);
+    });
+    el('pillSchreiben').href = '?level=' + level + '&section=schreiben';
+    el('pillLesen').href     = '?level=' + level + '&section=lesen';
     el('pillSchreiben').classList.toggle('active', section === 'schreiben');
     el('pillLesen').classList.toggle('active',     section === 'lesen');
   }
@@ -753,8 +846,13 @@
   }
 
   // ── Renderers (per task_type) ──────────────────────────────
+  // shortMsgIdx maps the Nth short_message in the exam (0-based) to a
+  // wire/DOM slot — slot 0 → 'task2' (A1 message / A2 SMS), slot 1 →
+  // 'task3' (A2 email). The wire-name 'task2' is preserved from the
+  // pre-A2 contract for backward compatibility.
   function renderTaskCards(tasks) {
-    var container = el('taskCards');
+    var container    = el('taskCards');
+    var shortMsgIdx  = 0;
     container.innerHTML = '';
     tasks.forEach(function (task, i) {
       var card = document.createElement('section');
@@ -772,11 +870,12 @@
       container.appendChild(card);
       var body = card.querySelector('.task-body');
       switch (task.task_type) {
-        case 'form_fill':       renderFormFill(task, body); break;
-        case 'short_message':   renderShortMessage(task, body); break;
-        case 'multiple_choice': renderMultipleChoice(task, body); break;
-        case 'true_false':      renderTrueFalse(task, body); break;
-        case 'matching':        renderMatching(task, body); break;
+        case 'form_fill':         renderFormFill(task, body); break;
+        case 'short_message':     renderShortMessage(task, body, shortMsgIdx++); break;
+        case 'multiple_choice':   renderMultipleChoice(task, body); break;
+        case 'true_false':        renderTrueFalse(task, body); break;
+        case 'matching':          renderMatching(task, body); break;
+        case 'matching_adverts':  renderMatchingAdverts(task, body); break;
       }
     });
   }
@@ -799,29 +898,59 @@
     });
   }
 
-  function renderShortMessage(task, body) {
-    var stim = task.stimulus || {};
+  // slotIdx: 0 → task2 (A1 message / A2 SMS), 1 → task3 (A2 email).
+  // word_target / word_min come from stimulus when present (A2),
+  // otherwise default to A1 values (target 40, min 20).
+  function renderShortMessage(task, body, slotIdx) {
+    var stim       = task.stimulus || {};
+    var slotName   = (slotIdx === 1) ? 'task3' : 'task2';
+    var idResp     = slotName + 'Response';
+    var idWC       = 'wordCount_' + slotName;
+    var wordTarget = (stim.word_target != null) ? stim.word_target : WORD_TARGET_DEFAULT;
+    var wordMin    = (stim.word_min    != null) ? stim.word_min    : WORD_MIN_DEFAULT;
+    // Green band: target − 10 to target.
+    var greenLo    = Math.max(0, wordTarget - 10);
+
+    // Stimulus heading: A2 short_message uses {message} prompt, A1 has
+    // a friend's note from Lukas. Prefer the bullet_points list when
+    // present so the student sees exactly which 3 points to cover.
+    var bulletsHtml = '';
+    if (Array.isArray(stim.bullet_points) && stim.bullet_points.length) {
+      bulletsHtml =
+        '<ul style="margin: 8px 0 0 22px; padding: 0;">'
+        + stim.bullet_points.map(function (b) {
+            return '<li style="font-size: 13.5px; color: #1E3A5F; line-height: 1.6;">' + escapeHtml(b) + '</li>';
+          }).join('')
+        + '</ul>';
+    }
+
     body.innerHTML =
         '<div class="stimulus-box">'
-      +   '<div class="stimulus-label">Nachricht von Lukas</div>'
+      +   '<div class="stimulus-label">' + (slotIdx === 1 ? 'Aufgabenstellung' : 'Aufgabenstellung') + '</div>'
       +   '<p class="stimulus-text">' + escapeHtml(stim.message || '') + '</p>'
+      +   bulletsHtml
       + '</div>'
-      + '<textarea class="response-area" id="task2Response" rows="6" placeholder="Schreib deine Antwort hier…"></textarea>'
-      + '<div class="word-counter"><span id="wordCount">0</span> / 40 Wörter</div>';
+      + '<textarea class="response-area" id="' + idResp + '" rows="6" placeholder="Schreib deine Antwort hier…"></textarea>'
+      + '<div class="word-counter"><span id="' + idWC + '">0</span> / ' + wordTarget + ' Wörter</div>';
 
-    var ta      = el('task2Response');
-    var counter = el('wordCount');
+    var ta      = el(idResp);
+    var counter = el(idWC);
     var wrap    = counter.parentNode;
     function update() {
       var n = wordCount(ta.value);
       counter.textContent = n;
       wrap.classList.remove('in-range', 'over');
-      if (n >= WORD_GREEN_LO && n <= WORD_TARGET) wrap.classList.add('in-range');
-      else if (n > WORD_TARGET)                   wrap.classList.add('over');
+      if (n >= greenLo && n <= wordTarget) wrap.classList.add('in-range');
+      else if (n > wordTarget)             wrap.classList.add('over');
       checkSubmitState();
     }
     ta.addEventListener('input', update);
     update();
+
+    // Tag the slot name + word_min on the textarea so the validator and
+    // collector can find this task without re-walking currentTasks.
+    ta.dataset.slot     = slotName;
+    ta.dataset.wordMin  = String(wordMin);
   }
 
   function renderMultipleChoice(task, body) {
@@ -921,27 +1050,103 @@
     });
   }
 
+  // matching_adverts: A2 Lesen Teil 4 — list of 5 people on the left,
+  // 6 adverts (a–f) shown above. Each person picks one advert letter
+  // OR "keine" (no match). Scoring: 1 point per correct match. If the
+  // correct answer is null/'keine', the student must select 'keine'.
+  function renderMatchingAdverts(task, body) {
+    var stim    = task.stimulus || {};
+    var people  = stim.people  || [];
+    var adverts = stim.adverts || [];
+
+    var advertsHtml =
+        '<div class="adverts-panel">'
+      +   '<div class="adverts-panel-label">Die Anzeigen</div>'
+      +   '<ul class="adverts-list">'
+      +     adverts.map(function (a) {
+            return '<li>'
+              + '<span class="adv-letter">' + escapeHtml((a.letter || '').toLowerCase()) + '</span>'
+              + '<span class="adv-title">' + escapeHtml(a.title || '') + '</span>'
+              + '<span class="adv-text">' + escapeHtml(a.text || '') + '</span>'
+              + '</li>';
+          }).join('')
+      +   '</ul>'
+      + '</div>';
+
+    var optionsHtml = '<option value="">— Auswählen —</option>'
+      + adverts.map(function (a) {
+          var l = (a.letter || '').toLowerCase();
+          return '<option value="' + escapeHtml(l) + '">' + escapeHtml(l + ' — ' + (a.title || '')) + '</option>';
+        }).join('')
+      + '<option value="keine">X — Keine passende Anzeige</option>';
+
+    var peopleHtml =
+        '<div class="adverts-people">'
+      + people.map(function (p) {
+          return '<div class="adverts-row">'
+            + '<div class="person">'
+            +   '<div class="person-name">' + escapeHtml(p.name || '') + '</div>'
+            +   '<p class="person-text">' + escapeHtml(p.text || '') + '</p>'
+            + '</div>'
+            + '<select class="adverts-select" data-person="' + escapeHtml(p.name || '') + '">'
+            +   optionsHtml
+            + '</select>'
+            + '</div>';
+        }).join('')
+      + '</div>';
+
+    body.innerHTML = advertsHtml + peopleHtml;
+
+    body.querySelectorAll('.adverts-select').forEach(function (sel) {
+      sel.addEventListener('change', checkSubmitState);
+    });
+  }
+
   // ── Validation (per section) ───────────────────────────────
   function checkSubmitState() {
     if (currentSection === 'schreiben') return validateSchreiben();
     if (currentSection === 'lesen')     return validateLesen();
   }
 
+  // Schreiben submit-gating walks every textarea rendered by
+  // renderShortMessage (1 task for A1, 2 for A2). Each textarea carries
+  // its slot name + word_min in dataset so we don't have to walk
+  // currentTasks here. Submit enables when ALL textareas meet their
+  // per-task word_min.
   function validateSchreiben() {
-    // The form_fill task is gone — Schreiben is now just the short
-    // message. Submit enables once the user hits the word minimum.
-    var ta = el('task2Response');
-    var n  = ta ? wordCount(ta.value) : 0;
-    var ok = n >= WORD_MIN_OK;
+    var tas = document.querySelectorAll('#taskCards textarea.response-area');
+    if (!tas.length) {
+      el('submitBtn').disabled = true;
+      el('submitNote').textContent = 'Lade Aufgaben…';
+      return;
+    }
+
+    var counts = [];
+    var allOk  = true;
+    Array.prototype.forEach.call(tas, function (ta, i) {
+      var min = parseInt(ta.dataset.wordMin || '20', 10);
+      var n   = wordCount(ta.value);
+      counts.push({ idx: i + 1, n: n, min: min, ok: n >= min });
+      if (n < min) allOk = false;
+    });
 
     var btn  = el('submitBtn');
     var note = el('submitNote');
-    btn.disabled = !ok;
-    note.classList.toggle('ready', ok);
+    btn.disabled = !allOk;
+    note.classList.toggle('ready', allOk);
 
-    note.textContent = ok
-      ? 'Bereit! Das Ergebnis kommt in 10–20 Sekunden.'
-      : 'Schreib mindestens ' + WORD_MIN_OK + ' Wörter um die Prüfung abzugeben (' + n + ' bisher).';
+    if (allOk) {
+      note.textContent = 'Bereit! Das Ergebnis kommt in 10–20 Sekunden.';
+    } else if (counts.length === 1) {
+      var c = counts[0];
+      note.textContent = 'Schreib mindestens ' + c.min + ' Wörter um die Prüfung abzugeben (' + c.n + ' bisher).';
+    } else {
+      // A2 — show per-task progress so the student knows which task is short
+      var parts = counts.map(function (c) {
+        return 'Aufgabe ' + c.idx + ': ' + c.n + '/' + c.min;
+      });
+      note.textContent = 'Schreib genug Wörter — ' + parts.join(', ') + '.';
+    }
   }
 
   function validateLesen() {
@@ -969,6 +1174,14 @@
         totalNeeded += ppl.length;
         ppl.forEach(function (p) {
           var sel = document.querySelector('.match-select[data-person="' + (p.name || '').replace(/"/g, '&quot;') + '"]');
+          if (sel && sel.value) totalAnswered++;
+        });
+      }
+      else if (task.task_type === 'matching_adverts') {
+        var pplA = (task.stimulus && task.stimulus.people) || [];
+        totalNeeded += pplA.length;
+        pplA.forEach(function (p) {
+          var sel = document.querySelector('.adverts-select[data-person="' + (p.name || '').replace(/"/g, '&quot;') + '"]');
           if (sel && sel.value) totalAnswered++;
         });
       }
@@ -1007,17 +1220,22 @@
   }
 
   // ── Submit: Schreiben (Claude API) ─────────────────────────
+  // Collects every short_message textarea by its slot name. A1 has
+  // exactly one textarea (slot 'task2'), A2 has two ('task2' = SMS,
+  // 'task3' = email). Always sends the level so the server picks the
+  // matching rubric.
   function collectSchreibenAnswers() {
-    var t1 = {};
-    task1Fields.forEach(function (label, i) {
-      var input = el('t1f' + i);
-      t1[label] = input ? input.value.trim() : '';
+    var out = { level: currentLevel };
+    var tas = document.querySelectorAll('#taskCards textarea.response-area');
+    Array.prototype.forEach.call(tas, function (ta) {
+      var slot = ta.dataset.slot || 'task2';
+      out[slot] = (ta.value || '').trim();
     });
-    return { task1: t1, task2: (el('task2Response').value || '').trim() };
+    return out;
   }
 
   function submitSchreiben() {
-    var ans = collectSchreibenAnswers();
+    var ans = collectSchreibenAnswers();   // { level, task2, [task3] }
 
     hide('resultsArea');
     hide('savedNotice');
@@ -1028,32 +1246,51 @@
     fetch(API_BASE + '/api/exam-grade', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ task2: ans.task2 })
+      body:    JSON.stringify(ans)
     })
       .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
       .then(function (res) {
         hide('gradingState');
-        // New shape: kommunikative_gestaltung + formale_richtigkeit + total_score
         if (res.ok && res.body && typeof res.body.total_score === 'number') {
           renderSchreibenResults(res.body);
           show('resultsArea');
           el('resultsArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
-          var kg = res.body.kommunikative_gestaltung || {};
-          var fr = res.body.formale_richtigkeit      || {};
-          var examMax = (typeof res.body.max_score === 'number') ? res.body.max_score : 12;
-          saveAttempt(
-            { task1: ans.task1, task2: ans.task2 },
-            {
-              kommunikative_gestaltung: kg.score,
-              formale_richtigkeit:      fr.score,
+
+          // Per-level scores summary for the exam_attempts.scores
+          // jsonb column. The shape differs by level so the column
+          // can power per-rubric history later.
+          var scores;
+          if (res.body.task2_aufgabe) {
+            // A2 shape
+            scores = {
+              task2_aufgabe:  res.body.task2_aufgabe  && res.body.task2_aufgabe.score,
+              task2_sprache:  res.body.task2_sprache  && res.body.task2_sprache.score,
+              task3_aufgabe:  res.body.task3_aufgabe  && res.body.task3_aufgabe.score,
+              task3_sprache:  res.body.task3_sprache  && res.body.task3_sprache.score,
+              task2_raw:      res.body.task2_raw,
+              task3_raw:      res.body.task3_raw,
+              total_raw:      res.body.total_raw,
+              total_score:    res.body.total_score
+            };
+          } else {
+            // A1 shape
+            scores = {
+              kommunikative_gestaltung: res.body.kommunikative_gestaltung && res.body.kommunikative_gestaltung.score,
+              formale_richtigkeit:      res.body.formale_richtigkeit      && res.body.formale_richtigkeit.score,
               raw_total:                res.body.raw_total,
               total_score:              res.body.total_score,
               word_count:               res.body.word_count
-            },
-            res.body,
-            res.body.total_score,
-            examMax
-          ).then(function (saved) {
+            };
+          }
+
+          var examMax  = (typeof res.body.max_score === 'number') ? res.body.max_score : (res.body.task2_aufgabe ? 25 : 12);
+          // total_score is INTEGER in the DB — round A2's × 1.25 result.
+          var totalInt = Math.round(res.body.total_score);
+          var answers  = { level: currentLevel };
+          if (typeof ans.task2 === 'string') answers.task2 = ans.task2;
+          if (typeof ans.task3 === 'string') answers.task3 = ans.task3;
+
+          saveAttempt(answers, scores, res.body, totalInt, examMax).then(function (saved) {
             if (saved) { show('savedNotice'); loadHistory(); }
           });
         } else {
@@ -1124,6 +1361,15 @@
         });
         out.tasks.push({ task_number: task.task_number, type: 'matching', answers: pairs });
       }
+      else if (task.task_type === 'matching_adverts') {
+        var pplA = (task.stimulus && task.stimulus.people) || [];
+        var pairsA = {};
+        pplA.forEach(function (p) {
+          var sel = document.querySelector('.adverts-select[data-person="' + (p.name || '').replace(/"/g, '&quot;') + '"]');
+          pairsA[p.name] = sel ? sel.value : '';
+        });
+        out.tasks.push({ task_number: task.task_number, type: 'matching_adverts', answers: pairsA });
+      }
     });
     return out;
   }
@@ -1193,6 +1439,27 @@
           score: score, max: task.max_score, items: items
         });
       }
+      else if (task.task_type === 'matching_adverts') {
+        var pplA       = (task.stimulus && task.stimulus.people)  || [];
+        var correctMap2 = (task.stimulus && task.stimulus.answers) || {};
+        var scoreA     = 0;
+        var itemsA = pplA.map(function (p) {
+          var sel        = document.querySelector('.adverts-select[data-person="' + (p.name || '').replace(/"/g, '&quot;') + '"]');
+          var your       = sel ? sel.value : '';
+          var correctRaw = correctMap2[p.name];
+          // Normalise: missing or null/'keine' all mean "no match" — the
+          // student must select 'keine' to score the point.
+          var correct    = (correctRaw == null || correctRaw === 'keine') ? 'keine' : String(correctRaw).toLowerCase();
+          var ok         = your !== '' && your === correct;
+          if (ok) scoreA++;
+          return { person: p.name, text: p.text, your: your, correct: correct, ok: ok };
+        });
+        scoresByTask[taskKey] = scoreA;
+        details.push({
+          task_number: task.task_number, type: 'matching_adverts',
+          score: scoreA, max: task.max_score, items: itemsA
+        });
+      }
       taskMaxes.push(task.max_score || 0);
     });
 
@@ -1208,8 +1475,8 @@
     el('resTotal').textContent = total != null ? total : '—';
     el('resTotalMax').textContent = max != null ? max : '—';
     if (typeof total === 'number' && typeof max === 'number' && max > 0) {
-      var pct = Math.round((total / max) * 100);
-      var passed = (total / max) >= PASS_RATIO;
+      var pct    = Math.round((total / max) * 100);
+      var passed = (total / max) >= passRatioFor(currentLevel);
       el('resPct').textContent = pct + '% — ' + (passed ? 'bestanden' : 'weiter üben');
     } else {
       el('resPct').textContent = '';
@@ -1224,9 +1491,16 @@
     }).join('');
   }
 
-  // Schreiben grading uses the official Goethe A1 Fit-in-Deutsch-1
-  // rubric: two criteria scored 0–3 each, raw total /6 doubled to /12.
+  // Top-level dispatch: A2 graders return task2_aufgabe/task3_aufgabe
+  // shape; A1 returns kommunikative_gestaltung/formale_richtigkeit.
   function renderSchreibenResults(g) {
+    if (g && g.task2_aufgabe) return renderSchreibenA2Results(g);
+    return renderSchreibenA1Results(g);
+  }
+
+  // Schreiben A1 grading uses the official Goethe A1 Fit-in-Deutsch-1
+  // rubric: two criteria scored 0–3 each, raw total /6 doubled to /12.
+  function renderSchreibenA1Results(g) {
     var kg        = g.kommunikative_gestaltung || {};
     var fr        = g.formale_richtigkeit      || {};
     var rawTotal  = (typeof g.raw_total   === 'number') ? g.raw_total   : '—';
@@ -1289,6 +1563,81 @@
       + '</div>';
   }
 
+  // Schreiben A2 grading uses the official Goethe A2 rubric: two
+  // criteria per task (Aufgabenerfüllung + Sprache), each scored
+  // 0/0.5/2/3.5/5. Raw totals add to /20 then × 1.25 → /25.
+  function renderSchreibenA2Results(g) {
+    var t2a = g.task2_aufgabe || {};
+    var t2s = g.task2_sprache || {};
+    var t3a = g.task3_aufgabe || {};
+    var t3s = g.task3_sprache || {};
+    var rawTotal = (typeof g.total_raw   === 'number') ? g.total_raw   : '—';
+    var total    = (typeof g.total_score === 'number') ? g.total_score : '—';
+    var maxTotal = (typeof g.max_score   === 'number') ? g.max_score   : 25;
+
+    setHero(g.total_score, g.max_score);
+
+    setTaskPills([
+      { label: 'Aufgabe 1 (SMS)',    score: (typeof g.task2_raw === 'number') ? g.task2_raw : '—', max: 10 },
+      { label: 'Aufgabe 2 (E-Mail)', score: (typeof g.task3_raw === 'number') ? g.task3_raw : '—', max: 10 }
+    ]);
+
+    function rubricCard(label, r) {
+      var sc    = (typeof r.score === 'number') ? r.score : '—';
+      var lbl   = r.label ? ' (' + r.label + ')' : '';
+      return '<div class="rubric-card">'
+        + '<div class="rubric-row">'
+        +   '<span class="rubric-label">' + escapeHtml(label) + escapeHtml(lbl) + '</span>'
+        +   '<span class="rubric-score">' + escapeHtml(sc) + ' / 5</span>'
+        + '</div>'
+        + '<p class="rubric-explanation">' + escapeHtml(r.explanation || '') + '</p>'
+        + (r.tip ? '<div class="rubric-tip">💡 ' + escapeHtml(r.tip) + '</div>' : '')
+        + '</div>';
+    }
+
+    var mistakes = Array.isArray(g.top_mistakes) ? g.top_mistakes : [];
+    var mistakesHtml = mistakes.length
+      ? mistakes.map(function (m) { return '<li>' + escapeHtml(m) + '</li>'; }).join('')
+      : '<li>Keine — sehr gut!</li>';
+
+    el('resultsBody').innerHTML =
+        '<div class="results-section">'
+      +   '<h3 class="results-h">Score Calculation</h3>'
+      +   '<p class="results-feedback">'
+      +     'Aufgabe 1: <strong>' + escapeHtml(typeof g.task2_raw === 'number' ? g.task2_raw : '—') + ' / 10</strong> · '
+      +     'Aufgabe 2: <strong>' + escapeHtml(typeof g.task3_raw === 'number' ? g.task3_raw : '—') + ' / 10</strong>'
+      +     '<br>Roh-Summe: <strong>' + escapeHtml(rawTotal) + ' / 20</strong> × 1.25 = '
+      +     '<strong>' + escapeHtml(total) + ' / ' + escapeHtml(maxTotal) + '</strong>'
+      +   '</p>'
+      + '</div>'
+      + '<div class="results-section">'
+      +   '<h3 class="results-h">Aufgabe 1 — SMS</h3>'
+      +   '<div class="rubric-grid">'
+      +     rubricCard('Aufgabenerfüllung', t2a)
+      +     rubricCard('Sprache',           t2s)
+      +   '</div>'
+      + '</div>'
+      + '<div class="results-section">'
+      +   '<h3 class="results-h">Aufgabe 2 — E-Mail</h3>'
+      +   '<div class="rubric-grid">'
+      +     rubricCard('Aufgabenerfüllung', t3a)
+      +     rubricCard('Sprache',           t3s)
+      +   '</div>'
+      + '</div>'
+      + '<div class="results-section">'
+      +   '<h3 class="results-h">Overall Feedback</h3>'
+      +   '<p class="results-feedback">' + escapeHtml(g.overall_feedback || '') + '</p>'
+      + '</div>'
+      + '<div class="results-section">'
+      +   '<h3 class="results-h">Top Mistakes</h3>'
+      +   '<ul class="results-list">' + mistakesHtml + '</ul>'
+      + '</div>'
+      + '<div class="results-section">'
+      +   '<h3 class="results-h">Next Recommendation</h3>'
+      +   '<p class="results-next">' + escapeHtml(g.next_recommendation || '') + '</p>'
+      + '</div>';
+  }
+
   function renderLesenResults(graded) {
     setHero(graded.total, graded.max);
 
@@ -1297,9 +1646,10 @@
     }));
 
     var bodyHtml = graded.details.map(function (d) {
-      var typeLabel = d.type === 'multiple_choice' ? 'Multiple-Choice'
-                    : d.type === 'true_false'      ? 'Richtig / Falsch'
-                    :                                'Zuordnung';
+      var typeLabel = d.type === 'multiple_choice'   ? 'Multiple-Choice'
+                    : d.type === 'true_false'         ? 'Richtig / Falsch'
+                    : d.type === 'matching_adverts'   ? 'Anzeigen-Zuordnung'
+                    :                                  'Zuordnung';
       var rowsHtml = d.items.map(function (item) {
         return renderLesenReviewRow(d.type, item);
       }).join('');
@@ -1343,6 +1693,17 @@
       yourLine = '<div class="lr-yours">Deine Antwort: <strong>' + escapeHtml(item.your || '—') + '</strong></div>';
       if (!ok) {
         correctLine = '<div class="lr-correct">Richtige Antwort: <strong>' + escapeHtml(item.correct || '—') + '</strong></div>';
+      }
+    }
+    else if (type === 'matching_adverts') {
+      qText = '<strong>' + escapeHtml(item.person) + ':</strong> ' + escapeHtml(item.text || '');
+      var yourPretty = item.your === 'keine' ? 'X — Keine passende Anzeige'
+                     : (item.your ? item.your.toUpperCase() : '—');
+      yourLine = '<div class="lr-yours">Deine Antwort: <strong>' + escapeHtml(yourPretty) + '</strong></div>';
+      if (!ok) {
+        var correctPretty = item.correct === 'keine' ? 'X — Keine passende Anzeige'
+                          : (item.correct ? item.correct.toUpperCase() : '—');
+        correctLine = '<div class="lr-correct">Richtige Antwort: <strong>' + escapeHtml(correctPretty) + '</strong></div>';
       }
     }
 
@@ -1466,7 +1827,8 @@
 
       var max = (typeof r.max_score === 'number' && r.max_score > 0) ? r.max_score : 20;
       var sc  = (typeof r.total_score === 'number') ? r.total_score : 0;
-      var passed   = (sc / max) >= PASS_RATIO;
+      var rowLevel  = (r.exams && r.exams.level) || 'A1';
+      var passed    = (sc / max) >= passRatioFor(rowLevel);
       var statusCls = passed ? 'pass' : 'fail';
       var statusTxt = passed ? '✓ Pass' : '✗ Retry';
 
@@ -1483,31 +1845,32 @@
   }
 
   // ── Loader ─────────────────────────────────────────────────
-  // Top-level load: figures out which section the user picked,
-  // fetches the full list of published exams for that section,
-  // wires up the Übungssatz dropdown if there are 2+, and finally
+  // Top-level load: figures out which level + section the user picked
+  // (from the URL), fetches the full list of published exams for that
+  // (level, section), wires the Übungssatz dropdown if 2+, then
   // delegates to loadExam() to render the first one.
   function load() {
+    currentLevel   = getActiveLevel();
     currentSection = getActiveSection();
-    activatePill(currentSection);
+    wirePills(currentLevel, currentSection);
+    el('examEyebrow').textContent = currentLevel + ' · Exam Vault';
 
     if (typeof dwSupabase === 'undefined') {
       showLoadError('Supabase client not initialised. Check that supabase-config.js is loading.');
       return;
     }
 
-    // Wire submit + history once. loadExam() may be called multiple
-    // times if the user switches Übungssatz, but these only need
-    // to bind once.
+    // Wire submit once. loadExam() may run multiple times if the user
+    // switches Übungssatz, but the listener only needs to bind once.
     el('submitBtn').addEventListener('click', submitExam);
 
     el('examSub').textContent = currentSection === 'schreiben'
-      ? 'Goethe-format Schreiben practice with two tasks. Fill in all 6 form fields and write at least 20 words for the message — then submit for instant AI grading.'
-      : 'Goethe-format Lesen practice with three tasks: multiple choice, true/false, and matching. Answer all questions to enable submit; auto-grading is instant.';
+      ? 'Goethe-format Schreiben practice. Write the message(s), then submit for instant AI grading.'
+      : 'Goethe-format Lesen practice. Answer all questions to enable submit; auto-grading is instant.';
 
     dwSupabase.from('exams')
       .select('id, level, title, section, is_published, created_at')
-      .eq('level',        EXAM_LEVEL)
+      .eq('level',        currentLevel)
       .eq('section',      currentSection)
       .eq('is_published', true)
       .order('created_at', { ascending: true })
@@ -1515,7 +1878,7 @@
         if (res.error) { showLoadError(res.error.message); return; }
         var exams = (res.data || []);
         if (!exams.length) {
-          showLoadError('No published A1 ' + currentSection + ' exam found.');
+          showLoadError('No published ' + currentLevel + ' ' + currentSection + ' exam found yet.');
           return;
         }
 

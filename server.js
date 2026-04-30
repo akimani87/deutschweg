@@ -806,7 +806,7 @@ app.post('/api/aitutor', async (req, res) => {
 // and a next-step recommendation. The client renders this verbatim — no
 // post-processing beyond shape validation here.
 
-const EXAM_GRADE_SYSTEM_PROMPT = `You are a certified Goethe-Institut A1 exam grader. Grade this student's Schreiben submission using the official Goethe A1 Fit in Deutsch 1 rubric exactly.
+const EXAM_GRADE_A1_SYSTEM_PROMPT = `You are a certified Goethe-Institut A1 exam grader. Grade this student's Schreiben submission using the official Goethe A1 Fit in Deutsch 1 rubric exactly.
 
 The student wrote a short message (~30 words) responding to an email stimulus. Grade using ONLY these two official criteria:
 
@@ -858,14 +858,67 @@ Respond as a single raw JSON object — no markdown, no code fences, no text out
   "next_recommendation": "One concrete next-practice activity."
 }`;
 
-app.post('/api/exam-grade', async (req, res) => {
-  const { task2 } = req.body || {};
+const EXAM_GRADE_A2_SYSTEM_PROMPT = `You are a certified Goethe-Institut A2 exam grader. Grade this student's Schreiben submission using the official Goethe A2 rubric.
 
-  // The new Goethe-rubric prompt grades only the short message, so
-  // task1 form data is no longer required (or expected) — the client
-  // sends just { task2: "<message>" }.
+The student wrote TWO texts:
+- Task 1: SMS (target 20–30 words, must cover 3 bullet points)
+- Task 2: Semi-formal email (target 30–40 words, must cover 3 bullet points)
+
+Grade each task on TWO criteria using this 5-level scale:
+
+CRITERION: Aufgabenerfüllung (task completion + register):
+A = 5 points: all 3 bullet points covered adequately, appropriate register
+B = 3.5 points: 2 bullet points adequate OR 1 adequate + 2 partial
+C = 2 points: 1 bullet point adequate + 1 partial OR all partial
+D = 0.5 points: 1 bullet point adequate or partial, not register-appropriate
+E = 0 points: text too short (under 10 words Task1 / under 15 words Task2) OR topic missed entirely — IF E then entire task scores 0
+
+CRITERION: Sprache (language — vocabulary, structures, coherence):
+A = 5 points: appropriate and varied, isolated errors don't affect comprehension
+B = 3.5 points: mostly appropriate, several errors don't affect comprehension
+C = 2 points: partly appropriate, several errors partly affect comprehension
+D = 0.5 points: barely appropriate, errors seriously affect comprehension
+E = 0 points: text completely inappropriate throughout
+
+SCORING:
+- Task 1 raw = Aufgabenerfüllung + Sprache (max 10)
+- Task 2 raw = Aufgabenerfüllung + Sprache (max 10)
+- Total raw = Task1 + Task2 (max 20)
+- Final score = total raw × 1.25 (max 25)
+- If Aufgabenerfüllung = E for a task, that entire task = 0
+
+Schreib das gesamte Feedback auf Deutsch — auf dem Sprachniveau A2.
+Benutze einfache Wörter und kurze Sätze.
+Maximal 12 Wörter pro Satz.
+Sei freundlich und ermutigend. Benutze 'du'.
+
+Return raw JSON only, no markdown, using this exact shape:
+{
+  "task2_aufgabe": { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
+  "task2_sprache": { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
+  "task3_aufgabe": { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
+  "task3_sprache": { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
+  "task2_raw":   <task2_aufgabe.score + task2_sprache.score>,
+  "task3_raw":   <task3_aufgabe.score + task3_sprache.score>,
+  "total_raw":   <task2_raw + task3_raw>,
+  "total_score": <total_raw * 1.25>,
+  "max_score":   25,
+  "overall_feedback": "...",
+  "top_mistakes": ["...", "..."],
+  "next_recommendation": "..."
+}`;
+
+app.post('/api/exam-grade', async (req, res) => {
+  const { level, task2, task3 } = req.body || {};
+  const safeLevel = (level === 'A2') ? 'A2' : 'A1';
+
+  // task2 is required for both levels (A1 message; A2 SMS).
   if (!task2 || typeof task2 !== 'string' || task2.trim().length < 1) {
     return res.status(400).json({ error: 'Missing task2 response.' });
+  }
+  // task3 is the second writing task — only required for A2 (the email).
+  if (safeLevel === 'A2' && (!task3 || typeof task3 !== 'string' || task3.trim().length < 1)) {
+    return res.status(400).json({ error: 'Missing task3 response (A2 email).' });
   }
   if (!process.env.CLAUDE_API_KEY) {
     console.error('[/api/exam-grade] CLAUDE_API_KEY is not set');
@@ -873,10 +926,14 @@ app.post('/api/exam-grade', async (req, res) => {
   }
 
   const task2Block = String(task2).slice(0, 2000).trim();
+  const task3Block = task3 ? String(task3).slice(0, 2000).trim() : '';
 
-  const userMessage = `Student's short message (target ~30 words):\n"""\n${task2Block}\n"""`;
+  const systemPrompt = (safeLevel === 'A2') ? EXAM_GRADE_A2_SYSTEM_PROMPT : EXAM_GRADE_A1_SYSTEM_PROMPT;
+  const userMessage  = (safeLevel === 'A2')
+    ? `Aufgabe 1 (SMS, target 20–30 words):\n"""\n${task2Block}\n"""\n\nAufgabe 2 (E-Mail, target 30–40 words):\n"""\n${task3Block}\n"""`
+    : `Student's short message (target ~30 words):\n"""\n${task2Block}\n"""`;
 
-  console.log(`[/api/exam-grade] Request — task2 length: ${task2Block.length} chars, origin: ${req.headers.origin || 'none'}`);
+  console.log(`[/api/exam-grade] Request — level=${safeLevel}, task2=${task2Block.length} chars${task3Block ? ', task3=' + task3Block.length + ' chars' : ''}, origin: ${req.headers.origin || 'none'}`);
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -888,8 +945,8 @@ app.post('/api/exam-grade', async (req, res) => {
       },
       body: JSON.stringify({
         model:      'claude-sonnet-4-6',
-        max_tokens: 2000,
-        system:     EXAM_GRADE_SYSTEM_PROMPT,
+        max_tokens: 2500,
+        system:     systemPrompt,
         messages:   [{ role: 'user', content: userMessage }],
       }),
     });
@@ -914,20 +971,29 @@ app.post('/api/exam-grade', async (req, res) => {
       return res.status(502).json({ error: 'Could not parse grading response. Try again.' });
     }
 
-    // Light shape validation — leave content untouched so the client
-    // sees exactly what Claude produced. New rubric: two criteria
-    // (Kommunikative Gestaltung + Formale Richtigkeit), raw total /6,
-    // doubled to a final /12.
-    if (
-      !result.kommunikative_gestaltung || typeof result.kommunikative_gestaltung.score !== 'number' ||
-      !result.formale_richtigkeit      || typeof result.formale_richtigkeit.score      !== 'number' ||
-      typeof result.total_score !== 'number'
-    ) {
+    // Shape validation differs per level. Both end in total_score (number).
+    let shapeOk;
+    if (safeLevel === 'A2') {
+      shapeOk = (
+        result.task2_aufgabe && typeof result.task2_aufgabe.score === 'number' &&
+        result.task2_sprache && typeof result.task2_sprache.score === 'number' &&
+        result.task3_aufgabe && typeof result.task3_aufgabe.score === 'number' &&
+        result.task3_sprache && typeof result.task3_sprache.score === 'number' &&
+        typeof result.total_score === 'number'
+      );
+    } else {
+      shapeOk = (
+        result.kommunikative_gestaltung && typeof result.kommunikative_gestaltung.score === 'number' &&
+        result.formale_richtigkeit      && typeof result.formale_richtigkeit.score      === 'number' &&
+        typeof result.total_score === 'number'
+      );
+    }
+    if (!shapeOk) {
       console.error('[/api/exam-grade] Unexpected response shape:', result);
       return res.status(502).json({ error: 'Unexpected response format from grader. Try again.' });
     }
 
-    console.log(`[/api/exam-grade] Success — total: ${result.total_score}/${result.max_score || 12} (raw ${result.raw_total})`);
+    console.log(`[/api/exam-grade] Success — level=${safeLevel}, total=${result.total_score}/${result.max_score || (safeLevel === 'A2' ? 25 : 12)}`);
     return res.json(result);
 
   } catch (err) {
