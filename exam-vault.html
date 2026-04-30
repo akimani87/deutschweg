@@ -1378,23 +1378,14 @@
               total_raw:        res.body.total_raw,
               total_score:      res.body.total_score
             };
-          } else if (res.body.task4_aufgabe) {
-            // B1: 3 criteria × 3 tasks
+          } else if (res.body.aufgabenerfuellung) {
+            // B1: 3 criteria over the whole submission, anchored to
+            // 40/40/20 per official Goethe B1 scoring → total /100.
             scores = {
-              task2_aufgabe:  res.body.task2_aufgabe  && res.body.task2_aufgabe.score,
-              task2_koherenz: res.body.task2_koherenz && res.body.task2_koherenz.score,
-              task2_sprache:  res.body.task2_sprache  && res.body.task2_sprache.score,
-              task3_aufgabe:  res.body.task3_aufgabe  && res.body.task3_aufgabe.score,
-              task3_koherenz: res.body.task3_koherenz && res.body.task3_koherenz.score,
-              task3_sprache:  res.body.task3_sprache  && res.body.task3_sprache.score,
-              task4_aufgabe:  res.body.task4_aufgabe  && res.body.task4_aufgabe.score,
-              task4_koherenz: res.body.task4_koherenz && res.body.task4_koherenz.score,
-              task4_sprache:  res.body.task4_sprache  && res.body.task4_sprache.score,
-              task2_raw:      res.body.task2_raw,
-              task3_raw:      res.body.task3_raw,
-              task4_raw:      res.body.task4_raw,
-              total_raw:      res.body.total_raw,
-              total_score:    res.body.total_score
+              aufgabenerfuellung:        res.body.aufgabenerfuellung      && res.body.aufgabenerfuellung.score,
+              kommunikative_gestaltung:  res.body.kommunikative_gestaltung && res.body.kommunikative_gestaltung.score,
+              formale_richtigkeit:       res.body.formale_richtigkeit      && res.body.formale_richtigkeit.score,
+              total_score:               res.body.total_score
             };
           } else if (res.body.task2_aufgabe) {
             // A2: 2 criteria × 2 tasks
@@ -1420,10 +1411,10 @@
           }
 
           // Pick the right max fallback if the response doesn't carry one.
-          var fallbackMax = res.body.task2_erfuellung ? 40
-                          : res.body.task4_aufgabe    ? 45
-                          : res.body.task2_aufgabe    ? 25
-                          :                              12;
+          var fallbackMax = res.body.task2_erfuellung    ? 40
+                          : res.body.aufgabenerfuellung  ? 100
+                          : res.body.task2_aufgabe       ? 25
+                          :                                 12;
           var examMax  = (typeof res.body.max_score === 'number') ? res.body.max_score : fallbackMax;
           // total_score is INTEGER in the DB — round A2's × 1.25 (and any
           // other half-point sums) for the column. Full precision lives
@@ -1637,13 +1628,15 @@
 
   // Top-level dispatch keyed off shape:
   //   B2 → task2_erfuellung      (4 criteria × 2 tasks)
-  //   B1 → task4_aufgabe present (3 criteria × 3 tasks)
-  //   A2 → task2_aufgabe + task3_aufgabe (2 criteria × 2 tasks)
-  //   A1 → kommunikative_gestaltung      (2 criteria × 1 task)
+  //   B1 → aufgabenerfuellung    (3 criteria across whole submission, /100)
+  //   A2 → task2_aufgabe         (2 criteria × 2 tasks)
+  //   A1 → kommunikative_gestaltung (2 criteria × 1 task)
+  // Order matters — B1 + A1 both carry kommunikative_gestaltung, so B1
+  // is checked first via the B1-only aufgabenerfuellung key.
   function renderSchreibenResults(g) {
-    if (g && g.task2_erfuellung) return renderSchreibenB2Results(g);
-    if (g && g.task4_aufgabe)    return renderSchreibenB1Results(g);
-    if (g && g.task2_aufgabe)    return renderSchreibenA2Results(g);
+    if (g && g.task2_erfuellung)    return renderSchreibenB2Results(g);
+    if (g && g.aufgabenerfuellung)  return renderSchreibenB1Results(g);
+    if (g && g.task2_aufgabe)       return renderSchreibenA2Results(g);
     return renderSchreibenA1Results(g);
   }
 
@@ -1787,16 +1780,18 @@
       + '</div>';
   }
 
-  // Shared helpers for B1/B2 result rendering — both follow the same
-  // "task pill + 2-card rubric grid per task + summary" layout, only
-  // the criteria-per-task and task count differ.
-  function makeRubricCard(label, r) {
+  // Shared helpers for B1/B2 result rendering. The third arg overrides
+  // the criterion's max (B1 uses 40/40/20, while B2 / A2 default to 5).
+  function makeRubricCard(label, r, maxOverride) {
     var sc  = (typeof r.score === 'number') ? r.score : '—';
+    var mx  = (typeof maxOverride === 'number') ? maxOverride
+            : (typeof r.max === 'number')        ? r.max
+            :                                      5;
     var lbl = r.label ? ' (' + r.label + ')' : '';
     return '<div class="rubric-card">'
       + '<div class="rubric-row">'
       +   '<span class="rubric-label">' + escapeHtml(label) + escapeHtml(lbl) + '</span>'
-      +   '<span class="rubric-score">' + escapeHtml(sc) + ' / 5</span>'
+      +   '<span class="rubric-score">' + escapeHtml(sc) + ' / ' + escapeHtml(mx) + '</span>'
       + '</div>'
       + '<p class="rubric-explanation">' + escapeHtml(r.explanation || '') + '</p>'
       + (r.tip ? '<div class="rubric-tip">💡 ' + escapeHtml(r.tip) + '</div>' : '')
@@ -1823,58 +1818,42 @@
       + '</div>';
   }
 
-  // Schreiben B1 grading — 3 writing tasks (informal post / opinion
-  // post / formal email). Each task scored on 3 criteria × 5 = 15.
-  // Three tasks → total /45.
+  // Schreiben B1 grading — official Goethe B1 rubric. Three criteria
+  // graded across the WHOLE submission (not per-task), with anchored
+  // point values: Aufgabenerfüllung /40, Kommunikative Gestaltung /40,
+  // Formale Richtigkeit /20 → total /100. Pass = 60 (60%).
   function renderSchreibenB1Results(g) {
-    var t2a = g.task2_aufgabe  || {}, t2k = g.task2_koherenz || {}, t2s = g.task2_sprache || {};
-    var t3a = g.task3_aufgabe  || {}, t3k = g.task3_koherenz || {}, t3s = g.task3_sprache || {};
-    var t4a = g.task4_aufgabe  || {}, t4k = g.task4_koherenz || {}, t4s = g.task4_sprache || {};
-    var rawTotal = (typeof g.total_raw   === 'number') ? g.total_raw   : '—';
+    var ae = g.aufgabenerfuellung      || {};
+    var kg = g.kommunikative_gestaltung || {};
+    var fr = g.formale_richtigkeit      || {};
     var total    = (typeof g.total_score === 'number') ? g.total_score : '—';
-    var maxTotal = (typeof g.max_score   === 'number') ? g.max_score   : 45;
+    var maxTotal = (typeof g.max_score   === 'number') ? g.max_score   : 100;
 
     setHero(g.total_score, g.max_score);
 
     setTaskPills([
-      { label: 'Aufgabe 1 (Beitrag)',     score: (typeof g.task2_raw === 'number') ? g.task2_raw : '—', max: 15 },
-      { label: 'Aufgabe 2 (Meinung)',     score: (typeof g.task3_raw === 'number') ? g.task3_raw : '—', max: 15 },
-      { label: 'Aufgabe 3 (formelle Mail)', score: (typeof g.task4_raw === 'number') ? g.task4_raw : '—', max: 15 }
+      { label: 'Aufgabenerfüllung',       score: (typeof ae.score === 'number') ? ae.score : '—', max: 40 },
+      { label: 'Komm. Gestaltung',        score: (typeof kg.score === 'number') ? kg.score : '—', max: 40 },
+      { label: 'Formale Richtigkeit',     score: (typeof fr.score === 'number') ? fr.score : '—', max: 20 }
     ]);
 
     el('resultsBody').innerHTML =
         '<div class="results-section">'
       +   '<h3 class="results-h">Score Calculation</h3>'
       +   '<p class="results-feedback">'
-      +     'Aufgabe 1: <strong>' + escapeHtml(typeof g.task2_raw === 'number' ? g.task2_raw : '—') + ' / 15</strong> · '
-      +     'Aufgabe 2: <strong>' + escapeHtml(typeof g.task3_raw === 'number' ? g.task3_raw : '—') + ' / 15</strong> · '
-      +     'Aufgabe 3: <strong>' + escapeHtml(typeof g.task4_raw === 'number' ? g.task4_raw : '—') + ' / 15</strong>'
+      +     'Aufgabenerfüllung: <strong>'        + escapeHtml(typeof ae.score === 'number' ? ae.score : '—') + ' / 40</strong> · '
+      +     'Kommunikative Gestaltung: <strong>' + escapeHtml(typeof kg.score === 'number' ? kg.score : '—') + ' / 40</strong> · '
+      +     'Formale Richtigkeit: <strong>'      + escapeHtml(typeof fr.score === 'number' ? fr.score : '—') + ' / 20</strong>'
       +     '<br>Gesamt: <strong>' + escapeHtml(total) + ' / ' + escapeHtml(maxTotal) + '</strong>'
-      +     '<br>Roh-Summe: <strong>' + escapeHtml(rawTotal) + ' / 45</strong>'
+      +     '<br>Bestanden ab 60 / 100 (60%).'
       +   '</p>'
       + '</div>'
       + '<div class="results-section">'
-      +   '<h3 class="results-h">Aufgabe 1 — Informeller Beitrag</h3>'
+      +   '<h3 class="results-h">Goethe B1 Rubric</h3>'
       +   '<div class="rubric-grid">'
-      +     makeRubricCard('Aufgabenerfüllung', t2a)
-      +     makeRubricCard('Kohärenz',           t2k)
-      +     makeRubricCard('Sprache',            t2s)
-      +   '</div>'
-      + '</div>'
-      + '<div class="results-section">'
-      +   '<h3 class="results-h">Aufgabe 2 — Meinung im Forum</h3>'
-      +   '<div class="rubric-grid">'
-      +     makeRubricCard('Aufgabenerfüllung', t3a)
-      +     makeRubricCard('Kohärenz',           t3k)
-      +     makeRubricCard('Sprache',            t3s)
-      +   '</div>'
-      + '</div>'
-      + '<div class="results-section">'
-      +   '<h3 class="results-h">Aufgabe 3 — Formelle E-Mail</h3>'
-      +   '<div class="rubric-grid">'
-      +     makeRubricCard('Aufgabenerfüllung', t4a)
-      +     makeRubricCard('Kohärenz',           t4k)
-      +     makeRubricCard('Sprache',            t4s)
+      +     makeRubricCard('Aufgabenerfüllung',       ae, 40)
+      +     makeRubricCard('Kommunikative Gestaltung', kg, 40)
+      +     makeRubricCard('Formale Richtigkeit',      fr, 20)
       +   '</div>'
       + '</div>'
       + makeMistakesAndNextHtml(g);

@@ -908,70 +908,81 @@ Return raw JSON only, no markdown, using this exact shape:
   "next_recommendation": "..."
 }`;
 
-// B1 rubric — 3 writing tasks (informal post / opinion post / formal email).
-// Each task scored on 3 criteria using the A–E scale common to Goethe
-// rubrics (A=5, B=3.5, C=2, D=0.5, E=0). Per-task max = 15, total = 45.
-// (Approximation of the official Goethe-Zertifikat B1 weighting — adjust
-// the numeric anchors below if your school uses a different rubric.)
-const EXAM_GRADE_B1_SYSTEM_PROMPT = `You are a certified Goethe-Institut B1 exam grader. Grade this student's Schreiben submission using the official Goethe-Zertifikat B1 rubric.
+// B1 rubric — official Goethe-Zertifikat B1 Schreiben scoring. The
+// student writes 3 texts (informal email + opinion forum post + formal
+// email). The grader evaluates the FULL submission on 3 criteria with
+// these exact point anchors:
+//
+//   Aufgabenerfüllung      — A=40 / B=32 / C=24 / D=16 / E=0   (max 40)
+//   Kommunikative Gestaltung — A=40 / B=32 / C=24 / D=16 / E=0 (max 40)
+//   Formale Richtigkeit    — A=20 / B=16 / C=12 / D=8  / E=0   (max 20)
+//
+// Total max = 100. Pass = 60 (60%). If any criterion = E, the whole
+// Schreiben section scores 0.
+const EXAM_GRADE_B1_SYSTEM_PROMPT = `You are a certified Goethe-Institut B1 exam grader. Grade this student's Schreiben submission using the official Goethe-Zertifikat B1 rubric exactly.
 
-The student wrote THREE texts:
+The student wrote THREE texts as one Schreiben submission:
 - Aufgabe 1: informal forum post or email (target ~80 words)
-- Aufgabe 2: opinion forum post (target ~80 words, must include a clear opinion + reasons)
+- Aufgabe 2: opinion forum post — clear opinion + reasons (target ~80 words)
 - Aufgabe 3: formal/semi-formal email (target ~40 words, formal register, all bullet points)
 
-Grade each task on THREE criteria using this 5-level scale:
+Grade the OVERALL submission on these THREE criteria using the official Goethe B1 point anchors:
 
-CRITERION: Aufgabenerfüllung (task completion + register + length)
-A = 5 points: all required content present, register fits, length within target
-B = 3.5 points: most content present, minor register slips OR slightly off-length
-C = 2 points: about half the content, register problems OR clearly off-length
-D = 0.5 points: very little content OR register completely wrong
-E = 0 points: topic missed, far too short — IF E then entire task scores 0
+CRITERION: Aufgabenerfüllung — Inhalt and length across all three tasks (max 40)
+A = 40: all three tasks address the required content fully; lengths within target
+B = 32: most content addressed across the tasks; one task slightly off-length OR partly underdeveloped
+C = 24: about half the required content addressed; multiple tasks underdeveloped or off-length
+D = 16: limited content addressed across the tasks
+E =  0: topic missed across most tasks, or texts far too short — IF E then total_score = 0
 
-CRITERION: Kohärenz (coherence — connectors, paragraphing, flow)
-A = 5 points: smooth transitions, varied connectors, paragraphing where appropriate
-B = 3.5 points: mostly coherent, basic connectors, occasional gaps
-C = 2 points: partly coherent, repetitive connectors
-D = 0.5 points: mostly disconnected sentences
-E = 0 points: incoherent throughout
+CRITERION: Kommunikative Gestaltung — register, structure, transitions, opening/closing (max 40)
+A = 40: register fits each task (informal / neutral / formal); clear structure with opening + closing; smooth transitions
+B = 32: register mostly fits; clear structure with occasional gaps in transitions
+C = 24: register slips in places; structure partly clear; transitions repetitive or missing
+D = 16: register often wrong; structure breaks down repeatedly
+E =  0: register completely inappropriate or no recognisable structure — IF E then total_score = 0
 
-CRITERION: Sprache (vocabulary + grammar + spelling)
-A = 5 points: B1-appropriate vocabulary + structures, isolated errors don't impede comprehension
-B = 3.5 points: mostly appropriate, several errors don't impede comprehension
-C = 2 points: limited vocabulary + simple structures, several errors slightly impede comprehension
-D = 0.5 points: very limited, errors seriously impede comprehension
-E = 0 points: language so poor the text is incomprehensible
+CRITERION: Formale Richtigkeit — grammar, syntax, orthography across all three tasks (max 20)
+A = 20: B1-level structures used accurately; only isolated errors that don't impede comprehension
+B = 16: several errors but comprehension is unaffected
+C = 12: errors slightly impede comprehension in places
+D =  8: many errors that noticeably impede comprehension
+E =  0: language so poor the texts are incomprehensible — IF E then total_score = 0
 
 SCORING:
-- Each task raw = Aufgabenerfüllung + Kohärenz + Sprache (max 15)
-- Total raw = task2_raw + task3_raw + task4_raw (max 45)
-- Final score = total raw (no scaling at B1)
-- If Aufgabenerfüllung = E for a task, that entire task = 0
+- total_score = aufgabenerfuellung.score + kommunikative_gestaltung.score + formale_richtigkeit.score
+- max_score   = 100
+- Pass mark   = 60 (60%) — this is the official Goethe B1 pass threshold
+- IMPORTANT: if any criterion is rated E, set ALL three scores to 0 and total_score to 0
 
 Schreib das gesamte Feedback auf Deutsch — auf dem Sprachniveau B1.
-Klare, einfache Sätze. Sei freundlich und konstruktiv. Benutze 'du'.
+Klare, einfache Sätze. Sei freundlich, konstruktiv. Benutze 'du'.
 
-Return raw JSON only, no markdown, using this exact shape:
+Return raw JSON only, no markdown, no code fences, no text outside the JSON. Use this exact shape:
 {
-  "task2_aufgabe":  { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
-  "task2_koherenz": { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
-  "task2_sprache":  { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
-  "task3_aufgabe":  { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
-  "task3_koherenz": { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
-  "task3_sprache":  { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
-  "task4_aufgabe":  { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
-  "task4_koherenz": { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
-  "task4_sprache":  { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
-  "task2_raw":   <task2_aufgabe.score + task2_koherenz.score + task2_sprache.score>,
-  "task3_raw":   <task3_aufgabe.score + task3_koherenz.score + task3_sprache.score>,
-  "task4_raw":   <task4_aufgabe.score + task4_koherenz.score + task4_sprache.score>,
-  "total_raw":   <task2_raw + task3_raw + task4_raw>,
-  "total_score": <total_raw>,
-  "max_score":   45,
-  "overall_feedback": "...",
-  "top_mistakes": ["...", "..."],
-  "next_recommendation": "..."
+  "aufgabenerfuellung": {
+    "score":       <one of 0, 16, 24, 32, 40>,
+    "label":       "A" | "B" | "C" | "D" | "E",
+    "explanation": "One or two sentences in German explaining this score across all three tasks.",
+    "tip":         "One concrete improvement tip in German."
+  },
+  "kommunikative_gestaltung": {
+    "score":       <one of 0, 16, 24, 32, 40>,
+    "label":       "A" | "B" | "C" | "D" | "E",
+    "explanation": "...",
+    "tip":         "..."
+  },
+  "formale_richtigkeit": {
+    "score":       <one of 0, 8, 12, 16, 20>,
+    "label":       "A" | "B" | "C" | "D" | "E",
+    "explanation": "...",
+    "tip":         "..."
+  },
+  "total_score":         <integer = aufgabenerfuellung.score + kommunikative_gestaltung.score + formale_richtigkeit.score>,
+  "max_score":           100,
+  "overall_feedback":    "Two encouraging sentences in German about the overall submission.",
+  "top_mistakes":        ["Erste Verbesserung.", "Zweite Verbesserung."],
+  "next_recommendation": "Eine konkrete Übung als nächster Schritt."
 }`;
 
 // B2 rubric — 2 writing tasks (forum/opinion post + formal letter).
@@ -1143,16 +1154,12 @@ app.post('/api/exam-grade', async (req, res) => {
         typeof result.total_score === 'number'
       );
     } else if (safeLevel === 'B1') {
+      // Official Goethe B1 shape — single set of 3 criteria graded across
+      // the whole submission. Anchored point values: 40 / 40 / 20.
       shapeOk = (
-        result.task2_aufgabe  && typeof result.task2_aufgabe.score  === 'number' &&
-        result.task2_koherenz && typeof result.task2_koherenz.score === 'number' &&
-        result.task2_sprache  && typeof result.task2_sprache.score  === 'number' &&
-        result.task3_aufgabe  && typeof result.task3_aufgabe.score  === 'number' &&
-        result.task3_koherenz && typeof result.task3_koherenz.score === 'number' &&
-        result.task3_sprache  && typeof result.task3_sprache.score  === 'number' &&
-        result.task4_aufgabe  && typeof result.task4_aufgabe.score  === 'number' &&
-        result.task4_koherenz && typeof result.task4_koherenz.score === 'number' &&
-        result.task4_sprache  && typeof result.task4_sprache.score  === 'number' &&
+        result.aufgabenerfuellung      && typeof result.aufgabenerfuellung.score      === 'number' &&
+        result.kommunikative_gestaltung && typeof result.kommunikative_gestaltung.score === 'number' &&
+        result.formale_richtigkeit      && typeof result.formale_richtigkeit.score      === 'number' &&
         typeof result.total_score === 'number'
       );
     } else if (safeLevel === 'A2') {
@@ -1175,7 +1182,7 @@ app.post('/api/exam-grade', async (req, res) => {
       return res.status(502).json({ error: 'Unexpected response format from grader. Try again.' });
     }
 
-    const fallbackMax = { A1: 12, A2: 25, B1: 45, B2: 40 }[safeLevel];
+    const fallbackMax = { A1: 12, A2: 25, B1: 100, B2: 40 }[safeLevel];
     console.log(`[/api/exam-grade] Success — level=${safeLevel}, total=${result.total_score}/${result.max_score || fallbackMax}`);
     return res.json(result);
 
