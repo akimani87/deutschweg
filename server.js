@@ -806,51 +806,51 @@ app.post('/api/aitutor', async (req, res) => {
 // and a next-step recommendation. The client renders this verbatim — no
 // post-processing beyond shape validation here.
 
-const EXAM_GRADE_SYSTEM_PROMPT = `You are a friendly Goethe A1 exam grader. Grade this student's Schreiben submission.
+const EXAM_GRADE_SYSTEM_PROMPT = `You are a certified Goethe-Institut A1 exam grader. Grade this student's Schreiben submission using the official Goethe A1 Fit in Deutsch 1 rubric exactly.
 
-Task 1 is form filling — 8 points total. Award 1 point per correctly filled field. Deduct for empty or nonsense answers.
+The student wrote a short message (~30 words) responding to an email stimulus. Grade using ONLY these two official criteria:
 
-Task 2 is a short message — 12 points total. Use this rubric:
+CRITERION 1 — Kommunikative Gestaltung / Inhalt und Umfang (max 3 points):
+- 3 points: Text fully matches the prompt AND reaches approximately 30 words. Has greeting and closing. Gives relevant personal information.
+- 2 points: Text largely matches the prompt. Word count is between 20–30. Most required content is present.
+- 1 point: Text partially matches the prompt OR sentences are copied verbatim from the stimulus. Content is too sparse.
+- 0 points: Text does not match the prompt at all. If 0 — the ENTIRE Schreiben section scores 0.
 
-- Task completion (greeting, name, origin, one thing they like, one question, closing): 5 points
-- Grammar (correct A1 verb conjugation, word order, articles): 3 points
-- Vocabulary (appropriate A1 words): 2 points
-- Clarity (message is understandable): 2 points
+CRITERION 2 — Formale Richtigkeit (max 3 points):
+- 3 points: No errors or only isolated errors in syntax, morphology, orthography/punctuation.
+- 2 points: Some errors in syntax, morphology, orthography that slightly affect comprehension.
+- 1 point: Errors at multiple points that noticeably affect comprehension.
+- 0 points: So many errors that the content is no longer comprehensible. If 0 — the ENTIRE Schreiben section scores 0.
 
-For each rubric category provide:
-- Score out of maximum
-- One sentence explanation
-- One improvement tip
+IMPORTANT RULES:
+- Spelling errors are only penalised if they affect comprehension.
+- Even imperfect sentences can score full marks if they are understandable.
+- If either criterion scores 0, set both scores to 0 and total_score to 0.
+- The raw total (criterion1 + criterion2) is multiplied by 2 to get the final score out of 12.
+- Word count: count the student's words carefully. Do not count the greeting line as words if it is a single word like "Hallo".
 
-End with:
-- Total score out of 20
-- Overall feedback in 2 encouraging sentences
-- Top 2 mistakes to fix
-- One next practice recommendation
-
-Keep all feedback in simple English. Be encouraging. Use the student's name from Task 1 if available.
+Keep all feedback in simple encouraging English. Be warm and constructive.
 
 Respond as a single raw JSON object — no markdown, no code fences, no text outside the JSON. Use this exact shape:
-
 {
-  "task1": {
-    "score":       <integer 0–8>,
-    "max":         8,
-    "explanation": "One sentence on how Task 1 went."
+  "kommunikative_gestaltung": {
+    "score": <integer 0–3>,
+    "max": 3,
+    "explanation": "One sentence explaining this score.",
+    "tip": "One concrete improvement tip."
   },
-  "task2": {
-    "score": <integer 0–12, equal to the sum of the four rubric scores>,
-    "max":   12,
-    "rubric": {
-      "task_completion": { "score": <0–5>, "max": 5, "explanation": "...", "tip": "..." },
-      "grammar":         { "score": <0–3>, "max": 3, "explanation": "...", "tip": "..." },
-      "vocabulary":      { "score": <0–2>, "max": 2, "explanation": "...", "tip": "..." },
-      "clarity":         { "score": <0–2>, "max": 2, "explanation": "...", "tip": "..." }
-    }
+  "formale_richtigkeit": {
+    "score": <integer 0–3>,
+    "max": 3,
+    "explanation": "One sentence explaining this score.",
+    "tip": "One concrete improvement tip."
   },
-  "total":               { "score": <task1.score + task2.score>, "max": 20 },
-  "overall_feedback":    "Two encouraging sentences combined here.",
-  "top_mistakes":        ["First mistake to fix.", "Second mistake to fix."],
+  "raw_total": <kommunikative_gestaltung.score + formale_richtigkeit.score>,
+  "total_score": <raw_total * 2>,
+  "max_score": 12,
+  "word_count": <integer — number of words counted in the student's message>,
+  "overall_feedback": "Two encouraging sentences.",
+  "top_mistakes": ["First mistake to fix.", "Second mistake to fix."],
   "next_recommendation": "One concrete next-practice activity."
 }`;
 
@@ -916,18 +916,19 @@ app.post('/api/exam-grade', async (req, res) => {
     }
 
     // Light shape validation — leave content untouched so the client
-    // sees exactly what Claude produced.
+    // sees exactly what Claude produced. New rubric: two criteria
+    // (Kommunikative Gestaltung + Formale Richtigkeit), raw total /6,
+    // doubled to a final /12.
     if (
-      !result.task1 || typeof result.task1.score !== 'number' ||
-      !result.task2 || typeof result.task2.score !== 'number' ||
-      !result.task2.rubric ||
-      !result.total || typeof result.total.score !== 'number'
+      !result.kommunikative_gestaltung || typeof result.kommunikative_gestaltung.score !== 'number' ||
+      !result.formale_richtigkeit      || typeof result.formale_richtigkeit.score      !== 'number' ||
+      typeof result.total_score !== 'number'
     ) {
       console.error('[/api/exam-grade] Unexpected response shape:', result);
       return res.status(502).json({ error: 'Unexpected response format from grader. Try again.' });
     }
 
-    console.log(`[/api/exam-grade] Success — total: ${result.total.score}/20`);
+    console.log(`[/api/exam-grade] Success — total: ${result.total_score}/${result.max_score || 12} (raw ${result.raw_total})`);
     return res.json(result);
 
   } catch (err) {

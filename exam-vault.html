@@ -1033,15 +1033,26 @@
       .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
       .then(function (res) {
         hide('gradingState');
-        if (res.ok && res.body && typeof res.body.total === 'object') {
+        // New shape: kommunikative_gestaltung + formale_richtigkeit + total_score
+        if (res.ok && res.body && typeof res.body.total_score === 'number') {
           renderSchreibenResults(res.body);
           show('resultsArea');
           el('resultsArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          var kg = res.body.kommunikative_gestaltung || {};
+          var fr = res.body.formale_richtigkeit      || {};
+          var examMax = (typeof res.body.max_score === 'number') ? res.body.max_score : 12;
           saveAttempt(
             { task1: ans.task1, task2: ans.task2 },
-            { task1_score: res.body.task1.score, task2_score: res.body.task2.score, total_score: res.body.total.score },
+            {
+              kommunikative_gestaltung: kg.score,
+              formale_richtigkeit:      fr.score,
+              raw_total:                res.body.raw_total,
+              total_score:              res.body.total_score,
+              word_count:               res.body.word_count
+            },
             res.body,
-            res.body.total.score
+            res.body.total_score,
+            examMax
           ).then(function (saved) {
             if (saved) { show('savedNotice'); loadHistory(); }
           });
@@ -1213,39 +1224,46 @@
     }).join('');
   }
 
-  // Schreiben rubric labels (UI-side; server returns the same keys).
-  var RUBRIC_LABELS = {
-    task_completion: 'Task completion',
-    grammar:         'Grammar',
-    vocabulary:      'Vocabulary',
-    clarity:         'Clarity'
-  };
-
+  // Schreiben grading uses the official Goethe A1 Fit-in-Deutsch-1
+  // rubric: two criteria scored 0–3 each, raw total /6 doubled to /12.
   function renderSchreibenResults(g) {
-    var total = (g.total && typeof g.total.score === 'number') ? g.total.score : null;
-    setHero(total, 20);
+    var kg        = g.kommunikative_gestaltung || {};
+    var fr        = g.formale_richtigkeit      || {};
+    var rawTotal  = (typeof g.raw_total   === 'number') ? g.raw_total   : null;
+    var total     = (typeof g.total_score === 'number') ? g.total_score : null;
+    var maxTotal  = (typeof g.max_score   === 'number') ? g.max_score   : 12;
+    var wordCount = (typeof g.word_count  === 'number') ? g.word_count  : null;
 
-    var t1 = (g.task1 && typeof g.task1.score === 'number') ? g.task1.score : '—';
-    var t2 = (g.task2 && typeof g.task2.score === 'number') ? g.task2.score : '—';
+    // Hero — final score X/12 (was X/20 under the old rubric)
+    setHero(total, maxTotal);
+
+    // Two criterion pills
     setTaskPills([
-      { label: 'Aufgabe 1', score: t1, max: 8 },
-      { label: 'Aufgabe 2', score: t2, max: 12 }
+      { label: 'Komm. Gestaltung', score: (typeof kg.score === 'number') ? kg.score : '—', max: (typeof kg.max === 'number') ? kg.max : 3 },
+      { label: 'Formale Richtigkeit', score: (typeof fr.score === 'number') ? fr.score : '—', max: (typeof fr.max === 'number') ? fr.max : 3 }
     ]);
 
-    var rubric = (g.task2 && g.task2.rubric) || {};
-    var rubricHtml = Object.keys(RUBRIC_LABELS).map(function (key) {
-      var r = rubric[key] || {};
+    function rubricCard(label, r) {
       var sc = (typeof r.score === 'number') ? r.score : '—';
-      var mx = (typeof r.max   === 'number') ? r.max   : '—';
+      var mx = (typeof r.max   === 'number') ? r.max   : 3;
       return '<div class="rubric-card">'
         + '<div class="rubric-row">'
-        +   '<span class="rubric-label">' + escapeHtml(RUBRIC_LABELS[key]) + '</span>'
+        +   '<span class="rubric-label">' + escapeHtml(label) + '</span>'
         +   '<span class="rubric-score">' + escapeHtml(sc) + ' / ' + escapeHtml(mx) + '</span>'
         + '</div>'
         + '<p class="rubric-explanation">' + escapeHtml(r.explanation || '') + '</p>'
         + (r.tip ? '<div class="rubric-tip">💡 ' + escapeHtml(r.tip) + '</div>' : '')
         + '</div>';
-    }).join('');
+    }
+
+    var summaryHtml =
+        '<ul class="results-list">'
+      +   '<li><strong>Kommunikative Gestaltung:</strong> ' + escapeHtml(kg.score != null ? kg.score : '—') + ' / 3</li>'
+      +   '<li><strong>Formale Richtigkeit:</strong> '       + escapeHtml(fr.score != null ? fr.score : '—') + ' / 3</li>'
+      +   '<li><strong>Raw total:</strong> '                  + escapeHtml(rawTotal != null ? rawTotal : '—') + ' / 6</li>'
+      +   '<li><strong>Final score:</strong> '                + escapeHtml(total    != null ? total    : '—') + ' / ' + escapeHtml(maxTotal) + ' <span style="color:var(--light); font-weight:500;">(raw × 2)</span></li>'
+      +   '<li><strong>Word count detected:</strong> '        + escapeHtml(wordCount != null ? wordCount : '—') + ' words</li>'
+      + '</ul>';
 
     var mistakes = Array.isArray(g.top_mistakes) ? g.top_mistakes : [];
     var mistakesHtml = mistakes.length
@@ -1254,12 +1272,15 @@
 
     el('resultsBody').innerHTML =
         '<div class="results-section">'
-      +   '<h3 class="results-h">Task 1 — Form Fill</h3>'
-      +   '<p class="task1-note">' + escapeHtml((g.task1 && g.task1.explanation) || '') + '</p>'
+      +   '<h3 class="results-h">Score Summary</h3>'
+      +   summaryHtml
       + '</div>'
       + '<div class="results-section">'
-      +   '<h3 class="results-h">Task 2 — Rubric Breakdown</h3>'
-      +   '<div class="rubric-grid">' + rubricHtml + '</div>'
+      +   '<h3 class="results-h">Goethe Rubric Breakdown</h3>'
+      +   '<div class="rubric-grid">'
+      +     rubricCard('Kommunikative Gestaltung', kg)
+      +     rubricCard('Formale Richtigkeit',       fr)
+      +   '</div>'
       + '</div>'
       + '<div class="results-section">'
       +   '<h3 class="results-h">Overall Feedback</h3>'
@@ -1343,7 +1364,12 @@
   }
 
   // ── Save attempt to Supabase ────────────────────────────────
-  function saveAttempt(answers, scores, feedback, totalScore) {
+  // maxScoreOverride: optional. Schreiben passes 12 (the new
+  // Goethe-rubric final-score max) so the attempt row reflects the
+  // grading scheme — the exam_tasks rows in the DB still sum to 20
+  // (form fill 8 + message 12), but only the message is graded now.
+  // Lesen leaves it unset → falls back to currentExamMax (15).
+  function saveAttempt(answers, scores, feedback, totalScore, maxScoreOverride) {
     if (typeof dwSupabase === 'undefined' || !currentExamId) {
       console.log('[exam] save skipped — Supabase or exam_id missing');
       return Promise.resolve(null);
@@ -1361,7 +1387,7 @@
         scores:       scores,
         feedback:     feedback,
         total_score:  totalScore,
-        max_score:    currentExamMax,
+        max_score:    (typeof maxScoreOverride === 'number') ? maxScoreOverride : currentExamMax,
         completed_at: new Date().toISOString()
       };
       console.log('[exam] saveAttempt → inserting payload', payload);
