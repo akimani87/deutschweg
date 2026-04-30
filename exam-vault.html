@@ -898,12 +898,18 @@
     });
   }
 
-  // slotIdx: 0 → task2 (A1 message / A2 SMS), 1 → task3 (A2 email).
-  // word_target / word_min come from stimulus when present (A2),
-  // otherwise default to A1 values (target 40, min 20).
+  // slotIdx maps the Nth short_message in the exam (0-based) to its
+  // wire-name slot:
+  //   0 → task2 (A1 message / A2 SMS / B1 informal post / B2 forum post)
+  //   1 → task3 (A2 email / B1 opinion post / B2 formal letter)
+  //   2 → task4 (B1 formal email — third writing task)
+  // word_target / word_min come from stimulus when present (A2/B1/B2);
+  // older A1 exams without those keys fall back to the defaults.
   function renderShortMessage(task, body, slotIdx) {
     var stim       = task.stimulus || {};
-    var slotName   = (slotIdx === 1) ? 'task3' : 'task2';
+    var slotName   = (slotIdx === 2) ? 'task4'
+                   : (slotIdx === 1) ? 'task3'
+                   :                   'task2';
     var idResp     = slotName + 'Response';
     var idWC       = 'wordCount_' + slotName;
     var wordTarget = (stim.word_target != null) ? stim.word_target : WORD_TARGET_DEFAULT;
@@ -1257,11 +1263,47 @@
           el('resultsArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
           // Per-level scores summary for the exam_attempts.scores
-          // jsonb column. The shape differs by level so the column
-          // can power per-rubric history later.
+          // jsonb column. Shape differs per level so we can power
+          // per-rubric history later. The full grading payload is
+          // also saved into the feedback column so this is mainly a
+          // convenience surface.
           var scores;
-          if (res.body.task2_aufgabe) {
-            // A2 shape
+          if (res.body.task2_erfuellung) {
+            // B2: 4 criteria × 2 tasks
+            scores = {
+              task2_erfuellung: res.body.task2_erfuellung && res.body.task2_erfuellung.score,
+              task2_koherenz:   res.body.task2_koherenz   && res.body.task2_koherenz.score,
+              task2_wortschatz: res.body.task2_wortschatz && res.body.task2_wortschatz.score,
+              task2_strukturen: res.body.task2_strukturen && res.body.task2_strukturen.score,
+              task3_erfuellung: res.body.task3_erfuellung && res.body.task3_erfuellung.score,
+              task3_koherenz:   res.body.task3_koherenz   && res.body.task3_koherenz.score,
+              task3_wortschatz: res.body.task3_wortschatz && res.body.task3_wortschatz.score,
+              task3_strukturen: res.body.task3_strukturen && res.body.task3_strukturen.score,
+              task2_raw:        res.body.task2_raw,
+              task3_raw:        res.body.task3_raw,
+              total_raw:        res.body.total_raw,
+              total_score:      res.body.total_score
+            };
+          } else if (res.body.task4_aufgabe) {
+            // B1: 3 criteria × 3 tasks
+            scores = {
+              task2_aufgabe:  res.body.task2_aufgabe  && res.body.task2_aufgabe.score,
+              task2_koherenz: res.body.task2_koherenz && res.body.task2_koherenz.score,
+              task2_sprache:  res.body.task2_sprache  && res.body.task2_sprache.score,
+              task3_aufgabe:  res.body.task3_aufgabe  && res.body.task3_aufgabe.score,
+              task3_koherenz: res.body.task3_koherenz && res.body.task3_koherenz.score,
+              task3_sprache:  res.body.task3_sprache  && res.body.task3_sprache.score,
+              task4_aufgabe:  res.body.task4_aufgabe  && res.body.task4_aufgabe.score,
+              task4_koherenz: res.body.task4_koherenz && res.body.task4_koherenz.score,
+              task4_sprache:  res.body.task4_sprache  && res.body.task4_sprache.score,
+              task2_raw:      res.body.task2_raw,
+              task3_raw:      res.body.task3_raw,
+              task4_raw:      res.body.task4_raw,
+              total_raw:      res.body.total_raw,
+              total_score:    res.body.total_score
+            };
+          } else if (res.body.task2_aufgabe) {
+            // A2: 2 criteria × 2 tasks
             scores = {
               task2_aufgabe:  res.body.task2_aufgabe  && res.body.task2_aufgabe.score,
               task2_sprache:  res.body.task2_sprache  && res.body.task2_sprache.score,
@@ -1273,7 +1315,7 @@
               total_score:    res.body.total_score
             };
           } else {
-            // A1 shape
+            // A1: 2 criteria × 1 task
             scores = {
               kommunikative_gestaltung: res.body.kommunikative_gestaltung && res.body.kommunikative_gestaltung.score,
               formale_richtigkeit:      res.body.formale_richtigkeit      && res.body.formale_richtigkeit.score,
@@ -1283,12 +1325,20 @@
             };
           }
 
-          var examMax  = (typeof res.body.max_score === 'number') ? res.body.max_score : (res.body.task2_aufgabe ? 25 : 12);
-          // total_score is INTEGER in the DB — round A2's × 1.25 result.
+          // Pick the right max fallback if the response doesn't carry one.
+          var fallbackMax = res.body.task2_erfuellung ? 40
+                          : res.body.task4_aufgabe    ? 45
+                          : res.body.task2_aufgabe    ? 25
+                          :                              12;
+          var examMax  = (typeof res.body.max_score === 'number') ? res.body.max_score : fallbackMax;
+          // total_score is INTEGER in the DB — round A2's × 1.25 (and any
+          // other half-point sums) for the column. Full precision lives
+          // in the feedback jsonb.
           var totalInt = Math.round(res.body.total_score);
           var answers  = { level: currentLevel };
           if (typeof ans.task2 === 'string') answers.task2 = ans.task2;
           if (typeof ans.task3 === 'string') answers.task3 = ans.task3;
+          if (typeof ans.task4 === 'string') answers.task4 = ans.task4;
 
           saveAttempt(answers, scores, res.body, totalInt, examMax).then(function (saved) {
             if (saved) { show('savedNotice'); loadHistory(); }
@@ -1491,10 +1541,15 @@
     }).join('');
   }
 
-  // Top-level dispatch: A2 graders return task2_aufgabe/task3_aufgabe
-  // shape; A1 returns kommunikative_gestaltung/formale_richtigkeit.
+  // Top-level dispatch keyed off shape:
+  //   B2 → task2_erfuellung      (4 criteria × 2 tasks)
+  //   B1 → task4_aufgabe present (3 criteria × 3 tasks)
+  //   A2 → task2_aufgabe + task3_aufgabe (2 criteria × 2 tasks)
+  //   A1 → kommunikative_gestaltung      (2 criteria × 1 task)
   function renderSchreibenResults(g) {
-    if (g && g.task2_aufgabe) return renderSchreibenA2Results(g);
+    if (g && g.task2_erfuellung) return renderSchreibenB2Results(g);
+    if (g && g.task4_aufgabe)    return renderSchreibenB1Results(g);
+    if (g && g.task2_aufgabe)    return renderSchreibenA2Results(g);
     return renderSchreibenA1Results(g);
   }
 
@@ -1636,6 +1691,146 @@
       +   '<h3 class="results-h">Next Recommendation</h3>'
       +   '<p class="results-next">' + escapeHtml(g.next_recommendation || '') + '</p>'
       + '</div>';
+  }
+
+  // Shared helpers for B1/B2 result rendering — both follow the same
+  // "task pill + 2-card rubric grid per task + summary" layout, only
+  // the criteria-per-task and task count differ.
+  function makeRubricCard(label, r) {
+    var sc  = (typeof r.score === 'number') ? r.score : '—';
+    var lbl = r.label ? ' (' + r.label + ')' : '';
+    return '<div class="rubric-card">'
+      + '<div class="rubric-row">'
+      +   '<span class="rubric-label">' + escapeHtml(label) + escapeHtml(lbl) + '</span>'
+      +   '<span class="rubric-score">' + escapeHtml(sc) + ' / 5</span>'
+      + '</div>'
+      + '<p class="rubric-explanation">' + escapeHtml(r.explanation || '') + '</p>'
+      + (r.tip ? '<div class="rubric-tip">💡 ' + escapeHtml(r.tip) + '</div>' : '')
+      + '</div>';
+  }
+
+  function makeMistakesAndNextHtml(g) {
+    var mistakes = Array.isArray(g.top_mistakes) ? g.top_mistakes : [];
+    var mistakesHtml = mistakes.length
+      ? mistakes.map(function (m) { return '<li>' + escapeHtml(m) + '</li>'; }).join('')
+      : '<li>Keine — sehr gut!</li>';
+    return ''
+      + '<div class="results-section">'
+      +   '<h3 class="results-h">Overall Feedback</h3>'
+      +   '<p class="results-feedback">' + escapeHtml(g.overall_feedback || '') + '</p>'
+      + '</div>'
+      + '<div class="results-section">'
+      +   '<h3 class="results-h">Top Mistakes</h3>'
+      +   '<ul class="results-list">' + mistakesHtml + '</ul>'
+      + '</div>'
+      + '<div class="results-section">'
+      +   '<h3 class="results-h">Next Recommendation</h3>'
+      +   '<p class="results-next">' + escapeHtml(g.next_recommendation || '') + '</p>'
+      + '</div>';
+  }
+
+  // Schreiben B1 grading — 3 writing tasks (informal post / opinion
+  // post / formal email). Each task scored on 3 criteria × 5 = 15.
+  // Three tasks → total /45.
+  function renderSchreibenB1Results(g) {
+    var t2a = g.task2_aufgabe  || {}, t2k = g.task2_koherenz || {}, t2s = g.task2_sprache || {};
+    var t3a = g.task3_aufgabe  || {}, t3k = g.task3_koherenz || {}, t3s = g.task3_sprache || {};
+    var t4a = g.task4_aufgabe  || {}, t4k = g.task4_koherenz || {}, t4s = g.task4_sprache || {};
+    var rawTotal = (typeof g.total_raw   === 'number') ? g.total_raw   : '—';
+    var total    = (typeof g.total_score === 'number') ? g.total_score : '—';
+    var maxTotal = (typeof g.max_score   === 'number') ? g.max_score   : 45;
+
+    setHero(g.total_score, g.max_score);
+
+    setTaskPills([
+      { label: 'Aufgabe 1 (Beitrag)',     score: (typeof g.task2_raw === 'number') ? g.task2_raw : '—', max: 15 },
+      { label: 'Aufgabe 2 (Meinung)',     score: (typeof g.task3_raw === 'number') ? g.task3_raw : '—', max: 15 },
+      { label: 'Aufgabe 3 (formelle Mail)', score: (typeof g.task4_raw === 'number') ? g.task4_raw : '—', max: 15 }
+    ]);
+
+    el('resultsBody').innerHTML =
+        '<div class="results-section">'
+      +   '<h3 class="results-h">Score Calculation</h3>'
+      +   '<p class="results-feedback">'
+      +     'Aufgabe 1: <strong>' + escapeHtml(typeof g.task2_raw === 'number' ? g.task2_raw : '—') + ' / 15</strong> · '
+      +     'Aufgabe 2: <strong>' + escapeHtml(typeof g.task3_raw === 'number' ? g.task3_raw : '—') + ' / 15</strong> · '
+      +     'Aufgabe 3: <strong>' + escapeHtml(typeof g.task4_raw === 'number' ? g.task4_raw : '—') + ' / 15</strong>'
+      +     '<br>Gesamt: <strong>' + escapeHtml(total) + ' / ' + escapeHtml(maxTotal) + '</strong>'
+      +     '<br>Roh-Summe: <strong>' + escapeHtml(rawTotal) + ' / 45</strong>'
+      +   '</p>'
+      + '</div>'
+      + '<div class="results-section">'
+      +   '<h3 class="results-h">Aufgabe 1 — Informeller Beitrag</h3>'
+      +   '<div class="rubric-grid">'
+      +     makeRubricCard('Aufgabenerfüllung', t2a)
+      +     makeRubricCard('Kohärenz',           t2k)
+      +     makeRubricCard('Sprache',            t2s)
+      +   '</div>'
+      + '</div>'
+      + '<div class="results-section">'
+      +   '<h3 class="results-h">Aufgabe 2 — Meinung im Forum</h3>'
+      +   '<div class="rubric-grid">'
+      +     makeRubricCard('Aufgabenerfüllung', t3a)
+      +     makeRubricCard('Kohärenz',           t3k)
+      +     makeRubricCard('Sprache',            t3s)
+      +   '</div>'
+      + '</div>'
+      + '<div class="results-section">'
+      +   '<h3 class="results-h">Aufgabe 3 — Formelle E-Mail</h3>'
+      +   '<div class="rubric-grid">'
+      +     makeRubricCard('Aufgabenerfüllung', t4a)
+      +     makeRubricCard('Kohärenz',           t4k)
+      +     makeRubricCard('Sprache',            t4s)
+      +   '</div>'
+      + '</div>'
+      + makeMistakesAndNextHtml(g);
+  }
+
+  // Schreiben B2 grading — 2 writing tasks (forum post + formal
+  // letter). Each task scored on 4 criteria × 5 = 20. Two tasks → /40.
+  function renderSchreibenB2Results(g) {
+    var t2e = g.task2_erfuellung || {}, t2k = g.task2_koherenz || {}, t2w = g.task2_wortschatz || {}, t2s = g.task2_strukturen || {};
+    var t3e = g.task3_erfuellung || {}, t3k = g.task3_koherenz || {}, t3w = g.task3_wortschatz || {}, t3s = g.task3_strukturen || {};
+    var rawTotal = (typeof g.total_raw   === 'number') ? g.total_raw   : '—';
+    var total    = (typeof g.total_score === 'number') ? g.total_score : '—';
+    var maxTotal = (typeof g.max_score   === 'number') ? g.max_score   : 40;
+
+    setHero(g.total_score, g.max_score);
+
+    setTaskPills([
+      { label: 'Aufgabe 1 (Forum)',  score: (typeof g.task2_raw === 'number') ? g.task2_raw : '—', max: 20 },
+      { label: 'Aufgabe 2 (Brief)',  score: (typeof g.task3_raw === 'number') ? g.task3_raw : '—', max: 20 }
+    ]);
+
+    el('resultsBody').innerHTML =
+        '<div class="results-section">'
+      +   '<h3 class="results-h">Score Calculation</h3>'
+      +   '<p class="results-feedback">'
+      +     'Aufgabe 1: <strong>' + escapeHtml(typeof g.task2_raw === 'number' ? g.task2_raw : '—') + ' / 20</strong> · '
+      +     'Aufgabe 2: <strong>' + escapeHtml(typeof g.task3_raw === 'number' ? g.task3_raw : '—') + ' / 20</strong>'
+      +     '<br>Gesamt: <strong>' + escapeHtml(total) + ' / ' + escapeHtml(maxTotal) + '</strong>'
+      +     '<br>Roh-Summe: <strong>' + escapeHtml(rawTotal) + ' / 40</strong>'
+      +   '</p>'
+      + '</div>'
+      + '<div class="results-section">'
+      +   '<h3 class="results-h">Aufgabe 1 — Forumsbeitrag / Meinung</h3>'
+      +   '<div class="rubric-grid">'
+      +     makeRubricCard('Erfüllung',  t2e)
+      +     makeRubricCard('Kohärenz',    t2k)
+      +     makeRubricCard('Wortschatz',  t2w)
+      +     makeRubricCard('Strukturen',  t2s)
+      +   '</div>'
+      + '</div>'
+      + '<div class="results-section">'
+      +   '<h3 class="results-h">Aufgabe 2 — Formelle E-Mail / Brief</h3>'
+      +   '<div class="rubric-grid">'
+      +     makeRubricCard('Erfüllung',  t3e)
+      +     makeRubricCard('Kohärenz',    t3k)
+      +     makeRubricCard('Wortschatz',  t3w)
+      +     makeRubricCard('Strukturen',  t3s)
+      +   '</div>'
+      + '</div>'
+      + makeMistakesAndNextHtml(g);
   }
 
   function renderLesenResults(graded) {

@@ -908,32 +908,189 @@ Return raw JSON only, no markdown, using this exact shape:
   "next_recommendation": "..."
 }`;
 
-app.post('/api/exam-grade', async (req, res) => {
-  const { level, task2, task3 } = req.body || {};
-  const safeLevel = (level === 'A2') ? 'A2' : 'A1';
+// B1 rubric — 3 writing tasks (informal post / opinion post / formal email).
+// Each task scored on 3 criteria using the A–E scale common to Goethe
+// rubrics (A=5, B=3.5, C=2, D=0.5, E=0). Per-task max = 15, total = 45.
+// (Approximation of the official Goethe-Zertifikat B1 weighting — adjust
+// the numeric anchors below if your school uses a different rubric.)
+const EXAM_GRADE_B1_SYSTEM_PROMPT = `You are a certified Goethe-Institut B1 exam grader. Grade this student's Schreiben submission using the official Goethe-Zertifikat B1 rubric.
 
-  // task2 is required for both levels (A1 message; A2 SMS).
+The student wrote THREE texts:
+- Aufgabe 1: informal forum post or email (target ~80 words)
+- Aufgabe 2: opinion forum post (target ~80 words, must include a clear opinion + reasons)
+- Aufgabe 3: formal/semi-formal email (target ~40 words, formal register, all bullet points)
+
+Grade each task on THREE criteria using this 5-level scale:
+
+CRITERION: Aufgabenerfüllung (task completion + register + length)
+A = 5 points: all required content present, register fits, length within target
+B = 3.5 points: most content present, minor register slips OR slightly off-length
+C = 2 points: about half the content, register problems OR clearly off-length
+D = 0.5 points: very little content OR register completely wrong
+E = 0 points: topic missed, far too short — IF E then entire task scores 0
+
+CRITERION: Kohärenz (coherence — connectors, paragraphing, flow)
+A = 5 points: smooth transitions, varied connectors, paragraphing where appropriate
+B = 3.5 points: mostly coherent, basic connectors, occasional gaps
+C = 2 points: partly coherent, repetitive connectors
+D = 0.5 points: mostly disconnected sentences
+E = 0 points: incoherent throughout
+
+CRITERION: Sprache (vocabulary + grammar + spelling)
+A = 5 points: B1-appropriate vocabulary + structures, isolated errors don't impede comprehension
+B = 3.5 points: mostly appropriate, several errors don't impede comprehension
+C = 2 points: limited vocabulary + simple structures, several errors slightly impede comprehension
+D = 0.5 points: very limited, errors seriously impede comprehension
+E = 0 points: language so poor the text is incomprehensible
+
+SCORING:
+- Each task raw = Aufgabenerfüllung + Kohärenz + Sprache (max 15)
+- Total raw = task2_raw + task3_raw + task4_raw (max 45)
+- Final score = total raw (no scaling at B1)
+- If Aufgabenerfüllung = E for a task, that entire task = 0
+
+Schreib das gesamte Feedback auf Deutsch — auf dem Sprachniveau B1.
+Klare, einfache Sätze. Sei freundlich und konstruktiv. Benutze 'du'.
+
+Return raw JSON only, no markdown, using this exact shape:
+{
+  "task2_aufgabe":  { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
+  "task2_koherenz": { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
+  "task2_sprache":  { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
+  "task3_aufgabe":  { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
+  "task3_koherenz": { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
+  "task3_sprache":  { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
+  "task4_aufgabe":  { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
+  "task4_koherenz": { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
+  "task4_sprache":  { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
+  "task2_raw":   <task2_aufgabe.score + task2_koherenz.score + task2_sprache.score>,
+  "task3_raw":   <task3_aufgabe.score + task3_koherenz.score + task3_sprache.score>,
+  "task4_raw":   <task4_aufgabe.score + task4_koherenz.score + task4_sprache.score>,
+  "total_raw":   <task2_raw + task3_raw + task4_raw>,
+  "total_score": <total_raw>,
+  "max_score":   45,
+  "overall_feedback": "...",
+  "top_mistakes": ["...", "..."],
+  "next_recommendation": "..."
+}`;
+
+// B2 rubric — 2 writing tasks (forum/opinion post + formal letter).
+// Each task scored on 4 criteria, A–E scale, per-task max = 20, total = 40.
+const EXAM_GRADE_B2_SYSTEM_PROMPT = `You are a certified Goethe-Institut B2 exam grader. Grade this student's Schreiben submission using the official Goethe-Zertifikat B2 rubric.
+
+The student wrote TWO texts:
+- Aufgabe 1: forum / opinion post (target ~150 words, clear position + arguments + examples)
+- Aufgabe 2: formal letter or semi-formal email (target ~100 words, all bullet points + appropriate register)
+
+Grade each task on FOUR criteria using this 5-level scale:
+
+CRITERION: Erfüllung (content — coverage of all bullet points + topic depth)
+A = 5 points: all bullet points fully addressed, depth appropriate, topic clearly developed
+B = 3.5 points: most bullet points addressed, some depth missing
+C = 2 points: about half addressed OR superficial throughout
+D = 0.5 points: very little content addressed
+E = 0 points: topic missed entirely — IF E then entire task scores 0
+
+CRITERION: Kohärenz (text structure — transitions, paragraphing, opening/closing)
+A = 5 points: well-structured, varied connectors, clear opening + closing, smooth flow
+B = 3.5 points: mostly structured, basic connectors, some flow issues
+C = 2 points: partial structure, repetitive transitions
+D = 0.5 points: mostly disconnected
+E = 0 points: incoherent
+
+CRITERION: Wortschatz (vocabulary — range + precision + register)
+A = 5 points: varied B2-appropriate vocabulary, precise word choice, register fits
+B = 3.5 points: adequate vocabulary, occasional imprecision
+C = 2 points: limited vocabulary, frequent imprecision or register slips
+D = 0.5 points: very limited vocabulary, register often wrong
+E = 0 points: vocabulary completely inadequate
+
+CRITERION: Strukturen (grammar — sentence variety + accuracy)
+A = 5 points: complex + varied structures, isolated errors don't impede comprehension
+B = 3.5 points: mostly varied, several errors don't impede comprehension
+C = 2 points: simple structures dominate, several errors slightly impede comprehension
+D = 0.5 points: very basic structures, errors seriously impede comprehension
+E = 0 points: grammar so poor the text is incomprehensible
+
+SCORING:
+- Each task raw = Erfüllung + Kohärenz + Wortschatz + Strukturen (max 20)
+- Total raw = task2_raw + task3_raw (max 40)
+- Final score = total raw (no scaling at B2)
+- If Erfüllung = E for a task, that entire task = 0
+
+Schreib das gesamte Feedback auf Deutsch — auf dem Sprachniveau B2.
+Präzise, sachlich, freundlich. Benutze 'du'.
+
+Return raw JSON only, no markdown, using this exact shape:
+{
+  "task2_erfuellung":  { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
+  "task2_koherenz":    { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
+  "task2_wortschatz":  { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
+  "task2_strukturen":  { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
+  "task3_erfuellung":  { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
+  "task3_koherenz":    { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
+  "task3_wortschatz":  { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
+  "task3_strukturen":  { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
+  "task2_raw":   <sum of task2 four criteria>,
+  "task3_raw":   <sum of task3 four criteria>,
+  "total_raw":   <task2_raw + task3_raw>,
+  "total_score": <total_raw>,
+  "max_score":   40,
+  "overall_feedback": "...",
+  "top_mistakes": ["...", "..."],
+  "next_recommendation": "..."
+}`;
+
+app.post('/api/exam-grade', async (req, res) => {
+  const { level, task2, task3, task4 } = req.body || {};
+  const VALID_LEVELS = ['A1', 'A2', 'B1', 'B2'];
+  const safeLevel = VALID_LEVELS.indexOf(level) !== -1 ? level : 'A1';
+
+  // task2 is required for every level (A1 message / A2 SMS / B1 informal post / B2 forum post).
   if (!task2 || typeof task2 !== 'string' || task2.trim().length < 1) {
     return res.status(400).json({ error: 'Missing task2 response.' });
   }
-  // task3 is the second writing task — only required for A2 (the email).
-  if (safeLevel === 'A2' && (!task3 || typeof task3 !== 'string' || task3.trim().length < 1)) {
-    return res.status(400).json({ error: 'Missing task3 response (A2 email).' });
+  // task3 (A2 email / B1 opinion post / B2 formal letter) — required for A2/B1/B2.
+  if (safeLevel !== 'A1' && (!task3 || typeof task3 !== 'string' || task3.trim().length < 1)) {
+    return res.status(400).json({ error: 'Missing task3 response.' });
+  }
+  // task4 (B1 formal email) — required only for B1.
+  if (safeLevel === 'B1' && (!task4 || typeof task4 !== 'string' || task4.trim().length < 1)) {
+    return res.status(400).json({ error: 'Missing task4 response (B1 formal email).' });
   }
   if (!process.env.CLAUDE_API_KEY) {
     console.error('[/api/exam-grade] CLAUDE_API_KEY is not set');
     return res.status(500).json({ error: 'API key not configured.' });
   }
 
-  const task2Block = String(task2).slice(0, 2000).trim();
-  const task3Block = task3 ? String(task3).slice(0, 2000).trim() : '';
+  const task2Block = String(task2).slice(0, 2500).trim();
+  const task3Block = task3 ? String(task3).slice(0, 2500).trim() : '';
+  const task4Block = task4 ? String(task4).slice(0, 2500).trim() : '';
 
-  const systemPrompt = (safeLevel === 'A2') ? EXAM_GRADE_A2_SYSTEM_PROMPT : EXAM_GRADE_A1_SYSTEM_PROMPT;
-  const userMessage  = (safeLevel === 'A2')
-    ? `Aufgabe 1 (SMS, target 20–30 words):\n"""\n${task2Block}\n"""\n\nAufgabe 2 (E-Mail, target 30–40 words):\n"""\n${task3Block}\n"""`
-    : `Student's short message (target ~30 words):\n"""\n${task2Block}\n"""`;
+  // Pick the per-level system prompt + user-message format.
+  let systemPrompt, userMessage;
+  if (safeLevel === 'B2') {
+    systemPrompt = EXAM_GRADE_B2_SYSTEM_PROMPT;
+    userMessage  =
+      `Aufgabe 1 (Forum/Meinung, target ~150 words):\n"""\n${task2Block}\n"""\n\n` +
+      `Aufgabe 2 (formelle E-Mail/Brief, target ~100 words):\n"""\n${task3Block}\n"""`;
+  } else if (safeLevel === 'B1') {
+    systemPrompt = EXAM_GRADE_B1_SYSTEM_PROMPT;
+    userMessage  =
+      `Aufgabe 1 (informeller Beitrag, target ~80 words):\n"""\n${task2Block}\n"""\n\n` +
+      `Aufgabe 2 (Forumsbeitrag mit Meinung, target ~80 words):\n"""\n${task3Block}\n"""\n\n` +
+      `Aufgabe 3 (formelle E-Mail, target ~40 words):\n"""\n${task4Block}\n"""`;
+  } else if (safeLevel === 'A2') {
+    systemPrompt = EXAM_GRADE_A2_SYSTEM_PROMPT;
+    userMessage  =
+      `Aufgabe 1 (SMS, target 20–30 words):\n"""\n${task2Block}\n"""\n\n` +
+      `Aufgabe 2 (E-Mail, target 30–40 words):\n"""\n${task3Block}\n"""`;
+  } else {
+    systemPrompt = EXAM_GRADE_A1_SYSTEM_PROMPT;
+    userMessage  = `Student's short message (target ~30 words):\n"""\n${task2Block}\n"""`;
+  }
 
-  console.log(`[/api/exam-grade] Request — level=${safeLevel}, task2=${task2Block.length} chars${task3Block ? ', task3=' + task3Block.length + ' chars' : ''}, origin: ${req.headers.origin || 'none'}`);
+  console.log(`[/api/exam-grade] Request — level=${safeLevel}, task2=${task2Block.length}${task3Block ? ', task3=' + task3Block.length : ''}${task4Block ? ', task4=' + task4Block.length : ''} chars, origin: ${req.headers.origin || 'none'}`);
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -971,9 +1128,34 @@ app.post('/api/exam-grade', async (req, res) => {
       return res.status(502).json({ error: 'Could not parse grading response. Try again.' });
     }
 
-    // Shape validation differs per level. Both end in total_score (number).
+    // Shape validation per level. All levels end in numeric total_score.
     let shapeOk;
-    if (safeLevel === 'A2') {
+    if (safeLevel === 'B2') {
+      shapeOk = (
+        result.task2_erfuellung && typeof result.task2_erfuellung.score === 'number' &&
+        result.task2_koherenz   && typeof result.task2_koherenz.score   === 'number' &&
+        result.task2_wortschatz && typeof result.task2_wortschatz.score === 'number' &&
+        result.task2_strukturen && typeof result.task2_strukturen.score === 'number' &&
+        result.task3_erfuellung && typeof result.task3_erfuellung.score === 'number' &&
+        result.task3_koherenz   && typeof result.task3_koherenz.score   === 'number' &&
+        result.task3_wortschatz && typeof result.task3_wortschatz.score === 'number' &&
+        result.task3_strukturen && typeof result.task3_strukturen.score === 'number' &&
+        typeof result.total_score === 'number'
+      );
+    } else if (safeLevel === 'B1') {
+      shapeOk = (
+        result.task2_aufgabe  && typeof result.task2_aufgabe.score  === 'number' &&
+        result.task2_koherenz && typeof result.task2_koherenz.score === 'number' &&
+        result.task2_sprache  && typeof result.task2_sprache.score  === 'number' &&
+        result.task3_aufgabe  && typeof result.task3_aufgabe.score  === 'number' &&
+        result.task3_koherenz && typeof result.task3_koherenz.score === 'number' &&
+        result.task3_sprache  && typeof result.task3_sprache.score  === 'number' &&
+        result.task4_aufgabe  && typeof result.task4_aufgabe.score  === 'number' &&
+        result.task4_koherenz && typeof result.task4_koherenz.score === 'number' &&
+        result.task4_sprache  && typeof result.task4_sprache.score  === 'number' &&
+        typeof result.total_score === 'number'
+      );
+    } else if (safeLevel === 'A2') {
       shapeOk = (
         result.task2_aufgabe && typeof result.task2_aufgabe.score === 'number' &&
         result.task2_sprache && typeof result.task2_sprache.score === 'number' &&
@@ -993,7 +1175,8 @@ app.post('/api/exam-grade', async (req, res) => {
       return res.status(502).json({ error: 'Unexpected response format from grader. Try again.' });
     }
 
-    console.log(`[/api/exam-grade] Success — level=${safeLevel}, total=${result.total_score}/${result.max_score || (safeLevel === 'A2' ? 25 : 12)}`);
+    const fallbackMax = { A1: 12, A2: 25, B1: 45, B2: 40 }[safeLevel];
+    console.log(`[/api/exam-grade] Success — level=${safeLevel}, total=${result.total_score}/${result.max_score || fallbackMax}`);
     return res.json(result);
 
   } catch (err) {
