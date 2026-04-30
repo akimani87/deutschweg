@@ -928,28 +928,20 @@
   }
 
   function validateSchreiben() {
-    var allFilled = task1Fields.length > 0 && task1Fields.every(function (_, i) {
-      var input = el('t1f' + i);
-      return input && input.value.trim().length > 0;
-    });
+    // The form_fill task is gone — Schreiben is now just the short
+    // message. Submit enables once the user hits the word minimum.
     var ta = el('task2Response');
     var n  = ta ? wordCount(ta.value) : 0;
-    var enough = n >= WORD_MIN_OK;
+    var ok = n >= WORD_MIN_OK;
 
     var btn  = el('submitBtn');
     var note = el('submitNote');
-    var ok   = allFilled && enough;
     btn.disabled = !ok;
     note.classList.toggle('ready', ok);
 
-    if (ok) {
-      note.textContent = 'Ready to submit. Grading will take 10–20 seconds.';
-    } else {
-      var missing = [];
-      if (!allFilled) missing.push('all 6 fields');
-      if (!enough)    missing.push('at least ' + WORD_MIN_OK + ' words in Task 2 (' + n + ' so far)');
-      note.textContent = 'Fill ' + missing.join(' and ') + ' to enable submit.';
-    }
+    note.textContent = ok
+      ? 'Bereit! Das Ergebnis kommt in 10–20 Sekunden.'
+      : 'Schreib mindestens ' + WORD_MIN_OK + ' Wörter um die Prüfung abzugeben (' + n + ' bisher).';
   }
 
   function validateLesen() {
@@ -1421,9 +1413,12 @@
       }
       // Embed the related exam row via the exam_id FK so each history
       // line can show the exam title + section (📝 / 📖 icon).
+      // Scoped to the currently-loaded exam so the panel only shows
+      // attempts for the Übungssatz the user is on.
       dwSupabase.from('exam_attempts')
         .select('id, total_score, max_score, completed_at, exams(level, title, section)')
         .eq('user_id', user.id)
+        .eq('exam_id', currentExamId)
         .order('completed_at', { ascending: false })
         .limit(3)
         .then(function (res) {
@@ -1560,10 +1555,9 @@
           fetch(API_BASE + '/').catch(function () {});
         }
 
-        // History is global to the user — load once per page visit.
-        loadHistory();
-
-        // Render the first exam by default.
+        // Render the first exam by default. loadExam itself triggers
+        // loadHistory once currentExamId is set, so we don't call it
+        // here (it would filter by a still-null exam_id).
         loadExam(exams[0].id, exams[0].title);
       });
   }
@@ -1613,6 +1607,10 @@
         // word counter for Schreiben since renderShortMessage's
         // update() runs at render time and writes "0" into #wordCount).
         checkSubmitState();
+
+        // Refresh history scoped to this exam — so switching the
+        // Übungssatz dropdown swaps the history panel too.
+        loadHistory();
       });
   }
 
