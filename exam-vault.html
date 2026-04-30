@@ -395,6 +395,38 @@
   }
   .adverts-select:disabled { background: var(--bg); color: var(--mid); cursor: not-allowed; }
 
+  /* ── Task: gap_fill (B2 Lesen Teil 2 — cloze with sentence candidates) ─ */
+  .gap-text-wrapper {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    padding: 14px 18px;
+    margin-bottom: 14px;
+    font-size: 14px; line-height: 1.85;
+    color: var(--dark);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .gap-select {
+    display: inline-block;
+    background: #fff;
+    border: 1.5px solid var(--blue-mid);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-family: inherit;
+    font-size: 13px; font-weight: 800;
+    color: var(--blue);
+    margin: 0 3px;
+    cursor: pointer;
+    vertical-align: baseline;
+  }
+  .gap-select:focus {
+    border-color: var(--blue); outline: none;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.10);
+  }
+  .gap-select:disabled { background: var(--bg); color: var(--mid); cursor: not-allowed; }
+
   /* ── Task: matching (A1 Lesen Teil 3 — legacy) ───────────── */
   .match-grid { display: flex; flex-direction: column; gap: 10px; }
   .match-row {
@@ -894,13 +926,17 @@
       container.appendChild(card);
       var body = card.querySelector('.task-body');
       switch (task.task_type) {
-        case 'form_fill':         renderFormFill(task, body); break;
-        case 'short_message':     renderShortMessage(task, body, shortMsgIdx++); break;
-        case 'discussion_post':   renderDiscussionPost(task, body, shortMsgIdx++); break;
-        case 'multiple_choice':   renderMultipleChoice(task, body); break;
-        case 'true_false':        renderTrueFalse(task, body); break;
-        case 'matching':          renderMatching(task, body); break;
-        case 'matching_adverts':  renderMatchingAdverts(task, body); break;
+        case 'form_fill':          renderFormFill(task, body); break;
+        case 'short_message':      renderShortMessage(task, body, shortMsgIdx++); break;
+        case 'discussion_post':    renderDiscussionPost(task, body, shortMsgIdx++); break;
+        case 'multiple_choice':    renderMultipleChoice(task, body); break;
+        case 'true_false':         renderTrueFalse(task, body); break;
+        case 'matching':           renderMatching(task, body); break;
+        case 'matching_adverts':   renderMatchingAdverts(task, body); break;
+        case 'people_matching':    renderPeopleMatching(task, body); break;
+        case 'gap_fill':           renderGapFill(task, body); break;
+        case 'headline_matching':  renderHeadlineMatching(task, body); break;
+        case 'section_matching':   renderSectionMatching(task, body); break;
       }
     });
   }
@@ -1205,6 +1241,220 @@
     });
   }
 
+  // people_matching — B2 Lesen Teil 1. Stimulus carries:
+  //   topic, people [{id, name, text}, ...], statements [{n, text, answer}, ...]
+  // The 4 people give opinions on a topic. Each statement asks "wer
+  // sagt X?"; the student picks one person id (a/b/c/d) per statement.
+  // Answers may repeat across statements (Goethe-format) — no
+  // single-use constraint.
+  function renderPeopleMatching(task, body) {
+    var stim = task.stimulus || {};
+    var people = stim.people || [];
+    var statements = stim.statements || [];
+
+    var peopleHtml =
+        '<div class="adverts-panel">'
+      +   '<div class="adverts-panel-label">' + escapeHtml(stim.topic ? stim.topic : 'Die Personen') + '</div>'
+      +   '<ul class="adverts-list">'
+      +     people.map(function (p) {
+            return '<li>'
+              + '<span class="adv-letter">' + escapeHtml((p.id || '').toLowerCase()) + '</span>'
+              + '<span class="adv-title">' + escapeHtml(p.name || '') + '</span>'
+              + '<span class="adv-text">' + escapeHtml(p.text || '') + '</span>'
+              + '</li>';
+          }).join('')
+      +   '</ul>'
+      + '</div>';
+
+    var optionsHtml = '<option value="">— Person wählen —</option>'
+      + people.map(function (p) {
+          var l = (p.id || '').toLowerCase();
+          return '<option value="' + escapeHtml(l) + '">'
+            + escapeHtml(l + ': ' + (p.name || ''))
+            + '</option>';
+        }).join('');
+
+    var qHtml =
+        '<div class="match-grid">'
+      + statements.map(function (s) {
+          return '<div class="match-row">'
+            + '<div class="match-person">'
+            +   '<div class="match-name">Frage ' + escapeHtml(s.n) + '</div>'
+            +   '<p class="match-text">' + escapeHtml(s.text || '') + '</p>'
+            + '</div>'
+            + '<select class="adverts-select people-select" data-stmt-n="' + escapeHtml(s.n) + '">'
+            +   optionsHtml
+            + '</select>'
+            + '</div>';
+        }).join('')
+      + '</div>';
+
+    body.innerHTML = peopleHtml + qHtml;
+    body.querySelectorAll('.people-select').forEach(function (sel) {
+      sel.addEventListener('change', checkSubmitState);
+    });
+  }
+
+  // gap_fill — B2 Lesen Teil 2. Stimulus carries:
+  //   title, text (with [...N...] placeholders), gaps [N, ...],
+  //   candidates [{id, text}, ...], distractors [...], answers {N: id}
+  // The text is rendered with each [...N...] replaced by an inline
+  // <select> showing only the candidate letters. The full sentence
+  // candidates are listed separately in a panel below.
+  function renderGapFill(task, body) {
+    var stim = task.stimulus || {};
+    var text = stim.text || '';
+    var candidates = stim.candidates || [];
+
+    var optionsHtml = '<option value="">—</option>'
+      + candidates.map(function (c) {
+          return '<option value="' + escapeHtml(c.id) + '">' + escapeHtml((c.id || '').toUpperCase()) + '</option>';
+        }).join('');
+
+    // Split text on [...N...] markers (capture the gap number)
+    var parts = text.split(/\[\.{3}(\d+)\.{3}\]/);
+    var textHtml = '';
+    for (var i = 0; i < parts.length; i++) {
+      if (i % 2 === 0) {
+        textHtml += escapeHtml(parts[i]);
+      } else {
+        var n = parts[i];
+        textHtml += '<select class="gap-select" data-gap-n="' + escapeHtml(n) + '" aria-label="Lücke ' + escapeHtml(n) + '">'
+          + optionsHtml
+          + '</select>';
+      }
+    }
+
+    var candPanel =
+        '<div class="adverts-panel">'
+      +   '<div class="adverts-panel-label">Die Sätze (a–' + (candidates[candidates.length - 1] ? (candidates[candidates.length - 1].id || '').toLowerCase() : 'h') + ')</div>'
+      +   '<ul class="adverts-list">'
+      +     candidates.map(function (c) {
+            return '<li>'
+              + '<span class="adv-letter">' + escapeHtml((c.id || '').toLowerCase()) + '</span>'
+              + '<span class="adv-text">' + escapeHtml(c.text || '') + '</span>'
+              + '</li>';
+          }).join('')
+      +   '</ul>'
+      + '</div>';
+
+    body.innerHTML =
+        (stim.title ? '<div class="adverts-panel-label" style="margin-bottom:8px;">' + escapeHtml(stim.title) + '</div>' : '')
+      + '<div class="gap-text-wrapper">' + textHtml + '</div>'
+      + candPanel;
+
+    body.querySelectorAll('.gap-select').forEach(function (sel) {
+      sel.addEventListener('change', checkSubmitState);
+    });
+  }
+
+  // headline_matching — B2 Lesen Teil 4. Stimulus carries:
+  //   topic, opinions [{id, name, text}, ...], headlines [{n, text}, ...],
+  //   answers {n: id}, decoy "<id>" (the unmatched opinion)
+  // The 6 opinions are shown; for each numbered headline, the student
+  // picks which opinion matches. One opinion (decoy) doesn't fit any
+  // headline — picking it for any headline is wrong.
+  function renderHeadlineMatching(task, body) {
+    var stim = task.stimulus || {};
+    var opinions = stim.opinions || [];
+    var headlines = stim.headlines || [];
+
+    var opinionsHtml =
+        '<div class="adverts-panel">'
+      +   '<div class="adverts-panel-label">' + escapeHtml(stim.topic ? stim.topic : 'Die Meinungen') + '</div>'
+      +   '<ul class="adverts-list">'
+      +     opinions.map(function (o) {
+            return '<li>'
+              + '<span class="adv-letter">' + escapeHtml((o.id || '').toLowerCase()) + '</span>'
+              + '<span class="adv-title">' + escapeHtml(o.name || '') + '</span>'
+              + '<span class="adv-text">' + escapeHtml(o.text || '') + '</span>'
+              + '</li>';
+          }).join('')
+      +   '</ul>'
+      + '</div>';
+
+    var optionsHtml = '<option value="">— Person wählen —</option>'
+      + opinions.map(function (o) {
+          var l = (o.id || '').toLowerCase();
+          return '<option value="' + escapeHtml(l) + '">'
+            + escapeHtml(l + ': ' + (o.name || ''))
+            + '</option>';
+        }).join('');
+
+    var hHtml =
+        '<div class="match-grid">'
+      + headlines.map(function (h) {
+          return '<div class="match-row">'
+            + '<div class="match-person">'
+            +   '<div class="match-name">Überschrift ' + escapeHtml(h.n) + '</div>'
+            +   '<p class="match-text">' + escapeHtml(h.text || '') + '</p>'
+            + '</div>'
+            + '<select class="adverts-select headline-select" data-headline-n="' + escapeHtml(h.n) + '">'
+            +   optionsHtml
+            + '</select>'
+            + '</div>';
+        }).join('')
+      + '</div>';
+
+    body.innerHTML = opinionsHtml + hHtml;
+    body.querySelectorAll('.headline-select').forEach(function (sel) {
+      sel.addEventListener('change', checkSubmitState);
+    });
+  }
+
+  // section_matching — B2 Lesen Teil 5. Stimulus carries:
+  //   title, paragraphs [{n, text, label, answer}, ...],
+  //   headings [{id, text}, ...], answers {n: id}, decoy_headings [...]
+  // Show all headings as a panel, then each numbered paragraph gets a
+  // dropdown to pick which heading describes it.
+  function renderSectionMatching(task, body) {
+    var stim = task.stimulus || {};
+    var headings = stim.headings || [];
+    var paragraphs = stim.paragraphs || [];
+
+    var headingsHtml =
+        '<div class="adverts-panel">'
+      +   '<div class="adverts-panel-label">' + escapeHtml(stim.title ? stim.title : 'Überschriften') + '</div>'
+      +   '<ul class="adverts-list">'
+      +     headings.map(function (h) {
+            return '<li>'
+              + '<span class="adv-letter">' + escapeHtml((h.id || '').toLowerCase()) + '</span>'
+              + '<span class="adv-title">' + escapeHtml(h.text || '') + '</span>'
+              + '</li>';
+          }).join('')
+      +   '</ul>'
+      + '</div>';
+
+    var optionsHtml = '<option value="">— Überschrift wählen —</option>'
+      + headings.map(function (h) {
+          var l = (h.id || '').toLowerCase();
+          return '<option value="' + escapeHtml(l) + '">'
+            + escapeHtml(l + ': ' + (h.text || ''))
+            + '</option>';
+        }).join('');
+
+    var pHtml =
+        '<div class="match-grid">'
+      + paragraphs.map(function (p) {
+          var labelText = p.label || ('§ ' + p.n);
+          return '<div class="match-row">'
+            + '<div class="match-person">'
+            +   '<div class="match-name">' + escapeHtml(labelText) + '</div>'
+            +   '<p class="match-text">' + escapeHtml(p.text || '') + '</p>'
+            + '</div>'
+            + '<select class="adverts-select section-select" data-paragraph-n="' + escapeHtml(p.n) + '">'
+            +   optionsHtml
+            + '</select>'
+            + '</div>';
+        }).join('')
+      + '</div>';
+
+    body.innerHTML = headingsHtml + pHtml;
+    body.querySelectorAll('.section-select').forEach(function (sel) {
+      sel.addEventListener('change', checkSubmitState);
+    });
+  }
+
   // ── Validation (per section) ───────────────────────────────
   function checkSubmitState() {
     if (currentSection === 'schreiben') return validateSchreiben();
@@ -1285,6 +1535,38 @@
         totalNeeded += pplA.length;
         pplA.forEach(function (p) {
           var sel = document.querySelector('.adverts-select[data-person="' + (p.name || '').replace(/"/g, '&quot;') + '"]');
+          if (sel && sel.value) totalAnswered++;
+        });
+      }
+      else if (task.task_type === 'people_matching') {
+        var sts = (task.stimulus && task.stimulus.statements) || [];
+        totalNeeded += sts.length;
+        sts.forEach(function (s) {
+          var sel = document.querySelector('.people-select[data-stmt-n="' + s.n + '"]');
+          if (sel && sel.value) totalAnswered++;
+        });
+      }
+      else if (task.task_type === 'gap_fill') {
+        var gs = (task.stimulus && task.stimulus.gaps) || [];
+        totalNeeded += gs.length;
+        gs.forEach(function (n) {
+          var sel = document.querySelector('.gap-select[data-gap-n="' + n + '"]');
+          if (sel && sel.value) totalAnswered++;
+        });
+      }
+      else if (task.task_type === 'headline_matching') {
+        var hs = (task.stimulus && task.stimulus.headlines) || [];
+        totalNeeded += hs.length;
+        hs.forEach(function (h) {
+          var sel = document.querySelector('.headline-select[data-headline-n="' + h.n + '"]');
+          if (sel && sel.value) totalAnswered++;
+        });
+      }
+      else if (task.task_type === 'section_matching') {
+        var ps = (task.stimulus && task.stimulus.paragraphs) || [];
+        totalNeeded += ps.length;
+        ps.forEach(function (p) {
+          var sel = document.querySelector('.section-select[data-paragraph-n="' + p.n + '"]');
           if (sel && sel.value) totalAnswered++;
         });
       }
@@ -1519,6 +1801,42 @@
         });
         out.tasks.push({ task_number: task.task_number, type: 'matching_adverts', answers: pairsA });
       }
+      else if (task.task_type === 'people_matching') {
+        var sts = (task.stimulus && task.stimulus.statements) || [];
+        var pairs = {};
+        sts.forEach(function (s) {
+          var sel = document.querySelector('.people-select[data-stmt-n="' + s.n + '"]');
+          pairs[s.n] = sel ? sel.value : '';
+        });
+        out.tasks.push({ task_number: task.task_number, type: 'people_matching', answers: pairs });
+      }
+      else if (task.task_type === 'gap_fill') {
+        var gs = (task.stimulus && task.stimulus.gaps) || [];
+        var pairs = {};
+        gs.forEach(function (n) {
+          var sel = document.querySelector('.gap-select[data-gap-n="' + n + '"]');
+          pairs[n] = sel ? sel.value : '';
+        });
+        out.tasks.push({ task_number: task.task_number, type: 'gap_fill', answers: pairs });
+      }
+      else if (task.task_type === 'headline_matching') {
+        var hs = (task.stimulus && task.stimulus.headlines) || [];
+        var pairs = {};
+        hs.forEach(function (h) {
+          var sel = document.querySelector('.headline-select[data-headline-n="' + h.n + '"]');
+          pairs[h.n] = sel ? sel.value : '';
+        });
+        out.tasks.push({ task_number: task.task_number, type: 'headline_matching', answers: pairs });
+      }
+      else if (task.task_type === 'section_matching') {
+        var ps = (task.stimulus && task.stimulus.paragraphs) || [];
+        var pairs = {};
+        ps.forEach(function (p) {
+          var sel = document.querySelector('.section-select[data-paragraph-n="' + p.n + '"]');
+          pairs[p.n] = sel ? sel.value : '';
+        });
+        out.tasks.push({ task_number: task.task_number, type: 'section_matching', answers: pairs });
+      }
     });
     return out;
   }
@@ -1607,6 +1925,104 @@
         details.push({
           task_number: task.task_number, type: 'matching_adverts',
           score: scoreA, max: task.max_score, items: itemsA
+        });
+      }
+      else if (task.task_type === 'people_matching') {
+        var sts = (task.stimulus && task.stimulus.statements) || [];
+        var score = 0;
+        var items = sts.map(function (s) {
+          var sel = document.querySelector('.people-select[data-stmt-n="' + s.n + '"]');
+          var your = sel ? sel.value : '';
+          var correct = (s.answer || '').toLowerCase();
+          var ok = your !== '' && your === correct;
+          if (ok) score++;
+          return { n: s.n, q: s.text, your: your, correct: correct, ok: ok };
+        });
+        scoresByTask[taskKey] = score;
+        details.push({
+          task_number: task.task_number, type: 'people_matching',
+          score: score, max: task.max_score, items: items
+        });
+      }
+      else if (task.task_type === 'gap_fill') {
+        var gs    = (task.stimulus && task.stimulus.gaps)       || [];
+        var ans   = (task.stimulus && task.stimulus.answers)    || {};
+        var cands = (task.stimulus && task.stimulus.candidates) || [];
+        var score = 0;
+        var items = gs.map(function (n) {
+          var sel = document.querySelector('.gap-select[data-gap-n="' + n + '"]');
+          var your = sel ? sel.value : '';
+          var correct = (ans[String(n)] || '').toLowerCase();
+          var ok = your !== '' && your === correct;
+          if (ok) score++;
+          var cand = cands.find(function (c) { return (c.id || '').toLowerCase() === correct; });
+          return {
+            n: n,
+            q: 'Lücke ' + n,
+            your: your,
+            correct: correct,
+            correct_text: cand ? cand.text : '',
+            ok: ok
+          };
+        });
+        scoresByTask[taskKey] = score;
+        details.push({
+          task_number: task.task_number, type: 'gap_fill',
+          score: score, max: task.max_score, items: items
+        });
+      }
+      else if (task.task_type === 'headline_matching') {
+        var hs   = (task.stimulus && task.stimulus.headlines) || [];
+        var ans  = (task.stimulus && task.stimulus.answers)   || {};
+        var ops  = (task.stimulus && task.stimulus.opinions)  || [];
+        var score = 0;
+        var items = hs.map(function (h) {
+          var sel = document.querySelector('.headline-select[data-headline-n="' + h.n + '"]');
+          var your = sel ? sel.value : '';
+          var correct = (ans[String(h.n)] || '').toLowerCase();
+          var ok = your !== '' && your === correct;
+          if (ok) score++;
+          var op = ops.find(function (o) { return (o.id || '').toLowerCase() === correct; });
+          return {
+            n: h.n,
+            q: h.text,
+            your: your,
+            correct: correct,
+            correct_text: op ? op.name : '',
+            ok: ok
+          };
+        });
+        scoresByTask[taskKey] = score;
+        details.push({
+          task_number: task.task_number, type: 'headline_matching',
+          score: score, max: task.max_score, items: items
+        });
+      }
+      else if (task.task_type === 'section_matching') {
+        var ps   = (task.stimulus && task.stimulus.paragraphs) || [];
+        var ans  = (task.stimulus && task.stimulus.answers)    || {};
+        var hds  = (task.stimulus && task.stimulus.headings)   || [];
+        var score = 0;
+        var items = ps.map(function (p) {
+          var sel = document.querySelector('.section-select[data-paragraph-n="' + p.n + '"]');
+          var your = sel ? sel.value : '';
+          var correct = (ans[String(p.n)] || p.answer || '').toLowerCase();
+          var ok = your !== '' && your === correct;
+          if (ok) score++;
+          var heading = hds.find(function (h) { return (h.id || '').toLowerCase() === correct; });
+          return {
+            n: p.n,
+            q: p.label || ('§ ' + p.n),
+            your: your,
+            correct: correct,
+            correct_text: heading ? heading.text : '',
+            ok: ok
+          };
+        });
+        scoresByTask[taskKey] = score;
+        details.push({
+          task_number: task.task_number, type: 'section_matching',
+          score: score, max: task.max_score, items: items
         });
       }
       taskMaxes.push(task.max_score || 0);
@@ -1938,6 +2354,10 @@
       var typeLabel = d.type === 'multiple_choice'   ? 'Multiple-Choice'
                     : d.type === 'true_false'         ? 'Richtig / Falsch'
                     : d.type === 'matching_adverts'   ? 'Anzeigen-Zuordnung'
+                    : d.type === 'people_matching'    ? 'Personen-Zuordnung'
+                    : d.type === 'gap_fill'           ? 'Lückentext'
+                    : d.type === 'headline_matching'  ? 'Überschriften-Zuordnung'
+                    : d.type === 'section_matching'   ? 'Abschnitt-Zuordnung'
                     :                                  'Zuordnung';
       var rowsHtml = d.items.map(function (item) {
         return renderLesenReviewRow(d.type, item);
@@ -1993,6 +2413,41 @@
         var correctPretty = item.correct === 'keine' ? 'X: Keine passende Anzeige'
                           : (item.correct ? item.correct.toUpperCase() : '—');
         correctLine = '<div class="lr-correct">Richtige Antwort: <strong>' + escapeHtml(correctPretty) + '</strong></div>';
+      }
+    }
+    else if (type === 'people_matching' || type === 'headline_matching') {
+      // Both render the question as "<n>. <q text>" and answers as
+      // simple letters (a/b/c/d/...). headline_matching extends with
+      // the matched person's name when wrong.
+      qText = '<strong>' + escapeHtml(item.n) + '.</strong> ' + escapeHtml(item.q || '');
+      yourLine = '<div class="lr-yours">Deine Antwort: <strong>' + escapeHtml((item.your || '—').toUpperCase()) + '</strong></div>';
+      if (!ok) {
+        correctLine = '<div class="lr-correct">Richtige Antwort: <strong>'
+          + escapeHtml((item.correct || '—').toUpperCase())
+          + (item.correct_text ? ' (' + escapeHtml(item.correct_text) + ')' : '')
+          + '</strong></div>';
+      }
+    }
+    else if (type === 'gap_fill') {
+      qText = '<strong>Lücke ' + escapeHtml(item.n) + '</strong>';
+      yourLine = '<div class="lr-yours">Deine Antwort: <strong>' + escapeHtml((item.your || '—').toUpperCase()) + '</strong></div>';
+      if (!ok) {
+        var snippet = item.correct_text || '';
+        if (snippet.length > 90) snippet = snippet.slice(0, 90) + '…';
+        correctLine = '<div class="lr-correct">Richtige Antwort: <strong>'
+          + escapeHtml((item.correct || '—').toUpperCase()) + '</strong>'
+          + (snippet ? ' — ' + escapeHtml(snippet) : '')
+          + '</div>';
+      }
+    }
+    else if (type === 'section_matching') {
+      qText = '<strong>' + escapeHtml(item.q || '') + '</strong>';
+      yourLine = '<div class="lr-yours">Deine Antwort: <strong>' + escapeHtml((item.your || '—').toUpperCase()) + '</strong></div>';
+      if (!ok) {
+        correctLine = '<div class="lr-correct">Richtige Antwort: <strong>'
+          + escapeHtml((item.correct || '—').toUpperCase())
+          + (item.correct_text ? ' — ' + escapeHtml(item.correct_text) : '')
+          + '</strong></div>';
       }
     }
 
