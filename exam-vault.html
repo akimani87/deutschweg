@@ -678,7 +678,7 @@
   var WORD_TARGET   = 40;
   var WORD_MIN_OK   = 20;       // submit-enable threshold for Task 2 message
   var WORD_GREEN_LO = 30;       // green band lower bound
-  var PASS_RATIO    = 0.7;      // pass = 70% of max — works for both exams
+  var PASS_RATIO    = 0.5;      // pass = 50% of max — works for both exams
   var API_BASE      = 'https://deutschweg.onrender.com';
 
   // ── Module state ───────────────────────────────────────────
@@ -1028,7 +1028,7 @@
     fetch(API_BASE + '/api/exam-grade', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(ans)
+      body:    JSON.stringify({ task2: ans.task2 })
     })
       .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
       .then(function (res) {
@@ -1229,18 +1229,16 @@
   function renderSchreibenResults(g) {
     var kg        = g.kommunikative_gestaltung || {};
     var fr        = g.formale_richtigkeit      || {};
-    var rawTotal  = (typeof g.raw_total   === 'number') ? g.raw_total   : null;
-    var total     = (typeof g.total_score === 'number') ? g.total_score : null;
+    var rawTotal  = (typeof g.raw_total   === 'number') ? g.raw_total   : '—';
+    var total     = (typeof g.total_score === 'number') ? g.total_score : '—';
     var maxTotal  = (typeof g.max_score   === 'number') ? g.max_score   : 12;
-    var wordCount = (typeof g.word_count  === 'number') ? g.word_count  : null;
+    var wordCount = (typeof g.word_count  === 'number') ? g.word_count  : '—';
 
-    // Hero — final score X/12 (was X/20 under the old rubric)
-    setHero(total, maxTotal);
+    setHero(g.total_score, g.max_score);
 
-    // Two criterion pills
     setTaskPills([
-      { label: 'Komm. Gestaltung', score: (typeof kg.score === 'number') ? kg.score : '—', max: (typeof kg.max === 'number') ? kg.max : 3 },
-      { label: 'Formale Richtigkeit', score: (typeof fr.score === 'number') ? fr.score : '—', max: (typeof fr.max === 'number') ? fr.max : 3 }
+      { label: 'Kommunikative Gestaltung', score: (typeof kg.score === 'number') ? kg.score : '—', max: 3 },
+      { label: 'Formale Richtigkeit',      score: (typeof fr.score === 'number') ? fr.score : '—', max: 3 }
     ]);
 
     function rubricCard(label, r) {
@@ -1256,15 +1254,6 @@
         + '</div>';
     }
 
-    var summaryHtml =
-        '<ul class="results-list">'
-      +   '<li><strong>Kommunikative Gestaltung:</strong> ' + escapeHtml(kg.score != null ? kg.score : '—') + ' / 3</li>'
-      +   '<li><strong>Formale Richtigkeit:</strong> '       + escapeHtml(fr.score != null ? fr.score : '—') + ' / 3</li>'
-      +   '<li><strong>Raw total:</strong> '                  + escapeHtml(rawTotal != null ? rawTotal : '—') + ' / 6</li>'
-      +   '<li><strong>Final score:</strong> '                + escapeHtml(total    != null ? total    : '—') + ' / ' + escapeHtml(maxTotal) + ' <span style="color:var(--light); font-weight:500;">(raw × 2)</span></li>'
-      +   '<li><strong>Word count detected:</strong> '        + escapeHtml(wordCount != null ? wordCount : '—') + ' words</li>'
-      + '</ul>';
-
     var mistakes = Array.isArray(g.top_mistakes) ? g.top_mistakes : [];
     var mistakesHtml = mistakes.length
       ? mistakes.map(function (m) { return '<li>' + escapeHtml(m) + '</li>'; }).join('')
@@ -1272,11 +1261,15 @@
 
     el('resultsBody').innerHTML =
         '<div class="results-section">'
-      +   '<h3 class="results-h">Score Summary</h3>'
-      +   summaryHtml
+      +   '<h3 class="results-h">Score Calculation</h3>'
+      +   '<p class="results-feedback">'
+      +     'Raw total: <strong>' + escapeHtml(rawTotal) + ' / 6</strong> × 2 = '
+      +     '<strong>' + escapeHtml(total) + ' / ' + escapeHtml(maxTotal) + '</strong>'
+      +     '<br>Word count detected: <strong>' + escapeHtml(wordCount) + ' words</strong>'
+      +   '</p>'
       + '</div>'
       + '<div class="results-section">'
-      +   '<h3 class="results-h">Goethe Rubric Breakdown</h3>'
+      +   '<h3 class="results-h">Rubric Breakdown</h3>'
       +   '<div class="rubric-grid">'
       +     rubricCard('Kommunikative Gestaltung', kg)
       +     rubricCard('Formale Richtigkeit',       fr)
@@ -1287,11 +1280,11 @@
       +   '<p class="results-feedback">' + escapeHtml(g.overall_feedback || '') + '</p>'
       + '</div>'
       + '<div class="results-section">'
-      +   '<h3 class="results-h">Top Mistakes to Fix</h3>'
+      +   '<h3 class="results-h">Top Mistakes</h3>'
       +   '<ul class="results-list">' + mistakesHtml + '</ul>'
       + '</div>'
       + '<div class="results-section">'
-      +   '<h3 class="results-h">Next Practice</h3>'
+      +   '<h3 class="results-h">Next Recommendation</h3>'
       +   '<p class="results-next">' + escapeHtml(g.next_recommendation || '') + '</p>'
       + '</div>';
   }

@@ -855,11 +855,11 @@ Respond as a single raw JSON object — no markdown, no code fences, no text out
 }`;
 
 app.post('/api/exam-grade', async (req, res) => {
-  const { task1, task2 } = req.body || {};
+  const { task2 } = req.body || {};
 
-  if (!task1 || typeof task1 !== 'object') {
-    return res.status(400).json({ error: 'Missing task1 form data.' });
-  }
+  // The new Goethe-rubric prompt grades only the short message, so
+  // task1 form data is no longer required (or expected) — the client
+  // sends just { task2: "<message>" }.
   if (!task2 || typeof task2 !== 'string' || task2.trim().length < 1) {
     return res.status(400).json({ error: 'Missing task2 response.' });
   }
@@ -868,14 +868,9 @@ app.post('/api/exam-grade', async (req, res) => {
     return res.status(500).json({ error: 'API key not configured.' });
   }
 
-  // Format the form into a readable block, capping each value to keep
-  // the payload bounded.
-  const task1Block = Object.entries(task1)
-    .map(([k, v]) => `${String(k).slice(0, 80)}: ${String(v == null ? '' : v).slice(0, 200)}`)
-    .join('\n');
   const task2Block = String(task2).slice(0, 2000).trim();
 
-  const userMessage = `Task 1 (Form):\n${task1Block}\n\nTask 2 (Short message to Lukas, 30–40 words target):\n"""\n${task2Block}\n"""`;
+  const userMessage = `Student's short message (target ~30 words):\n"""\n${task2Block}\n"""`;
 
   console.log(`[/api/exam-grade] Request — task2 length: ${task2Block.length} chars, origin: ${req.headers.origin || 'none'}`);
 
