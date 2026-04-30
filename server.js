@@ -908,80 +908,70 @@ Return raw JSON only, no markdown, using this exact shape:
   "next_recommendation": "..."
 }`;
 
-// B1 rubric — official Goethe-Zertifikat B1 Schreiben scoring. The
-// student writes 3 texts (informal email + opinion forum post + formal
-// email). The grader evaluates the FULL submission on 3 criteria with
-// these exact point anchors:
-//
-//   Aufgabenerfüllung      — A=40 / B=32 / C=24 / D=16 / E=0   (max 40)
-//   Kommunikative Gestaltung — A=40 / B=32 / C=24 / D=16 / E=0 (max 40)
-//   Formale Richtigkeit    — A=20 / B=16 / C=12 / D=8  / E=0   (max 20)
-//
-// Total max = 100. Pass = 60 (60%). If any criterion = E, the whole
-// Schreiben section scores 0.
-const EXAM_GRADE_B1_SYSTEM_PROMPT = `You are a certified Goethe-Institut B1 exam grader. Grade this student's Schreiben submission using the official Goethe-Zertifikat B1 rubric exactly.
+// B1 rubric — official Goethe-Zertifikat B1 Modellsatz Schreiben.
+// Three independent tasks, each graded on 2 criteria using the A–E
+// scale (5 / 3.5 / 2 / 0.5 / 0). Per-task max = 10 raw points. Total
+// raw max = 30. Final score = round(total_raw / 30 × 100) so the
+// displayed number is always /100, matching the official conversion.
+// Pass = 60 (60%). If Erfüllung = E for a task, that entire task = 0.
+const EXAM_GRADE_B1_SYSTEM_PROMPT = `You are a certified Goethe-Institut B1 exam grader. Grade this student's Schreiben submission using the official Goethe-Zertifikat B1 Modellsatz rubric exactly.
 
-The student wrote THREE texts as one Schreiben submission:
-- Aufgabe 1: informal forum post or email (target ~80 words)
-- Aufgabe 2: opinion forum post — clear opinion + reasons (target ~80 words)
-- Aufgabe 3: formal/semi-formal email (target ~40 words, formal register, all bullet points)
+The student wrote THREE texts:
+- Aufgabe 1: personal email (target ~80 words, must cover 3 bullet points)
+- Aufgabe 2: opinion / discussion text (target ~80 words, must give a clear opinion + reasons)
+- Aufgabe 3: short formal email (target ~40 words, must cover 3 bullet points, formal register)
 
-Grade the OVERALL submission on these THREE criteria using the official Goethe B1 point anchors:
+Grade EACH task INDEPENDENTLY on TWO criteria using this 5-level A–E scale:
 
-CRITERION: Aufgabenerfüllung — Inhalt and length across all three tasks (max 40)
-A = 40: all three tasks address the required content fully; lengths within target
-B = 32: most content addressed across the tasks; one task slightly off-length OR partly underdeveloped
-C = 24: about half the required content addressed; multiple tasks underdeveloped or off-length
-D = 16: limited content addressed across the tasks
-E =  0: topic missed across most tasks, or texts far too short — IF E then total_score = 0
+CRITERION: Erfüllung — task completion + content
+A = 5    points: all required content fully addressed, register fits the task
+B = 3.5  points: most content addressed, minor register slips OR one bullet point underdeveloped
+C = 2    points: about half the required content addressed
+D = 0.5  points: very little content addressed
+E = 0    points: topic missed entirely OR text far too short — IF E for a task, that whole task scores 0
 
-CRITERION: Kommunikative Gestaltung — register, structure, transitions, opening/closing (max 40)
-A = 40: register fits each task (informal / neutral / formal); clear structure with opening + closing; smooth transitions
-B = 32: register mostly fits; clear structure with occasional gaps in transitions
-C = 24: register slips in places; structure partly clear; transitions repetitive or missing
-D = 16: register often wrong; structure breaks down repeatedly
-E =  0: register completely inappropriate or no recognisable structure — IF E then total_score = 0
+CRITERION: Sprache — language (Kohärenz + Wortschatz + Strukturen combined)
+A = 5    points: B1-appropriate vocabulary + varied structures + clear coherence; isolated errors don't impede comprehension
+B = 3.5  points: mostly appropriate; several errors don't impede comprehension
+C = 2    points: limited vocabulary, simple structures; errors slightly impede comprehension
+D = 0.5  points: very limited; errors seriously impede comprehension
+E = 0    points: language so poor the text is incomprehensible
 
-CRITERION: Formale Richtigkeit — grammar, syntax, orthography across all three tasks (max 20)
-A = 20: B1-level structures used accurately; only isolated errors that don't impede comprehension
-B = 16: several errors but comprehension is unaffected
-C = 12: errors slightly impede comprehension in places
-D =  8: many errors that noticeably impede comprehension
-E =  0: language so poor the texts are incomprehensible — IF E then total_score = 0
-
-SCORING:
-- total_score = aufgabenerfuellung.score + kommunikative_gestaltung.score + formale_richtigkeit.score
+SCORING (compute exactly as below):
+- aufgabe1.task_raw = aufgabe1.erfuellung.score + aufgabe1.sprache.score   (max 10)
+- aufgabe2.task_raw = aufgabe2.erfuellung.score + aufgabe2.sprache.score   (max 10)
+- aufgabe3.task_raw = aufgabe3.erfuellung.score + aufgabe3.sprache.score   (max 10)
+- total_raw   = aufgabe1.task_raw + aufgabe2.task_raw + aufgabe3.task_raw  (max 30)
+- total_score = round(total_raw / 30 × 100)                                (max 100)
 - max_score   = 100
-- Pass mark   = 60 (60%) — this is the official Goethe B1 pass threshold
-- IMPORTANT: if any criterion is rated E, set ALL three scores to 0 and total_score to 0
+- Pass mark   = 60 (60%) — official Goethe B1 pass threshold
+- IF Erfüllung = E for a task → set BOTH that task's scores to 0 and task_raw to 0
 
 Schreib das gesamte Feedback auf Deutsch — auf dem Sprachniveau B1.
 Klare, einfache Sätze. Sei freundlich, konstruktiv. Benutze 'du'.
 
 Return raw JSON only, no markdown, no code fences, no text outside the JSON. Use this exact shape:
 {
-  "aufgabenerfuellung": {
-    "score":       <one of 0, 16, 24, 32, 40>,
-    "label":       "A" | "B" | "C" | "D" | "E",
-    "explanation": "One or two sentences in German explaining this score across all three tasks.",
-    "tip":         "One concrete improvement tip in German."
+  "aufgabe1": {
+    "erfuellung": { "score": <0|0.5|2|3.5|5>, "label": "A|B|C|D|E", "explanation": "Ein bis zwei Sätze auf Deutsch.", "tip": "Ein konkreter Verbesserungsvorschlag." },
+    "sprache":    { "score": <0|0.5|2|3.5|5>, "label": "A|B|C|D|E", "explanation": "...", "tip": "..." },
+    "task_raw":   <erfuellung.score + sprache.score>
   },
-  "kommunikative_gestaltung": {
-    "score":       <one of 0, 16, 24, 32, 40>,
-    "label":       "A" | "B" | "C" | "D" | "E",
-    "explanation": "...",
-    "tip":         "..."
+  "aufgabe2": {
+    "erfuellung": { "score": <0|0.5|2|3.5|5>, "label": "A|B|C|D|E", "explanation": "...", "tip": "..." },
+    "sprache":    { "score": <0|0.5|2|3.5|5>, "label": "A|B|C|D|E", "explanation": "...", "tip": "..." },
+    "task_raw":   <erfuellung.score + sprache.score>
   },
-  "formale_richtigkeit": {
-    "score":       <one of 0, 8, 12, 16, 20>,
-    "label":       "A" | "B" | "C" | "D" | "E",
-    "explanation": "...",
-    "tip":         "..."
+  "aufgabe3": {
+    "erfuellung": { "score": <0|0.5|2|3.5|5>, "label": "A|B|C|D|E", "explanation": "...", "tip": "..." },
+    "sprache":    { "score": <0|0.5|2|3.5|5>, "label": "A|B|C|D|E", "explanation": "...", "tip": "..." },
+    "task_raw":   <erfuellung.score + sprache.score>
   },
-  "total_score":         <integer = aufgabenerfuellung.score + kommunikative_gestaltung.score + formale_richtigkeit.score>,
-  "max_score":           100,
-  "overall_feedback":    "Two encouraging sentences in German about the overall submission.",
-  "top_mistakes":        ["Erste Verbesserung.", "Zweite Verbesserung."],
+  "total_raw":   <integer or half = aufgabe1.task_raw + aufgabe2.task_raw + aufgabe3.task_raw>,
+  "total_score": <integer = round(total_raw / 30 * 100)>,
+  "max_score":   100,
+  "overall_feedback":    "Zwei ermutigende Sätze auf Deutsch.",
+  "top_mistakes":        ["Erste Verbesserung.", "Zweite Verbesserung.", "Dritte Verbesserung."],
   "next_recommendation": "Eine konkrete Übung als nächster Schritt."
 }`;
 
@@ -1154,12 +1144,18 @@ app.post('/api/exam-grade', async (req, res) => {
         typeof result.total_score === 'number'
       );
     } else if (safeLevel === 'B1') {
-      // Official Goethe B1 shape — single set of 3 criteria graded across
-      // the whole submission. Anchored point values: 40 / 40 / 20.
+      // Official Goethe B1 Modellsatz shape — 3 independent tasks
+      // (aufgabe1/2/3), each with two criteria (erfuellung, sprache)
+      // on the A-E scale (5/3.5/2/0.5/0). Total raw /30, scaled to /100.
+      var taskOk = function (t) {
+        return t
+          && t.erfuellung && typeof t.erfuellung.score === 'number'
+          && t.sprache    && typeof t.sprache.score    === 'number';
+      };
       shapeOk = (
-        result.aufgabenerfuellung      && typeof result.aufgabenerfuellung.score      === 'number' &&
-        result.kommunikative_gestaltung && typeof result.kommunikative_gestaltung.score === 'number' &&
-        result.formale_richtigkeit      && typeof result.formale_richtigkeit.score      === 'number' &&
+        taskOk(result.aufgabe1) &&
+        taskOk(result.aufgabe2) &&
+        taskOk(result.aufgabe3) &&
         typeof result.total_score === 'number'
       );
     } else if (safeLevel === 'A2') {
