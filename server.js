@@ -829,7 +829,11 @@ IMPORTANT RULES:
 - The raw total (criterion1 + criterion2) is multiplied by 2 to get the final score out of 12.
 - Word count: count the student's words carefully. Do not count the greeting line as words if it is a single word like "Hallo".
 
-Keep all feedback in simple encouraging English. Be warm and constructive.
+Schreib das gesamte Feedback auf Deutsch — auf dem Sprachniveau A1.
+Benutze nur sehr einfache Wörter und kurze Sätze.
+Maximal 8 Wörter pro Satz.
+Keine langen Erklärungen.
+Sei freundlich. Benutze 'du'.
 
 Respond as a single raw JSON object — no markdown, no code fences, no text outside the JSON. Use this exact shape:
 {
