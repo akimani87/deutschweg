@@ -1,24 +1,24 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
 <!-- DW SEO INJECT -->
-<meta name="title" content="DeutschWeg — Willkommen">
-<meta name="description" content="Dein geführter Einstieg in DeutschWeg. In unter 2 Minuten zur ersten Lektion — Schritt für Schritt.">
+<meta name="title" content="DeutschWeg — Welcome">
+<meta name="description" content="Your guided start with DeutschWeg. From signup to your first lesson in under 2 minutes — one step at a time.">
 <meta name="robots" content="noindex, nofollow">
-<meta name="language" content="German">
+<meta name="language" content="English">
 <meta name="author" content="DeutschWeg">
 <link rel="canonical" href="https://deutschweg.de/onboarding">
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://deutschweg.de/onboarding">
-<meta property="og:title" content="DeutschWeg — Willkommen">
-<meta property="og:description" content="Dein geführter Einstieg in DeutschWeg.">
+<meta property="og:title" content="DeutschWeg — Welcome">
+<meta property="og:description" content="Your guided start with DeutschWeg.">
 <meta property="og:image" content="https://deutschweg.de/og-image.png">
 <!-- /DW SEO INJECT -->
-<title>DeutschWeg — Willkommen</title>
+<title>DeutschWeg — Welcome</title>
 <link rel="stylesheet" href="deutschweg-theme.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./supabase-config.js"></script>
@@ -231,7 +231,7 @@
     <div class="ob-logo-icon">D</div>
     <span class="ob-logo-text">Deutsch<span>Weg</span></span>
   </a>
-  <span class="ob-step-pill" id="stepPill">Schritt 1 von 4</span>
+  <span class="ob-step-pill" id="stepPill">Step 1 of 4</span>
 </header>
 
 <div class="ob-progress"><div class="ob-progress-fill" id="progressFill"></div></div>
@@ -239,75 +239,75 @@
 <main class="ob-main">
   <div class="card">
 
-    <!-- ── SCREEN 1 — WILLKOMMEN ── -->
+    <!-- ── SCREEN 1 — WELCOME ── -->
     <section class="screen active" id="screen-1">
-      <div class="ob-eyebrow">Willkommen</div>
-      <h1 class="ob-h1">Du hast den schwersten Schritt schon geschafft.</h1>
-      <p class="ob-lead">Den Mut, neu anzufangen. Die Sprache schaffst du auch — wir gehen den Weg mit dir, Schritt für Schritt.</p>
-      <button class="btn btn-primary" onclick="goToScreen(2)">Los geht's</button>
+      <div class="ob-eyebrow">Welcome</div>
+      <h1 class="ob-h1">You've already made the hardest decision.</h1>
+      <p class="ob-lead">The courage to start over. The language? You'll get there too — one step at a time, and we'll walk it with you.</p>
+      <button class="btn btn-primary" onclick="goToScreen(2)">Let's go</button>
     </section>
 
-    <!-- ── SCREEN 2 — LERNZIEL ── -->
+    <!-- ── SCREEN 2 — LEARNING GOAL ── -->
     <section class="screen" id="screen-2">
-      <div class="ob-eyebrow">Dein Lernziel</div>
-      <h1 class="ob-h1">Warum lernst du Deutsch?</h1>
-      <p class="ob-lead">Eine kurze Frage — so zeigen wir dir den richtigen Weg.</p>
+      <div class="ob-eyebrow">Your goal</div>
+      <h1 class="ob-h1">Why are you learning German?</h1>
+      <p class="ob-lead">One quick question — so we can show you the right path.</p>
 
       <div class="goal-list" id="goalList">
         <button class="goal-btn" data-goal="goethe" onclick="pickGoal('goethe')">
           <span class="goal-icon">🏅</span>
-          <span class="goal-label">Für die Goethe-Prüfung</span>
+          <span class="goal-label">For the Goethe exam</span>
         </button>
         <button class="goal-btn" data-goal="familie" onclick="pickGoal('familie')">
           <span class="goal-icon">👨‍👩‍👧</span>
-          <span class="goal-label">Für den Familiennachzug</span>
+          <span class="goal-label">For family reunification</span>
         </button>
         <button class="goal-btn" data-goal="beruf" onclick="pickGoal('beruf')">
           <span class="goal-icon">💼</span>
-          <span class="goal-label">Für Ausbildung oder Beruf</span>
+          <span class="goal-label">For training or work</span>
         </button>
         <button class="goal-btn" data-goal="selbst" onclick="pickGoal('selbst')">
           <span class="goal-icon">✨</span>
-          <span class="goal-label">Einfach für mich</span>
+          <span class="goal-label">Just for myself</span>
         </button>
       </div>
 
-      <button class="skip-link" onclick="pickGoal(null)">Überspringen</button>
+      <button class="skip-link" onclick="pickGoal(null)">Skip</button>
       <div class="ob-status" id="status-2"></div>
     </section>
 
-    <!-- ── SCREEN 3 — MINI-LEKTION ── -->
+    <!-- ── SCREEN 3 — MINI-LESSON — Begrüßung (DE content kept; English scaffolding) ── -->
     <section class="screen" id="screen-3">
-      <div class="ob-eyebrow">Mini-Lektion</div>
-      <h1 class="ob-h1">Deine erste Lektion: Begrüßung</h1>
-      <p class="ob-lead">Tippe auf jedes Wort, um es zu hören.</p>
+      <div class="ob-eyebrow">Mini lesson</div>
+      <h1 class="ob-h1">Your first lesson: Begrüßung</h1>
+      <p class="ob-lead">Tap each word to hear it.</p>
 
       <div class="speak-list">
         <button class="speak-btn" onclick="speakCard(this,'Guten Tag')">
           <span class="speak-icon">🔊</span>
           <span>
             <div class="speak-de">Guten Tag</div>
-            <div class="speak-meta">höflich, formell</div>
+            <div class="speak-meta">polite, formal</div>
           </span>
         </button>
         <button class="speak-btn" onclick="speakCard(this,'Hallo')">
           <span class="speak-icon">🔊</span>
           <span>
             <div class="speak-de">Hallo</div>
-            <div class="speak-meta">locker, informell</div>
+            <div class="speak-meta">casual, informal</div>
           </span>
         </button>
         <button class="speak-btn" onclick="speakCard(this,'Auf Wiedersehen')">
           <span class="speak-icon">🔊</span>
           <span>
             <div class="speak-de">Auf Wiedersehen</div>
-            <div class="speak-meta">Abschied</div>
+            <div class="speak-meta">goodbye</div>
           </span>
         </button>
       </div>
 
       <div class="qz-question">
-        <div class="qz-q">Du triffst eine Prüferin zum ersten Mal. Was sagst du?</div>
+        <div class="qz-q">You're meeting an examiner for the first time. What do you say?</div>
         <div class="qz-opts" id="qzOpts">
           <button class="qz-opt" data-ans="hallo"   onclick="answerQuiz(this,'hallo')">Hallo</button>
           <button class="qz-opt" data-ans="guten"   onclick="answerQuiz(this,'guten')">Guten Tag</button>
@@ -316,23 +316,23 @@
         <div class="qz-feedback" id="qzFb"></div>
       </div>
 
-      <button class="btn btn-primary" id="screen3Next" onclick="finishOnboarding()" disabled style="margin-top:22px;">Weiter</button>
+      <button class="btn btn-primary" id="screen3Next" onclick="finishOnboarding()" disabled style="margin-top:22px;">Continue</button>
     </section>
 
-    <!-- ── SCREEN 4 — ERFOLG ── -->
+    <!-- ── SCREEN 4 — SUCCESS ── -->
     <section class="screen" id="screen-4">
       <div class="success-icon">🎉</div>
-      <div class="ob-eyebrow" style="text-align:center;">Geschafft!</div>
-      <h1 class="ob-h1" style="text-align:center;">Geschafft!</h1>
-      <p class="ob-lead" style="text-align:center;">Du hast deine erste Lektion abgeschlossen und weißt schon, wie man sich höflich begrüßt. Genau so bestehst du die Prüfung — Schritt für Schritt, nicht alles auf einmal.</p>
+      <div class="ob-eyebrow" style="text-align:center;">You did it!</div>
+      <h1 class="ob-h1" style="text-align:center;">You did it!</h1>
+      <p class="ob-lead" style="text-align:center;">You finished your first lesson and already know how to greet someone politely. This is how you pass the exam — one step at a time, not all at once.</p>
 
       <div class="success-progress">
-        <div class="success-prog-label">Dein Fortschritt</div>
-        <div class="success-prog-val">1 von 13 Modulen (A1)</div>
+        <div class="success-prog-label">Your progress</div>
+        <div class="success-prog-val">1 of 13 modules (A1)</div>
         <div class="success-bar"><div class="success-bar-fill"></div></div>
       </div>
 
-      <a class="btn btn-primary" id="goModuleBtn" href="dashboard.html">Weiter zu Modul 1</a>
+      <a class="btn btn-primary" id="goModuleBtn" href="dashboard.html">Continue to Module 1</a>
       <div class="ob-status" id="status-4"></div>
     </section>
 
@@ -430,7 +430,7 @@
     if (next) next.classList.add('active');
     var pct = Math.round((n / 4) * 100);
     document.getElementById('progressFill').style.width = pct + '%';
-    document.getElementById('stepPill').textContent = 'Schritt ' + n + ' von 4';
+    document.getElementById('stepPill').textContent = 'Step ' + n + ' of 4';
     if (n === 4) onEnterScreen4();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -440,7 +440,7 @@
     // Lock buttons while we write
     document.querySelectorAll('#goalList .goal-btn').forEach(function(b){ b.disabled = true; });
     var status = document.getElementById('status-2');
-    status.textContent = goal ? 'Speichern …' : '';
+    status.textContent = goal ? 'Saving …' : '';
 
     if (goal == null || typeof dwSupabase === 'undefined') {
       goToScreen(3);
@@ -468,15 +468,15 @@
     if (ans === 'guten') {
       btn.classList.add('correct');
       fb.className = 'qz-feedback show ok';
-      fb.textContent = "Richtig! 'Guten Tag' ist höflich und formell — genau das erwartet die Prüferin.";
+      fb.textContent = "Correct! ‘Guten Tag’ is polite and formal — exactly what an examiner expects.";
       opts.forEach(function(o){ o.disabled = true; });
       quizAnsweredCorrectly = true;
       document.getElementById('screen3Next').disabled = false;
     } else {
       btn.classList.add('wrong');
       fb.className = 'qz-feedback show no';
-      fb.textContent = "Nicht ganz. 'Hallo' ist locker, 'Tschüss' bedeutet Abschied. Bei einer Prüferin sagst du 'Guten Tag' — das ist höflich und formell. Du kannst trotzdem weitergehen.";
-      // Don't block forward progress — but only enable Weiter after they see the explanation
+      fb.textContent = "Not quite. ‘Hallo’ is casual and ‘Tschüss’ means goodbye. With an examiner you say ‘Guten Tag’ — it’s polite and formal. You can still continue.";
+      // Don't block forward progress — but only enable Continue after they see the explanation
       document.getElementById('screen3Next').disabled = false;
     }
   };
