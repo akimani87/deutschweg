@@ -173,6 +173,53 @@ section{padding:96px 0;}
 .fc-green{background:var(--green);}
 .fc-blue{background:var(--blue);}
 
+/* ── BELONGING IMAGE (hero right) ── */
+.hero-img-col{position:relative;}
+.hero-img-wrap{
+  width:100%;
+  aspect-ratio:4/3;
+  background:var(--blue-light);
+  border:1px solid var(--blue-mid);
+  border-radius:24px;
+  overflow:hidden;
+  box-shadow:var(--shadow-lg);
+}
+.hero-img{
+  width:100%;height:100%;
+  object-fit:cover;display:block;
+}
+
+/* ── WAS DICH BEI DEUTSCHWEG ERWARTET ── */
+.what-section{background:var(--white);}
+.what-h{
+  font-size:38px;font-weight:800;line-height:1.2;
+  letter-spacing:-0.3px;margin-bottom:40px;color:var(--dark);
+  text-align:center;
+}
+.what-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:20px;margin-bottom:40px;
+}
+.what-card{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:20px;padding:26px;
+  display:flex;gap:16px;align-items:flex-start;
+  transition:all 0.2s;
+}
+.what-card:hover{
+  background:var(--blue-light);border-color:var(--blue-mid);
+  transform:translateY(-3px);box-shadow:var(--shadow-lg);
+}
+.what-icon{
+  width:44px;height:44px;border-radius:12px;
+  background:var(--white);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;flex-shrink:0;
+}
+.what-text{font-size:15px;color:var(--dark);font-weight:600;line-height:1.55;}
+.what-cta-wrap{text-align:center;}
+.what-cta-note{font-size:13px;color:var(--light);margin-top:14px;}
+
 /* ── TRUST BAR ── */
 .trust-bar{
   background:var(--white);
@@ -376,14 +423,15 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
 /* ── RESPONSIVE ── */
 @media(max-width:900px){
   .nav-links{display:none;}
-  .hero-inner{grid-template-columns:1fr;gap:48px;}
+  .hero-inner{grid-template-columns:1fr;gap:40px;}
   .hero-h1{font-size:34px;}
-  .feat-grid,.how-grid{grid-template-columns:1fr;}
+  .feat-grid,.how-grid,.what-grid{grid-template-columns:1fr;}
   .why-inner{grid-template-columns:1fr;gap:32px;}
   .pricing-grid{grid-template-columns:1fr;}
   .levels-grid{grid-template-columns:1fr;}
   .footer-top{grid-template-columns:1fr 1fr;}
   .hero-right{display:none;}
+  .what-h{font-size:30px;}
   .trust-bar-inner{gap:16px;}
 }
 @media(max-width:600px){
@@ -392,7 +440,9 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
   .hero{padding:56px 0 72px;}
   .hero-h1{font-size:28px;}
   section{padding:72px 0;}
-  .feat-grid,.levels-grid,.how-grid,.pricing-grid{grid-template-columns:1fr;}
+  .feat-grid,.levels-grid,.how-grid,.pricing-grid,.what-grid{grid-template-columns:1fr;}
+  .what-h{font-size:24px;}
+  .hero-img-wrap{aspect-ratio:5/4;border-radius:18px;}
   .testimonial-card{padding:28px 22px;}
   .footer-top{grid-template-columns:1fr;}
   .footer-bottom{flex-direction:column;gap:10px;text-align:center;}
@@ -425,28 +475,13 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
 <section class="hero">
   <div class="wrap">
     <div class="hero-inner">
-      <!-- LEFT -->
+      <!-- LEFT — promise + first step -->
       <div>
         <div class="hero-badge">🌍 Built for African Learners</div>
-        <h1 class="hero-h1">Pass Your Goethe Exam Faster with <span class="accent">Instant AI Feedback</span></h1>
-        <p class="hero-p">German practice built for African learners preparing for Germany. Simple English explanations, Goethe-focused lessons, and AI feedback on every mistake.</p>
-        <div class="hero-bullets">
-          <div class="hero-bullet">
-            <span class="hero-bullet-check">✓</span>
-            <span>Personalized grammar practice based on your mistakes</span>
-          </div>
-          <div class="hero-bullet">
-            <span class="hero-bullet-check">✓</span>
-            <span>Instant AI feedback — know exactly what to fix</span>
-          </div>
-          <div class="hero-bullet">
-            <span class="hero-bullet-check">✓</span>
-            <span>Built specifically for Goethe A1, A2, B1 and B2 success</span>
-          </div>
-        </div>
+        <h1 class="hero-h1">Bestehe die Goethe-Prüfung — ohne dich <span class="accent">allein und überfordert</span> zu fühlen.</h1>
+        <p class="hero-p">Schritt für Schritt. Mit einem KI-Tutor, der weiß, wo du stehst, und Übungsprüfungen, die dich wirklich vorbereiten.</p>
         <div class="hero-btns">
-          <a href="signup.html" class="btn-primary btn-large">Start Practicing Free →</a>
-          <a href="#how-it-works" class="btn-secondary">See How It Works</a>
+          <a href="signup.html" class="btn-primary btn-large">Kostenlos mit A1 starten →</a>
         </div>
         <div class="hero-trust">
           <div class="trust-avs">
@@ -456,17 +491,30 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
             <div class="trust-av av4">N</div>
           </div>
           <div class="trust-text">
-            <strong>Learners from Kenya, Nigeria, Ghana &amp; more</strong>
-            Preparing for Goethe A1, A2, B1, and B2
+            <strong>Lernende aus Kenia, Nigeria, Ghana &amp; mehr</strong>
+            Auf dem Weg zu Goethe A1, A2, B1 und B2
           </div>
         </div>
       </div>
-      <!-- RIGHT — demo card -->
-      <div class="hero-right">
-        <div class="float-card top-right">
-          <div class="fc-dot fc-green"></div>
-          ✓ Exam Score — 34/40 pts
+      <!-- RIGHT — belonging image placeholder; upload to /assets/hero-learners.jpg.
+           If the file is missing we hide the <img> via onerror, leaving the wrapper's
+           background-color visible so the layout stays clean (no broken-image icon). -->
+      <div class="hero-img-col">
+        <div class="hero-img-wrap">
+          <img
+            src="/assets/hero-learners.jpg"
+            alt="Lernende beim Deutschlernen mit DeutschWeg"
+            class="hero-img"
+            loading="eager"
+            decoding="async"
+            onerror="this.style.display='none';"
+          >
         </div>
+      </div>
+      <!-- Removed: demo-question card (English placeholder). New design leads
+           with a belonging image; concrete feature points live in the
+           "Was dich bei DeutschWeg erwartet" section below. -->
+      <div style="display:none">
         <div class="hero-card">
           <div class="hc-chip">A2 · MODULE 5</div>
           <div class="hc-progress-row">
@@ -499,6 +547,34 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
           🎯 AI Exam Whisperer — Instant Scoring
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── WAS DICH BEI DEUTSCHWEG ERWARTET ── -->
+<section class="what-section">
+  <div class="wrap">
+    <h2 class="what-h">Was dich bei DeutschWeg erwartet</h2>
+    <div class="what-grid">
+      <div class="what-card">
+        <div class="what-icon">📚</div>
+        <div class="what-text">52 Module von A1 bis B2 — auf Deutsch, mit englischer Hilfe, wenn du sie brauchst</div>
+      </div>
+      <div class="what-card">
+        <div class="what-icon">📝</div>
+        <div class="what-text">Echte Übungsprüfungen im Goethe-Stil, die dich wirklich vorbereiten</div>
+      </div>
+      <div class="what-card">
+        <div class="what-icon">🤖</div>
+        <div class="what-text">Ein KI-Tutor, der weiß, wo du stehst, und mit dir übt</div>
+      </div>
+      <div class="what-card">
+        <div class="what-icon">🌍</div>
+        <div class="what-text">Beispiele, Namen und Situationen, die zu deinem Weg passen</div>
+      </div>
+    </div>
+    <div class="what-cta-wrap">
+      <a href="signup.html" class="btn-primary btn-large">Kostenlos mit A1 starten — keine Kreditkarte, kein Risiko</a>
     </div>
   </div>
 </section>
