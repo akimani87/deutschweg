@@ -68,6 +68,46 @@
   /* ── MAIN ── */
   .main{max-width:680px;margin:0 auto;padding:36px 24px 120px;}
 
+  /* ── WEITER LERNEN CARD ── */
+  .continue-card{
+    background:linear-gradient(135deg,#3B82F6 0%,#2563EB 100%);
+    border-radius:20px;
+    padding:24px 26px;
+    margin:0 0 28px;
+    box-shadow:0 10px 30px rgba(59,130,246,0.25);
+    color:#fff;
+    text-decoration:none;
+    display:flex;flex-direction:column;gap:18px;
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .continue-card:hover{transform:translateY(-2px);box-shadow:0 14px 38px rgba(59,130,246,0.32);}
+  .continue-eyebrow{
+    font-size:11px;font-weight:800;letter-spacing:2px;
+    color:rgba(255,255,255,0.85);text-transform:uppercase;
+    display:flex;align-items:center;gap:8px;
+  }
+  .continue-eyebrow::before{
+    content:'';width:6px;height:6px;border-radius:50%;
+    background:#fff;display:inline-block;box-shadow:0 0 0 3px rgba(255,255,255,0.25);
+  }
+  .continue-title{font-size:22px;font-weight:800;line-height:1.25;color:#fff;letter-spacing:-0.3px;}
+  .continue-meta{font-size:13px;color:rgba(255,255,255,0.8);}
+  .continue-cta{
+    display:inline-flex;align-items:center;gap:8px;
+    background:#fff;color:#1D4ED8;
+    padding:13px 22px;border-radius:50px;
+    font-size:14px;font-weight:800;letter-spacing:0.2px;
+    text-decoration:none;align-self:flex-start;
+    box-shadow:0 4px 14px rgba(0,0,0,0.12);
+    transition:background .18s, transform .18s;
+  }
+  .continue-cta:hover{background:#EFF6FF;transform:translateY(-1px);}
+  .continue-cta-arrow{font-size:16px;}
+  @media(max-width:480px){
+    .continue-card{padding:20px 20px;border-radius:18px;}
+    .continue-title{font-size:18px;}
+  }
+
   /* ── COURSE HEADER ── */
   .course-header{margin-bottom:32px;}
   .course-eyebrow{font-size:11px;font-weight:700;letter-spacing:2px;color:#3B82F6;margin-bottom:10px;text-transform:uppercase;}
@@ -351,6 +391,19 @@
     <h1 class="course-title">Your <span>Learning</span><br>Dashboard</h1>
     <p class="course-sub" id="dashSub">13 modules covering every topic on the Goethe A1 exam. All modules are unlocked — work through them in order for the best results.</p>
   </div>
+
+  <!-- WEITER LERNEN — primary continue card, populated from profiles.letzte_modul_slug -->
+  <a class="continue-card" id="continueCard" href="#" style="display:none;">
+    <div>
+      <div class="continue-eyebrow" id="continueEyebrow">Weiter lernen</div>
+      <div class="continue-title" id="continueTitle">Lade dein nächstes Modul …</div>
+      <div class="continue-meta" id="continueMeta"></div>
+    </div>
+    <span class="continue-cta">
+      <span id="continueCtaText">Weiter zu Modul</span>
+      <span class="continue-cta-arrow">→</span>
+    </span>
+  </a>
 
   <!-- LEVEL TABS -->
   <div class="level-tabs">
@@ -810,6 +863,58 @@
   // Shape: { [moduleId]: { completed: Set<lesson_id>, total: number } }
   var progressByMod = {};
 
+  // Mock-exam pages live at fixed URLs that the dynamic template can't render.
+  // Used by both the module list and the continue-card to build correct hrefs.
+  function moduleHref(m) {
+    var key = m.level + '-' + m.order_index;
+    return SPECIAL_HREFS[key] || ('./module.html?id=' + m.id);
+  }
+
+  function renderContinueCard(byId, byLevel, user) {
+    var card  = document.getElementById('continueCard');
+    if (!card) return;
+
+    var titleEl = document.getElementById('continueTitle');
+    var metaEl  = document.getElementById('continueMeta');
+    var ctaEl   = document.getElementById('continueCtaText');
+
+    function show(m) {
+      if (!m) { card.style.display = 'none'; return; }
+      card.href = moduleHref(m);
+      titleEl.textContent = m.title || 'Nächstes Modul';
+      metaEl.textContent  = m.level + ' · Modul ' + (m.order_index || '');
+      ctaEl.textContent   = 'Weiter zu Modul ' + (m.order_index || '');
+      card.style.display = '';
+    }
+
+    function firstA1() {
+      var a1 = byLevel.A1 || [];
+      return a1.length ? a1[0] : null;
+    }
+
+    if (!user) {
+      // Anonymous — no profile to read. Still surface a clear "start here" card.
+      show(firstA1());
+      return;
+    }
+
+    dwSupabase.from('profiles')
+      .select('letzte_modul_slug')
+      .eq('id', user.id)
+      .maybeSingle()
+      .then(function(res) {
+        if (res.error) {
+          console.warn('[dashboard] letzte_modul_slug fetch failed:', res.error.message);
+          show(firstA1());
+          return;
+        }
+        var slug = res.data && res.data.letzte_modul_slug;
+        var m = (slug && byId[slug]) ? byId[slug] : firstA1();
+        show(m);
+      })
+      .catch(function() { show(firstA1()); });
+  }
+
   lists.forEach(renderLoading);
 
   (function loadAll() {
@@ -867,8 +972,10 @@
           console.log('[dashboard] progress loaded: ' + modIds.length + ' modules, ' + withProgress + ' with at least one completed lesson');
         }
         var byLevel = { A1: [], A2: [], B1: [], B2: [] };
+        var byId = {};
         (modRes.data || []).forEach(function(m) {
           if (byLevel[m.level]) byLevel[m.level].push(m);
+          byId[m.id] = m;
         });
         lists.forEach(function(el) {
           var level = el.getAttribute('data-level');
@@ -876,6 +983,12 @@
           if (items.length === 0) { renderEmpty(el, level); return; }
           el.innerHTML = renderItems(level, items);
         });
+
+        // ── "Weiter lernen" card — uses profiles.letzte_modul_slug.
+        //    Anonymous visitors don't see it; signed-in users without a
+        //    saved slug fall back to the first A1 module so the dashboard
+        //    always has a clear next step.
+        renderContinueCard(byId, byLevel, user);
       });
     }).catch(function(e) {
       console.error('[dashboard] modules fetch threw:', e);
@@ -940,8 +1053,26 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   */
 
-  // Pass-through: open access while auth is disabled
-  initDashboard();
+  // Onboarding gate — for logged-in users only. Anonymous visitors keep
+  // their open access (auth is otherwise disabled). New users whose profile
+  // has onboarding_completed=false get redirected to /onboarding once.
+  (function onboardingGate() {
+    if (typeof dwSupabase === 'undefined') { initDashboard(); return; }
+    dwSupabase.auth.getUser().then(function(authRes) {
+      var user = authRes && authRes.data && authRes.data.user;
+      if (!user) { initDashboard(); return; }
+      dwSupabase.from('profiles')
+        .select('onboarding_completed')
+        .eq('id', user.id)
+        .maybeSingle()
+        .then(function(res) {
+          var done = res && res.data && res.data.onboarding_completed === true;
+          if (!done) { window.location.href = 'onboarding.html'; return; }
+          initDashboard();
+        })
+        .catch(function() { initDashboard(); });
+    }).catch(function() { initDashboard(); });
+  })();
 
   function initDashboard() {
   document.body.classList.add('ready');

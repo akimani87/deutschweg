@@ -332,10 +332,21 @@ document.addEventListener('DOMContentLoaded', function() {
   var successV = document.getElementById('successView');
   var pwToggle = document.getElementById('pwToggle');
 
-  // If already logged in, go straight to dashboard
+  // If already logged in, route through the onboarding gate.
   dwSupabase.auth.getSession().then(function(res) {
     if (res.data && res.data.session) {
-      window.location.href = 'dashboard.html';
+      var uid = res.data.session.user.id;
+      dwSupabase.from('profiles')
+        .select('onboarding_completed')
+        .eq('id', uid)
+        .maybeSingle()
+        .then(function(p) {
+          var done = p && p.data && p.data.onboarding_completed === true;
+          window.location.href = done ? 'dashboard.html' : 'onboarding.html';
+        })
+        .catch(function() {
+          window.location.href = 'dashboard.html';
+        });
     }
   });
 

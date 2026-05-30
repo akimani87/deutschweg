@@ -897,8 +897,63 @@
             if (r.error) console.error('[progress] +50 XP module bonus FAILED', r.error);
             else         console.log('[progress] 🎉 Module complete — +50 XP, total=' + r.data);
           });
+          advanceLetzteModulSlug();
         });
       });
+  }
+
+  // After a module is completed, point profiles.letzte_modul_slug at the
+  // *next* module in sequence so the dashboard's "Weiter lernen" card
+  // advances. Walks: same level → next order_index; if none, first module
+  // of the next CEFR level. Failures degrade silently — the dashboard's
+  // fallback (first A1) keeps the card sensible either way.
+  function advanceLetzteModulSlug() {
+    if (!state.user || !state.module) return;
+    var cur = state.module;
+
+    dwSupabase.from('modules')
+      .select('id, level, order_index')
+      .eq('level', cur.level)
+      .eq('is_published', true)
+      .gt('order_index', cur.order_index)
+      .order('order_index', { ascending: true })
+      .limit(1)
+      .maybeSingle()
+      .then(function(res) {
+        if (res && res.data) {
+          writeLetzteModulSlug(res.data.id);
+          return;
+        }
+        // No next module in this level — try the first of the next level.
+        var LEVELS = ['A1', 'A2', 'B1', 'B2'];
+        var idx = LEVELS.indexOf(cur.level);
+        if (idx === -1 || idx === LEVELS.length - 1) return; // top of the ladder
+        var nextLevel = LEVELS[idx + 1];
+
+        dwSupabase.from('modules')
+          .select('id')
+          .eq('level', nextLevel)
+          .eq('is_published', true)
+          .order('order_index', { ascending: true })
+          .limit(1)
+          .maybeSingle()
+          .then(function(r2) {
+            if (r2 && r2.data) writeLetzteModulSlug(r2.data.id);
+          })
+          .catch(function(){});
+      })
+      .catch(function(){});
+  }
+
+  function writeLetzteModulSlug(nextId) {
+    dwSupabase.from('profiles')
+      .update({ letzte_modul_slug: nextId })
+      .eq('id', state.user.id)
+      .then(function(r) {
+        if (r.error) console.warn('[progress] letzte_modul_slug update failed:', r.error.message);
+        else         console.log('[progress] ➡ letzte_modul_slug → ' + nextId);
+      })
+      .catch(function(){});
   }
 
   // ── Public handlers ─────────────────────────────────────────────────────

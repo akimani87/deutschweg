@@ -281,12 +281,29 @@ document.addEventListener('DOMContentLoaded', function() {
   if (isRecoveryFlow) {
     showResetForm();
   } else {
-    // Normal flow: if already logged in, go straight to dashboard.
+    // Normal flow: if already logged in, route through onboarding gate.
     dwSupabase.auth.getSession().then(function(res) {
       if (res.data && res.data.session) {
-        window.location.href = 'dashboard.html';
+        routeAfterAuth(res.data.session.user.id);
       }
     });
+  }
+
+  // Routing gate: send users who haven't finished onboarding to /onboarding,
+  // everyone else to /dashboard. Bestehende Routen bleiben intakt — wenn die
+  // Profil-Abfrage scheitert, gehen wir konservativ zum Dashboard.
+  function routeAfterAuth(userId) {
+    dwSupabase.from('profiles')
+      .select('onboarding_completed')
+      .eq('id', userId)
+      .maybeSingle()
+      .then(function(res) {
+        var done = res && res.data && res.data.onboarding_completed === true;
+        window.location.href = done ? 'dashboard.html' : 'onboarding.html';
+      })
+      .catch(function() {
+        window.location.href = 'dashboard.html';
+      });
   }
 
   var emailI   = document.getElementById('email');
@@ -439,7 +456,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Successful login — check trial
         var meta = res.data.user.user_metadata || {};
         localStorage.setItem('dw_user_name', (meta.full_name || '').split(' ')[0] || 'Student');
-        window.location.href = 'dashboard.html';
+        routeAfterAuth(res.data.user.id);
       })
       .catch(function() {
         setLoading(false);

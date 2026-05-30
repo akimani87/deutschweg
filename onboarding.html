@@ -1,218 +1,226 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
 <!-- DW SEO INJECT -->
-<meta name="title" content="DeutschWeg — Let's personalise your plan">
-<meta name="description" content="Prepare for your Goethe German exam with AI-powered lessons. A1, A2, B1, B2 — built for African learners. Start free today.">
-<meta name="keywords" content="Goethe exam, German exam Africa, learn German Kenya, Goethe A1 B1, German certificate, Ausbildung German, family reunification German">
-<meta name="robots" content="index, follow">
-<meta name="language" content="English">
+<meta name="title" content="DeutschWeg — Willkommen">
+<meta name="description" content="Dein geführter Einstieg in DeutschWeg. In unter 2 Minuten zur ersten Lektion — Schritt für Schritt.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="language" content="German">
 <meta name="author" content="DeutschWeg">
 <link rel="canonical" href="https://deutschweg.de/onboarding">
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://deutschweg.de/onboarding">
-<meta property="og:title" content="DeutschWeg — Let's personalise your plan">
-<meta property="og:description" content="Prepare for your Goethe German exam with AI-powered lessons. A1, A2, B1, B2 — built for African learners. Start free today.">
+<meta property="og:title" content="DeutschWeg — Willkommen">
+<meta property="og:description" content="Dein geführter Einstieg in DeutschWeg.">
 <meta property="og:image" content="https://deutschweg.de/og-image.png">
-
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="DeutschWeg — Let's personalise your plan">
-<meta name="twitter:description" content="AI-powered German exam prep for African learners. A1 to B2. Start free.">
-<meta name="twitter:image" content="https://deutschweg.de/og-image.png">
 <!-- /DW SEO INJECT -->
-<title>DeutschWeg — Let's personalise your plan</title>
+<title>DeutschWeg — Willkommen</title>
 <link rel="stylesheet" href="deutschweg-theme.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
 <style>
-  body { min-height: 100vh; display: flex; flex-direction: column; }
+  body{
+    min-height:100vh;
+    background:var(--bg);
+    color:var(--dark);
+    opacity:0;
+    transition:opacity .25s ease;
+    display:flex;flex-direction:column;
+  }
+  body.ready{opacity:1;}
 
   /* ── HEADER ── */
-  .ob-header {
-    padding: 20px 28px;
-    border-bottom: 1px solid var(--border);
-    background: white;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
+  .ob-header{
+    padding:18px 24px;
+    background:#fff;
+    border-bottom:1px solid var(--border);
+    display:flex;align-items:center;justify-content:space-between;
+    flex-shrink:0;
   }
-  .ob-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-  .ob-logo-icon { width: 30px; height: 30px; background: var(--blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 15px; font-weight: 800; }
-  .ob-logo-text { font-size: 16px; font-weight: 800; color: var(--dark); }
-  .ob-logo-text span { color: var(--blue); }
-  .ob-step-label { font-size: 12px; font-weight: 600; color: var(--light); }
+  .ob-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+  .ob-logo-icon{
+    width:32px;height:32px;background:var(--blue);
+    border-radius:9px;display:flex;align-items:center;justify-content:center;
+    color:#fff;font-size:16px;font-weight:800;
+  }
+  .ob-logo-text{font-size:17px;font-weight:800;color:var(--dark);letter-spacing:-0.3px;}
+  .ob-logo-text span{color:var(--blue);}
+  .ob-step-pill{
+    font-size:11px;font-weight:700;letter-spacing:1.2px;
+    color:var(--blue);text-transform:uppercase;
+    background:var(--blue-light);border:1px solid var(--blue-mid);
+    padding:5px 12px;border-radius:20px;
+  }
 
   /* ── PROGRESS BAR ── */
-  .ob-progress { height: 4px; background: var(--border); position: relative; }
-  .ob-progress-fill { height: 100%; background: var(--blue); transition: width 0.4s ease; }
+  .ob-progress{height:3px;background:var(--border);position:relative;flex-shrink:0;}
+  .ob-progress-fill{
+    height:100%;background:var(--blue);
+    transition:width .4s ease;width:25%;
+  }
 
   /* ── MAIN ── */
-  .ob-main {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 48px 24px 100px;
+  .ob-main{
+    flex:1;display:flex;align-items:flex-start;justify-content:center;
+    padding:40px 20px 120px;
   }
-  .ob-card {
-    width: 100%;
-    max-width: 600px;
+  .card{
+    width:100%;max-width:520px;
+    background:#fff;border:1px solid var(--border);
+    border-radius:var(--radius-lg);box-shadow:var(--shadow-md);
+    padding:36px 28px;
   }
-  .ob-eyebrow {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--blue);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 12px;
+  .ob-eyebrow{
+    font-size:11px;font-weight:700;color:var(--blue);
+    text-transform:uppercase;letter-spacing:2px;margin-bottom:12px;
   }
-  .ob-question {
-    font-size: 28px;
-    font-weight: 800;
-    color: var(--dark);
-    line-height: 1.25;
-    margin-bottom: 32px;
-    letter-spacing: -0.3px;
+  .ob-h1{
+    font-size:26px;font-weight:800;color:var(--dark);
+    line-height:1.25;letter-spacing:-0.4px;margin-bottom:14px;
   }
-  .ob-hint {
-    font-size: 13px;
-    color: var(--light);
-    margin-bottom: 16px;
-    font-style: italic;
+  .ob-lead{
+    font-size:15px;color:var(--mid);line-height:1.65;margin-bottom:24px;
   }
 
-  /* ── OPTION CARDS ── */
-  .ob-options { display: flex; flex-direction: column; gap: 12px; }
-  .ob-option {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 18px 20px;
-    background: white;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    transition: all 0.18s;
-    user-select: none;
+  /* ── BUTTONS ── */
+  .btn{
+    font-family:'Plus Jakarta Sans',sans-serif;
+    padding:14px 22px;border-radius:var(--radius-sm);
+    font-size:15px;font-weight:700;
+    border:none;cursor:pointer;text-decoration:none;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    transition:all .18s ease;width:100%;
   }
-  .ob-option:hover { border-color: var(--blue); background: var(--blue-light); }
-  .ob-option.selected {
-    border-color: var(--blue);
-    background: var(--blue-light);
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+  .btn-primary{
+    background:var(--blue);color:#fff;
+    box-shadow:0 4px 14px rgba(59,130,246,0.3);
   }
-  .ob-option-icon {
-    width: 40px; height: 40px;
-    border-radius: 10px;
-    background: var(--bg);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 20px;
-    flex-shrink: 0;
-    border: 1px solid var(--border);
-    transition: background 0.18s;
-  }
-  .ob-option.selected .ob-option-icon { background: white; }
-  .ob-option-text { flex: 1; }
-  .ob-option-main { font-size: 15px; font-weight: 700; color: var(--dark); }
-  .ob-option-sub { font-size: 12px; color: var(--light); margin-top: 2px; }
-  .ob-option-check {
-    width: 22px; height: 22px;
-    border-radius: 50%;
-    border: 2px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px;
-    color: white;
-    flex-shrink: 0;
-    transition: all 0.18s;
-  }
-  .ob-option.selected .ob-option-check {
-    background: var(--blue);
-    border-color: var(--blue);
-  }
-  .ob-option.selected .ob-option-check::after { content: '✓'; }
+  .btn-primary:hover{background:var(--blue-dark);transform:translateY(-1px);}
+  .btn-primary:disabled{opacity:0.45;cursor:default;box-shadow:none;transform:none;}
 
-  /* ── FOOTER NAV ── */
-  .ob-footer {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: white;
-    border-top: 1px solid var(--border);
-    padding: 16px 28px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 -4px 16px rgba(0,0,0,0.05);
-    z-index: 50;
+  .btn-ghost{
+    background:transparent;color:var(--mid);border:1.5px solid var(--border);
   }
-  .ob-back-btn {
-    background: none;
-    border: 1.5px solid var(--border);
-    color: var(--mid);
-    padding: 10px 22px;
-    border-radius: var(--radius-sm);
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.18s;
-  }
-  .ob-back-btn:hover { border-color: var(--mid); }
-  .ob-back-btn:disabled { opacity: 0.3; cursor: default; }
-  .ob-next-btn {
-    background: var(--blue);
-    color: white;
-    border: none;
-    padding: 12px 28px;
-    border-radius: var(--radius-sm);
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.18s;
-    box-shadow: 0 3px 10px rgba(59,130,246,0.3);
-  }
-  .ob-next-btn:hover:not(:disabled) { background: var(--blue-dark); transform: translateY(-1px); }
-  .ob-next-btn:disabled { background: var(--border); color: var(--light); box-shadow: none; cursor: default; }
+  .btn-ghost:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light);}
 
-  /* ── SUMMARY SCREEN ── */
-  .ob-summary { text-align: center; }
-  .ob-confetti { font-size: 56px; margin-bottom: 20px; animation: pop 0.6s cubic-bezier(0.175,0.885,0.32,1.275) both; }
-  .ob-sum-title { font-size: 30px; font-weight: 800; color: var(--dark); margin-bottom: 10px; }
-  .ob-sum-sub { font-size: 15px; color: var(--mid); margin-bottom: 32px; line-height: 1.6; }
-  .ob-sum-items { display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; text-align: left; }
-  .ob-sum-row {
-    display: flex; align-items: center; gap: 12px;
-    background: white; border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 14px 16px;
+  /* ── LERNZIEL OPTIONS ── */
+  .goal-list{display:flex;flex-direction:column;gap:10px;margin-bottom:18px;}
+  .goal-btn{
+    display:flex;align-items:center;gap:14px;
+    padding:16px 18px;background:#fff;text-align:left;
+    border:1.5px solid var(--border);border-radius:var(--radius-md);
+    font-family:'Plus Jakarta Sans',sans-serif;
+    font-size:15px;font-weight:600;color:var(--dark);
+    cursor:pointer;transition:all .15s ease;width:100%;
   }
-  .ob-sum-icon { font-size: 20px; flex-shrink: 0; }
-  .ob-sum-key { font-size: 11px; font-weight: 700; color: var(--light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
-  .ob-sum-val { font-size: 14px; font-weight: 700; color: var(--dark); }
-  .ob-start-btn {
-    display: block; width: 100%;
-    background: var(--blue); color: white;
-    border: none; padding: 16px;
-    border-radius: var(--radius-sm);
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 16px; font-weight: 800;
-    cursor: pointer;
-    box-shadow: 0 4px 16px rgba(59,130,246,0.35);
-    transition: all 0.18s;
-    text-decoration: none;
-    text-align: center;
+  .goal-btn:hover{border-color:var(--blue);background:var(--blue-light);}
+  .goal-btn:disabled{opacity:0.55;cursor:default;}
+  .goal-icon{
+    width:38px;height:38px;border-radius:10px;
+    background:var(--bg);border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;
+    font-size:18px;flex-shrink:0;
   }
-  .ob-start-btn:hover { background: var(--blue-dark); transform: translateY(-1px); }
+  .goal-label{flex:1;line-height:1.35;}
 
-  @keyframes pop { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+  .skip-link{
+    display:block;text-align:center;margin-top:14px;
+    font-size:13px;color:var(--light);
+    text-decoration:underline;text-underline-offset:3px;
+    background:none;border:none;cursor:pointer;
+    font-family:inherit;width:100%;padding:8px;
+  }
+  .skip-link:hover{color:var(--mid);}
+
+  /* ── MINI-LEKTION ── */
+  .speak-list{display:flex;flex-direction:column;gap:10px;margin:6px 0 24px;}
+  .speak-btn{
+    display:flex;align-items:center;gap:14px;
+    padding:16px 18px;background:#fff;text-align:left;
+    border:1.5px solid var(--border);border-radius:var(--radius-md);
+    font-family:'Plus Jakarta Sans',sans-serif;color:var(--dark);
+    cursor:pointer;transition:all .15s ease;width:100%;
+  }
+  .speak-btn:hover{border-color:var(--blue);background:var(--blue-light);}
+  .speak-btn.speaking{border-color:var(--blue);background:var(--blue-light);box-shadow:0 0 0 3px rgba(59,130,246,0.15);}
+  .speak-icon{
+    width:42px;height:42px;border-radius:50%;
+    background:var(--blue);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:18px;flex-shrink:0;
+  }
+  .speak-de{font-size:17px;font-weight:800;color:var(--dark);line-height:1.2;}
+  .speak-meta{font-size:12px;color:var(--light);margin-top:2px;}
+
+  .qz-question{
+    margin-top:6px;padding:18px;
+    background:var(--blue-light);border:1px solid var(--blue-mid);
+    border-radius:var(--radius-md);
+  }
+  .qz-q{font-size:15px;font-weight:700;color:var(--dark);margin-bottom:14px;line-height:1.4;}
+  .qz-opts{display:flex;flex-direction:column;gap:8px;}
+  .qz-opt{
+    padding:13px 16px;background:#fff;
+    border:1.5px solid var(--border);border-radius:var(--radius-sm);
+    font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;
+    color:var(--dark);cursor:pointer;text-align:left;
+    transition:all .15s ease;
+  }
+  .qz-opt:hover:not(:disabled){border-color:var(--blue);background:var(--blue-light);}
+  .qz-opt:disabled{cursor:default;}
+  .qz-opt.correct{border-color:var(--green);background:var(--green-light);color:#065f46;}
+  .qz-opt.wrong{border-color:var(--red);background:var(--red-light);color:#991b1b;}
+
+  .qz-feedback{
+    margin-top:12px;padding:13px 16px;
+    border-radius:var(--radius-sm);
+    font-size:13.5px;line-height:1.6;display:none;
+  }
+  .qz-feedback.show{display:block;}
+  .qz-feedback.ok{background:var(--green-light);border:1px solid var(--green-border);color:#065f46;}
+  .qz-feedback.no{background:#FFFBEB;border:1px solid #FDE68A;color:#92400E;}
+
+  /* ── ERFOLG SCREEN ── */
+  .success-icon{
+    width:80px;height:80px;border-radius:50%;
+    background:var(--green-light);border:2px solid var(--green-border);
+    display:flex;align-items:center;justify-content:center;
+    font-size:38px;margin:0 auto 18px;
+    animation:pop .6s cubic-bezier(0.175,0.885,0.32,1.275) both;
+  }
+  .success-progress{
+    background:var(--bg);border:1px solid var(--border);
+    border-radius:var(--radius-md);padding:16px 18px;margin:18px 0 24px;
+  }
+  .success-prog-label{font-size:12px;font-weight:700;color:var(--light);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px;}
+  .success-prog-val{font-size:18px;font-weight:800;color:var(--dark);margin-bottom:10px;}
+  .success-bar{height:8px;background:var(--border);border-radius:5px;overflow:hidden;}
+  .success-bar-fill{height:100%;background:var(--blue);border-radius:5px;width:7.6%;transition:width .8s ease;}
+
+  /* ── SCREEN TRANSITIONS ── */
+  .screen{display:none;animation:fadeUp .4s ease both;}
+  .screen.active{display:block;}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes pop{from{opacity:0;transform:scale(0.5)}to{opacity:1;transform:scale(1)}}
+
+  .ob-status{
+    font-size:12px;color:var(--light);text-align:center;
+    margin-top:14px;min-height:1.2em;
+  }
 
   /* ── MOBILE ── */
-  @media (max-width: 480px) {
-    .ob-question { font-size: 22px; }
-    .ob-main { padding: 32px 16px 100px; }
-    .ob-footer { padding: 14px 20px; }
+  @media(max-width:480px){
+    .ob-header{padding:14px 18px;}
+    .ob-main{padding:24px 14px 100px;}
+    .card{padding:28px 20px;border-radius:var(--radius-md);}
+    .ob-h1{font-size:22px;}
+    .ob-lead{font-size:14px;}
+    .speak-de{font-size:16px;}
   }
 </style>
 </head>
@@ -223,189 +231,329 @@
     <div class="ob-logo-icon">D</div>
     <span class="ob-logo-text">Deutsch<span>Weg</span></span>
   </a>
-  <span class="ob-step-label" id="stepLabel">Step 1 of 4</span>
+  <span class="ob-step-pill" id="stepPill">Schritt 1 von 4</span>
 </header>
 
-<div class="ob-progress">
-  <div class="ob-progress-fill" id="progressFill" style="width:25%"></div>
-</div>
+<div class="ob-progress"><div class="ob-progress-fill" id="progressFill"></div></div>
 
-<main class="ob-main" id="obMain">
-  <!-- Populated by JS -->
+<main class="ob-main">
+  <div class="card">
+
+    <!-- ── SCREEN 1 — WILLKOMMEN ── -->
+    <section class="screen active" id="screen-1">
+      <div class="ob-eyebrow">Willkommen</div>
+      <h1 class="ob-h1">Du hast den schwersten Schritt schon geschafft.</h1>
+      <p class="ob-lead">Den Mut, neu anzufangen. Die Sprache schaffst du auch — wir gehen den Weg mit dir, Schritt für Schritt.</p>
+      <button class="btn btn-primary" onclick="goToScreen(2)">Los geht's</button>
+    </section>
+
+    <!-- ── SCREEN 2 — LERNZIEL ── -->
+    <section class="screen" id="screen-2">
+      <div class="ob-eyebrow">Dein Lernziel</div>
+      <h1 class="ob-h1">Warum lernst du Deutsch?</h1>
+      <p class="ob-lead">Eine kurze Frage — so zeigen wir dir den richtigen Weg.</p>
+
+      <div class="goal-list" id="goalList">
+        <button class="goal-btn" data-goal="goethe" onclick="pickGoal('goethe')">
+          <span class="goal-icon">🏅</span>
+          <span class="goal-label">Für die Goethe-Prüfung</span>
+        </button>
+        <button class="goal-btn" data-goal="familie" onclick="pickGoal('familie')">
+          <span class="goal-icon">👨‍👩‍👧</span>
+          <span class="goal-label">Für den Familiennachzug</span>
+        </button>
+        <button class="goal-btn" data-goal="beruf" onclick="pickGoal('beruf')">
+          <span class="goal-icon">💼</span>
+          <span class="goal-label">Für Ausbildung oder Beruf</span>
+        </button>
+        <button class="goal-btn" data-goal="selbst" onclick="pickGoal('selbst')">
+          <span class="goal-icon">✨</span>
+          <span class="goal-label">Einfach für mich</span>
+        </button>
+      </div>
+
+      <button class="skip-link" onclick="pickGoal(null)">Überspringen</button>
+      <div class="ob-status" id="status-2"></div>
+    </section>
+
+    <!-- ── SCREEN 3 — MINI-LEKTION ── -->
+    <section class="screen" id="screen-3">
+      <div class="ob-eyebrow">Mini-Lektion</div>
+      <h1 class="ob-h1">Deine erste Lektion: Begrüßung</h1>
+      <p class="ob-lead">Tippe auf jedes Wort, um es zu hören.</p>
+
+      <div class="speak-list">
+        <button class="speak-btn" onclick="speakCard(this,'Guten Tag')">
+          <span class="speak-icon">🔊</span>
+          <span>
+            <div class="speak-de">Guten Tag</div>
+            <div class="speak-meta">höflich, formell</div>
+          </span>
+        </button>
+        <button class="speak-btn" onclick="speakCard(this,'Hallo')">
+          <span class="speak-icon">🔊</span>
+          <span>
+            <div class="speak-de">Hallo</div>
+            <div class="speak-meta">locker, informell</div>
+          </span>
+        </button>
+        <button class="speak-btn" onclick="speakCard(this,'Auf Wiedersehen')">
+          <span class="speak-icon">🔊</span>
+          <span>
+            <div class="speak-de">Auf Wiedersehen</div>
+            <div class="speak-meta">Abschied</div>
+          </span>
+        </button>
+      </div>
+
+      <div class="qz-question">
+        <div class="qz-q">Du triffst eine Prüferin zum ersten Mal. Was sagst du?</div>
+        <div class="qz-opts" id="qzOpts">
+          <button class="qz-opt" data-ans="hallo"   onclick="answerQuiz(this,'hallo')">Hallo</button>
+          <button class="qz-opt" data-ans="guten"   onclick="answerQuiz(this,'guten')">Guten Tag</button>
+          <button class="qz-opt" data-ans="tschuess" onclick="answerQuiz(this,'tschuess')">Tschüss</button>
+        </div>
+        <div class="qz-feedback" id="qzFb"></div>
+      </div>
+
+      <button class="btn btn-primary" id="screen3Next" onclick="finishOnboarding()" disabled style="margin-top:22px;">Weiter</button>
+    </section>
+
+    <!-- ── SCREEN 4 — ERFOLG ── -->
+    <section class="screen" id="screen-4">
+      <div class="success-icon">🎉</div>
+      <div class="ob-eyebrow" style="text-align:center;">Geschafft!</div>
+      <h1 class="ob-h1" style="text-align:center;">Geschafft!</h1>
+      <p class="ob-lead" style="text-align:center;">Du hast deine erste Lektion abgeschlossen und weißt schon, wie man sich höflich begrüßt. Genau so bestehst du die Prüfung — Schritt für Schritt, nicht alles auf einmal.</p>
+
+      <div class="success-progress">
+        <div class="success-prog-label">Dein Fortschritt</div>
+        <div class="success-prog-val">1 von 13 Modulen (A1)</div>
+        <div class="success-bar"><div class="success-bar-fill"></div></div>
+      </div>
+
+      <a class="btn btn-primary" id="goModuleBtn" href="dashboard.html">Weiter zu Modul 1</a>
+      <div class="ob-status" id="status-4"></div>
+    </section>
+
+  </div>
 </main>
 
-<footer class="ob-footer" id="obFooter">
-  <button class="ob-back-btn" id="backBtn" onclick="goBack()" disabled>← Back</button>
-  <button class="ob-next-btn" id="nextBtn" onclick="goNext()" disabled>Next →</button>
-</footer>
-
 <script>
-var steps = [
-  {
-    eyebrow: 'Step 1 of 4 · Your Level',
-    question: 'What is your current German level?',
-    type: 'single',
-    key: 'level',
-    options: [
-      { icon: '🌱', main: 'Complete beginner', sub: 'Never studied German before', value: 'beginner' },
-      { icon: '📖', main: 'Some basics', sub: 'I know a little — A1 level', value: 'a1' },
-      { icon: '📗', main: 'Elementary', sub: 'I have A2 level German', value: 'a2' },
-      { icon: '🎯', main: 'Intermediate', sub: 'I am around B1 level', value: 'b1' },
-    ]
-  },
-  {
-    eyebrow: 'Step 2 of 4 · Your Goal',
-    question: 'Which Goethe exam are you preparing for?',
-    type: 'single',
-    key: 'exam',
-    options: [
-      { icon: '🏅', main: 'Goethe A1', sub: 'Start Deutsch 1 — Basic communication', value: 'A1' },
-      { icon: '🥈', main: 'Goethe A2', sub: 'Fit in Deutsch — Elementary level', value: 'A2' },
-      { icon: '🥇', main: 'Goethe B1', sub: 'Zertifikat B1 — Independent level', value: 'B1' },
-      { icon: '❓', main: 'Not sure yet', sub: 'Help me figure it out', value: 'unsure' },
-    ]
-  },
-  {
-    eyebrow: 'Step 3 of 4 · Your Struggles',
-    question: 'What do you find hardest about German?',
-    hint: 'Select all that apply',
-    type: 'multi',
-    key: 'struggles',
-    options: [
-      { icon: '📝', main: 'Grammar rules', sub: 'Cases, articles, word order', value: 'grammar' },
-      { icon: '✍️', main: 'Writing (Schreiben)', sub: 'Emails, letters, formal text', value: 'writing' },
-      { icon: '🎤', main: 'Speaking (Sprechen)', sub: 'Expressing ideas out loud', value: 'speaking' },
-      { icon: '🎧', main: 'Listening (Hören)', sub: 'Understanding spoken German', value: 'listening' },
-      { icon: '📖', main: 'Reading (Lesen)', sub: 'Understanding written texts', value: 'reading' },
-      { icon: '🧠', main: 'Remembering vocabulary', sub: 'New words don\'t stick', value: 'vocab' },
-    ]
-  },
-  {
-    eyebrow: 'Step 4 of 4 · Your Time',
-    question: 'How much time can you study per day?',
-    type: 'single',
-    key: 'time',
-    options: [
-      { icon: '⚡', main: '10 minutes', sub: 'Quick daily sessions', value: '10min' },
-      { icon: '⏱️', main: '20–30 minutes', sub: 'A solid daily habit', value: '30min' },
-      { icon: '📚', main: '45–60 minutes', sub: 'Committed daily study', value: '60min' },
-      { icon: '🔥', main: 'More than 1 hour', sub: 'Intensive preparation', value: '1hr+' },
-    ]
+(function() {
+  'use strict';
+
+  // ── State ─────────────────────────────────────────────────────────────────
+  var currentScreen = 1;
+  var quizAnsweredCorrectly = false;
+  var firstA1ModuleId = null;
+  var profileWritten = false;
+
+  // ── Auth gate — onboarding requires a signed-in user. If somehow we land
+  //    here anonymously, push back to signup. (Memory-only fallback otherwise.)
+  function ensureSignedIn(then) {
+    if (typeof dwSupabase === 'undefined') { then(null); return; }
+    dwSupabase.auth.getUser().then(function(res) {
+      var user = res && res.data && res.data.user;
+      if (!user) {
+        // Not signed in — bounce to signup.
+        window.location.href = 'signup.html';
+        return;
+      }
+      then(user);
+    }).catch(function() { then(null); });
   }
-];
 
-var currentStep = 0;
-var answers = {};
+  // ── Speech ───────────────────────────────────────────────────────────────
+  var synth = window.speechSynthesis;
+  var deVoice = null;
+  var speechUnlocked = false;
 
-function render() {
-  var step = steps[currentStep];
-  var selected = answers[step.key] || (step.type === 'multi' ? [] : null);
-
-  // Update progress
-  var pct = ((currentStep + 1) / steps.length * 100).toFixed(0);
-  document.getElementById('progressFill').style.width = pct + '%';
-  document.getElementById('stepLabel').textContent = 'Step ' + (currentStep + 1) + ' of ' + steps.length;
-
-  // Build options HTML
-  var optsHtml = step.options.map(function(opt) {
-    var isSel = step.type === 'multi'
-      ? selected.indexOf(opt.value) !== -1
-      : selected === opt.value;
-    return '<div class="ob-option' + (isSel ? ' selected' : '') + '" onclick="selectOption(\'' + opt.value + '\')">'
-      + '<div class="ob-option-icon">' + opt.icon + '</div>'
-      + '<div class="ob-option-text">'
-      + '<div class="ob-option-main">' + opt.main + '</div>'
-      + (opt.sub ? '<div class="ob-option-sub">' + opt.sub + '</div>' : '')
-      + '</div>'
-      + '<div class="ob-option-check"></div>'
-      + '</div>';
-  }).join('');
-
-  document.getElementById('obMain').innerHTML =
-    '<div class="ob-card">'
-    + '<div class="ob-eyebrow">' + step.eyebrow + '</div>'
-    + '<div class="ob-question">' + step.question + '</div>'
-    + (step.hint ? '<div class="ob-hint">' + step.hint + '</div>' : '')
-    + '<div class="ob-options">' + optsHtml + '</div>'
-    + '</div>';
-
-  // Footer buttons
-  document.getElementById('backBtn').disabled = currentStep === 0;
-  updateNextBtn();
-}
-
-function updateNextBtn() {
-  var step = steps[currentStep];
-  var selected = answers[step.key];
-  var hasAnswer = step.type === 'multi'
-    ? (selected && selected.length > 0)
-    : !!selected;
-  document.getElementById('nextBtn').disabled = !hasAnswer;
-}
-
-function selectOption(value) {
-  var step = steps[currentStep];
-  if (step.type === 'multi') {
-    var arr = answers[step.key] || [];
-    var idx = arr.indexOf(value);
-    if (idx === -1) { arr.push(value); } else { arr.splice(idx, 1); }
-    answers[step.key] = arr;
-  } else {
-    answers[step.key] = value;
+  function loadVoices() {
+    if (!synth) return;
+    try {
+      var voices = synth.getVoices() || [];
+      deVoice = voices.find(function(v){ return /^de(-|_)/i.test(v.lang); })
+             || voices.find(function(v){ return /^de/i.test(v.lang); })
+             || null;
+    } catch(e) {}
   }
-  render();
-}
-
-function goNext() {
-  if (currentStep < steps.length - 1) {
-    currentStep++;
-    render();
-  } else {
-    showSummary();
+  if (synth) {
+    try {
+      loadVoices();
+      if (synth.onvoiceschanged !== undefined) synth.onvoiceschanged = loadVoices;
+    } catch(e) {}
   }
-}
-
-function goBack() {
-  if (currentStep > 0) {
-    currentStep--;
-    render();
+  function unlockSpeech() {
+    if (speechUnlocked || !synth) return;
+    try {
+      var silent = new SpeechSynthesisUtterance('');
+      silent.volume = 0;
+      synth.speak(silent);
+      speechUnlocked = true;
+    } catch(e) {}
   }
-}
+  document.addEventListener('touchstart', unlockSpeech, { once: true, passive: true });
+  document.addEventListener('click',      unlockSpeech, { once: true });
 
-function showSummary() {
-  // Save to localStorage
-  localStorage.setItem('dw_onboarding', JSON.stringify(answers));
-  localStorage.setItem('dw_onboarding_done', '1');
+  function speakDE(text) {
+    if (!synth) return null;
+    try {
+      if (!deVoice) loadVoices();
+      synth.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = 'de-DE'; u.rate = 0.85; u.pitch = 1.0; u.volume = 1.0;
+      if (deVoice) u.voice = deVoice;
+      synth.speak(u);
+      return u;
+    } catch(e) { return null; }
+  }
 
-  // Level display
-  var levelMap = { beginner: 'Complete beginner', a1: 'Some basics (A1)', a2: 'Elementary (A2)', b1: 'Intermediate (B1)' };
-  var examMap  = { A1: 'Goethe A1 — Start Deutsch 1', A2: 'Goethe A2 — Fit in Deutsch', B1: 'Goethe B1 — Zertifikat B1', unsure: 'Not sure yet' };
-  var timeMap  = { '10min': '10 minutes/day', '30min': '20–30 minutes/day', '60min': '45–60 minutes/day', '1hr+': 'More than 1 hour/day' };
-  var struggles = (answers.struggles || []).map(function(s) {
-    return { grammar: 'Grammar', writing: 'Writing', speaking: 'Speaking', listening: 'Listening', reading: 'Reading', vocab: 'Vocabulary' }[s];
-  }).join(', ') || '—';
+  window.speakCard = function(btn, text) {
+    unlockSpeech();
+    document.querySelectorAll('.speak-btn').forEach(function(b){ b.classList.remove('speaking'); });
+    btn.classList.add('speaking');
+    var u = speakDE(text);
+    if (u) {
+      u.onend   = function(){ btn.classList.remove('speaking'); };
+      u.onerror = function(){ btn.classList.remove('speaking'); };
+    } else {
+      setTimeout(function(){ btn.classList.remove('speaking'); }, 1200);
+    }
+  };
 
-  document.getElementById('progressFill').style.width = '100%';
-  document.getElementById('stepLabel').textContent = 'Plan ready!';
-  document.getElementById('obFooter').style.display = 'none';
+  // ── Screen routing ───────────────────────────────────────────────────────
+  window.goToScreen = function(n) {
+    currentScreen = n;
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    var next = document.getElementById('screen-' + n);
+    if (next) next.classList.add('active');
+    var pct = Math.round((n / 4) * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('stepPill').textContent = 'Schritt ' + n + ' von 4';
+    if (n === 4) onEnterScreen4();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
-  document.getElementById('obMain').innerHTML =
-    '<div class="ob-card ob-summary">'
-    + '<div class="ob-confetti">🎉</div>'
-    + '<div class="ob-sum-title">Your personalised plan is ready!</div>'
-    + '<div class="ob-sum-sub">We\'ve set up your DeutschWeg dashboard based on your answers. Start with Module 1 and follow the path.</div>'
-    + '<div class="ob-sum-items">'
-    + '<div class="ob-sum-row"><span class="ob-sum-icon">📊</span><div><div class="ob-sum-key">Current level</div><div class="ob-sum-val">' + (levelMap[answers.level] || '—') + '</div></div></div>'
-    + '<div class="ob-sum-row"><span class="ob-sum-icon">🎯</span><div><div class="ob-sum-key">Target exam</div><div class="ob-sum-val">' + (examMap[answers.exam] || '—') + '</div></div></div>'
-    + '<div class="ob-sum-row"><span class="ob-sum-icon">⚠️</span><div><div class="ob-sum-key">Biggest struggles</div><div class="ob-sum-val">' + struggles + '</div></div></div>'
-    + '<div class="ob-sum-row"><span class="ob-sum-icon">⏱️</span><div><div class="ob-sum-key">Daily study time</div><div class="ob-sum-val">' + (timeMap[answers.time] || '—') + '</div></div></div>'
-    + '</div>'
-    + '<a href="/dashboard" class="ob-start-btn">Start Learning →</a>'
-    + '</div>';
-}
+  // ── Screen 2 — Lernziel ──────────────────────────────────────────────────
+  window.pickGoal = function(goal) {
+    // Lock buttons while we write
+    document.querySelectorAll('#goalList .goal-btn').forEach(function(b){ b.disabled = true; });
+    var status = document.getElementById('status-2');
+    status.textContent = goal ? 'Speichern …' : '';
 
-// Init
-render();
+    if (goal == null || typeof dwSupabase === 'undefined') {
+      goToScreen(3);
+      return;
+    }
+
+    ensureSignedIn(function(user) {
+      if (!user) { goToScreen(3); return; }
+      dwSupabase.from('profiles')
+        .update({ lernziel: goal })
+        .eq('id', user.id)
+        .then(function(res) {
+          if (res.error) console.warn('[onboarding] lernziel save failed:', res.error.message);
+          goToScreen(3);
+        })
+        .catch(function() { goToScreen(3); });
+    });
+  };
+
+  // ── Screen 3 — Mini-Lektion quiz ─────────────────────────────────────────
+  window.answerQuiz = function(btn, ans) {
+    var fb = document.getElementById('qzFb');
+    var opts = document.querySelectorAll('#qzOpts .qz-opt');
+
+    if (ans === 'guten') {
+      btn.classList.add('correct');
+      fb.className = 'qz-feedback show ok';
+      fb.textContent = "Richtig! 'Guten Tag' ist höflich und formell — genau das erwartet die Prüferin.";
+      opts.forEach(function(o){ o.disabled = true; });
+      quizAnsweredCorrectly = true;
+      document.getElementById('screen3Next').disabled = false;
+    } else {
+      btn.classList.add('wrong');
+      fb.className = 'qz-feedback show no';
+      fb.textContent = "Nicht ganz. 'Hallo' ist locker, 'Tschüss' bedeutet Abschied. Bei einer Prüferin sagst du 'Guten Tag' — das ist höflich und formell. Du kannst trotzdem weitergehen.";
+      // Don't block forward progress — but only enable Weiter after they see the explanation
+      document.getElementById('screen3Next').disabled = false;
+    }
+  };
+
+  // ── Finish — set onboarding_completed + letzte_modul_slug, then go to S4 ──
+  window.finishOnboarding = function() {
+    goToScreen(4);
+  };
+
+  function onEnterScreen4() {
+    if (profileWritten) return;
+    var status = document.getElementById('status-4');
+    var goBtn  = document.getElementById('goModuleBtn');
+
+    ensureSignedIn(function(user) {
+      if (!user) {
+        // No user — leave button pointing at dashboard so the flow doesn't dead-end
+        return;
+      }
+
+      // Resolve the first A1 module (the "entry point").
+      dwSupabase.from('modules')
+        .select('id')
+        .eq('level', 'A1')
+        .eq('is_published', true)
+        .order('order_index', { ascending: true })
+        .limit(1)
+        .maybeSingle()
+        .then(function(modRes) {
+          var modId = modRes && modRes.data && modRes.data.id;
+          if (modId) {
+            firstA1ModuleId = modId;
+            goBtn.href = 'module.html?id=' + modId;
+          }
+
+          // Mark onboarding complete + record the next-up module for the
+          // "Weiter lernen" card on the dashboard.
+          var patch = { onboarding_completed: true };
+          if (modId) patch.letzte_modul_slug = modId;
+
+          dwSupabase.from('profiles')
+            .update(patch)
+            .eq('id', user.id)
+            .then(function(res) {
+              if (res.error) {
+                console.warn('[onboarding] profile finalise failed:', res.error.message);
+                status.textContent = '';
+              } else {
+                profileWritten = true;
+              }
+            })
+            .catch(function(){});
+        })
+        .catch(function(){});
+    });
+  }
+
+  // ── Boot ─────────────────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', function() {
+    document.body.classList.add('ready');
+
+    // If the user is already past onboarding, send them to the dashboard.
+    ensureSignedIn(function(user) {
+      if (!user) return;
+      dwSupabase.from('profiles')
+        .select('onboarding_completed')
+        .eq('id', user.id)
+        .maybeSingle()
+        .then(function(res) {
+          if (res && res.data && res.data.onboarding_completed === true) {
+            window.location.href = 'dashboard.html';
+          }
+        })
+        .catch(function(){});
+    });
+  });
+})();
 </script>
 <script src="./cookie-banner.js"></script>
 </body>
