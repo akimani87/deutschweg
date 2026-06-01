@@ -27,6 +27,10 @@
 <meta name="description" content="Pass your Goethe exam with AI-powered German practice built for students from Kenya, Nigeria, Ghana and across Africa.">
 <link rel="stylesheet" href="deutschweg-theme.css">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Pricing on this page reads from paywall.js's CATALOG so there's one place
+     to change a price (paywall.js). Supabase is NOT loaded here — the CATALOG
+     is plain data with no API dependency. -->
+<script src="./paywall.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
@@ -351,6 +355,25 @@ section{padding:96px 0;}
 .pricing-list li::before{content:'✓';position:absolute;left:0;color:var(--green);font-weight:700;}
 .pricing-btn-wrap{display:flex;}
 .pricing-btn-wrap a{width:100%;justify-content:center;}
+/* 4-column variant for the new module pricing (A1 free + 3 paid levels).
+   Inherits the mobile 1fr rule from .pricing-grid below; widens
+   progressively on tablet/desktop. */
+.pricing-grid-modules{max-width:1080px;grid-template-columns:1fr 1fr;}
+@media(min-width:1000px){.pricing-grid-modules{grid-template-columns:repeat(4,1fr);}}
+.pricing-card-free{background:var(--green-light);border-color:var(--green-border);}
+.pricing-card-free .pricing-label{color:var(--green);}
+.pricing-card-free .pricing-price{color:var(--green);}
+.pricing-whisperer{
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  background:var(--blue-light);border:1px solid var(--blue-mid);
+  border-radius:20px;padding:20px 24px;
+  max-width:1080px;margin:28px auto 0;text-align:left;
+}
+.pricing-whisperer .pw-icon{font-size:30px;flex-shrink:0;}
+.pricing-whisperer .pw-body{flex:1;min-width:200px;}
+.pricing-whisperer .pw-title{font-size:15px;font-weight:700;color:var(--dark);margin-bottom:4px;}
+.pricing-whisperer .pw-sub{font-size:13.5px;color:var(--mid);line-height:1.6;}
+.pricing-note{font-size:12.5px;color:var(--light);margin-top:20px;max-width:680px;margin-left:auto;margin-right:auto;line-height:1.7;}
 
 /* ── LEVELS ── */
 .levels-section{background:var(--bg);}
@@ -587,7 +610,7 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
       <div class="trust-bar-item">🌍 Built for African learners</div>
       <div class="trust-bar-item">🤖 AI-powered feedback</div>
       <div class="trust-bar-item">📚 52 modules A1 to B2</div>
-      <div class="trust-bar-item">✓ Free 14-day trial</div>
+      <div class="trust-bar-item">✓ A1 free forever</div>
     </div>
   </div>
 </div>
@@ -713,45 +736,104 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
 </section>
 
 <!-- ── PRICING ── -->
+<!-- One-time pricing only. Numbers live in paywall.js's CATALOG; the small
+     script at the end of this section copies them into the data-pw-price
+     slots so a price change in one place updates the landing too. -->
 <section class="pricing-section" id="pricing">
   <div class="wrap" style="text-align:center;">
     <div class="section-label">PRICING</div>
-    <div class="section-h">Start Free. Upgrade When Ready.</div>
-    <div class="section-sub" style="margin:0 auto 48px;">No credit card needed to start.</div>
-    <div class="pricing-grid">
-      <div class="pricing-card">
-        <div class="pricing-label">Free Starter</div>
-        <div class="pricing-price">€0</div>
-        <div class="pricing-sub">&nbsp;</div>
+    <div class="section-h">Start free. Add a level when you're ready.</div>
+    <div class="section-sub" style="margin:0 auto 48px;">One-time payments. No subscription, no monthly fees. Pay only for the levels you actually need.</div>
+
+    <div class="pricing-grid pricing-grid-modules">
+      <!-- A1 — Free -->
+      <div class="pricing-card pricing-card-free">
+        <div class="pricing-label">A1 · Starter</div>
+        <div class="pricing-price">Free</div>
+        <div class="pricing-sub">Forever, no card needed</div>
         <ul class="pricing-list">
-          <li>A1 Modules 1–3</li>
-          <li>Basic quizzes</li>
-          <li>3 AI Exam Whisperer uses</li>
-          <li>Limited AI Tutor</li>
+          <li>All 13 A1 modules</li>
+          <li>Audio, quizzes, instant feedback</li>
+          <li>Goethe A1 exam prep</li>
         </ul>
         <div class="pricing-btn-wrap">
-          <a href="signup.html" class="btn-secondary">Start Free →</a>
+          <a href="signup.html" class="btn-primary btn-large">Start free →</a>
         </div>
       </div>
-      <div class="pricing-card pricing-card-premium">
-        <div class="pricing-label">Premium Plans from €9.99</div>
-        <div class="pricing-price">€9.99</div>
-        <div class="pricing-sub">one-time or monthly</div>
+
+      <!-- A2 -->
+      <div class="pricing-card">
+        <div class="pricing-label">A2 · Grundstufe</div>
+        <div class="pricing-price" data-pw-price="a2_module">€19</div>
+        <div class="pricing-sub">One-time — yours forever</div>
         <ul class="pricing-list">
-          <li>All 52 modules A1 + A2 + B1 + B2</li>
-          <li>Unlimited AI Exam Whisperer</li>
-          <li>Full AI Tutor with language progression</li>
-          <li>Sprechen Prep — all 3 exam parts</li>
-          <li>Mock exam simulations</li>
-          <li>Weak area tracking</li>
-          <li>Progress dashboard</li>
+          <li>All 12 A2 modules</li>
+          <li>Perfekt, plurals, two-way prepositions</li>
+          <li>Goethe A2 exam prep</li>
         </ul>
         <div class="pricing-btn-wrap">
-          <a href="#pricing" class="btn-primary btn-large">See All Plans →</a>
+          <a href="signup.html" class="btn-secondary">Sign up to unlock →</a>
+        </div>
+      </div>
+
+      <!-- B1 -->
+      <div class="pricing-card">
+        <div class="pricing-label">B1 · Mittelstufe</div>
+        <div class="pricing-price" data-pw-price="b1_module">€24</div>
+        <div class="pricing-sub">One-time — yours forever</div>
+        <ul class="pricing-list">
+          <li>All 13 B1 modules</li>
+          <li>Konjunktiv II, Genitiv, indirect speech</li>
+          <li>Goethe B1 exam prep</li>
+        </ul>
+        <div class="pricing-btn-wrap">
+          <a href="signup.html" class="btn-secondary">Sign up to unlock →</a>
+        </div>
+      </div>
+
+      <!-- B2 -->
+      <div class="pricing-card">
+        <div class="pricing-label">B2 · Oberstufe</div>
+        <div class="pricing-price" data-pw-price="b2_module">€29</div>
+        <div class="pricing-sub">One-time — yours forever</div>
+        <ul class="pricing-list">
+          <li>All 14 B2 modules</li>
+          <li>Academic register, complex grammar</li>
+          <li>Goethe B2 full preparation</li>
+        </ul>
+        <div class="pricing-btn-wrap">
+          <a href="signup.html" class="btn-secondary">Sign up to unlock →</a>
         </div>
       </div>
     </div>
+
+    <!-- Exam Whisperer add-on — per level -->
+    <div class="pricing-whisperer">
+      <div class="pw-icon">🎯</div>
+      <div class="pw-body">
+        <div class="pw-title">Exam Whisperer add-on — AI scoring for your writing</div>
+        <div class="pw-sub">One-time <strong data-pw-price="examwhisperer_a2">€19</strong> per level (A2, B1, B2). A1 Exam Whisperer is free for everyone.</div>
+      </div>
+      <a href="signup.html" class="btn-secondary">Start with A1 free →</a>
+    </div>
+
+    <div class="pricing-note">No subscriptions, no recurring charges. Pay once per level — keep it forever.</div>
   </div>
+  <script>
+    // Pull prices from paywall.js's CATALOG so the price lives in exactly one
+    // place. Parses "… 19 €" out of the German valueLine; falls back to the
+    // hard-coded value in the markup if paywall.js didn't load (e.g., offline).
+    (function() {
+      if (!window.dwPaywall || !window.dwPaywall.catalog) return;
+      document.querySelectorAll('[data-pw-price]').forEach(function(el) {
+        var key = el.getAttribute('data-pw-price');
+        var entry = window.dwPaywall.catalog[key];
+        if (!entry) return;
+        var m = String(entry.valueLine || '').match(/(\d+)\s?€/);
+        if (m) el.textContent = '€' + m[1];
+      });
+    })();
+  </script>
 </section>
 
 <!-- ── LEVELS ── -->
@@ -806,8 +888,8 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
   <div class="wrap" style="text-align:center;">
     <div class="section-label">GET STARTED</div>
     <div class="section-h" style="max-width:520px;margin:0 auto 16px;">Prepare for Goethe Faster</div>
-    <div class="section-sub" style="margin:0 auto 36px;">Join learners from Kenya, Nigeria, Ghana and across Africa. 14-day free trial — no card needed.</div>
-    <a href="signup.html" class="btn-white">Start Practicing Free →</a>
+    <div class="section-sub" style="margin:0 auto 36px;">Join learners from Kenya, Nigeria, Ghana and across Africa. A1 is free forever — no card needed.</div>
+    <a href="signup.html" class="btn-white">Start with A1 — Free →</a>
   </div>
 </section>
 
