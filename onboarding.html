@@ -201,6 +201,38 @@
   .success-bar{height:8px;background:var(--border);border-radius:5px;overflow:hidden;}
   .success-bar-fill{height:100%;background:var(--blue);border-radius:5px;width:7.6%;transition:width .8s ease;}
 
+  /* ── PLACEMENT (Where are you starting?) ── */
+  .place-stage{display:none;animation:fadeUp .35s ease both;}
+  .place-stage.active{display:block;}
+  .place-name-input{
+    width:100%;
+    padding:14px 16px;
+    background:#fff;
+    border:1.5px solid var(--border);
+    border-radius:var(--radius-md);
+    font-family:'Plus Jakarta Sans',sans-serif;
+    font-size:16px;color:var(--dark);
+    margin-bottom:14px;
+    outline:none;transition:border-color .15s, box-shadow .15s;
+  }
+  .place-name-input:focus{
+    border-color:var(--blue);
+    box-shadow:0 0 0 3px rgba(59,130,246,0.15);
+  }
+  .place-q-de{
+    font-size:13px;color:var(--light);
+    font-style:italic;margin-bottom:18px;
+  }
+  .place-result-level{
+    font-size:54px;font-weight:800;color:var(--blue);
+    line-height:1;letter-spacing:-1px;margin:6px 0 8px;
+    text-align:center;
+  }
+  .place-result-name{
+    font-size:13px;color:var(--mid);
+    text-align:center;margin-bottom:18px;
+  }
+
   /* ── SCREEN TRANSITIONS ── */
   .screen{display:none;animation:fadeUp .4s ease both;}
   .screen.active{display:block;}
@@ -276,8 +308,161 @@
       <div class="ob-status" id="status-2"></div>
     </section>
 
-    <!-- ── SCREEN 3 — MINI-LESSON — Begrüßung (DE content kept; English scaffolding) ── -->
+    <!-- ── SCREEN 3 — PLACEMENT ("Where are you starting?") ──
+         Two paths: pick directly, or run a 5-question check that *recommends*
+         (never enforces) a level. Override is always one tap away. The chosen
+         or recommended level writes to profiles.aktuelles_level. -->
     <section class="screen" id="screen-3">
+
+      <!-- 3a · ENTRY -->
+      <div class="place-stage active" data-pstage="entry">
+        <div class="ob-eyebrow">Your level</div>
+        <h1 class="ob-h1">Where are you starting?</h1>
+        <p class="ob-lead">Pick whatever fits — you can change it any time on the dashboard.</p>
+        <div class="goal-list">
+          <button class="goal-btn" onclick="placeGo('direct')">
+            <span class="goal-icon">🎯</span>
+            <span class="goal-label">I know my level</span>
+          </button>
+          <button class="goal-btn" onclick="placeGo('q1')">
+            <span class="goal-icon">🧭</span>
+            <span class="goal-label">I'm not sure</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3b · DIRECT LEVEL PICKER -->
+      <div class="place-stage" data-pstage="direct">
+        <div class="ob-eyebrow">Pick a level</div>
+        <h1 class="ob-h1">Which level fits you?</h1>
+        <p class="ob-lead">Not sure later? You can always come back and switch.</p>
+        <div class="goal-list">
+          <button class="goal-btn" onclick="pickLevel('a1')">
+            <span class="goal-icon">🌱</span>
+            <span class="goal-label">A1 — Beginner</span>
+          </button>
+          <button class="goal-btn" onclick="pickLevel('a2')">
+            <span class="goal-icon">📗</span>
+            <span class="goal-label">A2 — Elementary</span>
+          </button>
+          <button class="goal-btn" onclick="pickLevel('b1')">
+            <span class="goal-icon">📘</span>
+            <span class="goal-label">B1 — Intermediate</span>
+          </button>
+          <button class="goal-btn" onclick="pickLevel('b2')">
+            <span class="goal-icon">📕</span>
+            <span class="goal-label">B2 — Upper-Intermediate</span>
+          </button>
+        </div>
+        <button class="skip-link" onclick="placeGo('entry')">← Back</button>
+      </div>
+
+      <!-- 3c · Q1 — Name (warm-up, not scored) -->
+      <div class="place-stage" data-pstage="q1">
+        <div class="ob-eyebrow">Question 1 of 5</div>
+        <h1 class="ob-h1">Wie heißt du?</h1>
+        <div class="place-q-de">What's your name?</div>
+        <input
+          type="text"
+          id="placeName"
+          class="place-name-input"
+          placeholder="Dein Name"
+          autocomplete="given-name"
+          maxlength="60"
+        >
+        <button class="btn btn-primary" onclick="placeAnswerName()">Continue</button>
+      </div>
+
+      <!-- 3d · Q2 — A1→A2 (Perfekt with haben) -->
+      <div class="place-stage" data-pstage="q2">
+        <div class="ob-eyebrow">Question 2 of 5 · Grammar</div>
+        <h1 class="ob-h1">Gestern ___ ich Brot gekauft.</h1>
+        <div class="place-q-de">Yesterday I bought bread. Pick the word that fits.</div>
+        <div class="goal-list">
+          <button class="goal-btn" onclick="placeAnswerGrammar(2, true)">
+            <span class="goal-label">habe</span>
+          </button>
+          <button class="goal-btn" onclick="placeAnswerGrammar(2, false)">
+            <span class="goal-label">bin</span>
+          </button>
+          <button class="goal-btn" onclick="placeAnswerGrammar(2, false)">
+            <span class="goal-label">hat</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3e · Q3 — A2→B1 (subordinating conjunction "weil") -->
+      <div class="place-stage" data-pstage="q3">
+        <div class="ob-eyebrow">Question 3 of 5 · Grammar</div>
+        <h1 class="ob-h1">Ich bleibe zu Hause, ___ es regnet.</h1>
+        <div class="place-q-de">I'm staying home ___ it's raining. Which conjunction fits?</div>
+        <div class="goal-list">
+          <button class="goal-btn" onclick="placeAnswerGrammar(3, true)">
+            <span class="goal-label">weil</span>
+          </button>
+          <button class="goal-btn" onclick="placeAnswerGrammar(3, false)">
+            <span class="goal-label">aber</span>
+          </button>
+          <button class="goal-btn" onclick="placeAnswerGrammar(3, false)">
+            <span class="goal-label">oder</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3f · Q4 — B1→B2 (Konjunktiv II) -->
+      <div class="place-stage" data-pstage="q4">
+        <div class="ob-eyebrow">Question 4 of 5 · Grammar</div>
+        <h1 class="ob-h1">Wenn ich mehr Zeit ___, würde ich mehr lernen.</h1>
+        <div class="place-q-de">If I had more time, I'd learn more. Pick the right Konjunktiv form.</div>
+        <div class="goal-list">
+          <button class="goal-btn" onclick="placeAnswerGrammar(4, true)">
+            <span class="goal-label">hätte</span>
+          </button>
+          <button class="goal-btn" onclick="placeAnswerGrammar(4, false)">
+            <span class="goal-label">habe</span>
+          </button>
+          <button class="goal-btn" onclick="placeAnswerGrammar(4, false)">
+            <span class="goal-label">hatte</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3g · Q5 — Self-assessment (not scored against right/wrong) -->
+      <div class="place-stage" data-pstage="q5">
+        <div class="ob-eyebrow">Question 5 of 5 · Self-check</div>
+        <h1 class="ob-h1">Wie fühlst du dich beim Deutsch sprechen?</h1>
+        <div class="place-q-de">How does speaking German feel to you right now?</div>
+        <div class="goal-list">
+          <button class="goal-btn" onclick="placeAnswerSelf(1)">
+            <span class="goal-label">Ich fange gerade an</span>
+          </button>
+          <button class="goal-btn" onclick="placeAnswerSelf(2)">
+            <span class="goal-label">Ich kann einfache Gespräche</span>
+          </button>
+          <button class="goal-btn" onclick="placeAnswerSelf(3)">
+            <span class="goal-label">Ich kann über viele Themen sprechen</span>
+          </button>
+          <button class="goal-btn" onclick="placeAnswerSelf(4)">
+            <span class="goal-label">Ich spreche fast fließend</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3h · RESULT -->
+      <div class="place-stage" data-pstage="result">
+        <div class="ob-eyebrow" style="text-align:center;">Your placement</div>
+        <div class="place-result-level" id="placeResultLevel">A2</div>
+        <div class="place-result-name" id="placeResultName"></div>
+        <p class="ob-lead" style="text-align:center;">Based on your answers, <strong id="placeResultInline">A2</strong> looks right for you.</p>
+        <button class="btn btn-primary" id="placeAcceptBtn" onclick="placeAccept()">Start at A2</button>
+        <button class="skip-link" onclick="placeGo('direct')">Choose a different level</button>
+      </div>
+
+      <div class="ob-status" id="status-3"></div>
+    </section>
+
+    <!-- ── SCREEN 4 — MINI-LESSON — Begrüßung (DE content kept; English scaffolding) ── -->
+    <section class="screen" id="screen-4">
       <div class="ob-eyebrow">Mini lesson</div>
       <h1 class="ob-h1">Your first lesson: Begrüßung</h1>
       <p class="ob-lead">Tap each word to hear it.</p>
@@ -316,11 +501,11 @@
         <div class="qz-feedback" id="qzFb"></div>
       </div>
 
-      <button class="btn btn-primary" id="screen3Next" onclick="finishOnboarding()" disabled style="margin-top:22px;">Continue</button>
+      <button class="btn btn-primary" id="screen4Next" onclick="finishOnboarding()" disabled style="margin-top:22px;">Continue</button>
     </section>
 
-    <!-- ── SCREEN 4 — SUCCESS ── -->
-    <section class="screen" id="screen-4">
+    <!-- ── SCREEN 5 — SUCCESS ── -->
+    <section class="screen" id="screen-5">
       <div class="success-icon">🎉</div>
       <div class="ob-eyebrow" style="text-align:center;">You did it!</div>
       <h1 class="ob-h1" style="text-align:center;">You did it!</h1>
@@ -328,12 +513,12 @@
 
       <div class="success-progress">
         <div class="success-prog-label">Your progress</div>
-        <div class="success-prog-val">1 of 13 modules (A1)</div>
-        <div class="success-bar"><div class="success-bar-fill"></div></div>
+        <div class="success-prog-val" id="successProgVal">1 of 13 modules (A1)</div>
+        <div class="success-bar"><div class="success-bar-fill" id="successBarFill"></div></div>
       </div>
 
-      <a class="btn btn-primary" id="goModuleBtn" href="dashboard.html">Continue to Module 1</a>
-      <div class="ob-status" id="status-4"></div>
+      <a class="btn btn-primary" id="goModuleBtn" href="dashboard.html">Continue to your first module</a>
+      <div class="ob-status" id="status-5"></div>
     </section>
 
   </div>
@@ -422,16 +607,17 @@
     }
   };
 
-  // ── Screen routing ───────────────────────────────────────────────────────
+  // ── Screen routing (5 main screens: Welcome / Lernziel / Placement / Mini-Lesson / Success) ──
+  var TOTAL_SCREENS = 5;
   window.goToScreen = function(n) {
     currentScreen = n;
     document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
     var next = document.getElementById('screen-' + n);
     if (next) next.classList.add('active');
-    var pct = Math.round((n / 4) * 100);
+    var pct = Math.round((n / TOTAL_SCREENS) * 100);
     document.getElementById('progressFill').style.width = pct + '%';
-    document.getElementById('stepPill').textContent = 'Step ' + n + ' of 4';
-    if (n === 4) onEnterScreen4();
+    document.getElementById('stepPill').textContent = 'Step ' + n + ' of ' + TOTAL_SCREENS;
+    if (n === 5) onEnterScreen5();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -460,7 +646,116 @@
     });
   };
 
-  // ── Screen 3 — Mini-Lektion quiz ─────────────────────────────────────────
+  // ── Screen 3 — Placement ("Where are you starting?") ─────────────────────
+  //
+  // The placement collects up to 5 answers and *recommends* a level based on
+  // a simple combined score. It never enforces — the user can override at the
+  // result screen, and they can also bypass the check entirely via the
+  // "I know my level" direct picker.
+  //
+  // Scoring (deliberately simple):
+  //   gramScore  = #correct of {Q2, Q3, Q4} (0..3)
+  //   selfMinus1 = (Q5 self-assessment 1..4) - 1   (0..3)
+  //   combined   = gramScore + selfMinus1          (0..6)
+  //   recommend  = ['a1','a2','b1','b2'][min(3, floor(combined / 2))]
+  // Tunable: edit floor(combined/2) → another step function to tighten/loosen.
+  var placeState = {
+    name:     '',
+    grammar:  { 2: null, 3: null, 4: null },
+    self:     null,
+    recommended: 'a1'
+  };
+
+  function placeShowStage(stage) {
+    document.querySelectorAll('#screen-3 .place-stage').forEach(function(el) {
+      el.classList.toggle('active', el.getAttribute('data-pstage') === stage);
+    });
+    // Smooth scroll inside the card for long sub-screens (e.g. result)
+    var card = document.querySelector('.card');
+    if (card) card.scrollTop = 0;
+  }
+
+  window.placeGo = function(stage) { placeShowStage(stage); };
+
+  window.placeAnswerName = function() {
+    var input = document.getElementById('placeName');
+    placeState.name = (input.value || '').trim();
+    placeShowStage('q2');
+  };
+
+  window.placeAnswerGrammar = function(qNum, isCorrect) {
+    placeState.grammar[qNum] = !!isCorrect;
+    var next = qNum < 4 ? ('q' + (qNum + 1)) : 'q5';
+    placeShowStage(next);
+  };
+
+  window.placeAnswerSelf = function(selfLevel) {
+    placeState.self = selfLevel;
+    computeAndShowRecommendation();
+  };
+
+  function computeAndShowRecommendation() {
+    var gramScore = 0;
+    if (placeState.grammar[2]) gramScore++;
+    if (placeState.grammar[3]) gramScore++;
+    if (placeState.grammar[4]) gramScore++;
+    var selfMinus1 = Math.max(0, (placeState.self || 1) - 1);
+    var combined = gramScore + selfMinus1; // 0..6
+    var idx = Math.min(3, Math.floor(combined / 2));
+    var levels = ['a1', 'a2', 'b1', 'b2'];
+    var rec = levels[idx];
+    placeState.recommended = rec;
+
+    var upper = rec.toUpperCase();
+    document.getElementById('placeResultLevel').textContent = upper;
+    document.getElementById('placeResultInline').textContent = upper;
+    document.getElementById('placeAcceptBtn').textContent = 'Start at ' + upper;
+    var nameLine = document.getElementById('placeResultName');
+    nameLine.textContent = placeState.name ? ('for ' + placeState.name) : '';
+
+    placeShowStage('result');
+  }
+
+  // Accept the recommended level → write + advance to Mini-Lektion.
+  window.placeAccept = function() {
+    setAktuellesLevel(placeState.recommended, function() { goToScreen(4); });
+  };
+
+  // Direct picker (or "Choose a different level" from the result screen).
+  window.pickLevel = function(level) {
+    setAktuellesLevel(level, function() { goToScreen(4); });
+  };
+
+  // Single write path for aktuelles_level — never blocks the user on a DB error.
+  function setAktuellesLevel(level, then) {
+    var status = document.getElementById('status-3');
+    status.textContent = 'Saving …';
+    // Disable buttons in the active sub-screen so the user can't double-fire
+    document.querySelectorAll('#screen-3 .place-stage.active .goal-btn, #screen-3 .place-stage.active .btn').forEach(function(b){ b.disabled = true; });
+
+    if (typeof dwSupabase === 'undefined') {
+      status.textContent = '';
+      if (then) then();
+      return;
+    }
+    ensureSignedIn(function(user) {
+      if (!user) { status.textContent = ''; if (then) then(); return; }
+      dwSupabase.from('profiles')
+        .update({ aktuelles_level: level })
+        .eq('id', user.id)
+        .then(function(res) {
+          if (res.error) console.warn('[onboarding] aktuelles_level save failed:', res.error.message);
+          status.textContent = '';
+          if (then) then();
+        })
+        .catch(function() {
+          status.textContent = '';
+          if (then) then();
+        });
+    });
+  }
+
+  // ── Screen 4 — Mini-Lektion quiz ─────────────────────────────────────────
   window.answerQuiz = function(btn, ans) {
     var fb = document.getElementById('qzFb');
     var opts = document.querySelectorAll('#qzOpts .qz-opt');
@@ -471,24 +766,24 @@
       fb.textContent = "Correct! ‘Guten Tag’ is polite and formal — exactly what an examiner expects.";
       opts.forEach(function(o){ o.disabled = true; });
       quizAnsweredCorrectly = true;
-      document.getElementById('screen3Next').disabled = false;
+      document.getElementById('screen4Next').disabled = false;
     } else {
       btn.classList.add('wrong');
       fb.className = 'qz-feedback show no';
       fb.textContent = "Not quite. ‘Hallo’ is casual and ‘Tschüss’ means goodbye. With an examiner you say ‘Guten Tag’ — it’s polite and formal. You can still continue.";
       // Don't block forward progress — but only enable Continue after they see the explanation
-      document.getElementById('screen3Next').disabled = false;
+      document.getElementById('screen4Next').disabled = false;
     }
   };
 
-  // ── Finish — set onboarding_completed + letzte_modul_slug, then go to S4 ──
+  // ── Finish — set onboarding_completed + letzte_modul_slug, then go to S5 ──
   window.finishOnboarding = function() {
-    goToScreen(4);
+    goToScreen(5);
   };
 
-  function onEnterScreen4() {
+  function onEnterScreen5() {
     if (profileWritten) return;
-    var status = document.getElementById('status-4');
+    var status = document.getElementById('status-5');
     var goBtn  = document.getElementById('goModuleBtn');
 
     ensureSignedIn(function(user) {
@@ -497,40 +792,56 @@
         return;
       }
 
-      // Resolve the first A1 module (the "entry point").
-      dwSupabase.from('modules')
-        .select('id')
-        .eq('level', 'A1')
-        .eq('is_published', true)
-        .order('order_index', { ascending: true })
-        .limit(1)
-        .maybeSingle()
-        .then(function(modRes) {
-          var modId = modRes && modRes.data && modRes.data.id;
-          if (modId) {
-            firstA1ModuleId = modId;
-            goBtn.href = 'module.html?id=' + modId;
-          }
+      // Resolve the first module at the user's recommended/chosen level. If
+      // they accepted A1 we land on the first A1 module; if they picked A2
+      // we still send them to the first A1 module ONLY when they have no
+      // paywall access — but that decision is delegated to the dashboard /
+      // module gate. Onboarding just records the level + a sensible default
+      // landing slug.
+      var entryLevel = (placeState.recommended || 'a1').toUpperCase();
 
-          // Mark onboarding complete + record the next-up module for the
-          // "Weiter lernen" card on the dashboard.
-          var patch = { onboarding_completed: true };
-          if (modId) patch.letzte_modul_slug = modId;
+      function fetchFirstModule(level) {
+        return dwSupabase.from('modules')
+          .select('id')
+          .eq('level', level)
+          .eq('is_published', true)
+          .order('order_index', { ascending: true })
+          .limit(1)
+          .maybeSingle();
+      }
 
-          dwSupabase.from('profiles')
-            .update(patch)
-            .eq('id', user.id)
-            .then(function(res) {
-              if (res.error) {
-                console.warn('[onboarding] profile finalise failed:', res.error.message);
-                status.textContent = '';
-              } else {
-                profileWritten = true;
-              }
-            })
-            .catch(function(){});
-        })
-        .catch(function(){});
+      // Try the user's level; fall back to A1 if that level has no published
+      // modules (defensive — the seed should always have something).
+      fetchFirstModule(entryLevel).then(function(modRes) {
+        var modId = modRes && modRes.data && modRes.data.id;
+        if (!modId && entryLevel !== 'A1') {
+          return fetchFirstModule('A1').then(function(r2) { return r2 && r2.data && r2.data.id; });
+        }
+        return modId;
+      }).then(function(modId) {
+        if (modId) {
+          firstA1ModuleId = modId;
+          goBtn.href = 'module.html?id=' + modId;
+        }
+
+        // Mark onboarding complete + record the next-up module for the
+        // "Weiter lernen" card on the dashboard.
+        var patch = { onboarding_completed: true };
+        if (modId) patch.letzte_modul_slug = modId;
+
+        dwSupabase.from('profiles')
+          .update(patch)
+          .eq('id', user.id)
+          .then(function(res) {
+            if (res.error) {
+              console.warn('[onboarding] profile finalise failed:', res.error.message);
+              status.textContent = '';
+            } else {
+              profileWritten = true;
+            }
+          })
+          .catch(function(){});
+      }).catch(function(){});
     });
   }
 

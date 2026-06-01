@@ -28,6 +28,7 @@
 <link rel="stylesheet" href="deutschweg-theme.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./supabase-config.js"></script>
+<script src="./paywall.js"></script>
 <style>
   /* Legacy tokens kept for JS that reads them */
   :root {
@@ -209,6 +210,11 @@
   .lt-tab.active{background:#EFF6FF;border-color:#DBEAFE;color:#3B82F6;}
   .lt-tab-level{display:block;font-size:14px;font-weight:800;letter-spacing:0.5px;}
   .lt-tab-name{display:block;font-size:10px;margin-top:1px;opacity:.8;}
+  /* Paywall-aware label state: when a level isn't unlocked, the tab shows a
+     small price line + a lock glyph so the user knows the trade. Tapping
+     still works — it routes to the unlock screen inside that level section. */
+  .lt-tab.locked .lt-tab-name{color:#D97706;opacity:1;font-weight:700;font-variant-numeric:tabular-nums;}
+  .lt-tab.locked .lt-tab-level::after{content:' 🔒';font-size:10px;opacity:0.65;letter-spacing:0;}
   .placement-btn{
     display:flex;align-items:center;gap:8px;width:100%;
     background:#fff;border:1.5px dashed #DBEAFE;
@@ -1184,7 +1190,10 @@ var LEVEL_META = {
     sub: '14 modules covering all B2 structures and exam skills. B2.1 (grammar) + B2.2 (skills & exam prep). Full Goethe B2 preparation.'
   }
 };
-function switchLevel(level) {
+// Base switcher — purely visual. Persistence + paywall checks are layered
+// over this below so the inline onclick="switchLevel(...)" handlers keep
+// working without changes.
+function _baseSwitchLevel(level) {
   ['a1','a2','b1','b2'].forEach(function(l) {
     document.getElementById('level-' + l).style.display = (l === level) ? '' : 'none';
     var tab = document.getElementById('tab-' + l);
@@ -1197,10 +1206,133 @@ function switchLevel(level) {
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
-// Restore last active level on load
-(function() {
-  var saved = localStorage.getItem('dw_level');
-  if (saved && saved !== 'a1') switchLevel(saved);
+// ── Level paywall gate ────────────────────────────────────────────────────
+// Maintains an in-memory map of entitlements the signed-in user owns and
+// answers "is this level locked for them?". A1 is never locked. Anonymous
+// visitors are treated as owning nothing (the unlock screen has a sign-up
+// nudge for them).
+var dwLevelGate = { ownedKeys: null, profileLevel: null, ready: false };
+
+function isLevelLocked(level) {
+  if (level === 'a1') return false;
+  if (!dwLevelGate.ownedKeys) return true; // fail-closed until entitlements load
+  return !dwLevelGate.ownedKeys.has(level + '_module');
+}
+
+// Rewrite the small "Grundstufe / Mittelstufe / Oberstufe" caption on each
+// non-A1 tab. When locked: show price + "freischalten" so the user knows
+// the trade. Original captions are stored in dataset.original so we can
+// restore them if the entitlement appears later (e.g., after a session
+// where they grant themselves access via the SQL editor for testing).
+function decorateLevelTabs() {
+  ['a2','b1','b2'].forEach(function(level) {
+    var tab = document.getElementById('tab-' + level);
+    if (!tab) return;
+    var nameSpan = tab.querySelector('.lt-tab-name');
+    if (!nameSpan) return;
+    if (!nameSpan.dataset.original) nameSpan.dataset.original = nameSpan.textContent;
+    if (isLevelLocked(level)) {
+      var catalogKey = level + '_module';
+      var entry = window.dwPaywall && window.dwPaywall.catalog && window.dwPaywall.catalog[catalogKey];
+      var priceMatch = entry ? entry.valueLine.match(/\d+\s?€/) : null;
+      nameSpan.textContent = priceMatch ? (priceMatch[0] + ' freischalten') : 'Freischalten';
+      tab.classList.add('locked');
+    } else {
+      tab.classList.remove('locked');
+      nameSpan.textContent = nameSpan.dataset.original;
+    }
+  });
+}
+
+function renderLockIntoSection(level) {
+  var section = document.getElementById('level-' + level);
+  if (!section || !window.dwPaywall) return;
+  window.dwPaywall.renderUnlockScreen(section, level + '_module', {
+    backHref:  '#',
+    backLabel: '← A1 ist immer frei (Tab oben antippen)'
+  });
+}
+
+// One write per user click — recorded so the dashboard re-opens on the
+// last-picked level. Anonymous users fall back to localStorage.
+function persistAktuellesLevel(level) {
+  if (typeof dwSupabase === 'undefined') return;
+  dwSupabase.auth.getUser().then(function(authRes) {
+    var user = authRes && authRes.data && authRes.data.user;
+    if (!user) return;
+    dwSupabase.from('profiles')
+      .update({ aktuelles_level: level })
+      .eq('id', user.id)
+      .then(function(res) {
+        if (res.error) console.warn('[dashboard] aktuelles_level save failed:', res.error.message);
+      });
+  });
+}
+
+// Wrap switchLevel so every navigation goes through the gate. Inline
+// onclick="switchLevel(...)" handlers in the markup still resolve to this
+// wrapper — same global name, different body.
+var _suppressPersistOnce = false;
+function switchLevel(level) {
+  _baseSwitchLevel(level);
+  if (isLevelLocked(level)) renderLockIntoSection(level);
+  if (_suppressPersistOnce) { _suppressPersistOnce = false; return; }
+  persistAktuellesLevel(level);
+}
+
+// Initial load: pull entitlements + profile.aktuelles_level in parallel,
+// decorate the tabs, then open the right starting level. The first call
+// is a restore — we suppress the DB write so we don't pointlessly
+// overwrite aktuelles_level with itself.
+(function loadLevelGate() {
+  function startWith(level) {
+    _suppressPersistOnce = true;
+    if (!['a1','a2','b1','b2'].includes(level)) level = 'a1';
+    switchLevel(level);
+  }
+
+  if (typeof dwSupabase === 'undefined') {
+    dwLevelGate.ownedKeys = new Set();
+    dwLevelGate.ready = true;
+    decorateLevelTabs();
+    startWith(localStorage.getItem('dw_level') || 'a1');
+    return;
+  }
+
+  dwSupabase.auth.getUser().then(function(authRes) {
+    var user = authRes && authRes.data && authRes.data.user;
+    if (!user) {
+      dwLevelGate.ownedKeys = new Set();
+      dwLevelGate.ready = true;
+      decorateLevelTabs();
+      startWith(localStorage.getItem('dw_level') || 'a1');
+      return;
+    }
+    Promise.all([
+      dwSupabase.from('entitlements').select('product_key').eq('user_id', user.id)
+        .in('product_key', ['a2_module','b1_module','b2_module']),
+      dwSupabase.from('profiles').select('aktuelles_level').eq('id', user.id).maybeSingle()
+    ]).then(function(arr) {
+      var entRes = arr[0]; var profRes = arr[1];
+      var owned = new Set();
+      if (!entRes.error && Array.isArray(entRes.data)) {
+        entRes.data.forEach(function(r){ owned.add(r.product_key); });
+      } else if (entRes.error) {
+        console.warn('[dashboard] entitlements read failed:', entRes.error.message);
+      }
+      dwLevelGate.ownedKeys = owned;
+      dwLevelGate.profileLevel = profRes && profRes.data && profRes.data.aktuelles_level;
+      dwLevelGate.ready = true;
+      decorateLevelTabs();
+      startWith((dwLevelGate.profileLevel || localStorage.getItem('dw_level') || 'a1').toLowerCase());
+    }).catch(function(e) {
+      console.warn('[dashboard] level gate load threw:', e && e.message);
+      dwLevelGate.ownedKeys = new Set();
+      dwLevelGate.ready = true;
+      decorateLevelTabs();
+      startWith(localStorage.getItem('dw_level') || 'a1');
+    });
+  });
 })();
 
 // ── PLACEMENT GUIDE ───────────────────────────────────────────
