@@ -34,7 +34,7 @@
       level:        'B1',
       kind:         'module',
       title:        'B1 freischalten',
-      valueLine:    'Alle B1-Module — einmalig 29 €',
+      valueLine:    'Alle B1-Module — einmalig 24 €',
       ctaLabel:     'Freischalten',
       placeholder:  '/freischalten/b1'
     },
@@ -42,7 +42,7 @@
       level:        'B2',
       kind:         'module',
       title:        'B2 freischalten',
-      valueLine:    'Alle B2-Module — einmalig 39 €',
+      valueLine:    'Alle B2-Module — einmalig 29 €',
       ctaLabel:     'Freischalten',
       placeholder:  '/freischalten/b2'
     },
@@ -50,7 +50,7 @@
       level:        'A2',
       kind:         'examwhisperer',
       title:        'Exam Whisperer A2 freischalten',
-      valueLine:    'AI-Bewertung für A2-Schreiben — einmalig 9 €',
+      valueLine:    'AI-Bewertung für A2-Schreiben — einmalig 19 €',
       ctaLabel:     'Freischalten',
       placeholder:  '/freischalten/examwhisperer-a2'
     },
@@ -58,7 +58,7 @@
       level:        'B1',
       kind:         'examwhisperer',
       title:        'Exam Whisperer B1 freischalten',
-      valueLine:    'AI-Bewertung für B1-Schreiben — einmalig 12 €',
+      valueLine:    'AI-Bewertung für B1-Schreiben — einmalig 19 €',
       ctaLabel:     'Freischalten',
       placeholder:  '/freischalten/examwhisperer-b1'
     },
@@ -66,7 +66,7 @@
       level:        'B2',
       kind:         'examwhisperer',
       title:        'Exam Whisperer B2 freischalten',
-      valueLine:    'AI-Bewertung für B2-Schreiben — einmalig 15 €',
+      valueLine:    'AI-Bewertung für B2-Schreiben — einmalig 19 €',
       ctaLabel:     'Freischalten',
       placeholder:  '/freischalten/examwhisperer-b2'
     }
