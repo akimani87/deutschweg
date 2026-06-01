@@ -227,6 +227,9 @@
     .bd-bar-wrap{display:none;}
   }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
+<script src="./paywall.js"></script>
 </head>
 <body>
 
@@ -508,6 +511,29 @@ async function scoreWriting() {
       ta.style.boxShadow   = '';
     }, 2200);
     return;
+  }
+
+  // ── Paywall gate ──
+  // A1 is free. For A2/B1/B2 the user needs the matching examwhisperer_<level>
+  // entitlement; otherwise we render the unlock screen in the results slot
+  // (in-context, where the score would otherwise have landed).
+  var pwKey = (window.dwPaywall) ? window.dwPaywall.whispererKeyForLevel(level) : null;
+  if (pwKey) {
+    var authRes = await (window.dwSupabase
+      ? window.dwSupabase.auth.getUser().catch(function(){ return { data: { user: null } }; })
+      : Promise.resolve({ data: { user: null } }));
+    var user = authRes && authRes.data && authRes.data.user;
+    var allowed = await window.dwPaywall.hasAccess(user, pwKey);
+    if (!allowed) {
+      res.classList.add('show');
+      window.dwPaywall.renderUnlockScreen(res, pwKey, {
+        anonymous: !user,
+        backHref:  '/dashboard',
+        backLabel: '← Zurück zum Dashboard'
+      });
+      res.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
   }
 
   // Reset previous result

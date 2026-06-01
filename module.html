@@ -28,6 +28,7 @@
 <link rel="stylesheet" href="./deutschweg-theme.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./supabase-config.js"></script>
+<script src="./paywall.js"></script>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
@@ -550,7 +551,36 @@
         }).join(', ') + ')' +
         (state.user ? ' — user signed in, ' + Object.keys(state.completedIds).length + ' lesson(s) already completed' : ' — anonymous, no progress tracking'));
 
-      render();
+      // ── Paywall gate ──
+      // A1 modules are always free → render directly. For A2/B1/B2, ask
+      // dwPaywall whether this user owns the corresponding *_module
+      // entitlement. If not, swap the lesson area with the unlock screen
+      // (anonymous visitors get the same screen with a "sign up" nudge).
+      var modulePK = (window.dwPaywall && state.module && state.module.level)
+        ? window.dwPaywall.moduleKeyForLevel(state.module.level)
+        : null;
+      if (modulePK) {
+        window.dwPaywall.gate({
+          container:  document.getElementById('lessonContainer'),
+          productKey: modulePK,
+          user:       state.user,
+          backHref:   '/dashboard',
+          backLabel:  '← Zurück zum Dashboard',
+          onAllowed:  function() { render(); },
+          onDenied:   function() {
+            // Hide progress chrome that doesn't belong on the unlock screen.
+            var dot = document.getElementById('dotRow');     if (dot) dot.style.display = 'none';
+            var xp  = document.getElementById('xpDisp');     if (xp)  xp.style.display = 'none';
+            var pb  = document.getElementById('progFill');   if (pb)  pb.style.width = '0%';
+            document.title = (state.module.title || 'Modul') + ' — DeutschWeg';
+            document.getElementById('modTag').textContent =
+              (state.module.level || '') + ' · ' + (state.module.title || '');
+            finalizeBoot();
+          }
+        });
+      } else {
+        render();
+      }
     } catch (e) {
       console.error('[module.html] load error:', e);
       showError('Could not load module', e.message || 'Network or database error. Try again.');
