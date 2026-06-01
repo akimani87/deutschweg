@@ -1188,6 +1188,90 @@ app.post('/api/exam-grade', async (req, res) => {
   }
 });
 
+// ── POST /api/tts ───────────────────────────────────────────────────────────
+// Text-to-speech via ElevenLabs. Used by the AI Tutor's per-message speaker
+// button (on-demand, never automatic) so learners can *hear* the tutor's
+// German reply. Frontend POSTs { text }; we stream audio/mpeg back.
+//
+// Cost model: ElevenLabs bills per character on the input text. The Flash
+// (eleven_flash_v2_5) tier is the cheapest multilingual model and is fine
+// for short tutor replies. Voice + model are overridable via env vars so a
+// swap doesn't need a redeploy.
+//
+// Security: ELEVENLABS_API_KEY comes from the Render env only. Never logged,
+// never returned in any response.
+app.post('/api/tts', async (req, res) => {
+  const { text } = req.body || {};
+
+  if (!text || typeof text !== 'string' || !text.trim()) {
+    return res.status(400).json({ error: 'Missing or empty text.' });
+  }
+  // Hard cap to keep a runaway request from running up the bill. Tutor
+  // replies are well under this in practice (a typical chat turn is ~300
+  // chars); the cap is a guard, not a UX limit.
+  const MAX_CHARS = 1500;
+  if (text.length > MAX_CHARS) {
+    return res.status(400).json({ error: `Text too long (max ${MAX_CHARS} characters).` });
+  }
+
+  if (!process.env.ELEVENLABS_API_KEY) {
+    console.error('[/api/tts] ELEVENLABS_API_KEY is not set');
+    return res.status(500).json({ error: 'TTS not configured on the server.' });
+  }
+
+  // Defaults: "Rachel" is ElevenLabs' best-known multilingual voice and
+  // handles German cleanly on the v2.5 multilingual/flash model. Both are
+  // overridable via env so you can A/B different voices without a deploy.
+  const voiceId = process.env.ELEVENLABS_VOICE_ID || '21m00Tcm4TlvDq8ikWAM';
+  const modelId = process.env.ELEVENLABS_MODEL_ID || 'eleven_flash_v2_5';
+
+  try {
+    const upstream = await fetch(
+      `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}?output_format=mp3_22050_32`,
+      {
+        method: 'POST',
+        headers: {
+          'xi-api-key':  process.env.ELEVENLABS_API_KEY,
+          'Content-Type': 'application/json',
+          'Accept':      'audio/mpeg',
+        },
+        body: JSON.stringify({
+          text:     text,
+          model_id: modelId,
+          // Conservative voice settings — stable, recognisable, no
+          // randomness drift on repeat plays of the same text.
+          voice_settings: { stability: 0.5, similarity_boost: 0.75 }
+        })
+      }
+    );
+
+    if (!upstream.ok) {
+      // Read the body to log a clue, but don't echo upstream errors to the
+      // client (they sometimes include account-level info we shouldn't leak).
+      const errBody = await upstream.text().catch(() => '');
+      console.error('[/api/tts] upstream', upstream.status, errBody.slice(0, 200));
+      return res.status(502).json({ error: 'TTS service unavailable.' });
+    }
+
+    res.setHeader('Content-Type',  'audio/mpeg');
+    res.setHeader('Cache-Control', 'no-store');
+    // node-fetch v2 exposes the response as a Node Readable stream — pipe
+    // straight to the client so we don't buffer the whole audio in memory.
+    upstream.body.on('error', (e) => {
+      console.error('[/api/tts] upstream stream error', e && e.message);
+      res.end();
+    });
+    upstream.body.pipe(res);
+
+  } catch (err) {
+    console.error('[/api/tts] threw', err && err.message);
+    if (!res.headersSent) {
+      return res.status(500).json({ error: 'TTS request failed.' });
+    }
+    res.end();
+  }
+});
+
 // ── Start ────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log('');
@@ -1195,5 +1279,6 @@ app.listen(PORT, () => {
   console.log(`  ✦ Running at http://localhost:${PORT}`);
   console.log('  ✦ POST /api/score to score a Schreiben submission');
   console.log('  ✦ POST /api/exam-grade to grade a Schreiben exam');
+  console.log('  ✦ POST /api/tts   to generate audio for AI Tutor replies');
   console.log('');
 });
