@@ -3,3 +3,9 @@
 
 /*.html
   Cache-Control: no-cache
+
+# paywall.js holds the live price config — never serve a stale copy.
+# Other JS files (supabase-config, cookie-banner, ai-pal-widget) can stay
+# cached; they change rarely and are cache-busted by deploy URL.
+/paywall.js
+  Cache-Control: no-cache
