@@ -164,6 +164,24 @@
     transform:translateY(-1px);
   }
 
+  /* ── TTS SPEAKER BUTTON (per AI Pal bubble) ── */
+  /* Same component as AI Tutor — kept identical so a single visual pattern
+     means "tap to hear the German" across both bots. */
+  .tts-foot{ display:flex; justify-content:flex-end; margin-top:10px; }
+  .tts-btn{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:32px; height:32px; padding:0;
+    background:#fff; border:1px solid #DBEAFE; border-radius:50%;
+    color:#3B82F6; font-size:14px; line-height:1; cursor:pointer;
+    transition:background .15s, border-color .15s, transform .12s;
+  }
+  .tts-btn:hover{ background:#EFF6FF; border-color:#3B82F6; }
+  .tts-btn:active{ transform:scale(0.95); }
+  .tts-btn.loading{ cursor:wait; animation:ttsPulse 1s ease-in-out infinite; }
+  .tts-btn.playing{ background:#3B82F6; border-color:#3B82F6; color:#fff; }
+  .tts-btn.error{ border-color:#EF4444; color:#EF4444; }
+  @keyframes ttsPulse{ 0%,100%{opacity:1;} 50%{opacity:0.55;} }
+
   /* ── TYPING INDICATOR ── */
   .typing{
     display:flex;align-items:center;gap:5px;
@@ -426,7 +444,7 @@
     chat.scrollTop = chat.scrollHeight;
   }
 
-  // ── Append AI Pal message + Ask Tutor button ────────────────────────────
+  // ── Append AI Pal message + speaker button + Ask Tutor button ──────────
   function appendPal(text){
     if (welcome && welcome.parentNode) {
       welcome.parentNode.removeChild(welcome);
@@ -440,9 +458,78 @@
         '<div class="bubble"></div>' +
         '<a class="ask-tutor-btn" href="ai-tutor.html">Need more help? Ask Tutor 👩‍🏫</a>' +
       '</div>';
-    row.querySelector('.bubble').textContent = text;
+    var bubbleEl = row.querySelector('.bubble');
+    bubbleEl.textContent = text;
+
+    // Speaker pill — same behaviour as AI Tutor. Audio is generated only on
+    // the first tap (cost guard); the resulting blob is cached on the button
+    // so any replay is free. Concurrent taps during load/playback are ignored.
+    var foot = document.createElement('div');
+    foot.className = 'tts-foot';
+    var btn  = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'tts-btn';
+    btn.setAttribute('aria-label', 'Hear this in German');
+    btn.title = 'Hear this in German';
+    btn.innerHTML = '🔊';
+    btn._ttsText  = text;
+    btn._ttsState = 'idle';
+    btn._ttsAudio = null;
+    btn.addEventListener('click', function(){ speakWithTTS(btn); });
+    foot.appendChild(btn);
+    bubbleEl.appendChild(foot);
+
     chat.appendChild(row);
     chat.scrollTop = chat.scrollHeight;
+  }
+
+  // ── On-demand TTS playback (mirrors ai-tutor.html) ──────────────────────
+  // Same contract as the AI Tutor speaker. Kept inline rather than moved to
+  // a shared file because both pages are simple static HTML; sharing would
+  // mean another script tag to load on every page.
+  function speakWithTTS(btn){
+    if (btn._ttsState === 'loading' || btn._ttsState === 'playing') return;
+
+    if (btn._ttsAudio) {
+      setTtsState(btn, 'playing');
+      try { btn._ttsAudio.currentTime = 0; } catch(e){}
+      btn._ttsAudio.play().catch(function(){ setTtsState(btn, 'idle'); });
+      return;
+    }
+
+    setTtsState(btn, 'loading');
+    fetch(API_BASE + '/api/tts', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ text: btn._ttsText })
+    })
+      .then(function(r){
+        if (!r.ok) throw new Error('TTS failed (' + r.status + ')');
+        return r.blob();
+      })
+      .then(function(blob){
+        var url = URL.createObjectURL(blob);
+        var audio = new Audio(url);
+        btn._ttsAudio = audio;
+        audio.addEventListener('ended', function(){ setTtsState(btn, 'idle'); });
+        audio.addEventListener('error', function(){ setTtsState(btn, 'error'); });
+        setTtsState(btn, 'playing');
+        return audio.play();
+      })
+      .catch(function(err){
+        console.warn('[tts]', err && err.message);
+        setTtsState(btn, 'error');
+        setTimeout(function(){ if (btn._ttsState === 'error') setTtsState(btn, 'idle'); }, 2200);
+      });
+  }
+
+  function setTtsState(btn, state){
+    btn._ttsState = state;
+    btn.classList.remove('loading','playing','error');
+    if (state === 'loading') { btn.classList.add('loading'); btn.innerHTML = '⏳'; }
+    else if (state === 'playing') { btn.classList.add('playing'); btn.innerHTML = '🔊'; }
+    else if (state === 'error') { btn.classList.add('error'); btn.innerHTML = '⚠️'; }
+    else { btn.innerHTML = '🔊'; }
   }
 
   function showTyping(){
