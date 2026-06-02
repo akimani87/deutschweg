@@ -1219,11 +1219,28 @@ app.post('/api/tts', async (req, res) => {
     return res.status(500).json({ error: 'TTS not configured on the server.' });
   }
 
-  // Defaults: "Rachel" is ElevenLabs' best-known multilingual voice and
-  // handles German cleanly on the v2.5 multilingual/flash model. Both are
-  // overridable via env so you can A/B different voices without a deploy.
-  const voiceId = process.env.ELEVENLABS_VOICE_ID || '21m00Tcm4TlvDq8ikWAM';
-  const modelId = process.env.ELEVENLABS_MODEL_ID || 'eleven_flash_v2_5';
+  // Defaults: a native-German voice from the ElevenLabs Voice Library +
+  // turbo_v2_5, a fast multilingual model that accepts a language_code hint
+  // (the older flash_v2_5 + an English-trained voice was producing
+  // recognisably anglicised German). Both still overridable via env so you
+  // can A/B without a redeploy.
+  const voiceId = process.env.ELEVENLABS_VOICE_ID || 'rKiu7lQ4c5P3az3745s3';
+  const modelId = process.env.ELEVENLABS_MODEL_ID || 'eleven_turbo_v2_5';
+
+  // Only some models accept the language_code field; sending it to others
+  // returns a 400. Keep this list updated as new models ship.
+  const LANG_CODE_MODELS = new Set(['eleven_turbo_v2_5', 'eleven_flash_v2_5']);
+
+  const upstreamBody = {
+    text:     text,
+    model_id: modelId,
+    // Conservative voice settings — stable, recognisable, no
+    // randomness drift on repeat plays of the same text.
+    voice_settings: { stability: 0.5, similarity_boost: 0.75 }
+  };
+  if (LANG_CODE_MODELS.has(modelId)) {
+    upstreamBody.language_code = 'de';
+  }
 
   try {
     const upstream = await fetch(
@@ -1235,13 +1252,7 @@ app.post('/api/tts', async (req, res) => {
           'Content-Type': 'application/json',
           'Accept':      'audio/mpeg',
         },
-        body: JSON.stringify({
-          text:     text,
-          model_id: modelId,
-          // Conservative voice settings — stable, recognisable, no
-          // randomness drift on repeat plays of the same text.
-          voice_settings: { stability: 0.5, similarity_boost: 0.75 }
-        })
+        body: JSON.stringify(upstreamBody)
       }
     );
 
