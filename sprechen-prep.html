@@ -94,6 +94,28 @@
   .q-nav-btn:disabled{opacity:0.3;cursor:not-allowed;}
 
   .q-german{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--white);margin-bottom:6px;}
+  /* Inline "hear this in German" pill — sits beside the German prompt /
+     keyword. Same component as the bubble version in ai-tutor/ai-pal but
+     reskinned for this page's dark gold/cream palette. */
+  .q-german-row{display:flex;align-items:flex-start;gap:12px;margin-bottom:6px;}
+  .q-german-row .q-german{margin-bottom:0;flex:1;min-width:0;}
+  .tts-btn{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:34px;height:34px;padding:0;
+    background:rgba(201,168,76,0.08);
+    border:1px solid rgba(201,168,76,0.35);border-radius:50%;
+    color:var(--gold);font-size:14px;line-height:1;cursor:pointer;
+    transition:background .15s, border-color .15s, transform .12s;
+    flex-shrink:0;
+  }
+  .tts-btn:hover{background:rgba(201,168,76,0.18);border-color:var(--gold);}
+  .tts-btn:active{transform:scale(0.95);}
+  .tts-btn.loading{cursor:wait;animation:ttsPulse 1s ease-in-out infinite;}
+  .tts-btn.playing{background:var(--gold);border-color:var(--gold);color:var(--black);}
+  .tts-btn.error{border-color:var(--red);color:var(--red);}
+  @keyframes ttsPulse{0%,100%{opacity:1;}50%{opacity:0.55;}}
+  .keyword-display{position:relative;}
+  .keyword-display .tts-btn{margin-left:18px;}
   .q-english{font-size:14px;color:var(--gray);font-style:italic;margin-bottom:20px;}
   .q-context{font-size:13px;color:var(--gold);margin-bottom:20px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;}
 
@@ -259,7 +281,10 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
           <button class="q-nav-btn" id="p1-next" onclick="changeQ1(1)">Next →</button>
         </div>
       </div>
-      <div class="q-german" id="p1-q-de"></div>
+      <div class="q-german-row">
+        <div class="q-german" id="p1-q-de"></div>
+        <button type="button" class="tts-btn" id="p1-tts" aria-label="Hear this in German" title="Hear this in German" onclick="speakPromptWithTTS(this, part1Qs[p1Index].de)">🔊</button>
+      </div>
       <div class="q-english" id="p1-q-en"></div>
       <div class="input-label">Type your answer in German:</div>
       <textarea class="answer-input" id="p1-input" placeholder="Ich heiße..." rows="3"></textarea>
@@ -305,6 +330,7 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
 
       <div class="keyword-display">
         <div class="keyword-word" id="p2-keyword"></div>
+        <button type="button" class="tts-btn" id="p2-tts" aria-label="Hear this German keyword" title="Hear this in German" onclick="speakPromptWithTTS(this, part2Keywords[p2Index].word)">🔊</button>
       </div>
 
       <div class="input-label">Form a question using this keyword:</div>
@@ -376,6 +402,80 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
 <script>
 var API_BASE = 'https://deutschweg.onrender.com';
 
+// ── TTS (on-demand ElevenLabs via /api/tts) ──────────────────────────────────
+// Mirrors the ai-tutor / ai-pal speaker pill. One small extra here: a global
+// text→Audio cache so navigating Next → Prev → tap on the same prompt costs
+// nothing (the audio for that prompt is already in memory). Navigating away
+// while audio is playing pauses it so the visible prompt always matches the
+// button state.
+var _ttsAudioCache = {};
+
+function speakPromptWithTTS(btn, text){
+  if (!text || btn._ttsState === 'loading' || btn._ttsState === 'playing') return;
+
+  var cached = _ttsAudioCache[text];
+  if (cached) {
+    bindAudioState(btn, cached);
+    setTtsState(btn, 'playing');
+    try { cached.currentTime = 0; } catch(e){}
+    cached.play().catch(function(){ setTtsState(btn, 'idle'); });
+    return;
+  }
+
+  setTtsState(btn, 'loading');
+  fetch(API_BASE + '/api/tts', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ text: text })
+  })
+    .then(function(r){
+      if (!r.ok) throw new Error('TTS failed (' + r.status + ')');
+      return r.blob();
+    })
+    .then(function(blob){
+      var url = URL.createObjectURL(blob);
+      var audio = new Audio(url);
+      _ttsAudioCache[text] = audio;
+      bindAudioState(btn, audio);
+      setTtsState(btn, 'playing');
+      return audio.play();
+    })
+    .catch(function(err){
+      console.warn('[tts]', err && err.message);
+      setTtsState(btn, 'error');
+      setTimeout(function(){ if (btn._ttsState === 'error') setTtsState(btn, 'idle'); }, 2200);
+    });
+}
+
+// Re-bound on every play so the handler always updates the current button.
+// Cached audio is shared across prompt navigations; only the bound button
+// reference can change.
+function bindAudioState(btn, audio){
+  audio.onended = function(){ setTtsState(btn, 'idle'); };
+  audio.onerror = function(){ setTtsState(btn, 'error'); };
+}
+
+function setTtsState(btn, state){
+  btn._ttsState = state;
+  btn.classList.remove('loading','playing','error');
+  if (state === 'loading')      { btn.classList.add('loading'); btn.innerHTML = '⏳'; }
+  else if (state === 'playing') { btn.classList.add('playing'); btn.innerHTML = '🔊'; }
+  else if (state === 'error')   { btn.classList.add('error');   btn.innerHTML = '⚠️'; }
+  else                          { btn.innerHTML = '🔊'; }
+}
+
+// Called from loadP1/loadP2 when the visible prompt changes. Pauses any
+// in-flight audio (so a long Question 1 doesn't keep playing while the
+// learner is staring at Question 2) and resets the button to idle.
+function resetTtsForButton(btnId){
+  var btn = document.getElementById(btnId);
+  if (!btn) return;
+  Object.keys(_ttsAudioCache).forEach(function(t){
+    try { _ttsAudioCache[t].pause(); _ttsAudioCache[t].currentTime = 0; } catch(e){}
+  });
+  setTtsState(btn, 'idle');
+}
+
 // ── Data ─────────────────────────────────────────────────────────────────────
 
 var part1Qs = [
@@ -446,6 +546,7 @@ function loadP1(idx) {
   document.getElementById('p1-prev').disabled = idx === 0;
   document.getElementById('p1-next').disabled = idx === part1Qs.length - 1;
   renderDots('p1-dots', part1Qs.length, p1Done, idx);
+  resetTtsForButton('p1-tts');
 }
 function changeQ1(dir) {
   p1Index = Math.max(0, Math.min(part1Qs.length - 1, p1Index + dir));
@@ -478,6 +579,7 @@ function loadP2(idx) {
   document.getElementById('p2-prev').disabled = idx === 0;
   document.getElementById('p2-next').disabled = idx === part2Keywords.length - 1;
   renderDots('p2-dots', part2Keywords.length, p2Done, idx);
+  resetTtsForButton('p2-tts');
 }
 function changeQ2(dir) {
   p2Index = Math.max(0, Math.min(part2Keywords.length - 1, p2Index + dir));
