@@ -193,7 +193,7 @@ section{padding:96px 0;}
   object-fit:cover;display:block;
 }
 
-/* ── YOUR PATH TO GERMANY (goal-recognition band) ── */
+/* ── YOUR PATH TO GERMANY (goal-recognition band → blog guides) ── */
 .paths-section{background:var(--bg);}
 .paths-eyebrow{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:14px;text-align:center;}
 .paths-h{font-size:38px;font-weight:800;line-height:1.2;letter-spacing:-0.3px;color:var(--dark);margin-bottom:14px;text-align:center;}
@@ -206,28 +206,31 @@ section{padding:96px 0;}
 @media(min-width:1000px){.paths-grid{grid-template-columns:repeat(3,1fr);}}
 .path-card{
   background:var(--white);border:1px solid var(--border);
-  border-radius:var(--radius-lg);padding:28px 26px;
-  display:flex;flex-direction:column;
+  border-radius:var(--radius-lg);padding:24px 22px;
+  display:flex;flex-direction:column;gap:14px;
   text-decoration:none;color:inherit;
   transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
 .path-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--blue-mid);}
-.path-icon{font-size:36px;margin-bottom:14px;line-height:1;}
-.path-title{font-size:18px;font-weight:800;color:var(--dark);margin-bottom:10px;letter-spacing:-0.2px;}
-.path-text{font-size:14px;color:var(--mid);line-height:1.65;margin-bottom:16px;}
-.path-level{
-  font-size:13px;color:var(--blue);background:var(--blue-light);
-  border:1px solid var(--blue-mid);border-radius:10px;
-  padding:10px 14px;line-height:1.55;margin-bottom:18px;font-weight:600;
+.path-icon{font-size:36px;line-height:1;}
+.path-title-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.path-title{font-size:17px;font-weight:800;color:var(--dark);letter-spacing:-0.2px;margin:0;}
+.path-level-chip{
+  font-size:11px;font-weight:700;letter-spacing:0.5px;
+  background:var(--blue-light);color:var(--blue);
+  border:1px solid var(--blue-mid);
+  border-radius:50px;padding:3px 10px;
+  white-space:nowrap;
 }
 .path-cta{
   margin-top:auto;align-self:flex-start;
-  font-size:14px;font-weight:700;color:var(--blue);
+  font-size:13px;font-weight:700;color:var(--blue);
   border-bottom:2px solid transparent;
   transition:border-color .15s;
 }
 .path-card:hover .path-cta{border-bottom-color:var(--blue);}
 .paths-foot{text-align:center;margin-top:36px;font-size:14px;color:var(--mid);}
+.paths-foot-row{margin-top:8px;}
 .paths-foot-link{color:var(--blue);font-weight:700;text-decoration:none;margin-left:4px;}
 .paths-foot-link:hover{text-decoration:underline;}
 
@@ -615,61 +618,68 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
 </section>
 
 <!-- ── YOUR PATH TO GERMANY ──
-     Goal-recognition band. Visitors arriving from TikTok / Google often
-     don't yet know whether DeutschWeg matches THEIR reason for German.
-     Five common paths, each pairing the life goal with the typical Goethe
-     level and ending in the same free A1 entry point. Level claims are
-     deliberately soft ("usually requires") — no legal promises. -->
+     Goal-recognition band that doubles as a navigation hub. Five of the
+     seven pathway guides we already publish on the blog are surfaced
+     here, paired with the Goethe level that path actually requires
+     (matched against each guide's content). Each card opens the guide;
+     the footer links cover "show me the other two" and "I don't know my
+     level yet". No new product pages, no level-system change. -->
 <section class="paths-section">
   <div class="wrap">
     <div class="paths-eyebrow">YOUR PATH TO GERMANY</div>
     <h2 class="paths-h">Why are you learning German?</h2>
-    <p class="paths-sub">Whatever brought you here, there's a clear path — and it starts with one free step.</p>
+    <p class="paths-sub">Whatever brought you here, there's a clear path. Start by understanding yours.</p>
 
     <div class="paths-grid">
-      <a class="path-card" href="signup.html">
-        <div class="path-icon">🍼</div>
-        <h3 class="path-title">Au-pair</h3>
-        <p class="path-text">You're going to live with a German family and care for their children. You'll need to handle daily conversation from day one.</p>
-        <div class="path-level">Usually requires Goethe A1. DeutschWeg gets you there — free.</div>
-        <span class="path-cta">Start A1 free →</span>
-      </a>
-
-      <a class="path-card" href="signup.html">
-        <div class="path-icon">🎓</div>
-        <h3 class="path-title">Studium (University)</h3>
-        <p class="path-text">You're heading to a German university. Lectures, seminars and paperwork will all be in German.</p>
-        <div class="path-level">Usually requires B1–B2. Build your path from A1 upward.</div>
-        <span class="path-cta">Start your path →</span>
-      </a>
-
-      <a class="path-card" href="signup.html">
-        <div class="path-icon">🔧</div>
-        <h3 class="path-title">Ausbildung (Vocational training)</h3>
-        <p class="path-text">You're starting vocational training in Germany — learning a trade while you work.</p>
-        <div class="path-level">Usually requires B1. Start free at A1 and build up.</div>
-        <span class="path-cta">Start your path →</span>
-      </a>
-
-      <a class="path-card" href="signup.html">
-        <div class="path-icon">💼</div>
-        <h3 class="path-title">Work Visa</h3>
-        <p class="path-text">You have skills Germany needs. German opens the door to the job and the visa.</p>
-        <div class="path-level">Most roles expect A2–B1. Begin free with A1.</div>
-        <span class="path-cta">Start A1 free →</span>
-      </a>
-
-      <a class="path-card" href="signup.html">
+      <a class="path-card" href="/blog-family-reunification.html">
         <div class="path-icon">❤️</div>
-        <h3 class="path-title">Family Reunification</h3>
-        <p class="path-text">Your family is in Germany — or will be. You're learning German to be together.</p>
-        <div class="path-level">Usually requires Goethe A1. DeutschWeg gets you there — free.</div>
-        <span class="path-cta">Start A1 free →</span>
+        <div class="path-title-row">
+          <h3 class="path-title">Family Reunification</h3>
+          <span class="path-level-chip">A1</span>
+        </div>
+        <span class="path-cta">Read the guide →</span>
+      </a>
+
+      <a class="path-card" href="/blog-au-pair.html">
+        <div class="path-icon">🧒</div>
+        <div class="path-title-row">
+          <h3 class="path-title">Au-Pair</h3>
+          <span class="path-level-chip">A1 / A2</span>
+        </div>
+        <span class="path-cta">Read the guide →</span>
+      </a>
+
+      <a class="path-card" href="/blog-ausbildung.html">
+        <div class="path-icon">🔧</div>
+        <div class="path-title-row">
+          <h3 class="path-title">Ausbildung</h3>
+          <span class="path-level-chip">B1</span>
+        </div>
+        <span class="path-cta">Read the guide →</span>
+      </a>
+
+      <a class="path-card" href="/blog-university-studies.html">
+        <div class="path-icon">🎓</div>
+        <div class="path-title-row">
+          <h3 class="path-title">University Studies</h3>
+          <span class="path-level-chip">B2</span>
+        </div>
+        <span class="path-cta">Read the guide →</span>
+      </a>
+
+      <a class="path-card" href="/blog-skilled-worker-visa.html">
+        <div class="path-icon">💼</div>
+        <div class="path-title-row">
+          <h3 class="path-title">Skilled Worker Visa</h3>
+          <span class="path-level-chip">B1 / B2</span>
+        </div>
+        <span class="path-cta">Read the guide →</span>
       </a>
     </div>
 
     <div class="paths-foot">
-      Not sure where you stand?<a class="paths-foot-link" href="signup.html">Take the quick placement check →</a>
+      <p class="paths-foot-row"><a class="paths-foot-link" href="/blog.html">See all 7 pathways →</a></p>
+      <p class="paths-foot-row">Not sure of your level?<a class="paths-foot-link" href="signup.html">Take the quick placement check →</a></p>
     </div>
   </div>
 </section>
