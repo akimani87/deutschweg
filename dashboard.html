@@ -401,12 +401,12 @@
   <!-- WEITER LERNEN — primary continue card, populated from profiles.letzte_modul_slug -->
   <a class="continue-card" id="continueCard" href="#" style="display:none;">
     <div>
-      <div class="continue-eyebrow" id="continueEyebrow">Weiter lernen</div>
-      <div class="continue-title" id="continueTitle">Lade dein nächstes Modul …</div>
+      <div class="continue-eyebrow" id="continueEyebrow">Continue learning</div>
+      <div class="continue-title" id="continueTitle">Loading your next module …</div>
       <div class="continue-meta" id="continueMeta"></div>
     </div>
     <span class="continue-cta">
-      <span id="continueCtaText">Weiter zu Modul</span>
+      <span id="continueCtaText">Continue to Module</span>
       <span class="continue-cta-arrow">→</span>
     </span>
   </a>
@@ -824,9 +824,9 @@
     function show(m) {
       if (!m) { card.style.display = 'none'; return; }
       card.href = moduleHref(m);
-      titleEl.textContent = m.title || 'Nächstes Modul';
-      metaEl.textContent  = m.level + ' · Modul ' + (m.order_index || '');
-      ctaEl.textContent   = 'Weiter zu Modul ' + (m.order_index || '');
+      titleEl.textContent = m.title || 'Next module';
+      metaEl.textContent  = m.level + ' · Module ' + (m.order_index || '');
+      ctaEl.textContent   = 'Continue to Module ' + (m.order_index || '');
       card.style.display = '';
     }
 
@@ -1172,7 +1172,7 @@ function decorateLevelTabs() {
       var catalogKey = level + '_module';
       var entry = window.dwPaywall && window.dwPaywall.catalog && window.dwPaywall.catalog[catalogKey];
       var priceMatch = entry ? entry.valueLine.match(/\d+\s?€/) : null;
-      nameSpan.textContent = priceMatch ? (priceMatch[0] + ' freischalten') : 'Freischalten';
+      nameSpan.textContent = priceMatch ? ('Unlock ' + priceMatch[0]) : 'Unlock';
       tab.classList.add('locked');
     } else {
       tab.classList.remove('locked');
@@ -1186,7 +1186,7 @@ function renderLockIntoSection(level) {
   if (!section || !window.dwPaywall) return;
   window.dwPaywall.renderUnlockScreen(section, level + '_module', {
     backHref:  '#',
-    backLabel: '← A1 ist immer frei (Tab oben antippen)'
+    backLabel: '← A1 is always free (tap the tab above)'
   });
 }
 

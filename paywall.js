@@ -25,49 +25,49 @@
     a2_module: {
       level:        'A2',
       kind:         'module',
-      title:        'A2 freischalten',
-      valueLine:    'Alle A2-Module — einmalig 19 €',
-      ctaLabel:     'Freischalten',
+      title:        'Unlock A2',
+      valueLine:    'All A2 modules — one-time 19 €',
+      ctaLabel:     'Unlock',
       placeholder:  '/freischalten/a2'
     },
     b1_module: {
       level:        'B1',
       kind:         'module',
-      title:        'B1 freischalten',
-      valueLine:    'Alle B1-Module — einmalig 24 €',
-      ctaLabel:     'Freischalten',
+      title:        'Unlock B1',
+      valueLine:    'All B1 modules — one-time 24 €',
+      ctaLabel:     'Unlock',
       placeholder:  '/freischalten/b1'
     },
     b2_module: {
       level:        'B2',
       kind:         'module',
-      title:        'B2 freischalten',
-      valueLine:    'Alle B2-Module — einmalig 29 €',
-      ctaLabel:     'Freischalten',
+      title:        'Unlock B2',
+      valueLine:    'All B2 modules — one-time 29 €',
+      ctaLabel:     'Unlock',
       placeholder:  '/freischalten/b2'
     },
     examwhisperer_a2: {
       level:        'A2',
       kind:         'examwhisperer',
-      title:        'Exam Whisperer A2 freischalten',
-      valueLine:    'AI-Bewertung für A2-Schreiben — einmalig 19 €',
-      ctaLabel:     'Freischalten',
+      title:        'Unlock Exam Whisperer A2',
+      valueLine:    'AI scoring for A2 Schreiben — one-time 19 €',
+      ctaLabel:     'Unlock',
       placeholder:  '/freischalten/examwhisperer-a2'
     },
     examwhisperer_b1: {
       level:        'B1',
       kind:         'examwhisperer',
-      title:        'Exam Whisperer B1 freischalten',
-      valueLine:    'AI-Bewertung für B1-Schreiben — einmalig 19 €',
-      ctaLabel:     'Freischalten',
+      title:        'Unlock Exam Whisperer B1',
+      valueLine:    'AI scoring for B1 Schreiben — one-time 19 €',
+      ctaLabel:     'Unlock',
       placeholder:  '/freischalten/examwhisperer-b1'
     },
     examwhisperer_b2: {
       level:        'B2',
       kind:         'examwhisperer',
-      title:        'Exam Whisperer B2 freischalten',
-      valueLine:    'AI-Bewertung für B2-Schreiben — einmalig 19 €',
-      ctaLabel:     'Freischalten',
+      title:        'Unlock Exam Whisperer B2',
+      valueLine:    'AI scoring for B2 Schreiben — one-time 19 €',
+      ctaLabel:     'Unlock',
       placeholder:  '/freischalten/examwhisperer-b2'
     }
   };
@@ -132,13 +132,13 @@
     }
     opts = opts || {};
     var backHref  = opts.backHref  || '/dashboard';
-    var backLabel = opts.backLabel || '← Zurück zum Dashboard';
+    var backLabel = opts.backLabel || '← Back to Dashboard';
     var anon      = !!opts.anonymous;
 
     var anonNote = anon
       ? '<div style="margin-top:14px;font-size:13px;color:#9CA3AF;line-height:1.6;">'
-        + 'Noch kein Konto? <a href="signup.html" style="color:#3B82F6;font-weight:600;text-decoration:none;">Kostenlos anmelden</a> '
-        + '— A1 ist immer frei.'
+        + 'Don\'t have an account yet? <a href="signup.html" style="color:#3B82F6;font-weight:600;text-decoration:none;">Sign up free</a> '
+        + '— A1 is always free.'
         + '</div>'
       : '';
 
@@ -146,7 +146,7 @@
       '<div style="min-height:60vh;display:flex;align-items:center;justify-content:center;padding:40px 20px;">' +
         '<div style="max-width:440px;width:100%;background:#fff;border:1px solid #E5E7EB;border-radius:20px;padding:36px 32px;box-shadow:0 4px 16px rgba(0,0,0,0.07);text-align:center;">' +
           '<div style="width:64px;height:64px;border-radius:50%;background:#EFF6FF;border:1px solid #DBEAFE;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 18px;">🔒</div>' +
-          '<div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#3B82F6;text-transform:uppercase;margin-bottom:10px;">' + escapeHtml(meta.level) + ' · ' + (meta.kind === 'module' ? 'Modul' : 'Exam Whisperer') + '</div>' +
+          '<div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#3B82F6;text-transform:uppercase;margin-bottom:10px;">' + escapeHtml(meta.level) + ' · ' + (meta.kind === 'module' ? 'Module' : 'Exam Whisperer') + '</div>' +
           '<h1 style="font-size:24px;font-weight:800;color:#1F2937;line-height:1.25;margin-bottom:12px;letter-spacing:-0.3px;">' + escapeHtml(meta.title) + '</h1>' +
           '<p style="font-size:15px;color:#4B5563;line-height:1.65;margin-bottom:24px;">' + escapeHtml(meta.valueLine) + '</p>' +
           '<a href="' + escapeAttr(meta.placeholder) + '" data-dw-unlock="' + escapeAttr(productKey) + '" style="display:block;width:100%;background:#3B82F6;color:#fff;padding:14px 22px;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;box-shadow:0 4px 14px rgba(59,130,246,0.3);transition:background .18s, transform .18s;">' + escapeHtml(meta.ctaLabel) + ' →</a>' +

@@ -565,14 +565,14 @@
           productKey: modulePK,
           user:       state.user,
           backHref:   '/dashboard',
-          backLabel:  '← Zurück zum Dashboard',
+          backLabel:  '← Back to Dashboard',
           onAllowed:  function() { render(); },
           onDenied:   function() {
             // Hide progress chrome that doesn't belong on the unlock screen.
             var dot = document.getElementById('dotRow');     if (dot) dot.style.display = 'none';
             var xp  = document.getElementById('xpDisp');     if (xp)  xp.style.display = 'none';
             var pb  = document.getElementById('progFill');   if (pb)  pb.style.width = '0%';
-            document.title = (state.module.title || 'Modul') + ' — DeutschWeg';
+            document.title = (state.module.title || 'Module') + ' — DeutschWeg';
             document.getElementById('modTag').textContent =
               (state.module.level || '') + ' · ' + (state.module.title || '');
             finalizeBoot();
