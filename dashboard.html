@@ -793,13 +793,21 @@
   }
 
   function renderLoading(el) {
-    el.innerHTML = '<div style="padding:32px 16px;text-align:center;color:#9CA3AF;font-size:13px;">Loading modules…</div>';
+    el.innerHTML = '<div style="padding:32px 16px;text-align:center;color:#9CA3AF;font-size:13px;">Getting your lessons ready…</div>';
   }
   function renderError(el, msg) {
     el.innerHTML = '<div style="padding:24px 16px;text-align:center;color:#DC2626;font-size:13px;">' + escapeHtml(msg) + '</div>';
   }
   function renderEmpty(el, level) {
-    el.innerHTML = '<div style="padding:24px 16px;text-align:center;color:#9CA3AF;font-size:13px;">No modules yet for ' + level + '.</div>';
+    // Spec: supportive, practical microcopy for empty states. Beginner-
+    // friendly, no hype, action-oriented.
+    el.innerHTML =
+      '<div style="padding:28px 18px;text-align:center;color:#6B7280;font-size:13px;line-height:1.7;">' +
+        '<div style="font-size:13.5px;color:#1F2937;font-weight:600;margin-bottom:6px;">No worries — every expert was once a beginner.</div>' +
+        'New ' + level + ' lessons are on the way. ' +
+        'In the meantime, ' +
+        '<a href="#" onclick="event.preventDefault();switchLevel(\'a1\');" style="color:#3B82F6;font-weight:600;text-decoration:none;">start with your first A1 lesson →</a>' +
+      '</div>';
   }
 
   // Module-level cache so renderCard can read it without param threading.
@@ -873,7 +881,7 @@
       var userRes = arr[1];
       if (modRes.error) {
         console.error('[dashboard] modules fetch error:', modRes.error.message);
-        lists.forEach(function(el) { renderError(el, 'Could not load modules.'); });
+        lists.forEach(function(el) { renderError(el, "Couldn't load your lessons. Check your connection and try again."); });
         return;
       }
 
@@ -935,7 +943,7 @@
       });
     }).catch(function(e) {
       console.error('[dashboard] modules fetch threw:', e);
-      lists.forEach(function(el) { renderError(el, 'Could not load modules.'); });
+      lists.forEach(function(el) { renderError(el, "Couldn't load your lessons. Check your connection and try again."); });
     });
   })();
 })();

@@ -257,6 +257,55 @@
   }
   .complete-actions { display:flex; flex-direction:column; gap:10px; width:100%; max-width:280px; }
 
+  /* ── OUTCOME BOX (lernziel_intro: "In this lesson, you'll learn how to…") ── */
+  .lesson-outcome{
+    background:#EFF6FF;border:1px solid #DBEAFE;border-left:4px solid #3B82F6;
+    border-radius:12px;padding:14px 16px;margin:0 0 22px;
+    display:flex;align-items:flex-start;gap:12px;
+  }
+  .lesson-outcome-icon{
+    font-size:20px;line-height:1;flex-shrink:0;margin-top:1px;
+  }
+  .lesson-outcome-body{flex:1;min-width:0;}
+  .lesson-outcome-title{
+    font-size:11px;font-weight:700;letter-spacing:1px;
+    text-transform:uppercase;color:#1D4ED8;margin-bottom:5px;
+  }
+  .lesson-outcome-text{
+    font-size:14px;color:#1F2937;line-height:1.6;
+  }
+
+  /* ── COMPLETION BOX (lernziel_completion: "You can now…") ── */
+  .lesson-complete{
+    background:#ECFDF5;border:1px solid #A7F3D0;border-left:4px solid #10B981;
+    border-radius:12px;padding:14px 16px;margin:18px 0 0;
+    display:flex;align-items:flex-start;gap:12px;
+  }
+  .lesson-complete-icon{
+    width:28px;height:28px;border-radius:50%;
+    background:#10B981;color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:14px;font-weight:700;flex-shrink:0;
+  }
+  .lesson-complete-body{flex:1;min-width:0;}
+  .lesson-complete-title{
+    font-size:11px;font-weight:700;letter-spacing:1px;
+    text-transform:uppercase;color:#065F46;margin-bottom:5px;
+  }
+  .lesson-complete-text{
+    font-size:14px;color:#1F2937;line-height:1.6;
+  }
+
+  /* ── QUIZ SUCCESS MESSAGE (warm support after the last correct answer) ── */
+  .quiz-success{
+    background:#ECFDF5;border:1px solid #A7F3D0;
+    border-radius:10px;padding:12px 14px;margin-top:12px;
+    font-size:13.5px;color:#065F46;line-height:1.6;
+    display:none;
+  }
+  .quiz-success.show{display:flex;align-items:flex-start;gap:10px;animation:fadeIn .3s ease;}
+  .quiz-success-icon{font-size:16px;line-height:1.2;flex-shrink:0;}
+
   @media (max-width:600px) {
     .lesson-h { font-size:22px; }
     .quiz-q   { font-size:17px; }
@@ -472,9 +521,13 @@
       }
 
       // 2. Lessons
+      // lernziel_intro / lernziel_completion power the outcome + completion
+      // boxes on each lesson; nullable in the schema → rendered only when
+      // a non-empty string is present so legacy lessons don't show empty
+      // scaffolding.
       var lessonRes = await dwSupabase
         .from('lessons')
-        .select('id, title, order_index, content_text, content_json')
+        .select('id, title, order_index, content_text, content_json, lernziel_intro, lernziel_completion')
         .eq('module_id', id)
         .order('order_index', { ascending: true });
 
@@ -643,6 +696,36 @@
         contentHtml = '<div class="body-text empty">Content for this lesson is being added.</div>';
       }
 
+      // Outcome box — only renders when lernziel_intro is a non-empty string.
+      // Sits between the lesson title and the body so the reader sees the
+      // outcome before the content.
+      var introText = (lesson.lernziel_intro && String(lesson.lernziel_intro).trim()) || '';
+      var outcomeHtml = introText
+        ? '<div class="lesson-outcome">' +
+            '<div class="lesson-outcome-icon">🎯</div>' +
+            '<div class="lesson-outcome-body">' +
+              '<div class="lesson-outcome-title">In this lesson, you\'ll learn how to…</div>' +
+              '<div class="lesson-outcome-text">' + escapeHtml(introText) + '</div>' +
+            '</div>' +
+          '</div>'
+        : '';
+
+      // Completion box — only renders when lernziel_completion is non-empty.
+      // For a lesson without exercises it attaches to the content step (the
+      // only step the learner sees). For a lesson with a quiz, it lives at
+      // the bottom of the LAST quiz step so it appears once the student
+      // finishes the quiz, not before.
+      var completionText = (lesson.lernziel_completion && String(lesson.lernziel_completion).trim()) || '';
+      var completionHtml = completionText
+        ? '<div class="lesson-complete">' +
+            '<div class="lesson-complete-icon">✓</div>' +
+            '<div class="lesson-complete-body">' +
+              '<div class="lesson-complete-title">You can now…</div>' +
+              '<div class="lesson-complete-text">' + escapeHtml(completionText) + '</div>' +
+            '</div>' +
+          '</div>'
+        : '';
+
       var nextLabel = exercises.length > 0
         ? 'Start Quiz →'
         : (idx < state.lessons.length - 1 ? 'Next Lesson →' : 'Finish →');
@@ -661,6 +744,10 @@
             ' onclick="dwModule.weiter(' + idx + ')">Weiter →</button>' +
         '</div>';
 
+      // Quiz-less lessons get the completion box on the content step.
+      // Quiz-bearing lessons get it appended to the last quiz step instead.
+      var contentCompletion = exercises.length === 0 ? completionHtml : '';
+
       var contentStep = document.createElement('div');
       contentStep.className = 'step active';
       contentStep.id = 's-' + idx + '-content';
@@ -668,7 +755,9 @@
         '<div class="card">' +
           '<div class="concept-tag">' + escapeHtml(m.level) + ' · LESSON ' + lessonNo + '</div>' +
           '<h1 class="lesson-h">' + escapeHtml(lessonTitle) + '</h1>' +
+          outcomeHtml +
           contentHtml +
+          contentCompletion +
           '<button class="btn btn-primary" onclick="dwModule.advance(' + idx + ', 0)">' + nextLabel + '</button>' +
           navHtml +
         '</div>';
@@ -679,7 +768,8 @@
         var step = document.createElement('div');
         step.className = 'step';
         step.id = 's-' + idx + '-q-' + ei;
-        step.innerHTML = renderQuiz(ex, idx, ei, exercises.length);
+        var isLast = ei === exercises.length - 1;
+        step.innerHTML = renderQuiz(ex, idx, ei, exercises.length, isLast ? completionHtml : '');
         screen.appendChild(step);
       });
 
@@ -689,7 +779,7 @@
     finalizeBoot();
   }
 
-  function renderQuiz(ex, lIdx, eIdx, total) {
+  function renderQuiz(ex, lIdx, eIdx, total, trailingHtml) {
     var opts = Array.isArray(ex.options) ? ex.options : [];
     var correctIdx = opts.findIndex(function(o) {
       return String(o) === String(ex.correct_answer);
@@ -705,7 +795,21 @@
       );
     }).join('');
 
-    var nextLabel = (eIdx < total - 1) ? 'Next question →' : 'Continue →';
+    var isLast = eIdx === total - 1;
+    var nextLabel = isLast ? 'Continue →' : 'Next question →';
+
+    // The .quiz-success slot is empty in markup; answer() picks one of the
+    // QUIZ_SUCCESS_MESSAGES at random and reveals it once the student finishes
+    // the last question of a lesson. The completion box (passed in via
+    // trailingHtml when this is the last quiz of a lesson with non-empty
+    // lernziel_completion) sits below the success slot so the order reads:
+    // feedback → "Nice work" → "You can now…" → Continue button.
+    var successSlotHtml = isLast
+      ? '<div class="quiz-success" id="qs-' + lIdx + '-' + eIdx + '">' +
+          '<div class="quiz-success-icon">✨</div>' +
+          '<div class="quiz-success-text" id="qst-' + lIdx + '-' + eIdx + '"></div>' +
+        '</div>'
+      : '';
 
     return (
       '<div class="card quiz-card">' +
@@ -717,10 +821,27 @@
           '<div class="qfb"  id="fbb-' + lIdx + '-' + eIdx + '"></div>' +
           '<div class="qfr"  id="fr-' + lIdx + '-' + eIdx + '" style="display:none;"></div>' +
         '</div>' +
+        successSlotHtml +
+        (trailingHtml || '') +
         '<button class="btn btn-primary qnext" id="next-' + lIdx + '-' + eIdx + '" ' +
           'onclick="dwModule.advance(' + lIdx + ',' + (eIdx + 1) + ')">' + nextLabel + '</button>' +
       '</div>'
     );
+  }
+
+  // Warm, achievement-oriented messages shown only after the last question
+  // of a lesson is answered. Phrased around completion + progress toward
+  // the learner's reason for studying — never time-based. Pick one at
+  // random per render so consecutive lessons don't always read identically.
+  var QUIZ_SUCCESS_MESSAGES = [
+    "Nice work — you can now practise this in a real situation.",
+    "Great job — this lesson moves you one step closer to your Germany goal.",
+    "Well done — you've earned the next lesson.",
+    "Solid finish — every lesson like this builds your exam confidence."
+  ];
+  function pickQuizSuccessMessage() {
+    var i = Math.floor(Math.random() * QUIZ_SUCCESS_MESSAGES.length);
+    return QUIZ_SUCCESS_MESSAGES[i];
   }
 
   function finalizeBoot() {
@@ -1033,6 +1154,20 @@
         var lessonId = state.lessons[lIdx] && state.lessons[lIdx].id;
         if (lessonId) {
           state.correctByLesson[lessonId] = (state.correctByLesson[lessonId] || 0) + 1;
+        }
+      }
+
+      // Warm success message after the LAST question of the lesson — fires
+      // on the first answer regardless of correctness (the spec is about
+      // completing the checkpoint, not about getting it right). The block
+      // only exists on the last quiz step; otherwise this is a no-op.
+      var totalEx = (state.exercises[state.lessons[lIdx] && state.lessons[lIdx].id] || []).length;
+      if (first && eIdx === totalEx - 1) {
+        var successBox  = document.getElementById('qs-'  + lIdx + '-' + eIdx);
+        var successText = document.getElementById('qst-' + lIdx + '-' + eIdx);
+        if (successBox && successText) {
+          successText.textContent = pickQuizSuccessMessage();
+          successBox.classList.add('show');
         }
       }
     },
