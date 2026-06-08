@@ -540,6 +540,104 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
   .btn-ghost:hover{background:var(--bg);}
   .btn-primary{padding:9px 12px;font-size:13px;box-shadow:0 1px 4px rgba(59,130,246,0.3);}
 }
+
+/* ── HELLO CHAT WIDGET (rule-based, no AI) ──────────────────────────────────
+   Floating bottom-right button + small panel. Panel sits at z-index:80100,
+   below the cookie banner (99999) so it doesn't block consent dismissal.
+   All responses are hard-coded strings — no model calls, no fetches except
+   the single Supabase INSERT when someone leaves an email. */
+.hc-fab{
+  position:fixed;right:18px;bottom:18px;z-index:80000;
+  width:56px;height:56px;border-radius:50%;
+  background:var(--blue);color:#fff;border:none;cursor:pointer;
+  font-size:24px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 10px 25px rgba(59,130,246,0.35), 0 2px 6px rgba(0,0,0,0.15);
+  transition:transform .18s ease, box-shadow .18s ease;
+  font-family:'Plus Jakarta Sans',sans-serif;
+}
+.hc-fab:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(59,130,246,0.4), 0 3px 8px rgba(0,0,0,0.18);}
+.hc-fab[aria-expanded="true"]{transform:rotate(45deg);}
+.hc-fab[aria-expanded="true"]:hover{transform:rotate(45deg) translateY(-2px);}
+
+.hc-panel{
+  position:fixed;right:18px;bottom:86px;z-index:80100;
+  width:min(360px, calc(100vw - 36px));
+  max-height:min(560px, calc(100vh - 130px));
+  background:#fff;border:1px solid var(--border);
+  border-radius:18px;box-shadow:var(--shadow-lg);
+  display:none;flex-direction:column;overflow:hidden;
+  font-family:'Plus Jakarta Sans',sans-serif;
+}
+.hc-panel.open{display:flex;animation:hcFade .18s ease both;}
+@keyframes hcFade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+.hc-header{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 16px;border-bottom:1px solid var(--border);
+  background:linear-gradient(135deg,#3B82F6 0%,#2563EB 100%);color:#fff;
+}
+.hc-header-icon{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.18);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.hc-header-title{flex:1;font-size:14px;font-weight:700;line-height:1.3;}
+.hc-header-sub{font-size:11px;font-weight:500;opacity:0.85;}
+.hc-close{
+  background:transparent;border:none;color:#fff;font-size:18px;
+  width:30px;height:30px;border-radius:50%;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s ease;
+}
+.hc-close:hover{background:rgba(255,255,255,0.18);}
+
+.hc-body{flex:1;overflow-y:auto;padding:16px;background:var(--bg);}
+.hc-msg{
+  background:#fff;border:1px solid var(--border);border-radius:14px;
+  padding:11px 14px;font-size:13.5px;color:var(--dark);line-height:1.55;
+  max-width:90%;margin-bottom:10px;animation:hcFade .18s ease both;
+}
+.hc-msg.bot{border-bottom-left-radius:4px;}
+.hc-msg.user{
+  background:#3B82F6;color:#fff;border-color:#3B82F6;
+  margin-left:auto;border-bottom-right-radius:4px;
+}
+.hc-options{display:flex;flex-direction:column;gap:8px;margin:6px 0 10px;}
+.hc-option{
+  background:#fff;border:1px solid var(--blue-mid);
+  color:var(--blue);border-radius:12px;
+  padding:11px 14px;font-size:13px;font-weight:600;text-align:left;
+  cursor:pointer;font-family:inherit;
+  transition:background .15s ease, border-color .15s ease, transform .12s ease;
+  line-height:1.35;
+}
+.hc-option:hover{background:var(--blue-light);border-color:var(--blue);}
+.hc-option:active{transform:scale(0.98);}
+
+.hc-form{display:flex;flex-direction:column;gap:8px;margin-top:6px;}
+.hc-form input, .hc-form textarea{
+  width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;
+  font-family:inherit;font-size:13px;color:var(--dark);outline:none;
+  background:#fff;
+  transition:border-color .15s ease, box-shadow .15s ease;
+}
+.hc-form input:focus, .hc-form textarea:focus{
+  border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,0.12);
+}
+.hc-form textarea{min-height:78px;resize:vertical;}
+.hc-form-row{display:flex;gap:8px;align-items:center;}
+.hc-submit{
+  background:var(--blue);color:#fff;border:none;border-radius:10px;
+  padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;
+  font-family:inherit;flex:1;
+  transition:background .15s ease;
+}
+.hc-submit:hover{background:var(--blue-dark);}
+.hc-submit:disabled{opacity:0.6;cursor:not-allowed;}
+.hc-form-err{font-size:12px;color:#EF4444;}
+.hc-privacy{font-size:11px;color:var(--light);line-height:1.5;margin-top:6px;}
+
+@media(max-width:480px){
+  .hc-fab{right:14px;bottom:14px;width:52px;height:52px;font-size:22px;}
+  .hc-panel{right:10px;left:10px;bottom:78px;width:auto;border-radius:14px;}
+}
 </style>
 </head>
 <body>
@@ -1077,5 +1175,258 @@ document.addEventListener('DOMContentLoaded',function(){document.body.classList.
 if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
 </script>
 <script src="./cookie-banner.js"></script>
+
+<!-- ── HELLO CHAT WIDGET ──
+     Rule-based. Zero AI/model calls. The only network request is a single
+     Supabase INSERT into chat_inquiries when the visitor leaves an email.
+     RLS lets anon INSERT but NEVER SELECT, so submissions are write-only
+     from the public client. -->
+<button type="button" class="hc-fab" id="hcFab" aria-label="Open chat" aria-expanded="false" aria-controls="hcPanel">💬</button>
+
+<aside class="hc-panel" id="hcPanel" role="dialog" aria-labelledby="hcTitle" aria-hidden="true">
+  <header class="hc-header">
+    <div class="hc-header-icon">👋</div>
+    <div>
+      <div class="hc-header-title" id="hcTitle">DeutschWeg Help</div>
+      <div class="hc-header-sub">Quick answers — choose a question</div>
+    </div>
+    <button type="button" class="hc-close" id="hcClose" aria-label="Close chat">✕</button>
+  </header>
+  <div class="hc-body" id="hcBody" tabindex="-1"></div>
+</aside>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
+<script>
+(function() {
+  'use strict';
+
+  // ── Rule tree ────────────────────────────────────────────────────────────
+  // Every key is a question the visitor can tap. The bot answers verbatim
+  // from `answer` — no templating, no model. Prices come from the canonical
+  // one-time model and match paywall.js's CATALOG. If you change a price
+  // here, also update paywall.js (single grep: "19 €", "24 €", "29 €").
+  var INITIAL_GREETING = "Hi! 👋 I'm here to help. What would you like to know?";
+
+  var INITIAL_OPTIONS = [
+    { id: 'free_a1',     label: 'Is A1 really free?' },
+    { id: 'cost',        label: 'What does it cost?' },
+    { id: 'level_goal',  label: 'Which level do I need for my goal?' },
+    { id: 'ai_tutor',    label: 'How does the AI tutor work?' },
+    { id: 'card',        label: 'Do I need a credit card to start?' },
+    { id: 'other',       label: 'I have another question' }
+  ];
+
+  var ANSWERS = {
+    free_a1: {
+      text: "Yes! All of A1 is free, forever — no card needed. A2 (€19), B1 (€24) and B2 (€29) are one-time unlocks when you're ready."
+    },
+    cost: {
+      text: "A1 is free. A2 = €19, B1 = €24, B2 = €29 — one-time, no subscription. Exam Whisperer per level = €19. No recurring charges."
+    },
+    level_goal: {
+      text: "Different goals need different Goethe levels. Au-pair → A1. Family reunification → A1. Ausbildung → B1. University → B2. Skilled worker visa → B1/B2. Tap a card on the homepage's \"Your path to Germany\" section for the full guide, or sign up free and take the 5-question placement check."
+    },
+    ai_tutor: {
+      text: "The AI Tutor knows your level (A1/A2/B1/B2), remembers what you've practised, and chats with you in German with English help when you need it. You can ask grammar questions, request corrections, or role-play exam situations. It's included on every level — A1 free, A2+ included once you unlock that level."
+    },
+    card: {
+      text: "No — start A1 completely free, no card required. You only pay when you unlock A2, B1 or B2 — and those are one-time, not subscriptions."
+    },
+    other: {
+      kind: 'email_capture'
+    }
+  };
+
+  // ── State + DOM ──────────────────────────────────────────────────────────
+  var fab      = document.getElementById('hcFab');
+  var panel    = document.getElementById('hcPanel');
+  var closeBtn = document.getElementById('hcClose');
+  var body     = document.getElementById('hcBody');
+  var booted   = false;
+
+  function open() {
+    panel.classList.add('open');
+    panel.setAttribute('aria-hidden', 'false');
+    fab.setAttribute('aria-expanded', 'true');
+    fab.setAttribute('aria-label', 'Close chat');
+    if (!booted) { boot(); booted = true; }
+  }
+  function close() {
+    panel.classList.remove('open');
+    panel.setAttribute('aria-hidden', 'true');
+    fab.setAttribute('aria-expanded', 'false');
+    fab.setAttribute('aria-label', 'Open chat');
+  }
+  fab.addEventListener('click', function() {
+    if (panel.classList.contains('open')) close(); else open();
+  });
+  closeBtn.addEventListener('click', close);
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && panel.classList.contains('open')) close();
+  });
+
+  // ── Render helpers ───────────────────────────────────────────────────────
+  function escapeHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  function botMsg(text) {
+    var el = document.createElement('div');
+    el.className = 'hc-msg bot';
+    el.textContent = text;
+    body.appendChild(el);
+    scrollToBottom();
+  }
+  function userMsg(text) {
+    var el = document.createElement('div');
+    el.className = 'hc-msg user';
+    el.textContent = text;
+    body.appendChild(el);
+    scrollToBottom();
+  }
+  function renderOptions(opts) {
+    var wrap = document.createElement('div');
+    wrap.className = 'hc-options';
+    opts.forEach(function(opt) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'hc-option';
+      btn.textContent = opt.label;
+      btn.addEventListener('click', function() { onPick(opt); });
+      wrap.appendChild(btn);
+    });
+    body.appendChild(wrap);
+    scrollToBottom();
+  }
+  function scrollToBottom() {
+    // Defer so the new node is laid out before we scroll.
+    setTimeout(function() { body.scrollTop = body.scrollHeight; }, 0);
+  }
+
+  // ── Conversation state machine (purely button-driven) ───────────────────
+  function boot() {
+    botMsg(INITIAL_GREETING);
+    renderOptions(INITIAL_OPTIONS);
+  }
+
+  function onPick(opt) {
+    userMsg(opt.label);
+    var ans = ANSWERS[opt.id];
+    if (!ans) return;
+    if (ans.kind === 'email_capture') {
+      renderEmailCapture();
+      return;
+    }
+    botMsg(ans.text);
+    // Hand the floor back to the visitor with two follow-up buttons:
+    // another menu item, or escalate to email.
+    renderOptions([
+      { id: '__menu',  label: 'Ask another question' },
+      { id: '__email', label: "That didn't answer it — send me an email" }
+    ]);
+  }
+
+  // Re-route the two pseudo-ids from the follow-up menu.
+  var _origOnPick = onPick;
+  onPick = function(opt) {
+    if (opt.id === '__menu') {
+      userMsg(opt.label);
+      botMsg("Sure — pick another question:");
+      renderOptions(INITIAL_OPTIONS);
+      return;
+    }
+    if (opt.id === '__email') {
+      userMsg(opt.label);
+      renderEmailCapture();
+      return;
+    }
+    _origOnPick(opt);
+  };
+
+  // ── Email capture ───────────────────────────────────────────────────────
+  function renderEmailCapture() {
+    botMsg("I'm not always online, but I'll get back to you personally. Leave your email and your question and I'll reply soon.");
+
+    var form = document.createElement('form');
+    form.className = 'hc-form';
+    form.noValidate = true;
+    form.innerHTML =
+      '<input type="email" id="hcEmail" placeholder="Your email" autocomplete="email" required>' +
+      '<textarea id="hcMessage" placeholder="Your question (a few sentences is fine)" maxlength="2000" required></textarea>' +
+      '<div class="hc-form-row">' +
+        '<button type="submit" class="hc-submit" id="hcSubmit">Send</button>' +
+      '</div>' +
+      '<div class="hc-form-err" id="hcErr" style="display:none;"></div>' +
+      '<div class="hc-privacy">We\'ll use your email only to reply to you.</div>';
+    body.appendChild(form);
+    scrollToBottom();
+
+    var emailI = form.querySelector('#hcEmail');
+    var msgI   = form.querySelector('#hcMessage');
+    var sendB  = form.querySelector('#hcSubmit');
+    var errEl  = form.querySelector('#hcErr');
+
+    function showErr(msg) {
+      errEl.textContent = msg;
+      errEl.style.display = 'block';
+    }
+    function hideErr() {
+      errEl.textContent = '';
+      errEl.style.display = 'none';
+    }
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      hideErr();
+      var email = (emailI.value || '').trim();
+      var message = (msgI.value || '').trim();
+      var emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRe.test(email)) { showErr('Please enter a valid email.'); emailI.focus(); return; }
+      if (message.length < 5) { showErr('Add a sentence or two about your question.'); msgI.focus(); return; }
+
+      sendB.disabled = true;
+      sendB.textContent = 'Sending…';
+
+      // Single Supabase INSERT. RLS: anon role can INSERT but cannot SELECT
+      // — so this client can write a row, then cannot read anyone else's
+      // (or even its own). Owner reads via SQL editor.
+      if (typeof dwSupabase === 'undefined') {
+        // Defensive: if supabase-js failed to load we still want UX to
+        // degrade gracefully. Show a friendly fallback that doesn't lie.
+        showErr("Sending failed. Please email hello@deutschweg.de directly.");
+        sendB.disabled = false;
+        sendB.textContent = 'Send';
+        return;
+      }
+
+      dwSupabase.from('chat_inquiries').insert({
+        email:      email,
+        message:    message,
+        source:     'landing',
+        user_agent: (navigator.userAgent || '').slice(0, 250)
+      }).then(function(res) {
+        if (res.error) {
+          console.warn('[chat] insert failed:', res.error.message);
+          showErr("Couldn't send right now. Please try again, or email hello@deutschweg.de.");
+          sendB.disabled = false;
+          sendB.textContent = 'Send';
+          return;
+        }
+        form.remove();
+        botMsg("Got it — thanks. I'll reply to " + email + " soon.");
+        renderOptions([{ id: '__menu', label: 'Ask another question' }]);
+      }).catch(function(err) {
+        console.warn('[chat] insert threw:', err && err.message);
+        showErr("Couldn't send right now. Please try again in a moment.");
+        sendB.disabled = false;
+        sendB.textContent = 'Send';
+      });
+    });
+  }
+})();
+</script>
 </body>
 </html>
