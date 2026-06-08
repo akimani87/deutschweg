@@ -776,9 +776,65 @@
     }
   };
 
-  // ── Finish — set onboarding_completed + letzte_modul_slug, then go to S5 ──
+  // ── Finish — write profile + jump straight into the first lesson ────────
+  // Skips the old success screen so there's a single tap between the
+  // mini-lesson and Lesson 1 of Module 1 (the visitor's "Continue" tap).
+  // Writes:
+  //   profiles.onboarding_completed = true
+  //   profiles.letzte_modul_slug    = <first module at chosen level>
+  // Then navigates to module.html?id=<that module>, which lands on Lesson 1.
+  // If anything fails on the way (anonymous session, fetch error, write
+  // error), we fall back to dashboard.html so the user is never stuck —
+  // the routing gate will re-bounce them to /onboarding on the next load
+  // if onboarding_completed didn't actually save.
   window.finishOnboarding = function() {
-    goToScreen(5);
+    var btn = document.getElementById('screen4Next');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Starting your first lesson…';
+    }
+
+    function go(url) { window.location.href = url; }
+
+    ensureSignedIn(function(user) {
+      if (!user) { go('dashboard.html'); return; }
+
+      var entryLevel = (placeState.recommended || 'a1').toUpperCase();
+
+      function fetchFirstModule(level) {
+        return dwSupabase.from('modules')
+          .select('id')
+          .eq('level', level)
+          .eq('is_published', true)
+          .order('order_index', { ascending: true })
+          .limit(1)
+          .maybeSingle();
+      }
+
+      fetchFirstModule(entryLevel).then(function(modRes) {
+        var modId = modRes && modRes.data && modRes.data.id;
+        if (!modId && entryLevel !== 'A1') {
+          return fetchFirstModule('A1').then(function(r2) { return r2 && r2.data && r2.data.id; });
+        }
+        return modId;
+      }).then(function(modId) {
+        var patch = { onboarding_completed: true };
+        if (modId) patch.letzte_modul_slug = modId;
+        var target = modId ? ('module.html?id=' + modId) : 'dashboard.html';
+
+        dwSupabase.from('profiles')
+          .update(patch)
+          .eq('id', user.id)
+          .then(function(res) {
+            if (res.error) console.warn('[onboarding] profile finalise failed:', res.error.message);
+            go(target);
+          })
+          .catch(function() { go(target); });
+      }).catch(function(err) {
+        console.warn('[onboarding] module lookup failed:', err && err.message);
+        go('dashboard.html');
+      });
+    });
   };
 
   function onEnterScreen5() {
