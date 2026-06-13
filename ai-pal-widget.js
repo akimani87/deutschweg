@@ -457,6 +457,51 @@
     + '.aip-welcome-title{font-size:14px;font-weight:800;color:#1F2937;margin-bottom:4px;}'
     + '.aip-welcome-sub{font-size:12px;line-height:1.55;}'
 
+    // ── Proactive opener (v2): attention badge + bubble nudge ──────────────
+    + '#aip-badge{position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;border-radius:8px;background:#EF4444;color:#fff;font-size:10px;font-weight:800;line-height:16px;text-align:center;padding:0 4px;box-shadow:0 1px 4px rgba(0,0,0,0.25);display:none;}'
+    + '#aip-badge.show{display:block;}'
+    + '#aip-bubble.aip-attn{animation:aipNudge 1s ease 2;}'
+    + '@keyframes aipNudge{0%,100%{transform:translateY(0) scale(1);}25%{transform:translateY(-6px) scale(1.08);}50%{transform:translateY(0) scale(1);}75%{transform:translateY(-3px) scale(1.04);}}'
+
+    // ── Emotional check-in chips (v2 Behavior 2) ───────────────────────────
+    + '.aip-checkin{align-self:flex-start;max-width:92%;display:flex;flex-direction:column;gap:8px;margin-left:30px;}'
+    + '.aip-checkin-q{font-size:13px;font-weight:700;color:#1F2937;line-height:1.4;}'
+    + '.aip-chips{display:flex;flex-wrap:wrap;gap:6px;}'
+    + '.aip-chip{background:#fff;border:1.5px solid #DBEAFE;color:#1D4ED8;border-radius:14px;padding:6px 11px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;line-height:1.2;transition:all .15s ease;}'
+    + '.aip-chip:hover{background:#EFF6FF;border-color:#3B82F6;}'
+    + '.aip-chip:disabled{opacity:0.55;cursor:default;}'
+
+    // ── Modals: lesson-complete (B3) + confidence (B6) + milestone (B5) ────
+    + '.aip-modal-overlay{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(15,23,42,0.55);opacity:0;transition:opacity .2s ease;overflow:hidden;font-family:"Plus Jakarta Sans","DM Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}'
+    + '.aip-modal-overlay.show{opacity:1;}'
+    + '.aip-modal{position:relative;z-index:2;background:#fff;border-radius:20px;max-width:380px;width:100%;max-height:calc(100vh - 36px);overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.3);transform:translateY(14px) scale(0.96);transition:transform .24s cubic-bezier(0.4,0,0.2,1);color:#1F2937;}'
+    + '.aip-modal-overlay.show .aip-modal{transform:none;}'
+    + '.aip-modal-hd{background:linear-gradient(135deg,#1D4ED8 0%,#3B82F6 100%);color:#fff;padding:20px;text-align:center;position:relative;}'
+    + '.aip-modal-hd .em{font-size:40px;line-height:1;}'
+    + '.aip-modal-hd .t{font-size:18px;font-weight:800;margin-top:6px;letter-spacing:-0.3px;}'
+    + '.aip-modal-x{position:absolute;top:12px;right:12px;background:rgba(255,255,255,0.2);border:none;color:#fff;width:28px;height:28px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:700;line-height:1;}'
+    + '.aip-modal-x:hover{background:rgba(255,255,255,0.32);}'
+    + '.aip-modal-bd{padding:18px;display:flex;flex-direction:column;gap:14px;}'
+    + '.aip-sec{display:flex;gap:11px;align-items:flex-start;}'
+    + '.aip-sec .ic{font-size:20px;flex-shrink:0;line-height:1.3;}'
+    + '.aip-sec .lab{font-size:11px;font-weight:800;letter-spacing:0.4px;color:#3B82F6;text-transform:uppercase;}'
+    + '.aip-sec .val{font-size:14px;line-height:1.55;margin-top:2px;}'
+    + '.aip-conf{border-top:1px solid #E5E7EB;padding-top:14px;}'
+    + '.aip-conf-q{font-size:13px;font-weight:700;text-align:center;margin-bottom:10px;}'
+    + '.aip-conf-chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}'
+    + '.aip-conf-chip{flex:1;min-width:96px;background:#F8FAFC;border:1.5px solid #E5E7EB;border-radius:12px;padding:10px 8px;font-size:12px;font-weight:700;font-family:inherit;color:#1F2937;cursor:pointer;transition:all .15s;}'
+    + '.aip-conf-chip:hover:not(:disabled){border-color:#3B82F6;background:#EFF6FF;}'
+    + '.aip-conf-chip:disabled{opacity:0.5;cursor:default;}'
+    + '.aip-conf-thanks{text-align:center;font-size:13px;color:#10B981;font-weight:800;padding-top:10px;}'
+    + '.aip-cta{margin-top:4px;width:100%;background:#3B82F6;color:#fff;border:none;border-radius:12px;padding:12px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;transition:background .2s;}'
+    + '.aip-cta:hover{background:#2563EB;}'
+    + '.aip-modal.aip-mile .aip-mile-bd{padding:26px 22px;display:flex;flex-direction:column;gap:16px;align-items:center;text-align:center;}'
+    + '.aip-mile-em{font-size:62px;line-height:1;animation:aipPop .5s ease;}'
+    + '@keyframes aipPop{0%{transform:scale(0);}70%{transform:scale(1.2);}100%{transform:scale(1);}}'
+    + '.aip-mile-msg{font-size:15px;line-height:1.55;}'
+    + '.aip-confetti{position:absolute;top:-16px;width:9px;height:15px;border-radius:1px;z-index:1;opacity:0.95;animation:aipFall linear forwards;}'
+    + '@keyframes aipFall{to{transform:translateY(112vh) rotate(640deg);opacity:0.25;}}'
+
     + '@media (max-width:380px){'
     +   '#aip-card{right:10px;width:calc(100vw - 20px);bottom:148px;}'
     +   '#aip-bubble{right:14px;bottom:80px;}'
@@ -472,7 +517,7 @@
   bubble.type = 'button';
   bubble.title = 'Ask AI Pal';
   bubble.setAttribute('aria-label', 'Open AI Pal');
-  bubble.innerHTML = '🤖';
+  bubble.innerHTML = '<span id="aip-ico">🤖</span><span id="aip-badge"></span>';
 
   var card = document.createElement('div');
   card.id = 'aip-card';
@@ -511,13 +556,32 @@
   var lvlEl    = card.querySelector('#aip-lvl');
   lvlEl.textContent = getLevel();
 
+  // ── Bubble icon / attention badge helpers (v2) ──────────────────────────
+  // open/close only swaps the icon span so the unread badge survives.
+  function setIcon(ch){
+    var ico = document.getElementById('aip-ico');
+    if (ico) ico.textContent = ch; else bubble.innerHTML = '<span id="aip-ico">' + ch + '</span><span id="aip-badge"></span>';
+  }
+  function showBadge(){
+    var b = document.getElementById('aip-badge');
+    if (b){ b.textContent = '1'; b.classList.add('show'); }
+    // brief nudge so a closed bubble visibly reacts to a new proactive message
+    bubble.classList.add('aip-attn');
+    setTimeout(function(){ bubble.classList.remove('aip-attn'); }, 2100);
+  }
+  function clearBadge(){
+    var b = document.getElementById('aip-badge');
+    if (b) b.classList.remove('show');
+  }
+
   // ── Open / close ────────────────────────────────────────────────────────
   var isOpen = false;
   function openCard() {
     isOpen = true;
     card.classList.add('open');
     bubble.classList.add('open');
-    bubble.innerHTML = '✕';
+    setIcon('✕');
+    clearBadge();
     bubble.setAttribute('aria-label', 'Close AI Pal');
     lvlEl.textContent = getLevel();
     // wake server when opening
@@ -528,7 +592,7 @@
     isOpen = false;
     card.classList.remove('open');
     bubble.classList.remove('open');
-    bubble.innerHTML = '🤖';
+    setIcon('🤖');
     bubble.setAttribute('aria-label', 'Open AI Pal');
   }
   bubble.addEventListener('click', function(){ isOpen ? closeCard() : openCard(); });
@@ -637,4 +701,182 @@
       inputEl.focus();
     });
   }
+
+  // ── Proactive companion (v2) ─────────────────────────────────────────────
+  // A pal message with NO "Ask Tutor" link — openers are warm, not corrective.
+  function appendPalPlain(text){
+    dropWelcome();
+    var row = document.createElement('div');
+    row.className = 'aip-msg pal';
+    row.innerHTML =
+        '<div class="aip-msg-av">🤖</div>'
+      + '<div class="aip-bubble-wrap"><div class="aip-bubble"></div></div>';
+    row.querySelector('.aip-bubble').textContent = text;
+    msgsEl.appendChild(row);
+    msgsEl.scrollTop = msgsEl.scrollHeight;
+  }
+
+  // Render the emotional check-in question + mood chips inside the card.
+  // opts: { question, options:[{value,label}], onPick(value) }. One-shot —
+  // chips disable after a tap and onPick fires once.
+  function renderCheckin(opts){
+    dropWelcome();
+    var wrap = document.createElement('div');
+    wrap.className = 'aip-checkin';
+    var q = document.createElement('div');
+    q.className = 'aip-checkin-q';
+    q.textContent = opts.question || 'How are you feeling today?';
+    var chips = document.createElement('div');
+    chips.className = 'aip-chips';
+    var picked = false;
+    (opts.options || []).forEach(function(opt){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'aip-chip';
+      b.textContent = opt.label;
+      b.addEventListener('click', function(){
+        if (picked) return;
+        picked = true;
+        chips.querySelectorAll('.aip-chip').forEach(function(c){ c.disabled = true; });
+        b.style.background = '#3B82F6'; b.style.color = '#fff'; b.style.borderColor = '#3B82F6';
+        if (typeof opts.onPick === 'function') opts.onPick(opt.value);
+      });
+      chips.appendChild(b);
+    });
+    wrap.appendChild(q);
+    wrap.appendChild(chips);
+    msgsEl.appendChild(wrap);
+    msgsEl.scrollTop = msgsEl.scrollHeight;
+  }
+
+  // ── Modal helpers (lesson-complete, confidence, milestone) ──────────────
+  function makeOverlay(extraClass){
+    var ov = document.createElement('div');
+    ov.className = 'aip-modal-overlay' + (extraClass ? ' ' + extraClass : '');
+    document.body.appendChild(ov);
+    // next frame → trigger the fade/scale-in transition
+    requestAnimationFrame(function(){ ov.classList.add('show'); });
+    return ov;
+  }
+  function closeOverlay(ov){
+    if (!ov) return;
+    ov.classList.remove('show');
+    setTimeout(function(){ if (ov.parentNode) ov.parentNode.removeChild(ov); }, 240);
+  }
+  function spawnConfetti(ov){
+    var colors = ['#3B82F6','#2563EB','#10B981','#F59E0B','#EF4444','#8B5CF6'];
+    for (var i = 0; i < 46; i++){
+      var p = document.createElement('div');
+      p.className = 'aip-confetti';
+      p.style.left = (Math.random() * 100) + '%';
+      p.style.background = colors[i % colors.length];
+      p.style.animationDuration = (2 + Math.random() * 2) + 's';
+      p.style.animationDelay = (Math.random() * 0.6) + 's';
+      ov.appendChild(p);
+    }
+  }
+
+  // Behavior 3 (+ 6): lesson-complete popup with three sections, followed by
+  // the confidence tracker. opts: { learned, matters, encouragement,
+  // onConfidence(level), onClose() }. All dismissible — never blocks.
+  function completePopup(opts){
+    opts = opts || {};
+    var ov = makeOverlay();
+    var modal = document.createElement('div');
+    modal.className = 'aip-modal';
+    modal.innerHTML =
+        '<div class="aip-modal-hd"><button class="aip-modal-x" type="button" aria-label="Close">✕</button>'
+      +   '<div class="em">🎉</div><div class="t">Lesson complete!</div></div>'
+      + '<div class="aip-modal-bd">'
+      +   '<div class="aip-sec"><div class="ic">✨</div><div class="tx"><div class="lab">What you learned</div><div class="val" data-k="learned"></div></div></div>'
+      +   '<div class="aip-sec"><div class="ic">🌍</div><div class="tx"><div class="lab">Why it matters</div><div class="val" data-k="matters"></div></div></div>'
+      +   '<div class="aip-sec"><div class="ic">💪</div><div class="tx"><div class="lab">Keep going</div><div class="val" data-k="encouragement"></div></div></div>'
+      +   '<div class="aip-conf">'
+      +     '<div class="aip-conf-q">How confident do you feel about today’s lesson?</div>'
+      +     '<div class="aip-conf-chips">'
+      +       '<button class="aip-conf-chip" type="button" data-v="confused">😰 Still confused</button>'
+      +       '<button class="aip-conf-chip" type="button" data-v="getting_there">🙂 Getting there</button>'
+      +       '<button class="aip-conf-chip" type="button" data-v="got_it">💪 Got it</button>'
+      +     '</div>'
+      +   '</div>'
+      + '</div>';
+    // Fill model text safely (textContent — never innerHTML for AI output).
+    modal.querySelector('[data-k="learned"]').textContent       = opts.learned || '';
+    modal.querySelector('[data-k="matters"]').textContent       = opts.matters || '';
+    modal.querySelector('[data-k="encouragement"]').textContent = opts.encouragement || '';
+    ov.appendChild(modal);
+
+    function dismiss(){ closeOverlay(ov); if (typeof opts.onClose === 'function') opts.onClose(); }
+    modal.querySelector('.aip-modal-x').addEventListener('click', dismiss);
+    ov.addEventListener('click', function(e){ if (e.target === ov) dismiss(); });
+
+    var picked = false;
+    var conf = modal.querySelector('.aip-conf');
+    conf.querySelectorAll('.aip-conf-chip').forEach(function(chip){
+      chip.addEventListener('click', function(){
+        if (picked) return;
+        picked = true;
+        conf.querySelectorAll('.aip-conf-chip').forEach(function(c){ c.disabled = true; });
+        chip.style.background = '#3B82F6'; chip.style.color = '#fff'; chip.style.borderColor = '#3B82F6';
+        if (typeof opts.onConfidence === 'function') opts.onConfidence(chip.getAttribute('data-v'));
+        var thanks = document.createElement('div');
+        thanks.className = 'aip-conf-thanks';
+        thanks.textContent = 'Thank you — see you in the next lesson! 💙';
+        conf.appendChild(thanks);
+        var cta = document.createElement('button');
+        cta.className = 'aip-cta'; cta.type = 'button'; cta.textContent = 'Continue →';
+        cta.addEventListener('click', dismiss);
+        conf.appendChild(cta);
+        modal.scrollTop = modal.scrollHeight;
+      });
+    });
+  }
+
+  // Behavior 5: full-screen milestone celebration with confetti.
+  // opts: { message, onClose() }.
+  function milestonePopup(opts){
+    opts = opts || {};
+    var ov = makeOverlay();
+    spawnConfetti(ov);
+    var modal = document.createElement('div');
+    modal.className = 'aip-modal aip-mile';
+    modal.innerHTML =
+        '<div class="aip-modal-hd"><button class="aip-modal-x" type="button" aria-label="Close">✕</button>'
+      +   '<div class="em">🎉</div><div class="t">Milestone unlocked!</div></div>'
+      + '<div class="aip-mile-bd">'
+      +   '<div class="aip-mile-em">🏆</div>'
+      +   '<div class="aip-mile-msg"></div>'
+      +   '<button class="aip-cta" type="button">Continue →</button>'
+      + '</div>';
+    modal.querySelector('.aip-mile-msg').textContent = opts.message || '';
+    ov.appendChild(modal);
+    function done(){ closeOverlay(ov); if (typeof opts.onClose === 'function') opts.onClose(); }
+    modal.querySelector('.aip-modal-x').addEventListener('click', done);
+    modal.querySelector('.aip-cta').addEventListener('click', done);
+    ov.addEventListener('click', function(e){ if (e.target === ov) done(); });
+  }
+
+  // Public API for page scripts (module.html) to drive the proactive opener.
+  // The page owns the data (Supabase + lesson state); the widget owns the UI.
+  window.DWPal = {
+    apiBase: API_BASE,
+    isOpen:  function(){ return isOpen; },
+    open:    openCard,
+    close:   closeCard,
+    typing:  showTyping,
+    stopTyping: hideTyping,
+    // Show a proactive message. autoOpen=true opens the card; otherwise we
+    // leave it closed and flag the bubble with an unread badge + nudge.
+    speak: function(text, autoOpen){
+      if (!text) return;
+      appendPalPlain(text);
+      if (autoOpen) openCard();
+      else if (!isOpen) showBadge();
+    },
+    checkin: renderCheckin,
+    nudge:   showBadge,
+    // v2 Behaviors 3/5/6 — modal moments
+    completePopup: completePopup,
+    milestone:     milestonePopup
+  };
 })();

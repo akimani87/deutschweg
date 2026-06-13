@@ -705,6 +705,328 @@ app.post('/api/aipal', async (req, res) => {
   }
 });
 
+// ── POST /api/aipal/opener ─────────────────────────────────────────────────
+// AI Pal v2 — the PROACTIVE companion message (the student never initiates).
+//   • mode "welcome"   → Behavior 1: brand-new-user welcome (zero German)
+//   • mode "companion" → Behavior 2: per-lesson opener with progressive
+//                        immersion + active recall of already-learned words
+//
+// The server has no Supabase access, so the client (module.html) gathers all
+// context from the DB and posts it here. We only pick the prompt + call Claude.
+
+// Progressive immersion ratio table (from the v2 spec). `completed` is the
+// number of lessons the learner has finished. Returns the German share plus a
+// hard cap on new German words for the early stages where over-immersing hurts.
+function aipalImmersion(completed) {
+  const c = Number(completed) || 0;
+  if (c <= 2)  return { de: 10, maxGerman: 2,  hint: 'Mostly English. Use at most 2 German words.' };
+  if (c <= 4)  return { de: 20, maxGerman: 4,  hint: 'Mostly English. Use at most 4 German words.' };
+  if (c <= 6)  return { de: 35, maxGerman: 6,  hint: 'About one third German, the rest English.' };
+  if (c <= 8)  return { de: 55, maxGerman: 8,  hint: 'Slightly more German than English now.' };
+  if (c <= 10) return { de: 75, maxGerman: 12, hint: 'Mostly German, a little English for comfort.' };
+  return         { de: 90, maxGerman: 99, hint: 'Almost entirely German.' };
+}
+
+// Whole-day difference between an ISO date string and now (UTC, calendar days).
+// Positive = in the future (exam countdown), negative/0 = past (last activity).
+function aipalDaysUntil(iso) {
+  if (!iso) return null;
+  const then = new Date(iso);
+  if (isNaN(then.getTime())) return null;
+  const MS = 86400000;
+  const a = Date.UTC(then.getUTCFullYear(), then.getUTCMonth(), then.getUTCDate());
+  const now = new Date();
+  const b = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  return Math.round((a - b) / MS);
+}
+
+const AIPAL_WELCOME_PROMPT = `You are AI Pal on DeutschWeg, a warm and encouraging German learning companion for African learners.
+
+A brand new user just finished onboarding. They know zero German. They are nervous and excited. Speak to them like a warm big sister welcoming them home.
+
+Rules:
+- Use the learner's first name
+- Simple English only — no German words yet
+- Acknowledge the courage it took to start
+- Tell them you will be with them every single step
+- Maximum 4 short sentences
+- End with energy and excitement toward lesson 1
+- Never sound robotic or automated
+- Output only the message itself — no quotes, no preamble, no labels`;
+
+function buildAipalOpenerPrompt(ctx) {
+  const ratio = aipalImmersion(ctx.completed_lessons);
+  const vocab = Array.isArray(ctx.all_vocabulary_learned)
+    ? ctx.all_vocabulary_learned.filter(w => typeof w === 'string' && w.length > 1).slice(0, 150)
+    : [];
+
+  // Pre-compute the situational facts so the model never has to do math.
+  const examDays   = aipalDaysUntil(ctx.exam_date);          // >0 = future
+  const idleDays   = ctx.last_activity ? -aipalDaysUntil(ctx.last_activity) : null; // days since
+  const streak     = Number(ctx.streak_count) || 0;
+  const facts = [];
+  facts.push(`Learner first name: ${ctx.first_name || 'there'}`);
+  facts.push(`Today's lesson: "${ctx.lesson_title || 'your next lesson'}" (lesson number ${ctx.lesson_number || '?'})`);
+  facts.push(`Lessons completed so far: ${Number(ctx.completed_lessons) || 0}`);
+  facts.push(`Immersion target for this message: about ${ratio.de}% German, ${100 - ratio.de}% English. ${ratio.hint}`);
+  facts.push(vocab.length
+    ? `German words the learner ALREADY knows (the ONLY German you may use): ${vocab.join(', ')}`
+    : `The learner has not learned any German words yet — use English only, no German.`);
+  if (streak >= 3) facts.push(`Streak: ${streak} days in a row — acknowledge it warmly.`);
+  if (idleDays !== null && idleDays > 2) facts.push(`The learner has been away for ${idleDays} days — give a gentle, guilt-free welcome back.`);
+  if (examDays !== null && examDays >= 0) facts.push(`Goethe exam is in ${examDays} day${examDays === 1 ? '' : 's'} — weave in a calm, on-track countdown.`);
+  if (ctx.emotional_checkin) facts.push(`The learner just said they feel: "${ctx.emotional_checkin}" — adapt your tone to that feeling (nervous → extra softness; tired → keep it light; ready → push a little; getting there → steady encouragement).`);
+
+  return `You are AI Pal on DeutschWeg, a warm encouraging German learning companion for African learners. You speak FIRST, before the lesson — like a big sister, never a teacher.
+
+CONTEXT:
+${facts.map(f => '- ' + f).join('\n')}
+
+Rules:
+- Address the learner by their first name
+- Apply the immersion target above. Increase German naturally, never abruptly.
+- ONLY use German words from the "already knows" list — NEVER introduce a new German word
+- Weave 1–2 of those known German words in naturally so the learner reviews them without noticing
+- Acknowledge streak / returning / exam countdown only if a fact above mentions it
+- One sentence on what they'll learn today, made to feel achievable
+- Maximum 4 short sentences total
+- Warm big-sister energy, never clinical. The goal: make the learner feel "I can actually do this."
+- Output only the message itself — no quotes, no preamble, no labels`;
+}
+
+app.post('/api/aipal/opener', async (req, res) => {
+  const ctx = (req.body && typeof req.body.context === 'object' && req.body.context) || {};
+  const mode = req.body && req.body.mode === 'welcome' ? 'welcome' : 'companion';
+
+  console.log(`[/api/aipal/opener] mode=${mode}, name="${ctx.first_name || ''}", lesson="${ctx.lesson_title || ''}" (#${ctx.lesson_number || '?'}), completed=${ctx.completed_lessons || 0}, vocab=${Array.isArray(ctx.all_vocabulary_learned) ? ctx.all_vocabulary_learned.length : 0}, streak=${ctx.streak_count || 0}, mood=${ctx.emotional_checkin || 'none'}, origin=${req.headers.origin || 'none'}`);
+
+  if (!process.env.CLAUDE_API_KEY) {
+    console.error('CLAUDE_API_KEY is not set');
+    return res.status(500).json({ error: 'API key not configured.' });
+  }
+
+  const systemPrompt = mode === 'welcome' ? AIPAL_WELCOME_PROMPT : buildAipalOpenerPrompt(ctx);
+  const userMsg = mode === 'welcome'
+    ? `Generate the welcome message. The learner's first name is ${ctx.first_name || 'there'}.`
+    : `Generate the lesson opener message now using the context above.`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method:  'POST',
+      headers: {
+        'Content-Type':      'application/json',
+        'x-api-key':         process.env.CLAUDE_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        // Matches the model the /api/aipal endpoint already uses in this repo
+        // (the spec's "claude-sonnet-4-6" is the same Sonnet family).
+        model:      'claude-sonnet-4-20250514',
+        max_tokens: 250,
+        system:     systemPrompt,
+        messages:   [{ role: 'user', content: userMsg }],
+      }),
+    });
+
+    if (!response.ok) {
+      const errBody = await response.json().catch(() => ({}));
+      const message = errBody?.error?.message || `Claude API returned ${response.status}`;
+      console.error('[/api/aipal/opener] Claude API error:', message);
+      return res.status(502).json({ error: message });
+    }
+
+    const data    = await response.json();
+    const message = data?.content?.[0]?.text?.trim() ?? '';
+    if (!message) return res.status(502).json({ error: 'Empty response from AI. Try again.' });
+
+    console.log('[/api/aipal/opener] Success — message length:', message.length);
+    return res.json({ message, mode });
+
+  } catch (err) {
+    console.error('[/api/aipal/opener] Server error:', err.message);
+    return res.status(500).json({ error: 'Server error: ' + err.message });
+  }
+});
+
+// ── POST /api/aipal/lesson-complete (v2 Behavior 3) ────────────────────────
+// Three-section completion popup. Returns strict JSON so the client can style
+// each section. Cultural mirror is added on every 3rd lesson (spec).
+function buildAipalCompletePrompt(ctx) {
+  const num   = Number(ctx.lesson_number) || 0;
+  const vocab = Array.isArray(ctx.vocabulary_covered)
+    ? ctx.vocabulary_covered.filter(w => typeof w === 'string').slice(0, 40)
+    : [];
+  const mirror = (num > 0 && num % 3 === 0)
+    ? `\n- This is lesson ${num} (divisible by 3): in WHY IT MATTERS, add a short cultural mirror connecting German culture to African/Kenyan culture so it feels familiar, not foreign.`
+    : '';
+  return `You are AI Pal on DeutschWeg, generating a lesson completion popup for an African learner who just finished a German lesson.
+
+Context:
+- Lesson just completed: "${ctx.lesson_title || 'this lesson'}"
+- Lesson number: ${num}
+- Vocabulary learned in this lesson: ${vocab.length ? vocab.join(', ') : '(general content)'}
+
+Generate three short sections:
+1. learned        — one simple sentence naming the exact skill in plain English
+2. matters        — one sentence describing a specific real-life moment this skill prepares them for in Germany; make it personal and close for an African learner${mirror}
+3. encouragement  — one sentence celebrating this win loudly and pointing forward to the next lesson
+
+Rules:
+- Simple English, with German words from this lesson woven in naturally where it fits
+- Never use German administrative terms (Anmeldung, Behörde, Amt) without a simple explanation
+- Warm, celebratory tone — the learner should feel proud, not just informed
+- Each section is ONE sentence
+- Respond with ONLY a JSON object, no markdown, no preamble:
+{"learned":"...","matters":"...","encouragement":"..."}`;
+}
+
+app.post('/api/aipal/lesson-complete', async (req, res) => {
+  const ctx = (req.body && typeof req.body.context === 'object' && req.body.context) || {};
+  console.log(`[/api/aipal/lesson-complete] lesson="${ctx.lesson_title || ''}" (#${ctx.lesson_number || '?'}), vocab=${Array.isArray(ctx.vocabulary_covered) ? ctx.vocabulary_covered.length : 0}`);
+
+  if (!process.env.CLAUDE_API_KEY) return res.status(500).json({ error: 'API key not configured.' });
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.CLAUDE_API_KEY, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({
+        model:      'claude-sonnet-4-20250514',
+        max_tokens: 400,
+        system:     buildAipalCompletePrompt(ctx),
+        messages:   [{ role: 'user', content: 'Generate the lesson completion JSON now.' }],
+      }),
+    });
+    if (!response.ok) {
+      const errBody = await response.json().catch(() => ({}));
+      return res.status(502).json({ error: errBody?.error?.message || `Claude API returned ${response.status}` });
+    }
+    const data = await response.json();
+    const raw  = data?.content?.[0]?.text?.trim() ?? '';
+    let parsed = null;
+    try {
+      // Tolerate a stray ```json fence if the model adds one.
+      const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+      parsed = JSON.parse(cleaned);
+    } catch (_) { /* fall through */ }
+    if (!parsed || !parsed.learned) {
+      return res.status(502).json({ error: 'Could not parse completion message.', raw });
+    }
+    console.log('[/api/aipal/lesson-complete] Success');
+    return res.json({
+      learned:       String(parsed.learned || ''),
+      matters:       String(parsed.matters || ''),
+      encouragement: String(parsed.encouragement || ''),
+    });
+  } catch (err) {
+    console.error('[/api/aipal/lesson-complete] Server error:', err.message);
+    return res.status(500).json({ error: 'Server error: ' + err.message });
+  }
+});
+
+// ── POST /api/aipal/struggle (v2 Behavior 4) ───────────────────────────────
+function buildAipalStrugglePrompt(ctx) {
+  return `You are AI Pal on DeutschWeg. A learner is struggling — they just got this topic wrong twice in a row.
+
+Context:
+- Exercise topic: ${ctx.exercise_topic || 'this exercise'}
+- Learner first name: ${ctx.first_name || 'friend'}
+
+Generate a short supportive message:
+- Normalize the difficulty — tell them even German children (or long-time learners) find this hard
+- Never make them feel stupid
+- Offer one simple, concrete tip or reframe for THIS topic
+- Maximum 3 sentences
+- Tone: patient, warm, like a friend sitting beside them
+- Use the learner's first name
+- Output only the message — no quotes, no labels`;
+}
+
+app.post('/api/aipal/struggle', async (req, res) => {
+  const ctx = (req.body && typeof req.body.context === 'object' && req.body.context) || {};
+  console.log(`[/api/aipal/struggle] name="${ctx.first_name || ''}", topic="${ctx.exercise_topic || ''}"`);
+  if (!process.env.CLAUDE_API_KEY) return res.status(500).json({ error: 'API key not configured.' });
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.CLAUDE_API_KEY, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({
+        model:      'claude-sonnet-4-20250514',
+        max_tokens: 180,
+        system:     buildAipalStrugglePrompt(ctx),
+        messages:   [{ role: 'user', content: 'Generate the supportive message now.' }],
+      }),
+    });
+    if (!response.ok) {
+      const errBody = await response.json().catch(() => ({}));
+      return res.status(502).json({ error: errBody?.error?.message || `Claude API returned ${response.status}` });
+    }
+    const data    = await response.json();
+    const message = data?.content?.[0]?.text?.trim() ?? '';
+    if (!message) return res.status(502).json({ error: 'Empty response from AI.' });
+    return res.json({ message });
+  } catch (err) {
+    console.error('[/api/aipal/struggle] Server error:', err.message);
+    return res.status(500).json({ error: 'Server error: ' + err.message });
+  }
+});
+
+// ── POST /api/aipal/milestone (v2 Behavior 5) ──────────────────────────────
+const AIPAL_MILESTONES = {
+  first_lesson:     'They just completed their VERY FIRST lesson ever. This is huge — the journey has begun.',
+  lesson_5:         'They just completed their 5th lesson. They are building a real habit and real momentum.',
+  seven_day_streak: 'They just hit a 7-DAY STREAK. A full week of showing up — serious dedication.',
+  first_sentence:   'They just typed their first full German sentence on their own. A milestone moment.',
+  a1_complete:      'They just COMPLETED THE ENTIRE A1 LEVEL. A massive achievement — they can now handle real basic German.',
+};
+
+function buildAipalMilestonePrompt(ctx) {
+  const desc = AIPAL_MILESTONES[ctx.milestone] || 'They just hit a meaningful milestone.';
+  return `You are AI Pal on DeutschWeg, a warm big-sister German companion for African learners. The learner just hit a MAJOR milestone — celebrate loudly, this is a genuine event (bigger energy than a normal lesson message).
+
+Context:
+- Learner first name: ${ctx.first_name || 'friend'}
+- Milestone: ${desc}
+
+Rules:
+- Use the learner's first name
+- Big, genuine celebration — make them feel this is a real achievement, because for them it is
+- Simple, warm English (a German word or two is fine if it fits naturally)
+- 2 to 3 short sentences
+- End pointing forward with excitement
+- Output only the message — no quotes, no labels`;
+}
+
+app.post('/api/aipal/milestone', async (req, res) => {
+  const ctx = (req.body && typeof req.body.context === 'object' && req.body.context) || {};
+  console.log(`[/api/aipal/milestone] name="${ctx.first_name || ''}", milestone="${ctx.milestone || ''}"`);
+  if (!AIPAL_MILESTONES[ctx.milestone]) return res.status(400).json({ error: 'Unknown milestone.' });
+  if (!process.env.CLAUDE_API_KEY) return res.status(500).json({ error: 'API key not configured.' });
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.CLAUDE_API_KEY, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({
+        model:      'claude-sonnet-4-20250514',
+        max_tokens: 200,
+        system:     buildAipalMilestonePrompt(ctx),
+        messages:   [{ role: 'user', content: 'Generate the milestone celebration now.' }],
+      }),
+    });
+    if (!response.ok) {
+      const errBody = await response.json().catch(() => ({}));
+      return res.status(502).json({ error: errBody?.error?.message || `Claude API returned ${response.status}` });
+    }
+    const data    = await response.json();
+    const message = data?.content?.[0]?.text?.trim() ?? '';
+    if (!message) return res.status(502).json({ error: 'Empty response from AI.' });
+    return res.json({ message, milestone: ctx.milestone });
+  } catch (err) {
+    console.error('[/api/aipal/milestone] Server error:', err.message);
+    return res.status(500).json({ error: 'Server error: ' + err.message });
+  }
+});
+
 // ── POST /api/aitutor ────────────────────────────────────────────────────────
 const AITUTOR_VALID_LEVELS = ['A1', 'A2', 'B1', 'B2'];
 

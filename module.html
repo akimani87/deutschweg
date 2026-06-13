@@ -394,6 +394,8 @@
     inProgressIds: {},   // lessonId -> true for lessons marked 'in_progress' (and NOT completed)
     correctByLesson: {}, // lessonId -> count of correct answers this session
     moduleAwarded: false,// 50-XP module bonus given this session?
+    consecutiveWrong: 0, // running count of wrong answers in a row (AI Pal struggle detection)
+    struggleShownLesson: {}, // lessonId -> true once AI Pal has stepped in this lesson
   };
 
   function escapeHtml(s) {
@@ -762,6 +764,300 @@
     });
 
     finalizeBoot();
+    // AI Pal v2 — proactive opener once the lesson UI is ready (signed-in only).
+    runPalOpener();
+  }
+
+  // ── AI Pal v2: proactive companion opener ────────────────────────────────
+  // The widget (window.DWPal) owns the chat UI; this page owns the data. We
+  // gather the learner's context from Supabase, then ask the server to
+  // generate either the new-user welcome (Behavior 1) or the per-lesson
+  // opener (Behavior 2). Everything here is best-effort and non-blocking —
+  // any failure is swallowed so the lesson is never held up.
+  function palLS(key, val) {
+    try {
+      if (val === undefined) return localStorage.getItem(key);
+      localStorage.setItem(key, val);
+    } catch (_) { return null; }
+  }
+  function palSession(key, val) {
+    try {
+      if (val === undefined) return sessionStorage.getItem(key);
+      sessionStorage.setItem(key, val);
+    } catch (_) { return null; }
+  }
+
+  // Pull the German words a learner has already seen on screen, from the
+  // clean German fields of their completed lessons (example.german / audio.text).
+  // First-seen casing is kept so nouns stay capitalised; capped to keep the
+  // prompt lean.
+  function extractKnownVocab(lessonRows) {
+    var seen = {};
+    (lessonRows || []).forEach(function(row) {
+      var cj = row && row.content_json;
+      if (!Array.isArray(cj)) return;
+      cj.forEach(function(b) {
+        if (!b || typeof b !== 'object') return;
+        var de = b.type === 'example' ? b.german : (b.type === 'audio' ? b.text : null);
+        if (!de || typeof de !== 'string') return;
+        de.split(/[^A-Za-zÄÖÜäöüß]+/).forEach(function(w) {
+          if (w.length < 2) return;
+          var k = w.toLowerCase();
+          if (!seen[k]) seen[k] = w;
+        });
+      });
+    });
+    return Object.keys(seen).map(function(k) { return seen[k]; }).slice(0, 120);
+  }
+
+  function gatherPalContext(lesson) {
+    var uid = state.user.id;
+    return Promise.all([
+      dwSupabase.from('profiles')
+        .select('full_name, exam_date, streak_count, last_activity')
+        .eq('id', uid).maybeSingle(),
+      dwSupabase.from('user_progress')
+        .select('lesson_id, completed_at')
+        .eq('user_id', uid).eq('status', 'completed')
+        .order('completed_at', { ascending: false })
+    ]).then(function(rs) {
+      var prof = (rs[0] && rs[0].data) || {};
+      var prog = (rs[1] && rs[1].data) || [];
+      var completedIds = prog.map(function(r) { return r.lesson_id; }).filter(Boolean);
+      var firstName = String(prof.full_name || '').trim().split(/\s+/)[0] || '';
+      var ctx = {
+        first_name:    firstName,
+        lesson_title:  lesson.title || '',
+        lesson_number: lesson.order_index || 0,
+        completed_lessons: completedIds.length,
+        streak_count:  prof.streak_count || 0,
+        last_activity: prof.last_activity || null,
+        exam_date:     prof.exam_date || null,
+        all_vocabulary_learned: []
+      };
+      if (completedIds.length === 0) return ctx;
+      return dwSupabase.from('lessons')
+        .select('content_json')
+        .in('id', completedIds.slice(0, 15))
+        .then(function(lr) {
+          ctx.all_vocabulary_learned = extractKnownVocab((lr && lr.data) || []);
+          return ctx;
+        })
+        .catch(function() { return ctx; });
+    });
+  }
+
+  function fetchPalOpener(mode, ctx, autoOpen) {
+    if (autoOpen) window.DWPal.open();
+    window.DWPal.typing();
+    fetch(window.DWPal.apiBase + '/api/aipal/opener', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ mode: mode, context: ctx })
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(j) {
+        window.DWPal.stopTyping();
+        if (j && j.message) window.DWPal.speak(j.message, !!autoOpen);
+      })
+      .catch(function() { window.DWPal.stopTyping(); });
+  }
+
+  function runPalOpener() {
+    if (!window.DWPal || !state.user) return;
+    if (!state.lessons || state.lessons.length === 0) return;
+    var lesson = state.lessons[state.lessonIdx] || state.lessons[0];
+    if (!lesson) return;
+
+    gatherPalContext(lesson).then(function(ctx) {
+      // Behavior 1 — brand-new user, shown exactly once.
+      var welcomeKey = 'dw_pal_welcomed_' + state.user.id;
+      if (ctx.completed_lessons === 0 && !palLS(welcomeKey)) {
+        palLS(welcomeKey, '1');
+        fetchPalOpener('welcome', ctx, true);
+        return;
+      }
+
+      // Behavior 2 — emotional check-in every 3rd lesson (once per lesson/session).
+      var num = lesson.order_index || 0;
+      var checkKey = 'dw_pal_checkin_' + lesson.id;
+      if (num > 0 && num % 3 === 0 && !palSession(checkKey)) {
+        palSession(checkKey, '1');
+        window.DWPal.open();
+        window.DWPal.checkin({
+          question: 'Before we start — how are you feeling today, ' + (ctx.first_name || 'friend') + '?',
+          options: [
+            { value: 'nervous',       label: '😰 Nervous' },
+            { value: 'getting_there', label: '🙂 Getting there' },
+            { value: 'tired',         label: '😴 Tired' },
+            { value: 'ready',         label: '💪 Ready' }
+          ],
+          onPick: function(mood) {
+            dwSupabase.from('pal_checkins')
+              .insert({ user_id: state.user.id, lesson_id: lesson.id, mood: mood })
+              .then(function() {}).catch(function() {});
+            ctx.emotional_checkin = mood;
+            fetchPalOpener('companion', ctx, true);
+          }
+        });
+        return;
+      }
+
+      // Behavior 2 — regular opener: preload the message, flag the bubble
+      // with an unread badge rather than hijacking the screen.
+      fetchPalOpener('companion', ctx, false);
+    }).catch(function(e) {
+      console.warn('[pal] opener skipped:', e && e.message);
+    });
+  }
+
+  // First name, fetched once and cached (used by struggle + milestone).
+  var _palFirstName = null;
+  function getPalFirstName() {
+    if (_palFirstName !== null) return Promise.resolve(_palFirstName);
+    if (!state.user) return Promise.resolve('');
+    return dwSupabase.from('profiles').select('full_name').eq('id', state.user.id).maybeSingle()
+      .then(function(res) {
+        var n = (res && res.data && res.data.full_name) || '';
+        _palFirstName = String(n).trim().split(/\s+/)[0] || '';
+        return _palFirstName;
+      })
+      .catch(function() { return ''; });
+  }
+
+  // ── Behavior 4: struggle support ─────────────────────────────────────────
+  // Fired on 2 wrong-in-a-row. Once per lesson, gentle slide-in via the widget.
+  function maybeShowStruggle(lesson) {
+    if (!window.DWPal || !state.user || !lesson) return;
+    if (state.struggleShownLesson[lesson.id]) return;
+    state.struggleShownLesson[lesson.id] = true;
+    state.consecutiveWrong = 0;
+    getPalFirstName().then(function(fn) {
+      var ctx = { first_name: fn, exercise_topic: lesson.title || 'this exercise' };
+      window.DWPal.open();
+      window.DWPal.typing();
+      fetch(window.DWPal.apiBase + '/api/aipal/struggle', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ context: ctx })
+      })
+        .then(function(r) { return r.json(); })
+        .then(function(j) { window.DWPal.stopTyping(); if (j && j.message) window.DWPal.speak(j.message, true); })
+        .catch(function() { window.DWPal.stopTyping(); });
+    });
+  }
+
+  // ── Behavior 6: confidence tracker store ─────────────────────────────────
+  function savePalConfidence(lessonId, level) {
+    if (!state.user) return;
+    dwSupabase.from('lesson_confidence')
+      .insert({ user_id: state.user.id, lesson_id: lessonId, confidence_level: level })
+      .then(function() {}).catch(function() {});
+  }
+
+  // ── Behavior 3: lesson-complete popup content ────────────────────────────
+  function fetchCompleteContent(lesson) {
+    var ctx = {
+      lesson_title:       lesson.title || '',
+      lesson_number:      lesson.order_index || 0,
+      vocabulary_covered: extractKnownVocab([lesson])
+    };
+    return fetch(window.DWPal.apiBase + '/api/aipal/lesson-complete', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ context: ctx })
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(j) { return (j && j.learned) ? j : null; })
+      .catch(function() { return null; });
+  }
+
+  // ── Behavior 5: milestone detection ──────────────────────────────────────
+  // Priority: A1 complete > 7-day streak > lesson 5 > first lesson. Each fires
+  // at most once (session-guarded; counts/streaks naturally cross the
+  // threshold only once anyway).
+  function checkA1Complete(uid) {
+    if (!state.module || state.module.level !== 'A1') return Promise.resolve(false);
+    return dwSupabase.from('modules').select('id').eq('level', 'A1').eq('is_published', true)
+      .then(function(mr) {
+        var modIds = ((mr && mr.data) || []).map(function(m) { return m.id; });
+        if (!modIds.length) return false;
+        return dwSupabase.from('lessons').select('id').in('module_id', modIds).then(function(lr) {
+          var allIds = ((lr && lr.data) || []).map(function(l) { return l.id; });
+          if (!allIds.length) return false;
+          return dwSupabase.from('user_progress')
+            .select('lesson_id').eq('user_id', uid).eq('status', 'completed').in('lesson_id', allIds)
+            .then(function(pr) {
+              var done = {};
+              ((pr && pr.data) || []).forEach(function(r) { if (r.lesson_id) done[r.lesson_id] = true; });
+              return allIds.every(function(id) { return done[id]; });
+            });
+        });
+      })
+      .catch(function() { return false; });
+  }
+
+  function detectMilestone(lesson) {
+    var uid = state.user.id;
+    function once(m) {
+      var k = 'dw_pal_ms_' + uid + '_' + m;
+      if (palSession(k)) return false;
+      palSession(k, '1');
+      return true;
+    }
+    return Promise.all([
+      dwSupabase.from('user_progress').select('id', { count: 'exact', head: true })
+        .eq('user_id', uid).eq('status', 'completed').not('lesson_id', 'is', null),
+      dwSupabase.from('profiles').select('streak_count').eq('id', uid).maybeSingle(),
+      checkA1Complete(uid)
+    ]).then(function(rs) {
+      var count  = (rs[0] && rs[0].count) || 0;
+      var streak = (rs[1] && rs[1].data && rs[1].data.streak_count) || 0;
+      var a1done = rs[2];
+      if (a1done && once('a1_complete'))       return 'a1_complete';
+      if (streak === 7 && once('seven_day_streak')) return 'seven_day_streak';
+      if (count === 5 && once('lesson_5'))     return 'lesson_5';
+      if (count === 1 && once('first_lesson')) return 'first_lesson';
+      return null;
+    }).catch(function() { return null; });
+  }
+
+  function fetchMilestoneMessage(milestone) {
+    return getPalFirstName().then(function(fn) {
+      return fetch(window.DWPal.apiBase + '/api/aipal/milestone', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ context: { first_name: fn, milestone: milestone } })
+      })
+        .then(function(r) { return r.json(); })
+        .then(function(j) { return (j && j.message) || null; })
+        .catch(function() { return null; });
+    });
+  }
+
+  // Orchestrates Behaviors 3 + 5 + 6 once a lesson is completed. A milestone
+  // celebration (if any) plays first, then the lesson-complete popup carrying
+  // the confidence tracker.
+  function onPalLessonFinished(lesson) {
+    if (!window.DWPal || !state.user || !lesson) return;
+    Promise.all([detectMilestone(lesson), fetchCompleteContent(lesson)]).then(function(rs) {
+      var milestone = rs[0];
+      var content   = rs[1];
+      function showComplete() {
+        if (!content) return;
+        window.DWPal.completePopup({
+          learned:       content.learned,
+          matters:       content.matters,
+          encouragement: content.encouragement,
+          onConfidence:  function(level) { savePalConfidence(lesson.id, level); }
+        });
+      }
+      if (milestone) {
+        fetchMilestoneMessage(milestone).then(function(msg) {
+          if (msg) window.DWPal.milestone({ message: msg, onClose: showComplete });
+          else showComplete();
+        });
+      } else {
+        showComplete();
+      }
+    }).catch(function() {});
   }
 
   function renderQuiz(ex, lIdx, eIdx, total) {
@@ -872,6 +1168,30 @@
   // without error. If the write fails, local state stays as-is so the
   // UI can't lie about progress that didn't actually save.
 
+  // Bump the learner's daily streak + last_activity when they complete a
+  // lesson. Same calendar day → unchanged; yesterday → +1; older/none → reset
+  // to 1. Read-then-write (UTC days); best-effort, never blocks the UI.
+  function bumpPalStreak() {
+    if (!state.user) return Promise.resolve();
+    return dwSupabase.from('profiles')
+      .select('streak_count, last_activity')
+      .eq('id', state.user.id).maybeSingle()
+      .then(function(res) {
+        if (res.error || !res.data) return;
+        var now   = new Date();
+        var today = now.toISOString().slice(0, 10);
+        var last  = res.data.last_activity ? String(res.data.last_activity).slice(0, 10) : null;
+        if (last === today) return; // already counted today
+        var yesterday = new Date(now.getTime() - 86400000).toISOString().slice(0, 10);
+        var streak = (last === yesterday) ? (res.data.streak_count || 0) + 1 : 1;
+        return dwSupabase.from('profiles')
+          .update({ streak_count: streak, last_activity: now.toISOString() })
+          .eq('id', state.user.id)
+          .then(function() {});
+      })
+      .catch(function() {});
+  }
+
   function markLessonInProgress(lesson) {
     if (!state.user) {
       console.log('[progress] in_progress skipped — anonymous (no user)');
@@ -960,6 +1280,9 @@
       state.completedIds[lesson.id] = true;
       delete state.inProgressIds[lesson.id];
       updateProgress();
+      // Keep streak fresh first (milestone detection reads it), then run the
+      // AI Pal completion moment (Behaviors 3/5/6).
+      bumpPalStreak().then(function() { onPalLessonFinished(lesson); });
 
       dwSupabase.rpc('increment_xp', { uid: state.user.id, amt: 10 }).then(function(r) {
         if (r.error) console.error('[progress] +10 XP FAILED', r.error);
@@ -1107,6 +1430,19 @@
 
       var ex = state.exercises[state.lessons[lIdx].id][eIdx];
       var isCorrect = (choiceIdx === correctIdx);
+
+      // AI Pal struggle detection (Behavior 4). Quiz options lock after the
+      // first answer, so "same exercise twice" can't happen literally — the
+      // faithful signal is two wrong answers in a row. Only count genuine
+      // first attempts (not review re-answers).
+      if (first) {
+        if (isCorrect) {
+          state.consecutiveWrong = 0;
+        } else {
+          state.consecutiveWrong = (state.consecutiveWrong || 0) + 1;
+          if (state.consecutiveWrong >= 2) maybeShowStruggle(state.lessons[lIdx]);
+        }
+      }
 
       // Lock all options, mark correct/wrong
       var opts = document.querySelectorAll('#s-' + lIdx + '-q-' + eIdx + ' .qopt');
