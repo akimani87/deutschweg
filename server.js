@@ -736,14 +736,13 @@ LANGUAGE PURITY RULE — critical, overrides every other instruction:
 - NEVER compose a sentence that mixes German and English ("Denglish").
 - Every sentence must be entirely ONE language. A German sentence must be complete, correct German; an English sentence must be complete, correct English.
 - A comma (,), em dash (—), en dash (–), colon, semicolon, "and", or "und" must NEVER bridge a German fragment and an English fragment. Separate them into two sentences with a full stop, ? or !.
-    WRONG (comma): "Three days in a row, das ist gut!"
-    WRONG (dash):  "Nine days in a row — das ist gut!"
-    WRONG (dash):  "Ich habe das Buch — you already know this."
-    RIGHT:         "Nine days in a row! Das ist gut!"
-    RIGHT:         "Ich habe das Buch. You already know this!"
+    WRONG: "Nine days in a row, das ist gut!"
+    WRONG: "Today you read a book — du liest ein Buch."
+    RIGHT: "Nine days in a row! Das ist gut!"
 - In an English sentence, name German grammar topics by their English name (e.g. "the accusative case", not "Akkusativ").
 - You MAY quote or name individual German words when they are the subject of instruction (e.g. explaining the difference between der and den) — that is teaching about the words, not mixing languages.
-- To actually USE a German word (not just name it), place it inside a complete German sentence — never drop it into an English sentence.`;
+- To actually USE a German word (not just name it), place it inside a complete German sentence — never drop it into an English sentence.
+- FINAL CHECK before you answer: re-read every sentence. If any single sentence contains both a German word and an English word (other than a German word quoted as a vocabulary term), rewrite it as two separate sentences.`;
 
 // Whole-day difference between an ISO date string and now (UTC, calendar days).
 // Positive = in the future (exam countdown), negative/0 = past (last activity).
@@ -804,7 +803,7 @@ Rules:
 - Address the learner by their first name
 - Apply the immersion target above by choosing how many WHOLE sentences are German vs English — never by mixing languages inside a sentence. Shift the balance gradually, never abruptly.
 - Any German sentence may ONLY use words from the "already knows" list — NEVER introduce a new German word. If you cannot form a correct, natural German sentence from those words, write that sentence in English instead.
-- For active recall, include one short, complete German sentence built only from known words (whenever the immersion target allows any German).
+- For active recall, include one short, complete German sentence built only from known words (whenever the immersion target allows any German). Write it as its own sentence ending in . ! or ? — do NOT follow a German sentence with an em dash or comma and then an English translation or comment.
 - Acknowledge streak / returning / exam countdown only if a fact above mentions it
 - One sentence on what they'll learn today, made to feel achievable
 - Maximum 4 short sentences total
@@ -839,10 +838,11 @@ app.post('/api/aipal/opener', async (req, res) => {
       body: JSON.stringify({
         // Matches the model the /api/aipal endpoint already uses in this repo
         // (the spec's "claude-sonnet-4-6" is the same Sonnet family).
-        model:      'claude-sonnet-4-20250514',
-        max_tokens: 250,
-        system:     systemPrompt,
-        messages:   [{ role: 'user', content: userMsg }],
+        model:       'claude-sonnet-4-20250514',
+        max_tokens:  250,
+        temperature: 0.3, // low temp so the language-purity rule is followed reliably
+        system:      systemPrompt,
+        messages:    [{ role: 'user', content: userMsg }],
       }),
     });
 
@@ -909,9 +909,10 @@ app.post('/api/aipal/lesson-complete', async (req, res) => {
       method:  'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.CLAUDE_API_KEY, 'anthropic-version': '2023-06-01' },
       body: JSON.stringify({
-        model:      'claude-sonnet-4-20250514',
-        max_tokens: 400,
-        system:     buildAipalCompletePrompt(ctx),
+        model:       'claude-sonnet-4-20250514',
+        max_tokens:  400,
+        temperature: 0.5,
+        system:      buildAipalCompletePrompt(ctx),
         messages:   [{ role: 'user', content: 'Generate the lesson completion JSON now.' }],
       }),
     });
@@ -970,9 +971,10 @@ app.post('/api/aipal/struggle', async (req, res) => {
       method:  'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.CLAUDE_API_KEY, 'anthropic-version': '2023-06-01' },
       body: JSON.stringify({
-        model:      'claude-sonnet-4-20250514',
-        max_tokens: 180,
-        system:     buildAipalStrugglePrompt(ctx),
+        model:       'claude-sonnet-4-20250514',
+        max_tokens:  180,
+        temperature: 0.5,
+        system:      buildAipalStrugglePrompt(ctx),
         messages:   [{ role: 'user', content: 'Generate the supportive message now.' }],
       }),
     });
@@ -1026,9 +1028,10 @@ app.post('/api/aipal/milestone', async (req, res) => {
       method:  'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.CLAUDE_API_KEY, 'anthropic-version': '2023-06-01' },
       body: JSON.stringify({
-        model:      'claude-sonnet-4-20250514',
-        max_tokens: 200,
-        system:     buildAipalMilestonePrompt(ctx),
+        model:       'claude-sonnet-4-20250514',
+        max_tokens:  200,
+        temperature: 0.5,
+        system:      buildAipalMilestonePrompt(ctx),
         messages:   [{ role: 'user', content: 'Generate the milestone celebration now.' }],
       }),
     });
