@@ -717,15 +717,33 @@ app.post('/api/aipal', async (req, res) => {
 // Progressive immersion ratio table (from the v2 spec). `completed` is the
 // number of lessons the learner has finished. Returns the German share plus a
 // hard cap on new German words for the early stages where over-immersing hurts.
+// Immersion is applied at the SENTENCE level (whole German sentences vs whole
+// English sentences) — never by mixing languages inside one sentence.
 function aipalImmersion(completed) {
   const c = Number(completed) || 0;
-  if (c <= 2)  return { de: 10, maxGerman: 2,  hint: 'Mostly English. Use at most 2 German words.' };
-  if (c <= 4)  return { de: 20, maxGerman: 4,  hint: 'Mostly English. Use at most 4 German words.' };
-  if (c <= 6)  return { de: 35, maxGerman: 6,  hint: 'About one third German, the rest English.' };
-  if (c <= 8)  return { de: 55, maxGerman: 8,  hint: 'Slightly more German than English now.' };
-  if (c <= 10) return { de: 75, maxGerman: 12, hint: 'Mostly German, a little English for comfort.' };
-  return         { de: 90, maxGerman: 99, hint: 'Almost entirely German.' };
+  if (c <= 2)  return { de: 10, hint: 'Almost entirely English. At most one very short German sentence, or none.' };
+  if (c <= 4)  return { de: 20, hint: 'Mostly English. One short German sentence is fine.' };
+  if (c <= 6)  return { de: 35, hint: 'About one third of your sentences in German, the rest English.' };
+  if (c <= 8)  return { de: 55, hint: 'Slightly more German sentences than English.' };
+  if (c <= 10) return { de: 75, hint: 'Mostly German sentences, a little English for comfort.' };
+  return         { de: 90, hint: 'Almost entirely German sentences.' };
 }
+
+// Shared, non-negotiable language-purity rule for every AI Pal message.
+const AIPAL_LANGUAGE_RULE = `
+
+LANGUAGE PURITY RULE — critical, overrides every other instruction:
+- NEVER compose a sentence that mixes German and English ("Denglish").
+- Every sentence must be entirely ONE language. A German sentence must be complete, correct German; an English sentence must be complete, correct English.
+- A comma (,), em dash (—), en dash (–), colon, semicolon, "and", or "und" must NEVER bridge a German fragment and an English fragment. Separate them into two sentences with a full stop, ? or !.
+    WRONG (comma): "Three days in a row, das ist gut!"
+    WRONG (dash):  "Nine days in a row — das ist gut!"
+    WRONG (dash):  "Ich habe das Buch — you already know this."
+    RIGHT:         "Nine days in a row! Das ist gut!"
+    RIGHT:         "Ich habe das Buch. You already know this!"
+- In an English sentence, name German grammar topics by their English name (e.g. "the accusative case", not "Akkusativ").
+- You MAY quote or name individual German words when they are the subject of instruction (e.g. explaining the difference between der and den) — that is teaching about the words, not mixing languages.
+- To actually USE a German word (not just name it), place it inside a complete German sentence — never drop it into an English sentence.`;
 
 // Whole-day difference between an ISO date string and now (UTC, calendar days).
 // Positive = in the future (exam countdown), negative/0 = past (last activity).
@@ -752,7 +770,7 @@ Rules:
 - Maximum 4 short sentences
 - End with energy and excitement toward lesson 1
 - Never sound robotic or automated
-- Output only the message itself — no quotes, no preamble, no labels`;
+- Output only the message itself — no quotes, no preamble, no labels${AIPAL_LANGUAGE_RULE}`;
 
 function buildAipalOpenerPrompt(ctx) {
   const ratio = aipalImmersion(ctx.completed_lessons);
@@ -784,14 +802,14 @@ ${facts.map(f => '- ' + f).join('\n')}
 
 Rules:
 - Address the learner by their first name
-- Apply the immersion target above. Increase German naturally, never abruptly.
-- ONLY use German words from the "already knows" list — NEVER introduce a new German word
-- Weave 1–2 of those known German words in naturally so the learner reviews them without noticing
+- Apply the immersion target above by choosing how many WHOLE sentences are German vs English — never by mixing languages inside a sentence. Shift the balance gradually, never abruptly.
+- Any German sentence may ONLY use words from the "already knows" list — NEVER introduce a new German word. If you cannot form a correct, natural German sentence from those words, write that sentence in English instead.
+- For active recall, include one short, complete German sentence built only from known words (whenever the immersion target allows any German).
 - Acknowledge streak / returning / exam countdown only if a fact above mentions it
 - One sentence on what they'll learn today, made to feel achievable
 - Maximum 4 short sentences total
 - Warm big-sister energy, never clinical. The goal: make the learner feel "I can actually do this."
-- Output only the message itself — no quotes, no preamble, no labels`;
+- Output only the message itself — no quotes, no preamble, no labels${AIPAL_LANGUAGE_RULE}`;
 }
 
 app.post('/api/aipal/opener', async (req, res) => {
@@ -872,12 +890,12 @@ Generate three short sections:
 3. encouragement  — one sentence celebrating this win loudly and pointing forward to the next lesson
 
 Rules:
-- Simple English, with German words from this lesson woven in naturally where it fits
+- Write each section as ONE clean, simple English sentence. Do NOT drop German words into these English sentences.
+- If you reference a German word or phrase, it must be a complete correct German sentence on its own — but for this beginner popup, plain English is preferred. Never mix German and English within one sentence.
 - Never use German administrative terms (Anmeldung, Behörde, Amt) without a simple explanation
 - Warm, celebratory tone — the learner should feel proud, not just informed
-- Each section is ONE sentence
 - Respond with ONLY a JSON object, no markdown, no preamble:
-{"learned":"...","matters":"...","encouragement":"..."}`;
+{"learned":"...","matters":"...","encouragement":"..."}${AIPAL_LANGUAGE_RULE}`;
 }
 
 app.post('/api/aipal/lesson-complete', async (req, res) => {
@@ -939,7 +957,8 @@ Generate a short supportive message:
 - Maximum 3 sentences
 - Tone: patient, warm, like a friend sitting beside them
 - Use the learner's first name
-- Output only the message — no quotes, no labels`;
+- If you give a German example, write it as a complete correct German sentence; keep your explanation in separate English sentences
+- Output only the message — no quotes, no labels${AIPAL_LANGUAGE_RULE}`;
 }
 
 app.post('/api/aipal/struggle', async (req, res) => {
@@ -991,10 +1010,10 @@ Context:
 Rules:
 - Use the learner's first name
 - Big, genuine celebration — make them feel this is a real achievement, because for them it is
-- Simple, warm English (a German word or two is fine if it fits naturally)
+- Simple, warm English. If you add a German sentence, it must be complete correct German on its own — never mix German words into an English sentence.
 - 2 to 3 short sentences
 - End pointing forward with excitement
-- Output only the message — no quotes, no labels`;
+- Output only the message — no quotes, no labels${AIPAL_LANGUAGE_RULE}`;
 }
 
 app.post('/api/aipal/milestone', async (req, res) => {
