@@ -941,9 +941,31 @@
         body: JSON.stringify({ context: ctx })
       })
         .then(function(r) { return r.json(); })
-        .then(function(j) { window.DWPal.stopTyping(); if (j && j.message) window.DWPal.speak(j.message, true); })
+        .then(function(j) {
+          window.DWPal.stopTyping();
+          if (j && j.message) {
+            window.DWPal.speak(j.message, true);
+            // Hand the struggle context to AI Tutor so the learner can cross
+            // over without repeating themselves.
+            writePalTutorHandoff(lesson, j.message);
+          }
+        })
         .catch(function() { window.DWPal.stopTyping(); });
     });
+  }
+
+  // Persist a quiz-struggle handoff for AI Tutor. weak_word is the correct
+  // answer (or rule hint) of the exercise the learner just missed.
+  function writePalTutorHandoff(lesson, lastMessage) {
+    if (!state.user) return;
+    var ex   = state.lastWrongExercise;
+    var weak = (ex && (ex.correct_answer || ex.rule_hint)) || null;
+    dwSupabase.from('pal_tutor_handoff').insert({
+      user_id:          state.user.id,
+      topic:            (lesson && lesson.title) || null,
+      weak_word:        weak,
+      last_pal_message: lastMessage || null
+    }).then(function() {}).catch(function() {});
   }
 
   // ── Behavior 6: confidence tracker store ─────────────────────────────────
@@ -1440,6 +1462,7 @@
           state.consecutiveWrong = 0;
         } else {
           state.consecutiveWrong = (state.consecutiveWrong || 0) + 1;
+          state.lastWrongExercise = ex;   // weak_word source for the Tutor handoff
           if (state.consecutiveWrong >= 2) maybeShowStruggle(state.lessons[lIdx]);
         }
       }

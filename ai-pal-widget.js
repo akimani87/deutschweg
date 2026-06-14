@@ -205,13 +205,19 @@
       // patterns within the same category match the same input.
       for (var i = 0; i < data.patterns.length; i++){
         var pattern = data.patterns[i];
-        var hit = (typeof pattern === 'function')
-          ? !!pattern(userMessage)
-          : pattern.test(userMessage);
+        var hit = false, matchText = '';
+        if (typeof pattern === 'function'){
+          hit = !!pattern(userMessage);
+        } else {
+          var m = pattern.exec(userMessage);
+          if (m){ hit = true; matchText = String(m[1] || m[0] || '').trim(); }
+        }
         if (hit){
           data.session++;
-          detected = { category: category, sessionCount: data.session };
-          console.log('[ai-pal-widget] ✓ matched category=' + category + ' (pattern #' + i + ', session count=' + data.session + ')');
+          // matchText is the exact fragment the learner got wrong — used as
+          // the weak_word in the AI Pal → AI Tutor handoff.
+          detected = { category: category, sessionCount: data.session, match: matchText };
+          console.log('[ai-pal-widget] ✓ matched category=' + category + ' (pattern #' + i + ', session count=' + data.session + ', weak="' + matchText + '")');
           break;
         }
       }
@@ -370,8 +376,65 @@
     var detected = detectError(userMessage);
     if (detected){
       saveErrorToDatabase(detected.category, moduleId, userLevel);
+      // Remember what the learner is struggling with, for the Tutor handoff.
+      if (detected.match) palWeakWord = detected.match;
+      palWeakCategory = detected.category;
+      // 2nd+ time on the same category this session → an active struggle;
+      // proactively hand context to the Tutor after the next reply.
+      if (detected.sessionCount >= 2) palStruggleActive = true;
     }
     return Promise.resolve(getErrorContext(detected));
+  }
+
+  // ── AI Pal → AI Tutor handoff ────────────────────────────────────────────
+  // Shared-context bridge: when the learner crosses over to the Tutor (or is
+  // visibly struggling), persist what they were working on so the Tutor can
+  // continue without making them repeat themselves.
+  var palWeakWord      = '';   // exact fragment they got wrong (e.g. "ich gehen")
+  var palWeakCategory  = '';   // error category key
+  var lastPalMessage   = '';   // most recent AI Pal reply (set in appendPal)
+  var palStruggleActive = false;
+
+  var PAL_TOPIC_LABELS = {
+    article_masculine_accusative: 'masculine accusative articles (der/den)',
+    verb_position:                'verb position in the sentence',
+    verb_conjugation:             'verb conjugation',
+    perfekt_auxiliary:            'the Perfekt tense (haben vs sein)',
+    subordinate_clause_word_order:'word order after weil/dass/wenn',
+    preposition_pattern:          'prepositions with places'
+  };
+
+  function writeHandoff(){
+    var sb = getSupabase();
+    if (!sb) return Promise.resolve(null);
+    return sb.auth.getUser().then(function(res){
+      var user = res && res.data && res.data.user;
+      if (!user) return null;
+      var topic = getModuleName();
+      if (palWeakCategory && PAL_TOPIC_LABELS[palWeakCategory]) {
+        topic = topic + ' — ' + PAL_TOPIC_LABELS[palWeakCategory];
+      }
+      var payload = {
+        user_id:          user.id,
+        topic:            topic,
+        weak_word:        palWeakWord || null,
+        last_pal_message: lastPalMessage || null
+      };
+      return sb.from('pal_tutor_handoff').insert(payload).then(function(out){
+        if (out.error) console.error('[ai-pal-widget] handoff insert failed', out.error);
+        else           console.log('[ai-pal-widget] ✓ handoff written →', payload);
+        return out;
+      });
+    }).catch(function(e){ console.error('[ai-pal-widget] handoff threw', e); return null; });
+  }
+
+  // Click handler for the "Ask Tutor" link: write the handoff first, then
+  // navigate — but never let a slow/failed write block the learner.
+  function goToTutor(e){
+    if (e && e.preventDefault) e.preventDefault();
+    var href = (e && e.currentTarget && e.currentTarget.getAttribute('href')) || 'ai-tutor.html';
+    var go = function(){ window.location.href = href; };
+    writeHandoff().then(go, go);
   }
 
   // ── CSS ─────────────────────────────────────────────────────────────────
@@ -626,6 +689,7 @@
   }
   function appendPal(text){
     dropWelcome();
+    lastPalMessage = text;   // newest reply — carried into the Tutor handoff
     var row = document.createElement('div');
     row.className = 'aip-msg pal';
     row.innerHTML =
@@ -635,6 +699,7 @@
       +   '<a class="aip-ask-tutor" href="ai-tutor.html">Ask Tutor 👩‍🏫</a>'
       + '</div>';
     row.querySelector('.aip-bubble').textContent = text;
+    row.querySelector('.aip-ask-tutor').addEventListener('click', goToTutor);
     msgsEl.appendChild(row);
     msgsEl.scrollTop = msgsEl.scrollHeight;
   }
@@ -687,6 +752,9 @@
       if (res.ok && res.body && res.body.reply){
         appendPal(res.body.reply);
         pushHistory('assistant', res.body.reply);
+        // Repeated struggle this session → proactively stash context so the
+        // Tutor is ready even if the learner navigates there via the menu.
+        if (palStruggleActive){ writeHandoff(); palStruggleActive = false; }
       } else {
         var msg = (res.body && res.body.error) ? res.body.error : 'Oops — something went wrong. Try again!';
         appendPal(msg);

@@ -1052,7 +1052,31 @@ app.post('/api/aipal/milestone', async (req, res) => {
 // ── POST /api/aitutor ────────────────────────────────────────────────────────
 const AITUTOR_VALID_LEVELS = ['A1', 'A2', 'B1', 'B2'];
 
-function buildAitutorPrompt(level) {
+// Keep only the handoff fields we expect, as bounded strings. Returns null
+// when there's nothing useful — so the prompt stays clean for normal sessions.
+function sanitizeHandoff(h) {
+  if (!h || typeof h !== 'object') return null;
+  const s = (v, n) => (typeof v === 'string' && v.trim()) ? v.trim().slice(0, n) : '';
+  const out = {
+    topic:            s(h.topic, 200),
+    weak_word:        s(h.weak_word, 120),
+    last_pal_message: s(h.last_pal_message, 800),
+  };
+  return (out.topic || out.weak_word || out.last_pal_message) ? out : null;
+}
+
+function buildAitutorHandoffBlock(handoff) {
+  if (!handoff) return '';
+  return `
+
+HANDOFF FROM AI PAL — the learner was just chatting with AI Pal (a quick-help study buddy), got stuck, and came straight to you. They have NOT re-typed their question, and they should never have to. Continue seamlessly from here:
+- Topic they were working on: ${handoff.topic || '(general practice)'}
+- The specific word or point they struggled with: ${handoff.weak_word || '(not specified)'}
+- The last thing AI Pal told them: "${handoff.last_pal_message || ''}"
+In your FIRST message: warmly acknowledge what they were just working on (by name), then immediately continue teaching that exact point in more depth — do not ask them what they need or make them repeat themselves.`;
+}
+
+function buildAitutorPrompt(level, handoff) {
   return `You are a patient, structured German teacher helping African learners prepare for the Goethe exam. The student's level is ${level}.
 
 Your role: explain clearly when asked. You are a full teacher.
@@ -1083,18 +1107,28 @@ Rules:
 - Give complete explanations — don't cut short
 - Use simple English for explanations
 - Adapt depth to the student level: A1 simple, B2 detailed
-- If student seems frustrated, be extra warm and reassuring`;
+- If student seems frustrated, be extra warm and reassuring${buildAitutorHandoffBlock(handoff)}`;
 }
 
 app.post('/api/aitutor', async (req, res) => {
-  const { messages, level } = req.body;
-  const safeLevel = AITUTOR_VALID_LEVELS.includes(level) ? level : 'A1';
+  const { messages, level, handoff } = req.body;
+  const safeLevel   = AITUTOR_VALID_LEVELS.includes(level) ? level : 'A1';
+  const safeHandoff = sanitizeHandoff(handoff);
 
-  console.log(`[/api/aitutor] Request — level: ${safeLevel}, msgs: ${Array.isArray(messages) ? messages.length : 'invalid'}, origin: ${req.headers.origin || 'none'}`);
+  let convo = Array.isArray(messages) ? messages : [];
 
-  if (!Array.isArray(messages) || messages.length === 0) {
-    return res.status(400).json({ error: 'No messages provided.' });
+  // Handoff opener: the tutor speaks first, continuing from AI Pal. The client
+  // sends empty messages + a handoff; we synthesize a single user turn (never
+  // shown to the learner) so the model has something to respond to.
+  if (convo.length === 0) {
+    if (safeHandoff) {
+      convo = [{ role: 'user', content: 'Please greet me and continue from where AI Pal left off, without asking me to repeat my question.' }];
+    } else {
+      return res.status(400).json({ error: 'No messages provided.' });
+    }
   }
+
+  console.log(`[/api/aitutor] Request — level: ${safeLevel}, msgs: ${convo.length}, handoff: ${safeHandoff ? `yes (topic="${safeHandoff.topic}", word="${safeHandoff.weak_word}")` : 'no'}, origin: ${req.headers.origin || 'none'}`);
 
   if (!process.env.CLAUDE_API_KEY) {
     console.error('CLAUDE_API_KEY is not set');
@@ -1102,7 +1136,7 @@ app.post('/api/aitutor', async (req, res) => {
   }
 
   // Cap to last 30 turns; truncate each to bound payload size
-  const trimmed = messages.slice(-30).map(m => ({
+  const trimmed = convo.slice(-30).map(m => ({
     role:    m.role === 'assistant' ? 'assistant' : 'user',
     content: String(m.content).slice(0, 1500),
   }));
@@ -1118,7 +1152,7 @@ app.post('/api/aitutor', async (req, res) => {
       body: JSON.stringify({
         model:      'claude-sonnet-4-20250514',
         max_tokens: 800,
-        system:     buildAitutorPrompt(safeLevel),
+        system:     buildAitutorPrompt(safeLevel, safeHandoff),
         messages:   trimmed,
       }),
     });

@@ -27,6 +27,9 @@
 <title>AI Tutor — DeutschWeg</title>
 <link rel="stylesheet" href="./deutschweg-theme.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<!-- Supabase: needed to read the AI Pal → AI Tutor handoff under the user's session -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
 <style>
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -401,6 +404,65 @@
 
   // ── Wake the Render server ──────────────────────────────────────────────
   fetch(API_BASE + '/').catch(function(){});
+
+  // ── AI Pal → AI Tutor handoff ───────────────────────────────────────────
+  // At conversation start, look for a recent handoff AI Pal left for this
+  // learner. If found, the Tutor speaks first and continues from exactly
+  // there — the learner never repeats their question. The row is consumed
+  // (deleted) after use so it can't resurface on a later visit.
+  var handoffCtx = null;
+  (function loadHandoff(){
+    if (typeof dwSupabase === 'undefined' || !dwSupabase) return;
+    dwSupabase.auth.getUser().then(function(res){
+      var user = res && res.data && res.data.user;
+      if (!user) return;
+      var sinceISO = new Date(Date.now() - 6 * 3600 * 1000).toISOString();
+      return dwSupabase.from('pal_tutor_handoff')
+        .select('id, topic, weak_word, last_pal_message, created_at')
+        .eq('user_id', user.id)
+        .gte('created_at', sinceISO)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+        .then(function(r){
+          if (r.error || !r.data) return;
+          var h = r.data;
+          handoffCtx = {
+            topic:            h.topic || '',
+            weak_word:        h.weak_word || '',
+            last_pal_message: h.last_pal_message || ''
+          };
+          startHandoffOpener(h.id);
+        });
+    }).catch(function(){});
+  })();
+
+  function startHandoffOpener(handoffId){
+    // Synthetic primer keeps a valid user-first message order; it lives only
+    // in history and is never rendered. handoff is sent only on this opener
+    // call — afterwards the opener exchange in history carries the context.
+    var primer = 'Please greet me and continue from where AI Pal left off, without asking me to repeat my question.';
+    showTyping();
+    fetch(API_BASE + '/api/aitutor', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ messages: [], level: level, handoff: handoffCtx })
+    })
+      .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, body: j }; }); })
+      .then(function(res){
+        hideTyping();
+        if (res.ok && res.body && res.body.reply){
+          appendMessage('tutor', res.body.reply);
+          history.push({ role: 'user', content: primer });
+          history.push({ role: 'assistant', content: res.body.reply });
+          if (handoffId && typeof dwSupabase !== 'undefined' && dwSupabase){
+            dwSupabase.from('pal_tutor_handoff').delete().eq('id', handoffId)
+              .then(function(){}).catch(function(){});
+          }
+        }
+      })
+      .catch(function(){ hideTyping(); });
+  }
 
   // ── Auto-resize textarea ────────────────────────────────────────────────
   input.addEventListener('input', function(){
