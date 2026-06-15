@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wörterbuch — DeutschWeg</title>
+<meta name="description" content="DeutschWeg dictionary — German words explained for African learners preparing for the Goethe exam.">
+<link rel="stylesheet" href="./deutschweg-theme.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
+<style>
+  *{box-sizing:border-box;}
+  body{
+    margin:0;background:#F8FAFC;color:#1F2937;
+    font-family:"Plus Jakarta Sans","DM Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    padding-bottom:84px;
+  }
+
+  /* ── HEADER ── */
+  .dict-header{
+    position:sticky;top:0;z-index:50;background:#fff;
+    border-bottom:1px solid #E5E7EB;box-shadow:0 2px 12px rgba(0,0,0,0.04);
+    padding:16px 16px 12px;
+  }
+  .dict-title{display:flex;align-items:center;gap:8px;font-size:20px;font-weight:800;letter-spacing:-0.4px;margin:0 0 12px;}
+  .dict-title .em{font-size:22px;}
+
+  .dict-search-wrap{position:relative;margin-bottom:12px;}
+  .dict-search{
+    width:100%;background:#F1F5F9;border:1.5px solid transparent;border-radius:14px;
+    padding:12px 14px 12px 40px;font-family:inherit;font-size:15px;color:#1F2937;outline:none;
+    transition:border-color .2s,background .2s;
+  }
+  .dict-search:focus{border-color:#3B82F6;background:#fff;}
+  .dict-search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px;color:#94A3B8;}
+
+  .dict-levels{display:flex;gap:6px;overflow-x:auto;margin-bottom:10px;-webkit-overflow-scrolling:touch;}
+  .dict-levels::-webkit-scrollbar{display:none;}
+  .lvl-tab{
+    flex:0 0 auto;background:#fff;border:1.5px solid #E5E7EB;color:#475569;
+    border-radius:20px;padding:6px 14px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;
+    transition:all .15s;white-space:nowrap;
+  }
+  .lvl-tab:hover{border-color:#3B82F6;}
+  .lvl-tab.active{background:#3B82F6;border-color:#3B82F6;color:#fff;}
+
+  .dict-toggle{display:flex;background:#F1F5F9;border-radius:12px;padding:3px;}
+  .tog-btn{
+    flex:1;background:none;border:none;color:#64748B;border-radius:9px;
+    padding:8px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .15s;
+  }
+  .tog-btn.active{background:#fff;color:#1D4ED8;box-shadow:0 1px 4px rgba(0,0,0,0.08);}
+
+  /* ── WORD LIST ── */
+  .dict-list{padding:12px 16px;max-width:640px;margin:0 auto;}
+  .dict-status{text-align:center;color:#94A3B8;font-size:14px;padding:30px 12px;}
+  .word-row{
+    display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #E5E7EB;
+    border-radius:14px;padding:12px 14px;margin-bottom:8px;cursor:pointer;
+    transition:border-color .15s,transform .1s,box-shadow .15s;
+  }
+  .word-row:hover{border-color:#3B82F6;box-shadow:0 4px 14px rgba(59,130,246,0.1);}
+  .word-row:active{transform:scale(0.99);}
+  .wr-main{flex:1;min-width:0;}
+  .wr-de{font-size:16px;font-weight:800;color:#1F2937;line-height:1.25;}
+  .wr-de .art{color:#3B82F6;font-weight:700;}
+  .wr-en{font-size:13px;color:#64748B;margin-top:2px;}
+  .wr-en.empty{color:#CBD5E1;font-style:italic;}
+  .lvl-badge{flex:0 0 auto;font-size:11px;font-weight:800;padding:3px 8px;border-radius:8px;letter-spacing:0.3px;}
+  .lvl-A1{background:#DCFCE7;color:#15803D;}
+  .lvl-A2{background:#FEF9C3;color:#A16207;}
+  .lvl-B1{background:#DBEAFE;color:#1D4ED8;}
+  .lvl-B2{background:#F3E8FF;color:#7E22CE;}
+  .wr-heart{flex:0 0 auto;font-size:16px;}
+  .gen-row{border-style:dashed;border-color:#3B82F6;color:#1D4ED8;font-weight:700;justify-content:center;}
+
+  /* ── FULL WORD CARD MODAL ── */
+  .dict-modal-overlay{
+    position:fixed;inset:0;z-index:200;display:none;align-items:flex-end;justify-content:center;
+    background:rgba(15,23,42,0.55);padding:0;
+  }
+  .dict-modal-overlay.show{display:flex;}
+  @media (min-width:560px){ .dict-modal-overlay{align-items:center;padding:18px;} }
+  .dict-card{
+    background:#fff;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;
+    border-radius:22px 22px 0 0;box-shadow:0 -10px 40px rgba(0,0,0,0.25);
+    transform:translateY(100%);transition:transform .28s cubic-bezier(0.4,0,0.2,1);
+  }
+  @media (min-width:560px){ .dict-card{border-radius:22px;transform:translateY(16px) scale(0.98);} }
+  .dict-modal-overlay.show .dict-card{transform:none;}
+  .card-hd{
+    position:sticky;top:0;background:linear-gradient(135deg,#1D4ED8 0%,#3B82F6 100%);color:#fff;
+    padding:18px 18px 16px;display:flex;align-items:flex-start;gap:10px;
+  }
+  .card-hd-main{flex:1;min-width:0;}
+  .card-word{font-size:24px;font-weight:800;letter-spacing:-0.5px;line-height:1.15;}
+  .card-word .art{opacity:0.85;font-weight:700;}
+  .card-sub{font-size:13px;color:rgba(255,255,255,0.9);margin-top:4px;font-weight:600;}
+  .card-hd-btns{display:flex;gap:6px;flex-shrink:0;}
+  .card-ibtn{background:rgba(255,255,255,0.18);border:none;color:#fff;width:34px;height:34px;border-radius:10px;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;}
+  .card-ibtn:hover{background:rgba(255,255,255,0.3);}
+  .card-ibtn.saved{background:#fff;}
+  .card-body{padding:16px 18px 24px;}
+  .card-spinner{display:flex;flex-direction:column;align-items:center;gap:12px;padding:50px 0;color:#64748B;}
+  .spin{width:34px;height:34px;border:3px solid #DBEAFE;border-top-color:#3B82F6;border-radius:50%;animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .sec{margin-top:16px;}
+  .sec-lab{font-size:11px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;color:#3B82F6;margin-bottom:5px;display:flex;align-items:center;gap:5px;}
+  .sec-txt{font-size:14.5px;line-height:1.6;color:#1F2937;}
+  .eng-row{font-size:16px;font-weight:700;color:#1F2937;}
+  .bsp{background:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;padding:10px 12px;margin-bottom:8px;}
+  .bsp-de{font-size:14.5px;font-weight:700;color:#1F2937;line-height:1.5;}
+  .bsp-en{font-size:13px;color:#64748B;margin-top:3px;line-height:1.45;}
+  .fehler{background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:10px 12px;margin-bottom:8px;font-size:14px;line-height:1.6;}
+  .fehler .bad{color:#DC2626;text-decoration:line-through;}
+  .fehler .good{color:#15803D;font-weight:700;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{background:#EFF6FF;border:1px solid #DBEAFE;color:#1D4ED8;border-radius:10px;padding:4px 10px;font-size:13px;font-weight:600;}
+  .tip-box{background:#FEFCE8;border:1px solid #FEF08A;border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.55;color:#713F12;}
+  .exam-box{background:#F0FDF4;border:1px solid #BBF7D0;border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.55;color:#14532D;}
+  .kultur-box{background:#F8FAFC;border-left:3px solid #3B82F6;border-radius:0 10px 10px 0;padding:10px 12px;font-size:14px;line-height:1.6;color:#334155;}
+
+  /* ── BOTTOM NAV ── */
+  .bottom-nav{
+    position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #E5E7EB;
+    display:flex;justify-content:space-around;padding:10px 0 18px;z-index:100;
+    box-shadow:0 -4px 20px rgba(0,0,0,0.06);
+  }
+  .nav-item{
+    display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 8px;
+    border-radius:10px;transition:all .2s;border:none;background:none;color:#9CA3AF;
+    text-decoration:none;flex:1;max-width:80px;
+  }
+  .nav-item:hover,.nav-item.active{color:#3B82F6;}
+  .nav-icon{font-size:20px;line-height:1;}
+  .nav-label{font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;}
+  @media (max-width:380px){
+    .nav-item{padding:6px 3px;}
+    .nav-label{font-size:9px;letter-spacing:0.2px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="dict-header">
+  <h1 class="dict-title"><span class="em">📖</span> Wörterbuch</h1>
+  <div class="dict-search-wrap">
+    <span class="dict-search-icon">🔍</span>
+    <input class="dict-search" id="search" type="text" placeholder="Search German or English…" autocomplete="off" autocapitalize="off">
+  </div>
+  <div class="dict-levels" id="levelTabs">
+    <button class="lvl-tab active" data-level="all">All</button>
+    <button class="lvl-tab" data-level="A1">🟢 A1</button>
+    <button class="lvl-tab" data-level="A2">🟡 A2</button>
+    <button class="lvl-tab" data-level="B1">🔵 B1</button>
+    <button class="lvl-tab" data-level="B2">B2</button>
+  </div>
+  <div class="dict-toggle" id="bankToggle">
+    <button class="tog-btn active" data-view="all">All Words</button>
+    <button class="tog-btn" data-view="bank">❤️ My Word Bank</button>
+  </div>
+</header>
+
+<main class="dict-list" id="list">
+  <div class="dict-status">Loading words…</div>
+</main>
+
+<!-- FULL WORD CARD -->
+<div class="dict-modal-overlay" id="modal">
+  <div class="dict-card" id="card"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <a class="nav-item" href="/dashboard"><span class="nav-icon">📚</span><span class="nav-label">Modules</span></a>
+  <a class="nav-item" href="ai-tutor.html"><span class="nav-icon">👩‍🏫</span><span class="nav-label">AI Tutor</span></a>
+  <a class="nav-item" href="ai-pal.html"><span class="nav-icon">🤗</span><span class="nav-label">AI Pal</span></a>
+  <a class="nav-item active" href="dictionary.html"><span class="nav-icon">📖</span><span class="nav-label">Wörterbuch</span></a>
+  <a class="nav-item" href="sprechen-prep.html"><span class="nav-icon">🎤</span><span class="nav-label">Sprechen</span></a>
+  <a class="nav-item" href="exam-vault.html"><span class="nav-icon">📝</span><span class="nav-label">Exam Vault</span></a>
+</nav>
+
+<script>
+(function(){
+  'use strict';
+
+  var API_BASE = 'https://deutschweg.onrender.com';
+  var sb = (typeof dwSupabase !== 'undefined') ? dwSupabase : null;
+
+  var listEl   = document.getElementById('list');
+  var searchEl = document.getElementById('search');
+  var modalEl  = document.getElementById('modal');
+  var cardEl   = document.getElementById('card');
+
+  var state = {
+    level: 'all',
+    view:  'all',          // 'all' | 'bank'
+    user:  null,
+    bank:  {},             // word_id -> confidence_level (saved words)
+    search:'',
+  };
+
+  // Wake the Render server (generation endpoint lives there).
+  fetch(API_BASE + '/').catch(function(){});
+
+  function esc(s){ return String(s == null ? '' : s); }
+  function levelBadge(lv){
+    if (!lv) return '';
+    var cls = ({A1:'lvl-A1',A2:'lvl-A2',B1:'lvl-B1',B2:'lvl-B2'})[lv] || 'lvl-B1';
+    return '<span class="lvl-badge ' + cls + '">' + esc(lv) + '</span>';
+  }
+  function withArticle(word, article){
+    if (!article) return esc(word);
+    // Avoid doubling if the word already carries its article.
+    if (new RegExp('^(der|die|das)\\s', 'i').test(word)) return esc(word);
+    return '<span class="art">' + esc(article) + '</span> ' + esc(word);
+  }
+
+  // ── Auth + saved word ids ────────────────────────────────────────────────
+  function loadUserAndBank(){
+    if (!sb) return Promise.resolve();
+    return sb.auth.getUser().then(function(res){
+      state.user = (res && res.data && res.data.user) || null;
+      if (!state.user) return;
+      return sb.from('user_word_bank').select('word_id, confidence_level').eq('user_id', state.user.id)
+        .then(function(r){
+          state.bank = {};
+          ((r && r.data) || []).forEach(function(row){ state.bank[row.word_id] = row.confidence_level; });
+        });
+    }).catch(function(){});
+  }
+
+  // ── List rendering ───────────────────────────────────────────────────────
+  function status(msg){ listEl.innerHTML = '<div class="dict-status">' + esc(msg) + '</div>'; }
+
+  function renderRows(items, opts){
+    opts = opts || {};
+    listEl.innerHTML = '';
+    if (!items.length){
+      if (opts.term){
+        // Nothing local — offer generate-on-demand.
+        var gen = document.createElement('div');
+        gen.className = 'word-row gen-row';
+        gen.innerHTML = '✨ Generate full entry for “' + esc(opts.term) + '”';
+        gen.addEventListener('click', function(){ openCard(opts.term); });
+        listEl.appendChild(gen);
+      } else {
+        status(state.view === 'bank' ? 'No saved words yet. Tap ❤️ on any word to save it.' : 'No words found.');
+      }
+      return;
+    }
+    items.forEach(function(it){
+      var row = document.createElement('div');
+      row.className = 'word-row';
+      var en = it.english
+        ? '<div class="wr-en">' + esc(it.english) + '</div>'
+        : '<div class="wr-en empty">tap to look up</div>';
+      var heart = (it.id && state.bank[it.id]) ? '<span class="wr-heart">❤️</span>' : '';
+      row.innerHTML =
+        '<div class="wr-main"><div class="wr-de">' + withArticle(it.word, it.article) + '</div>' + en + '</div>' +
+        heart + levelBadge(it.level);
+      row.addEventListener('click', function(){ openCard(it.word); });
+      listEl.appendChild(row);
+    });
+  }
+
+  // Merge cached english (from dictionary) into seed rows by lowercased word.
+  function mergeCachedEnglish(seedRows){
+    if (!sb || !seedRows.length) return Promise.resolve(seedRows);
+    return sb.from('dictionary').select('id, word, english')
+      .then(function(r){
+        var map = {};
+        ((r && r.data) || []).forEach(function(d){ map[String(d.word).toLowerCase()] = d; });
+        seedRows.forEach(function(s){
+          var bare = String(s.word).replace(/^(der|die|das)\s+/i,'').toLowerCase();
+          var hit = map[bare] || map[String(s.word).toLowerCase()];
+          if (hit){ s.english = hit.english; s.id = hit.id; }
+        });
+        return seedRows;
+      }).catch(function(){ return seedRows; });
+  }
+
+  function loadAllWords(){
+    if (!sb){ status('Dictionary unavailable.'); return; }
+    status('Loading words…');
+    var q = sb.from('dictionary_seed').select('word, level, article').order('word');
+    if (state.level !== 'all') q = q.eq('level', state.level);
+    q.then(function(r){
+      if (r.error){ status('Could not load words.'); return; }
+      mergeCachedEnglish((r.data || []).slice()).then(function(rows){ renderRows(rows); });
+    });
+  }
+
+  function loadWordBank(){
+    if (!sb){ status('Dictionary unavailable.'); return; }
+    if (!state.user){ status('Sign in to use your Word Bank.'); return; }
+    status('Loading your words…');
+    var q = sb.from('user_word_bank')
+      .select('confidence_level, dictionary:word_id ( id, word, level, article, english )')
+      .eq('user_id', state.user.id)
+      .order('saved_at', { ascending: false });
+    q.then(function(r){
+      if (r.error){ status('Could not load your Word Bank.'); return; }
+      var rows = ((r.data) || []).map(function(x){ return x.dictionary; }).filter(Boolean);
+      if (state.level !== 'all') rows = rows.filter(function(d){ return d.level === state.level; });
+      renderRows(rows);
+    });
+  }
+
+  function refreshList(){
+    if (state.search) { doSearch(state.search); return; }
+    if (state.view === 'bank') loadWordBank(); else loadAllWords();
+  }
+
+  // ── Search (German + English), live as you type ───────────────────────────
+  function doSearch(term){
+    term = term.trim();
+    if (!term){ refreshList(); return; }
+    if (!sb){ return; }
+    var like = '%' + term + '%';
+    Promise.all([
+      sb.from('dictionary_seed').select('word, level, article').ilike('word', like).limit(40),
+      sb.from('dictionary').select('id, word, level, article, english').or('word.ilike.' + like + ',english.ilike.' + like).limit(40)
+    ]).then(function(rs){
+      var byKey = {};
+      ((rs[1] && rs[1].data) || []).forEach(function(d){ byKey[String(d.word).toLowerCase()] = d; });
+      ((rs[0] && rs[0].data) || []).forEach(function(s){
+        var bare = String(s.word).replace(/^(der|die|das)\s+/i,'').toLowerCase();
+        if (!byKey[bare] && !byKey[String(s.word).toLowerCase()]) byKey['seed:' + s.word.toLowerCase()] = s;
+      });
+      var items = Object.keys(byKey).map(function(k){ return byKey[k]; });
+      if (state.level !== 'all') items = items.filter(function(d){ return d.level === state.level; });
+      items.sort(function(a,b){ return String(a.word).localeCompare(String(b.word)); });
+      renderRows(items, { term: term });
+    }).catch(function(){ renderRows([], { term: term }); });
+  }
+
+  var searchTimer = null;
+  searchEl.addEventListener('input', function(){
+    state.search = this.value;
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(function(){ refreshList(); }, 260);
+  });
+
+  // ── Tabs / toggle ─────────────────────────────────────────────────────────
+  document.getElementById('levelTabs').addEventListener('click', function(e){
+    var b = e.target.closest('.lvl-tab'); if (!b) return;
+    state.level = b.getAttribute('data-level');
+    this.querySelectorAll('.lvl-tab').forEach(function(x){ x.classList.toggle('active', x === b); });
+    refreshList();
+  });
+  document.getElementById('bankToggle').addEventListener('click', function(e){
+    var b = e.target.closest('.tog-btn'); if (!b) return;
+    state.view = b.getAttribute('data-view');
+    this.querySelectorAll('.tog-btn').forEach(function(x){ x.classList.toggle('active', x === b); });
+    refreshList();
+  });
+
+  // ── Full word card ─────────────────────────────────────────────────────────
+  function openModal(){ modalEl.classList.add('show'); document.body.style.overflow = 'hidden'; }
+  function closeModal(){ modalEl.classList.remove('show'); document.body.style.overflow = ''; }
+  modalEl.addEventListener('click', function(e){ if (e.target === modalEl) closeModal(); });
+
+  function openCard(word){
+    openModal();
+    cardEl.innerHTML =
+      '<div class="card-hd"><div class="card-hd-main"><div class="card-word">' + esc(word) + '</div>' +
+      '<div class="card-sub">Looking up…</div></div>' +
+      '<div class="card-hd-btns"><button class="card-ibtn" id="cardClose">✕</button></div></div>' +
+      '<div class="card-body"><div class="card-spinner"><div class="spin"></div><div>Generating entry…</div></div></div>';
+    document.getElementById('cardClose').addEventListener('click', closeModal);
+
+    fetch(API_BASE + '/api/dictionary/' + encodeURIComponent(word))
+      .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, body: j }; }); })
+      .then(function(res){
+        if (res.ok && res.body && res.body.word) renderCard(res.body);
+        else cardError((res.body && res.body.error) || 'Could not load this word.');
+      })
+      .catch(function(){ cardError('Connection problem. Please try again.'); });
+  }
+
+  function cardError(msg){
+    var body = cardEl.querySelector('.card-body');
+    if (body) body.innerHTML = '<div class="dict-status">' + esc(msg) + '</div>';
+  }
+
+  function arr(v){ return Array.isArray(v) ? v : []; }
+
+  function renderCard(e){
+    var saved = !!(e.id && state.bank[e.id]);
+    var html = '';
+    html += '<div class="card-hd"><div class="card-hd-main">';
+    html += '<div class="card-word">' + withArticle(e.word, e.article) + '</div>';
+    var subBits = [];
+    if (e.wortart)    subBits.push(esc(e.wortart));
+    if (e.aussprache) subBits.push('🔊 ' + esc(e.aussprache));
+    if (e.plural)     subBits.push('pl. ' + esc(e.plural));
+    html += '<div class="card-sub">' + subBits.join(' · ') + '</div>';
+    html += '</div><div class="card-hd-btns">';
+    html += '<button class="card-ibtn' + (saved ? ' saved' : '') + '" id="cardSave" title="Save to Word Bank">' + (saved ? '❤️' : '🤍') + '</button>';
+    html += '<button class="card-ibtn" id="cardClose">✕</button>';
+    html += '</div></div>';
+
+    html += '<div class="card-body">';
+    html += levelBadge(e.level) ? '<div style="margin-bottom:4px">' + levelBadge(e.level) + '</div>' : '';
+    if (e.english)   html += '<div class="sec"><div class="eng-row">' + esc(e.english) + '</div></div>';
+    if (e.bedeutung) html += sec('💡 Meaning', '<div class="sec-txt">' + esc(e.bedeutung) + '</div>');
+
+    var bsp = arr(e.beispielsaetze);
+    if (bsp.length){
+      var b = '';
+      bsp.forEach(function(p){
+        b += '<div class="bsp"><div class="bsp-de">' + esc(p.german) + '</div><div class="bsp-en">' + esc(p.english) + '</div></div>';
+      });
+      html += sec('📝 Examples', b);
+    }
+    if (e.kultur)    html += sec('🌍 In daily life', '<div class="kultur-box">' + esc(e.kultur) + '</div>');
+
+    var feh = arr(e.fehler);
+    if (feh.length){
+      var f = '';
+      feh.forEach(function(x){
+        f += '<div class="fehler">❌ <span class="bad">' + esc(x.incorrect) + '</span><br>✅ <span class="good">' + esc(x.correct) + '</span></div>';
+      });
+      html += sec('⚠️ Common mistake', f);
+    }
+    var syn = arr(e.synonyme);
+    if (syn.length) html += sec('🔁 Synonyms', chips(syn));
+    var rel = arr(e.verwandte_woerter);
+    if (rel.length) html += sec('🔗 Related words', chips(rel));
+    if (e.merkhilfe)     html += sec('🧠 Memory tip', '<div class="tip-box">' + esc(e.merkhilfe) + '</div>');
+    if (e.pruefungstipp) html += sec('🎓 Exam tip', '<div class="exam-box">' + esc(e.pruefungstipp) + '</div>');
+    html += '</div>';
+
+    cardEl.innerHTML = html;
+    document.getElementById('cardClose').addEventListener('click', closeModal);
+    document.getElementById('cardSave').addEventListener('click', function(){ toggleBookmark(e, this); });
+  }
+
+  function sec(label, inner){
+    return '<div class="sec"><div class="sec-lab">' + label + '</div>' + inner + '</div>';
+  }
+  function chips(list){
+    return '<div class="chips">' + list.map(function(x){ return '<span class="chip">' + esc(x) + '</span>'; }).join('') + '</div>';
+  }
+
+  // ── Bookmark to Word Bank ──────────────────────────────────────────────────
+  function toggleBookmark(entry, btn){
+    if (!sb){ return; }
+    if (!state.user){ alert('Please sign in to save words to your Word Bank.'); return; }
+    if (!entry.id){ return; }
+    var isSaved = !!state.bank[entry.id];
+    btn.disabled = true;
+    if (isSaved){
+      sb.from('user_word_bank').delete().eq('user_id', state.user.id).eq('word_id', entry.id)
+        .then(function(r){
+          btn.disabled = false;
+          if (!r.error){ delete state.bank[entry.id]; btn.classList.remove('saved'); btn.textContent = '🤍'; }
+        });
+    } else {
+      sb.from('user_word_bank').insert({ user_id: state.user.id, word_id: entry.id, confidence_level: 'weak' })
+        .then(function(r){
+          btn.disabled = false;
+          if (!r.error){ state.bank[entry.id] = 'weak'; btn.classList.add('saved'); btn.textContent = '❤️'; }
+        });
+    }
+  }
+
+  // ── Boot ───────────────────────────────────────────────────────────────────
+  loadUserAndBank().then(function(){ refreshList(); });
+
+  // Deep link: dictionary.html?word=Haus opens that card directly.
+  try {
+    var qp = new URLSearchParams(window.location.search).get('word');
+    if (qp) openCard(qp);
+  } catch(_){}
+})();
+</script>
+</body>
+</html>

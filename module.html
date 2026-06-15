@@ -147,6 +147,32 @@
   .lesson-example { background:#f0f9ff; border-left:3px solid #3b82f6; padding:10px 14px; margin:10px 0; border-radius:0 8px 8px 0; }
   .lesson-example .de { display:block; font-weight:700; color:#1e3a5f; font-size:15px; }
   .lesson-example .en { display:block; color:#6b7280; font-size:13px; margin-top:2px; }
+
+  /* ── Tap-to-translate (Dictionary) ── */
+  .dw-word { cursor:pointer; border-bottom:1px dotted rgba(59,130,246,0.55); border-radius:3px; transition:background .15s; }
+  .dw-word:hover, .dw-word:active { background:#dbeafe; }
+  .dw-pop {
+    position:fixed; z-index:9997; max-width:300px; width:calc(100vw - 24px);
+    background:#fff; border:1px solid #E5E7EB; border-radius:14px;
+    box-shadow:0 12px 40px rgba(0,0,0,0.2); opacity:0; transform:translateY(4px);
+    pointer-events:none; transition:opacity .15s, transform .15s;
+    font-family:"Plus Jakarta Sans","DM Sans",-apple-system,sans-serif;
+  }
+  .dw-pop.show { opacity:1; transform:none; pointer-events:auto; }
+  .dw-pop-body { padding:12px 14px; }
+  .dw-pop-word { font-size:17px; font-weight:800; color:#1F2937; line-height:1.2; }
+  .dw-pop-en { font-size:14px; color:#3B82F6; font-weight:700; margin-top:3px; }
+  .dw-pop-bsp { margin-top:8px; font-size:13px; line-height:1.5; }
+  .dwp-bsp-de { display:block; font-weight:700; color:#1F2937; }
+  .dwp-bsp-en { display:block; color:#64748B; }
+  .dw-pop-actions { display:flex; gap:8px; margin-top:12px; }
+  .dw-pop-btn { flex:1; border:none; border-radius:10px; padding:9px; font-size:13px; font-weight:700; font-family:inherit; cursor:pointer; transition:filter .15s; }
+  .dw-pop-btn:hover { filter:brightness(0.96); }
+  .dw-pop-full { background:#EFF6FF; color:#1D4ED8; }
+  .dw-pop-save { background:#3B82F6; color:#fff; }
+  .dw-pop-btn:disabled { opacity:0.6; cursor:default; }
+  .dw-pop-arrow { position:absolute; bottom:-7px; width:14px; height:14px; background:#fff; border-right:1px solid #E5E7EB; border-bottom:1px solid #E5E7EB; transform:rotate(45deg); }
+  .dw-pop.below .dw-pop-arrow { bottom:auto; top:-7px; transform:rotate(225deg); }
   .lesson-tip     { background:#f0fdf4; border-left:3px solid #22c55e; padding:10px 14px; margin:10px 0; border-radius:0 8px 8px 0; font-size:14px; color:#166534; line-height:1.6; }
   .lesson-warning { background:#fff7ed; border-left:3px solid #f97316; padding:10px 14px; margin:10px 0; border-radius:0 8px 8px 0; font-size:14px; color:#9a3412; line-height:1.6; }
 
@@ -396,6 +422,7 @@
     moduleAwarded: false,// 50-XP module bonus given this session?
     consecutiveWrong: 0, // running count of wrong answers in a row (AI Pal struggle detection)
     struggleShownLesson: {}, // lessonId -> true once AI Pal has stepped in this lesson
+    wordBank: {},        // lower(german word) -> { word_id, correct_count, confidence_level }
   };
 
   function escapeHtml(s) {
@@ -403,6 +430,20 @@
     return String(s)
       .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
       .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  // Tap-to-translate: wrap each German word in a tappable .dw-word span while
+  // keeping surrounding punctuation/whitespace intact and HTML-escaped.
+  function wrapGermanWords(text) {
+    var s = String(text == null ? '' : text);
+    return s.split(/(\s+)/).map(function(tok) {
+      if (tok === '' || /^\s+$/.test(tok)) return escapeHtml(tok);
+      var m = tok.match(/^([^A-Za-zÄÖÜäöüß]*)([A-Za-zÄÖÜäöüß][A-Za-zÄÖÜäöüß\-]*)([^A-Za-zÄÖÜäöüß]*)$/);
+      if (!m) return escapeHtml(tok);
+      return escapeHtml(m[1]) +
+        '<span class="dw-word" data-word="' + escapeHtml(m[2]) + '">' + escapeHtml(m[2]) + '</span>' +
+        escapeHtml(m[3]);
+    }).join('');
   }
 
   // Render a content_json array of structured blocks into HTML. Each block is
@@ -441,7 +482,7 @@
           return '<div class="lesson-text">' + escapeHtml(block.content) + '</div>';
         case 'example':
           return '<div class="lesson-example">' +
-                   '<span class="de">' + escapeHtml(block.german)  + '</span>' +
+                   '<span class="de">' + wrapGermanWords(block.german)  + '</span>' +
                    '<span class="en">' + escapeHtml(block.english) + '</span>' +
                  '</div>';
         case 'tip':
@@ -568,6 +609,7 @@
         var user = userRes && userRes.data && userRes.data.user;
         if (user) {
           state.user = user;
+          loadUserWordBank();   // for Dictionary word-bank confidence updates
           var lessonIdsArr = state.lessons.map(function(l){ return l.id; });
           if (lessonIdsArr.length > 0) {
             // Per-lesson rows
@@ -819,10 +861,15 @@
       dwSupabase.from('user_progress')
         .select('lesson_id, completed_at')
         .eq('user_id', uid).eq('status', 'completed')
-        .order('completed_at', { ascending: false })
+        .order('completed_at', { ascending: false }),
+      // Saved words the learner is still weak on → AI Pal prioritises them in recall.
+      dwSupabase.from('user_word_bank')
+        .select('dictionary:word_id ( word )')
+        .eq('user_id', uid).eq('confidence_level', 'weak').limit(20)
     ]).then(function(rs) {
       var prof = (rs[0] && rs[0].data) || {};
       var prog = (rs[1] && rs[1].data) || [];
+      var weak = (rs[2] && rs[2].data) || [];
       var completedIds = prog.map(function(r) { return r.lesson_id; }).filter(Boolean);
       var firstName = String(prof.full_name || '').trim().split(/\s+/)[0] || '';
       var ctx = {
@@ -833,7 +880,8 @@
         streak_count:  prof.streak_count || 0,
         last_activity: prof.last_activity || null,
         exam_date:     prof.exam_date || null,
-        all_vocabulary_learned: []
+        all_vocabulary_learned: [],
+        weak_words: weak.map(function(x){ return x.dictionary && x.dictionary.word; }).filter(Boolean)
       };
       if (completedIds.length === 0) return ctx;
       return dwSupabase.from('lessons')
@@ -973,6 +1021,53 @@
     if (!state.user) return;
     dwSupabase.from('lesson_confidence')
       .insert({ user_id: state.user.id, lesson_id: lessonId, confidence_level: level })
+      .then(function() {}).catch(function() {});
+  }
+
+  // ── Dictionary word-bank confidence ──────────────────────────────────────
+  // Load the learner's saved words (keyed by lowercased German word) so we can
+  // recognise them in quiz answers and raise confidence weak→medium→strong.
+  function loadUserWordBank() {
+    if (!state.user) return;
+    dwSupabase.from('user_word_bank')
+      .select('word_id, correct_count, confidence_level, dictionary:word_id ( word )')
+      .eq('user_id', state.user.id)
+      .then(function(r) {
+        state.wordBank = {};
+        ((r && r.data) || []).forEach(function(row) {
+          var w = row.dictionary && row.dictionary.word;
+          if (w) state.wordBank[String(w).toLowerCase()] = {
+            word_id: row.word_id,
+            correct_count: row.correct_count || 0,
+            confidence_level: row.confidence_level || 'weak'
+          };
+        });
+      }).catch(function() {});
+  }
+
+  // When a saved word is answered correctly in a quiz, bump its correct_count
+  // and promote confidence at 3 (medium) and 5 (strong).
+  function maybeBumpWordConfidence(ex) {
+    if (!state.user || !ex || !state.wordBank) return;
+    var answer = String(ex.correct_answer || '');
+    if (!answer) return;
+    var bare = answer.toLowerCase().replace(/^(der|die|das)\s+/, '').trim();
+    var entry = state.wordBank[bare];
+    if (!entry) {
+      // Otherwise match any saved word that appears as a whole word in the answer.
+      var keys = Object.keys(state.wordBank);
+      for (var i = 0; i < keys.length && !entry; i++) {
+        var safe = keys[i].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        if (new RegExp('\\b' + safe + '\\b', 'i').test(answer)) entry = state.wordBank[keys[i]];
+      }
+    }
+    if (!entry) return;
+    entry.correct_count = (entry.correct_count || 0) + 1;
+    var newConf = entry.correct_count >= 5 ? 'strong' : (entry.correct_count >= 3 ? 'medium' : entry.confidence_level);
+    var patch = { correct_count: entry.correct_count };
+    if (newConf !== entry.confidence_level) { patch.confidence_level = newConf; entry.confidence_level = newConf; }
+    dwSupabase.from('user_word_bank').update(patch)
+      .eq('user_id', state.user.id).eq('word_id', entry.word_id)
       .then(function() {}).catch(function() {});
   }
 
@@ -1443,6 +1538,106 @@
       .catch(function(){});
   }
 
+  // ── Tap-to-translate: Dictionary mini popup ──────────────────────────────
+  // Tapping a .dw-word in lesson content opens a small popup with the word,
+  // article, English, and one example — plus "Full entry →" (dictionary page)
+  // and "Save" (straight to the word bank, without leaving the lesson).
+  var DW_API = 'https://deutschweg.onrender.com';
+  var dwPop = null, dwPopWord = null, dwPopEntry = null;
+
+  function ensureDwPop() {
+    if (dwPop) return dwPop;
+    dwPop = document.createElement('div');
+    dwPop.className = 'dw-pop';
+    dwPop.innerHTML =
+      '<div class="dw-pop-arrow"></div>' +
+      '<div class="dw-pop-body">' +
+        '<div class="dw-pop-word" id="dwp-word"></div>' +
+        '<div class="dw-pop-en" id="dwp-en"></div>' +
+        '<div class="dw-pop-bsp" id="dwp-bsp"></div>' +
+        '<div class="dw-pop-actions">' +
+          '<button type="button" class="dw-pop-btn dw-pop-full" id="dwp-full">Full entry →</button>' +
+          '<button type="button" class="dw-pop-btn dw-pop-save" id="dwp-save">❤️ Save</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(dwPop);
+    dwPop.querySelector('#dwp-full').addEventListener('click', function() {
+      if (dwPopWord) window.location.href = 'dictionary.html?word=' + encodeURIComponent(dwPopWord);
+    });
+    dwPop.querySelector('#dwp-save').addEventListener('click', dwSaveCurrentWord);
+    return dwPop;
+  }
+
+  function positionDwPop(target) {
+    var r = target.getBoundingClientRect();
+    dwPop.style.visibility = 'hidden';
+    dwPop.classList.add('show');
+    var pw = dwPop.offsetWidth, ph = dwPop.offsetHeight;
+    var left = Math.min(Math.max(8, r.left + r.width / 2 - pw / 2), window.innerWidth - pw - 8);
+    var top = r.top - ph - 10, below = false;
+    if (top < 8) { top = r.bottom + 10; below = true; }
+    dwPop.style.left = left + 'px';
+    dwPop.style.top = top + 'px';
+    dwPop.classList.toggle('below', below);
+    var ax = (r.left + r.width / 2) - left;
+    dwPop.querySelector('.dw-pop-arrow').style.left = Math.min(Math.max(14, ax), pw - 14) + 'px';
+    dwPop.style.visibility = '';
+  }
+
+  function openDwWord(word, target) {
+    ensureDwPop();
+    dwPopWord = word; dwPopEntry = null;
+    document.getElementById('dwp-word').textContent = word;
+    document.getElementById('dwp-en').textContent = 'Looking up…';
+    document.getElementById('dwp-bsp').textContent = '';
+    var saveBtn = document.getElementById('dwp-save');
+    saveBtn.disabled = true; saveBtn.textContent = '❤️ Save';
+    dwPop.classList.add('show');
+    positionDwPop(target);
+
+    fetch(DW_API + '/api/dictionary/' + encodeURIComponent(word))
+      .then(function(r) { return r.json(); })
+      .then(function(e) {
+        if (!e || !e.word) { document.getElementById('dwp-en').textContent = 'Not found.'; return; }
+        dwPopEntry = e;
+        document.getElementById('dwp-word').textContent = e.article ? (e.article + ' ' + e.word) : e.word;
+        document.getElementById('dwp-en').textContent = e.english || '';
+        var bsp = Array.isArray(e.beispielsaetze) && e.beispielsaetze[0];
+        var bspEl = document.getElementById('dwp-bsp');
+        if (bsp) {
+          bspEl.innerHTML = '<span class="dwp-bsp-de"></span><span class="dwp-bsp-en"></span>';
+          bspEl.querySelector('.dwp-bsp-de').textContent = bsp.german || '';
+          bspEl.querySelector('.dwp-bsp-en').textContent = bsp.english || '';
+        }
+        if (state.user) saveBtn.disabled = false;
+        positionDwPop(target);
+      })
+      .catch(function() { document.getElementById('dwp-en').textContent = 'Connection problem.'; });
+  }
+
+  function dwSaveCurrentWord() {
+    var btn = document.getElementById('dwp-save');
+    if (!dwPopEntry || !dwPopEntry.id) return;
+    if (!state.user) { btn.textContent = 'Sign in to save'; return; }
+    btn.disabled = true;
+    dwSupabase.from('user_word_bank')
+      .insert({ user_id: state.user.id, word_id: dwPopEntry.id, confidence_level: 'weak' })
+      .then(function(r) {
+        // 23505 = already saved (unique violation) → treat as success.
+        if (!r.error || (r.error && r.error.code === '23505')) { btn.textContent = '✓ Saved'; }
+        else { btn.textContent = 'Try again'; btn.disabled = false; }
+      });
+  }
+
+  function closeDwPop() { if (dwPop) dwPop.classList.remove('show'); dwPopWord = null; dwPopEntry = null; }
+
+  document.addEventListener('click', function(e) {
+    var w = e.target.closest && e.target.closest('.dw-word');
+    if (w) { e.preventDefault(); openDwWord(w.getAttribute('data-word') || w.textContent, w); return; }
+    if (dwPop && dwPop.classList.contains('show') && !e.target.closest('.dw-pop')) closeDwPop();
+  });
+  window.addEventListener('scroll', closeDwPop, true);
+
   // ── Public handlers ─────────────────────────────────────────────────────
   window.dwModule = {
     answer: function(lIdx, eIdx, choiceIdx, correctIdx) {
@@ -1460,6 +1655,7 @@
       if (first) {
         if (isCorrect) {
           state.consecutiveWrong = 0;
+          maybeBumpWordConfidence(ex);   // raise saved-word confidence on correct answers
         } else {
           state.consecutiveWrong = (state.consecutiveWrong || 0) + 1;
           state.lastWrongExercise = ex;   // weak_word source for the Tutor handoff

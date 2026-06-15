@@ -8,9 +8,23 @@ console.log('Key loaded:', process.env.CLAUDE_API_KEY
 const express = require('express');
 const cors    = require('cors');
 const fetch   = require('node-fetch');
+const { createClient } = require('@supabase/supabase-js');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
+
+// ── Supabase (service role) ───────────────────────────────────────────────
+// Used server-side for the dictionary cache (read/insert/increment), bypassing
+// RLS. Requires SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY in the environment —
+// these MUST be set in the Render dashboard, not just local .env.
+const supabaseAdmin = (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY)
+  ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    })
+  : null;
+if (!supabaseAdmin) {
+  console.warn('[supabase] SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY missing — /api/dictionary will be unavailable');
+}
 
 // ── Middleware ──────────────────────────────────────────────────────────────
 const allowedOrigins = [
@@ -793,6 +807,10 @@ function buildAipalOpenerPrompt(ctx) {
   if (idleDays !== null && idleDays > 2) facts.push(`The learner has been away for ${idleDays} days — give a gentle, guilt-free welcome back.`);
   if (examDays !== null && examDays >= 0) facts.push(`Goethe exam is in ${examDays} day${examDays === 1 ? '' : 's'} — weave in a calm, on-track countdown.`);
   if (ctx.emotional_checkin) facts.push(`The learner just said they feel: "${ctx.emotional_checkin}" — adapt your tone to that feeling (nervous → extra softness; tired → keep it light; ready → push a little; getting there → steady encouragement).`);
+  const weakWords = Array.isArray(ctx.weak_words)
+    ? ctx.weak_words.filter(w => typeof w === 'string' && w.length > 1).slice(0, 8)
+    : [];
+  if (weakWords.length) facts.push(`Words the learner SAVED to their word bank and is still weak on: ${weakWords.join(', ')}. Prioritise reviewing one of these — but only if it is in the "already knows" list — by using it naturally in a complete German sentence for active recall.`);
 
   return `You are AI Pal on DeutschWeg, a warm encouraging German learning companion for African learners. You speak FIRST, before the lesson — like a big sister, never a teacher.
 
@@ -1174,6 +1192,151 @@ app.post('/api/aitutor', async (req, res) => {
 
   } catch (err) {
     console.error('[/api/aitutor] Server error:', err.message);
+    return res.status(500).json({ error: 'Server error: ' + err.message });
+  }
+});
+
+// ── GET /api/dictionary/:word ──────────────────────────────────────────────
+// Cache-first dictionary entry. Stored hit → return immediately (+access_count);
+// miss → generate via Claude, save, return.
+
+const DICTIONARY_SYSTEM_PROMPT = `You are a dictionary entry generator for DeutschWeg, a German learning platform for African immigrants preparing for life in Germany and Goethe exams A1-B2.
+
+Generate a complete dictionary entry for the word: {word}
+
+Return ONLY a valid JSON object with exactly these fields:
+{
+  "word": "",
+  "level": "A1/A2/B1/B2",
+  "article": "der/die/das or null",
+  "plural": "plural form or null",
+  "english": "translation",
+  "aussprache": "pronunciation guide",
+  "wortart": "noun/verb/adjective/etc",
+  "bedeutung": "short simple explanation in English for A1-B2 learners",
+  "kultur": "how Germans actually use this word in daily life, cultural notes relevant to African immigrants",
+  "beispielsätze": [
+    {"german": "", "english": ""},
+    {"german": "", "english": ""},
+    {"german": "", "english": ""}
+  ],
+  "fehler": [
+    {"incorrect": "", "correct": ""}
+  ],
+  "synonyme": [],
+  "merkhilfe": "one memorable tip to remember this word",
+  "verwandte_wörter": [],
+  "pruefungstipp": "which Goethe exam sections this word appears in"
+}
+
+Rules:
+- Bedeutung explains German usage and context, never defines something Kwame already knows in English
+- Beispielsätze must be real sentences Kwame will actually use in Germany
+- Kultur notes must be specific and practical for someone moving to Germany
+- Fehler must include the most common mistake African English speakers make with this word
+- Merkhilfe must be clever and memorable
+- English translations in Beispielsätze must be natural English — never literal translations
+- Never say "I want..." — say "I would like..." in English translations
+- Return only valid JSON, no markdown, no explanation`;
+
+// Strip a leading der/die/das so "das Haus" and "Haus" share one cache entry.
+function normalizeDictWord(raw) {
+  return String(raw || '').trim().replace(/^(der|die|das)\s+/i, '').trim();
+}
+
+// Map Claude's (umlaut) JSON keys onto our ASCII columns + coerce shapes.
+function dictRowFromGenerated(g, fallbackWord) {
+  const arr = (v) => Array.isArray(v) ? v : [];
+  const nn  = (v) => (v === null || v === undefined) ? null : String(v);
+  let article = g.article;
+  if (typeof article === 'string' && /^(null|none|-|)$/i.test(article.trim())) article = null;
+  return {
+    word:              nn(g.word) || fallbackWord,
+    level:             nn(g.level),
+    article:           article ? String(article) : null,
+    plural:            nn(g.plural),
+    english:           nn(g.english),
+    aussprache:        nn(g.aussprache),
+    wortart:           nn(g.wortart),
+    bedeutung:         nn(g.bedeutung),
+    kultur:            nn(g.kultur),
+    beispielsaetze:    arr(g['beispielsätze'] || g.beispielsaetze),
+    fehler:            arr(g.fehler),
+    synonyme:          arr(g.synonyme),
+    merkhilfe:         nn(g.merkhilfe),
+    verwandte_woerter: arr(g['verwandte_wörter'] || g.verwandte_woerter),
+    pruefungstipp:     nn(g.pruefungstipp),
+  };
+}
+
+app.get('/api/dictionary/:word', async (req, res) => {
+  if (!supabaseAdmin) return res.status(500).json({ error: 'Dictionary storage not configured.' });
+  const word = normalizeDictWord(req.params.word);
+  if (!word || word.length > 80) return res.status(400).json({ error: 'Invalid word.' });
+
+  console.log(`[/api/dictionary] lookup "${word}"`);
+
+  try {
+    // Step 1-2: cache hit → return immediately, bump access_count (step 6).
+    const { data: existing, error: selErr } = await supabaseAdmin
+      .from('dictionary').select('*').ilike('word', word).limit(1).maybeSingle();
+    if (selErr) console.error('[/api/dictionary] select error', selErr.message);
+
+    if (existing) {
+      const next = (existing.access_count || 0) + 1;
+      supabaseAdmin.from('dictionary').update({ access_count: next }).eq('id', existing.id)
+        .then(function(){}, function(){});
+      return res.json({ ...existing, access_count: next, cached: true });
+    }
+
+    // Step 3: generate via Claude.
+    if (!process.env.CLAUDE_API_KEY) return res.status(500).json({ error: 'API key not configured.' });
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.CLAUDE_API_KEY, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({
+        model:       'claude-sonnet-4-20250514',
+        max_tokens:  1200,
+        temperature: 0.4,
+        system:      DICTIONARY_SYSTEM_PROMPT.replace('{word}', word),
+        messages:    [{ role: 'user', content: `Generate the dictionary entry for: ${word}` }],
+      }),
+    });
+    if (!response.ok) {
+      const errBody = await response.json().catch(() => ({}));
+      return res.status(502).json({ error: errBody?.error?.message || `Claude API returned ${response.status}` });
+    }
+    const data = await response.json();
+    const raw  = data?.content?.[0]?.text?.trim() ?? '';
+    let parsed = null;
+    try {
+      const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+      parsed = JSON.parse(cleaned);
+    } catch (_) { /* fall through */ }
+    if (!parsed || typeof parsed !== 'object') {
+      return res.status(502).json({ error: 'Could not parse dictionary entry.' });
+    }
+
+    // Step 4-5: save (access_count starts at 1 for this access) and return.
+    const row = dictRowFromGenerated(parsed, word);
+    row.access_count = 1;
+    const { data: inserted, error: insErr } = await supabaseAdmin
+      .from('dictionary').insert(row).select().maybeSingle();
+
+    if (insErr) {
+      // Likely a race (another request generated it first) — return the stored one.
+      const { data: again } = await supabaseAdmin
+        .from('dictionary').select('*').ilike('word', word).limit(1).maybeSingle();
+      if (again) return res.json({ ...again, cached: true });
+      console.error('[/api/dictionary] insert error', insErr.message);
+      return res.status(500).json({ error: 'Could not save entry.' });
+    }
+
+    console.log(`[/api/dictionary] generated + saved "${word}"`);
+    return res.json({ ...inserted, cached: false });
+
+  } catch (err) {
+    console.error('[/api/dictionary] Server error:', err.message);
     return res.status(500).json({ error: 'Server error: ' + err.message });
   }
 });
