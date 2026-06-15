@@ -1329,7 +1329,7 @@ app.get('/api/dictionary/:word', async (req, res) => {
         .from('dictionary').select('*').ilike('word', word).limit(1).maybeSingle();
       if (again) return res.json({ ...again, cached: true });
       console.error('[/api/dictionary] insert error', insErr.message);
-      return res.status(500).json({ error: 'Could not save entry.' });
+      return res.status(500).json({ error: 'Could not save entry.', detail: insErr.message, code: insErr.code });
     }
 
     console.log(`[/api/dictionary] generated + saved "${word}"`);
@@ -1339,6 +1339,30 @@ app.get('/api/dictionary/:word', async (req, res) => {
     console.error('[/api/dictionary] Server error:', err.message);
     return res.status(500).json({ error: 'Server error: ' + err.message });
   }
+});
+
+// ── GET /api/dictionary-health ─────────────────────────────────────────────
+// Temporary diagnostic: reports whether the server can read the dictionary
+// table and what Supabase config it's using (no secrets — host + key prefix).
+app.get('/api/dictionary-health', async (req, res) => {
+  const out = {
+    configured: !!supabaseAdmin,
+    url_host:   process.env.SUPABASE_URL ? (function(){ try { return new URL(process.env.SUPABASE_URL).host; } catch(_){ return 'INVALID_URL'; } })() : null,
+    key_prefix: (process.env.SUPABASE_SERVICE_ROLE_KEY || '').slice(0, 11),
+    key_len:    (process.env.SUPABASE_SERVICE_ROLE_KEY || '').length,
+  };
+  if (!supabaseAdmin) return res.json(out);
+  try {
+    const { count, error } = await supabaseAdmin
+      .from('dictionary').select('*', { count: 'exact', head: true });
+    out.select_ok    = !error;
+    out.row_count    = count;
+    out.select_error = error ? error.message : null;
+  } catch (e) {
+    out.select_ok = false;
+    out.select_error = e.message;
+  }
+  return res.json(out);
 });
 
 // ── POST /api/exam-grade ─────────────────────────────────────────────────────
