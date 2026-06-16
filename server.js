@@ -692,7 +692,7 @@ app.post('/api/aipal', async (req, res) => {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model:      'claude-sonnet-4-20250514',
+        model:      'claude-sonnet-4-6',
         max_tokens: 150,
         system:     buildAipalPrompt(safeLevel, safeModule) + weakSpotsBlock + safeErrorContext,
         messages:   trimmed,
@@ -857,7 +857,7 @@ app.post('/api/aipal/opener', async (req, res) => {
       body: JSON.stringify({
         // Matches the model the /api/aipal endpoint already uses in this repo
         // (the spec's "claude-sonnet-4-6" is the same Sonnet family).
-        model:       'claude-sonnet-4-20250514',
+        model:       'claude-sonnet-4-6',
         max_tokens:  250,
         temperature: 0.3, // low temp so the language-purity rule is followed reliably
         system:      systemPrompt,
@@ -928,7 +928,7 @@ app.post('/api/aipal/lesson-complete', async (req, res) => {
       method:  'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.CLAUDE_API_KEY, 'anthropic-version': '2023-06-01' },
       body: JSON.stringify({
-        model:       'claude-sonnet-4-20250514',
+        model:       'claude-sonnet-4-6',
         max_tokens:  400,
         temperature: 0.5,
         system:      buildAipalCompletePrompt(ctx),
@@ -990,7 +990,7 @@ app.post('/api/aipal/struggle', async (req, res) => {
       method:  'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.CLAUDE_API_KEY, 'anthropic-version': '2023-06-01' },
       body: JSON.stringify({
-        model:       'claude-sonnet-4-20250514',
+        model:       'claude-sonnet-4-6',
         max_tokens:  180,
         temperature: 0.5,
         system:      buildAipalStrugglePrompt(ctx),
@@ -1047,7 +1047,7 @@ app.post('/api/aipal/milestone', async (req, res) => {
       method:  'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.CLAUDE_API_KEY, 'anthropic-version': '2023-06-01' },
       body: JSON.stringify({
-        model:       'claude-sonnet-4-20250514',
+        model:       'claude-sonnet-4-6',
         max_tokens:  200,
         temperature: 0.5,
         system:      buildAipalMilestonePrompt(ctx),
@@ -1169,7 +1169,7 @@ app.post('/api/aitutor', async (req, res) => {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model:      'claude-sonnet-4-20250514',
+        model:      'claude-sonnet-4-6',
         max_tokens: 800,
         system:     buildAitutorPrompt(safeLevel, safeHandoff),
         messages:   trimmed,
@@ -1296,7 +1296,7 @@ app.get('/api/dictionary/:word', async (req, res) => {
       method:  'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.CLAUDE_API_KEY, 'anthropic-version': '2023-06-01' },
       body: JSON.stringify({
-        model:       'claude-sonnet-4-20250514',
+        model:       'claude-sonnet-4-6',
         max_tokens:  1200,
         temperature: 0.4,
         system:      DICTIONARY_SYSTEM_PROMPT.replace('{word}', word),
@@ -1407,7 +1407,7 @@ async function callClaudeJSON(systemPrompt, userMsg, maxTokens) {
     method:  'POST',
     headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.CLAUDE_API_KEY, 'anthropic-version': '2023-06-01' },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: maxTokens || 1200,
       temperature: 0.6,
       system: systemPrompt,
