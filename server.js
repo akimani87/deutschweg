@@ -1573,6 +1573,204 @@ app.post('/api/sprechen/feedback', async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════════════════════
+// HÖRVERSTEHEN — Goethe A1 listening simulator. Claude writes a fresh German
+// script + questions; ElevenLabs renders it to audio (female voices; two for
+// conversations); audio is stored in Supabase Storage; exercises are cached
+// (max 5 per type) and rotated.
+// ═══════════════════════════════════════════════════════════════════════════
+
+const HOEREN_TYPES   = ['announcement', 'conversation', 'voicemail'];
+const HOEREN_KEEP    = 5;            // cached exercises kept per type
+const HOEREN_BUCKET  = 'hoerverstehen-audio';
+// Female voices (configurable). A = single-speaker (announcements/voicemail)
+// and Speaker 1 in conversations; B = Speaker 2 in conversations.
+const HOEREN_VOICE_A = process.env.HOEREN_VOICE_A || process.env.ELEVENLABS_VOICE_ID || 'rKiu7lQ4c5P3az3745s3';
+const HOEREN_VOICE_B = process.env.HOEREN_VOICE_B || 'EXAVITQu4vr4xnSDxMaL';
+
+function buildHoerenPrompt(type) {
+  const qFormat = {
+    announcement: '- Use 3-4 true_false questions. Each: type "true_false", options ["Richtig","Falsch"], correct_answer exactly "Richtig" or "Falsch".',
+    conversation: '- Use 3 multiple_choice questions. Each: type "multiple_choice", options = 3 short German answers, correct_answer = the exact text of the correct option.\n- Label the two speakers exactly as "Speaker 1:" and "Speaker 2:" at the start of each line. Both speakers are women.',
+    voicemail:    '- Use 3 fill_in questions (extract a detail: name, time, place, or phone number). Each: type "fill_in", options = 3 short choices, correct_answer = the exact text of the correct option.',
+  }[type];
+  return `You are generating Goethe A1 Hörverstehen listening exercise scripts for African learners preparing for the German exam.
+
+Exercise type: ${type} (announcement / conversation / voicemail)
+
+Rules:
+- Use only genuine A1 level German — simple vocabulary, short sentences
+- Content must reflect real life situations in Germany
+- Announcements: train station, supermarket, doctor, airport scenarios
+- Conversations: everyday topics — shopping, appointments, introductions, directions
+- Voicemails: leaving a message with name, time, place or phone number
+- Audio script maximum 60 seconds when spoken
+- Never use vocabulary above A1 level
+- Make it feel authentic — like something the learner will actually hear in Germany
+${qFormat}
+- Every correct_answer MUST exactly match one of that question's options.
+- Questions must be answerable from the audio script alone.
+
+Return valid JSON only:
+{
+  "exercise_type": "${type}",
+  "scenario": "",
+  "audio_script": "",
+  "speaker_instructions": "",
+  "questions": [
+    { "question_text": "", "type": "", "options": [], "correct_answer": "", "explanation": "" }
+  ]
+}`;
+}
+
+// ElevenLabs TTS → mp3 Buffer (same model/settings as /api/tts).
+async function hoerenTTS(text, voiceId) {
+  const modelId = process.env.ELEVENLABS_MODEL_ID || 'eleven_turbo_v2_5';
+  const r = await fetch(
+    `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}?output_format=mp3_22050_32`,
+    {
+      method:  'POST',
+      headers: { 'xi-api-key': process.env.ELEVENLABS_API_KEY, 'Content-Type': 'application/json', 'Accept': 'audio/mpeg' },
+      body: JSON.stringify({
+        text, model_id: modelId, language_code: 'de',
+        voice_settings: { stability: 0.5, similarity_boost: 0.75 },
+      }),
+    }
+  );
+  if (!r.ok) { const e = await r.text().catch(() => ''); throw new Error('ElevenLabs ' + r.status + ' ' + e.slice(0, 160)); }
+  return await r.buffer();
+}
+
+// Split a conversation script into [{voice,text}] by "Speaker 1/2:" labels.
+function hoerenConversationSegments(script) {
+  const segs = [];
+  let voice = HOEREN_VOICE_A, buf = [];
+  const flush = () => { const t = buf.join(' ').trim(); if (t) segs.push({ voice, text: t }); buf = []; };
+  String(script || '').split(/\r?\n/).forEach((line) => {
+    const m = line.match(/^\s*(?:Speaker|Sprecher(?:in)?|Person)\s*([12AB])\s*[:\-]\s*(.*)$/i);
+    if (m) {
+      flush();
+      const who = m[1].toUpperCase();
+      voice = (who === '2' || who === 'B') ? HOEREN_VOICE_B : HOEREN_VOICE_A;
+      if (m[2]) buf.push(m[2]);
+    } else if (line.trim()) {
+      buf.push(line.trim());
+    }
+  });
+  flush();
+  return segs;
+}
+
+function hoerenStripLabels(script) {
+  return String(script || '').split(/\r?\n/)
+    .map((l) => l.replace(/^\s*(?:Speaker|Sprecher(?:in)?|Person)\s*[12AB]\s*[:\-]\s*/i, '').trim())
+    .filter(Boolean).join(' ');
+}
+
+// Render the script to a single mp3 Buffer (two voices for conversations).
+async function hoerenSynthesize(type, script) {
+  if (type === 'conversation') {
+    const segs = hoerenConversationSegments(script);
+    if (segs.length) {
+      const buffers = [];
+      for (const s of segs) buffers.push(await hoerenTTS(s.text, s.voice));  // sequential keeps order
+      return Buffer.concat(buffers);
+    }
+  }
+  return hoerenTTS(hoerenStripLabels(script), HOEREN_VOICE_A);
+}
+
+function hoerenPathFromUrl(url) {
+  const marker = '/' + HOEREN_BUCKET + '/';
+  const i = String(url || '').indexOf(marker);
+  return i >= 0 ? url.slice(i + marker.length) : null;
+}
+
+// Shape returned to the client (includes correct answers — A1 self-practice
+// grades client-side).
+function hoerenPublic(row) {
+  return {
+    id: row.id, exercise_type: row.exercise_type, level: row.level,
+    scenario: row.scenario, audio_url: row.audio_url, questions: row.questions || [],
+    times_used: row.times_used,
+  };
+}
+
+async function generateHoerenExercise(type) {
+  const gen = await callClaudeJSON(buildHoerenPrompt(type), 'Generate the exercise now.', 1500);
+  if (!gen || !gen.audio_script || !Array.isArray(gen.questions) || !gen.questions.length) {
+    throw new Error('Could not generate a valid exercise.');
+  }
+  const audio = await hoerenSynthesize(type, gen.audio_script);
+
+  const path = `${type}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.mp3`;
+  const up = await supabaseAdmin.storage.from(HOEREN_BUCKET)
+    .upload(path, audio, { contentType: 'audio/mpeg', upsert: false });
+  if (up.error) throw new Error('Audio upload failed: ' + up.error.message);
+  const audioUrl = supabaseAdmin.storage.from(HOEREN_BUCKET).getPublicUrl(path).data.publicUrl;
+
+  const { data: row, error: insErr } = await supabaseAdmin.from('hoerverstehen_exercises').insert({
+    exercise_type: type, level: 'A1',
+    scenario: gen.scenario || '', audio_script: gen.audio_script || '',
+    audio_url: audioUrl, questions: gen.questions, times_used: 1,
+  }).select().maybeSingle();
+  if (insErr || !row) throw new Error('Could not save exercise: ' + (insErr && insErr.message));
+
+  // Prune to the newest HOEREN_KEEP per type (best-effort, incl. audio files).
+  supabaseAdmin.from('hoerverstehen_exercises')
+    .select('id, audio_url').eq('exercise_type', type)
+    .order('created_at', { ascending: false }).range(HOEREN_KEEP, 999)
+    .then(({ data }) => {
+      if (!data || !data.length) return;
+      const paths = data.map((e) => hoerenPathFromUrl(e.audio_url)).filter(Boolean);
+      if (paths.length) supabaseAdmin.storage.from(HOEREN_BUCKET).remove(paths).then(() => {}, () => {});
+      supabaseAdmin.from('hoerverstehen_exercises').delete().in('id', data.map((e) => e.id)).then(() => {}, () => {});
+    }, () => {});
+
+  return row;
+}
+
+// ── POST /api/hoerverstehen/generate ───────────────────────────────────────
+app.post('/api/hoerverstehen/generate', async (req, res) => {
+  const type = HOEREN_TYPES.includes((req.body && req.body.exercise_type)) ? req.body.exercise_type : null;
+  if (!type) return res.status(400).json({ error: 'Invalid exercise_type.' });
+  if (!supabaseAdmin) return res.status(500).json({ error: 'Storage not configured.' });
+  if (!process.env.CLAUDE_API_KEY) return res.status(500).json({ error: 'API key not configured.' });
+  if (!process.env.ELEVENLABS_API_KEY) return res.status(500).json({ error: 'Audio not configured.' });
+  console.log(`[/api/hoerverstehen/generate] type=${type}`);
+  try {
+    const row = await generateHoerenExercise(type);
+    return res.json({ exercise: hoerenPublic(row), generated: true });
+  } catch (err) {
+    console.error('[/api/hoerverstehen/generate] error:', err.message);
+    return res.status(502).json({ error: err.message });
+  }
+});
+
+// ── POST /api/hoerverstehen/practice ───────────────────────────────────────
+// Serve a cached exercise (least-used first, to rotate); generate if none.
+app.post('/api/hoerverstehen/practice', async (req, res) => {
+  const type = HOEREN_TYPES.includes((req.body && req.body.exercise_type)) ? req.body.exercise_type : null;
+  if (!type) return res.status(400).json({ error: 'Invalid exercise_type.' });
+  if (!supabaseAdmin) return res.status(500).json({ error: 'Storage not configured.' });
+  try {
+    const { data: row } = await supabaseAdmin.from('hoerverstehen_exercises')
+      .select('*').eq('exercise_type', type)
+      .order('times_used', { ascending: true }).order('created_at', { ascending: false })
+      .limit(1).maybeSingle();
+    if (!row) {
+      const fresh = await generateHoerenExercise(type);
+      return res.json({ exercise: hoerenPublic(fresh), generated: true });
+    }
+    supabaseAdmin.from('hoerverstehen_exercises')
+      .update({ times_used: (row.times_used || 0) + 1 }).eq('id', row.id).then(() => {}, () => {});
+    return res.json({ exercise: hoerenPublic(row), generated: false });
+  } catch (err) {
+    console.error('[/api/hoerverstehen/practice] error:', err.message);
+    return res.status(502).json({ error: err.message });
+  }
+});
+
 // ── POST /api/exam-grade ─────────────────────────────────────────────────────
 // Grades a structured A1 Schreiben exam submission (form fill + short message).
 // Returns a JSON response with per-task scores, rubric breakdown, top mistakes,
