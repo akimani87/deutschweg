@@ -218,10 +218,9 @@
                          : 'wss://deutschweg.onrender.com/sprechen-session';
   var sb = (typeof dwSupabase !== 'undefined') ? dwSupabase : null;
 
-  // Live voice (Gemini) is not enabled yet — show the Coming Soon screen and
-  // keep the full simulator dormant. Flip to false once a Live-capable
-  // GEMINI_API_KEY is in place on Render; everything below then activates.
-  var COMING_SOON = true;
+  // Live voice runs on the OpenAI Realtime API (server proxy). Set true to fall
+  // back to the Coming Soon screen and keep the simulator dormant.
+  var COMING_SOON = false;
 
   // ── i18n (core UI strings) ───────────────────────────────────────────────
   var I18N = {
@@ -293,6 +292,9 @@
   // ── Boot: auth, cap, topics ──────────────────────────────────────────────
   function boot(){
     if (COMING_SOON) return;   // Coming Soon screen is active by default; stay dormant.
+    // Live: leave the Coming Soon screen and show the pre-session screen.
+    $('screen-coming').classList.remove('active');
+    $('screen-pre').classList.add('active');
     applyLang();
     if (!sb){ $('startBtn').disabled = true; return; }
     sb.auth.getUser().then(function(res){
@@ -334,9 +336,10 @@
   function b64FromBytes(bytes){ var bin=''; for (var i=0;i<bytes.length;i++) bin+=String.fromCharCode(bytes[i]); return btoa(bin); }
   function bytesFromB64(b64){ var bin=atob(b64); var b=new Uint8Array(bin.length); for (var i=0;i<bin.length;i++) b[i]=bin.charCodeAt(i); return b; }
 
-  // Float32 @ inRate → PCM16 @ 16kHz (nearest-sample decimation) → base64
+  // Float32 @ inRate → PCM16 @ 24kHz (nearest-sample resample) → base64.
+  // OpenAI Realtime expects 24kHz pcm16 mono input.
   function floatToPcm16Base64(float32, inRate){
-    var ratio = inRate / 16000;
+    var ratio = inRate / 24000;
     var outLen = Math.max(1, Math.floor(float32.length / ratio));
     var out = new Int16Array(outLen);
     for (var i=0;i<outLen;i++){

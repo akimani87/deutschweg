@@ -8,7 +8,7 @@ console.log('Key loaded:', process.env.CLAUDE_API_KEY
 const express = require('express');
 const cors    = require('cors');
 const fetch   = require('node-fetch');
-const { WebSocketServer } = require('ws');
+const { WebSocketServer, WebSocket } = require('ws');
 const { createClient } = require('@supabase/supabase-js');
 
 const app  = express();
@@ -2057,13 +2057,16 @@ app.post('/api/tts', async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
-// SPRECHEN — Part 4: Gemini Live WebSocket (wss://…/sprechen-session)
-// The browser streams 16kHz PCM mic audio here; we proxy to Gemini Live (the
-// examiner) and stream 24kHz PCM audio back. Transcripts are collected, and on
-// session end we save the session, generate feedback, and bump the cap.
+// SPRECHEN — Part 4: OpenAI Realtime WebSocket (wss://…/sprechen-session)
+// The browser streams 24kHz PCM16 mic audio here; we proxy it to the OpenAI
+// Realtime API (the examiner) and stream 24kHz PCM16 audio back. Transcripts
+// are collected, and on session end we save the session, generate Claude
+// feedback, and bump the cap. Same client protocol as before — only the
+// upstream voice provider changed.
 // ═══════════════════════════════════════════════════════════════════════════
 
-const SPRECHEN_GEMINI_MODEL = 'gemini-2.0-flash-live-001'; // Gemini Live (Dev API, v1alpha)
+const SPRECHEN_OPENAI_MODEL = process.env.OPENAI_REALTIME_MODEL || 'gpt-realtime';
+const SPRECHEN_OPENAI_VOICE = process.env.OPENAI_REALTIME_VOICE || 'alloy';
 const SPRECHEN_MAX_MS = 15 * 60 * 1000;
 
 function buildExaminerPrompt(topics) {
@@ -2093,15 +2096,13 @@ Begin the session warmly in German. Introduce yourself as the examiner and start
 }
 
 function attachSprechenWebSocket(server) {
-  let GoogleGenAI, Modality;
-  try { ({ GoogleGenAI, Modality } = require('@google/genai')); }
-  catch (e) { console.warn('[sprechen-ws] @google/genai not installed — live sessions disabled'); }
-
   const wss = new WebSocketServer({ server, path: '/sprechen-session' });
-  console.log('  ✦ WSS /sprechen-session ready (Gemini Live examiner)');
+  console.log('  ✦ WSS /sprechen-session ready (OpenAI Realtime examiner)');
 
   wss.on('connection', function (ws) {
-    let gemini = null;          // Gemini Live session
+    let upstream = null;        // OpenAI Realtime WS
+    let upstreamReady = false;  // session.update sent + ready for audio
+    let openerSent = false;     // examiner greeting triggered once
     let started = false;        // init received
     let finalized = false;
     let sessionId = null;
@@ -2109,8 +2110,10 @@ function attachSprechenWebSocket(server) {
     let startedAt = Date.now();
     let timeout = null;
     const transcript = [];      // [{role, text}]
+    const pendingAudio = [];    // base64 mic chunks queued before upstream is ready
 
     const send = (obj) => { try { if (ws.readyState === 1) ws.send(JSON.stringify(obj)); } catch (_) {} };
+    const toUpstream = (obj) => { try { if (upstream && upstream.readyState === 1) upstream.send(JSON.stringify(obj)); } catch (_) {} };
 
     function appendTranscript(role, text) {
       if (!text) return;
@@ -2126,7 +2129,7 @@ function attachSprechenWebSocket(server) {
       if (finalized) return;
       finalized = true;
       if (timeout) clearTimeout(timeout);
-      try { if (gemini) gemini.close(); } catch (_) {}
+      try { if (upstream) upstream.close(); } catch (_) {}
       const duration = Math.round((Date.now() - startedAt) / 1000);
       const fullTranscript = transcriptString();
 
@@ -2137,7 +2140,7 @@ function attachSprechenWebSocket(server) {
           .eq('id', sessionId).then(function(){}, function(){});
       }
 
-      // Feedback (only if there was a real conversation).
+      // Feedback (only if there was a real conversation) — unchanged Claude path.
       if (fullTranscript.trim().length > 20 && process.env.CLAUDE_API_KEY) {
         try {
           const fb = await generateSprechenFeedback(fullTranscript, language);
@@ -2162,12 +2165,54 @@ function attachSprechenWebSocket(server) {
       try { ws.close(); } catch (_) {}
     }
 
+    // Translate OpenAI Realtime server events → our client protocol. Event
+    // names differ slightly between the preview and GA realtime models, so we
+    // accept both spellings.
+    function handleUpstream(m) {
+      const t = (m && m.type) || '';
+
+      // Examiner audio (24kHz PCM16, base64).
+      if ((t === 'response.audio.delta' || t === 'response.output_audio.delta') && m.delta) {
+        send({ type: 'audio', data: m.delta, mimeType: 'audio/pcm;rate=24000' });
+        return;
+      }
+      // Examiner transcript — accumulate from deltas (this is the record source).
+      if ((t === 'response.audio_transcript.delta' || t === 'response.output_audio_transcript.delta') && m.delta) {
+        appendTranscript('examiner', m.delta);
+        send({ type: 'transcript', role: 'examiner', text: m.delta });
+        return;
+      }
+      // Candidate transcript (Whisper). Deltas are live-display only; the
+      // 'completed' event carries the full turn and is what we record — this
+      // avoids double-counting when both fire on the GA model.
+      if (t === 'conversation.item.input_audio_transcription.delta' && m.delta) {
+        send({ type: 'transcript', role: 'candidate', text: m.delta });
+        return;
+      }
+      if (t === 'conversation.item.input_audio_transcription.completed' && m.transcript) {
+        appendTranscript('candidate', m.transcript);
+        send({ type: 'transcript', role: 'candidate', text: m.transcript });
+        return;
+      }
+      // Once the session is configured, trigger the examiner's opening turn.
+      if (t === 'session.updated') {
+        if (!openerSent) { openerSent = true; toUpstream({ type: 'response.create' }); }
+        return;
+      }
+      if (t === 'response.done') { send({ type: 'turn_complete' }); return; }
+      if (t === 'error') {
+        console.error('[sprechen-ws] openai error event:', JSON.stringify(m.error || m).slice(0, 400));
+        send({ type: 'error', message: (m.error && m.error.message) || 'Examiner error.' });
+        return;
+      }
+    }
+
     async function startSession(init) {
       userId   = init.user_id || null;
       level    = init.level || 'A1';
       language = sprechenLang(init.preferred_language);
 
-      if (!GoogleGenAI || !process.env.GEMINI_API_KEY) {
+      if (!process.env.OPENAI_API_KEY) {
         send({ type: 'error', message: 'Live speaking is temporarily unavailable. Please try again later.' });
         return ws.close();
       }
@@ -2187,57 +2232,54 @@ function attachSprechenWebSocket(server) {
       startedAt = Date.now();
       timeout = setTimeout(() => finalize('timeout'), SPRECHEN_MAX_MS);
 
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY, httpOptions: { apiVersion: 'v1alpha' } });
-      try {
-        gemini = await ai.live.connect({
-          model: SPRECHEN_GEMINI_MODEL,
-          config: {
-            responseModalities: [Modality.AUDIO],
-            systemInstruction: buildExaminerPrompt(init.topics),
-            inputAudioTranscription: {},
-            outputAudioTranscription: {},
-            speechConfig: { languageCode: 'de-DE' },
-          },
-          callbacks: {
-            onopen: () => { console.log('[sprechen-ws] gemini onopen'); send({ type: 'ready' }); },
-            onmessage: (msg) => {
-              const sc = msg && msg.serverContent;
-              if (!sc) return;
-              if (sc.outputTranscription && sc.outputTranscription.text) {
-                appendTranscript('examiner', sc.outputTranscription.text);
-                send({ type: 'transcript', role: 'examiner', text: sc.outputTranscription.text });
-              }
-              if (sc.inputTranscription && sc.inputTranscription.text) {
-                appendTranscript('candidate', sc.inputTranscription.text);
-                send({ type: 'transcript', role: 'candidate', text: sc.inputTranscription.text });
-              }
-              const parts = sc.modelTurn && sc.modelTurn.parts;
-              if (Array.isArray(parts)) {
-                parts.forEach((p) => {
-                  if (p.inlineData && p.inlineData.data) {
-                    send({ type: 'audio', data: p.inlineData.data, mimeType: p.inlineData.mimeType || 'audio/pcm;rate=24000' });
-                  }
-                });
-              }
-              if (sc.turnComplete) send({ type: 'turn_complete' });
+      const url = 'wss://api.openai.com/v1/realtime?model=' + encodeURIComponent(SPRECHEN_OPENAI_MODEL);
+      upstream = new WebSocket(url, {
+        headers: { 'Authorization': 'Bearer ' + process.env.OPENAI_API_KEY },
+      });
+
+      upstream.on('open', () => {
+        console.log('[sprechen-ws] openai realtime open');
+        // Configure the examiner (GA Realtime shape): German A1 voice,
+        // server-side VAD turn-taking, pcm16 in/out (24kHz), Whisper
+        // transcription of the candidate.
+        toUpstream({
+          type: 'session.update',
+          session: {
+            type: 'realtime',
+            instructions: buildExaminerPrompt(init.topics),
+            output_modalities: ['audio'],
+            audio: {
+              input: {
+                format: { type: 'audio/pcm', rate: 24000 },
+                transcription: { model: 'whisper-1' },
+                turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 600 },
+              },
+              output: {
+                format: { type: 'audio/pcm', rate: 24000 },
+                voice: SPRECHEN_OPENAI_VOICE,
+              },
             },
-            onerror: (e) => { send({ type: 'error', message: 'Examiner connection error.' }); console.error('[sprechen-ws] gemini onerror:', (e && (e.message || e.reason)) || e); },
-            onclose: (e) => { console.log('[sprechen-ws] gemini onclose code=' + (e && e.code) + ' reason=' + (e && e.reason)); finalize('gemini_closed'); },
           },
         });
-        // Examiner speaks first — nudge now that the session is open and assigned.
-        try {
-          gemini.sendClientContent({
-            turns: [{ role: 'user', parts: [{ text: 'Der Kandidat ist bereit. Bitte beginnen Sie jetzt mit der Prüfung.' }] }],
-            turnComplete: true,
-          });
-          console.log('[sprechen-ws] sent opening nudge');
-        } catch (e) { console.error('[sprechen-ws] nudge failed:', e && e.message); }
-      } catch (e) {
-        console.error('[sprechen-ws] connect failed', e && e.message);
-        send({ type: 'error', message: 'Could not start the examiner. Please try again.' });
-        return ws.close();
-      }
+        upstreamReady = true;
+        // Flush any mic audio that arrived before the session was configured.
+        pendingAudio.forEach((d) => toUpstream({ type: 'input_audio_buffer.append', audio: d }));
+        pendingAudio.length = 0;
+        send({ type: 'ready' });
+        // The examiner's opening turn is triggered on 'session.updated' (above).
+      });
+      upstream.on('message', (raw) => {
+        let m = null; try { m = JSON.parse(raw.toString()); } catch (_) { return; }
+        handleUpstream(m);
+      });
+      upstream.on('error', (e) => {
+        console.error('[sprechen-ws] openai ws error:', e && e.message);
+        send({ type: 'error', message: 'Examiner connection error.' });
+      });
+      upstream.on('close', (code, reason) => {
+        console.log('[sprechen-ws] openai ws close', code, (reason && reason.toString().slice(0, 200)) || '');
+        finalize('upstream_closed');
+      });
     }
 
     ws.on('message', (raw) => {
@@ -2247,8 +2289,10 @@ function attachSprechenWebSocket(server) {
         if (started) return;
         started = true;
         startSession(msg).catch((e) => { send({ type: 'error', message: e.message }); });
-      } else if (msg.type === 'audio' && gemini && msg.data) {
-        try { gemini.sendRealtimeInput({ audio: { data: msg.data, mimeType: 'audio/pcm;rate=16000' } }); } catch (_) {}
+      } else if (msg.type === 'audio' && msg.data) {
+        // server_vad auto-commits + auto-responds, so just append; no manual commit.
+        if (upstreamReady) toUpstream({ type: 'input_audio_buffer.append', audio: msg.data });
+        else pendingAudio.push(msg.data);
       } else if (msg.type === 'end') {
         finalize('client_end');
       }
