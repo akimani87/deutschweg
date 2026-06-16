@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sprechen Simulation — DeutschWeg</title>
+<meta name="description" content="Practice the Goethe A1 speaking exam with an AI examiner — real-time German conversation and instant feedback.">
+<link rel="stylesheet" href="./deutschweg-theme.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
+<style>
+  *{box-sizing:border-box;}
+  body{
+    margin:0;background:#F8FAFC;color:#1F2937;padding-bottom:84px;
+    font-family:"Plus Jakarta Sans","DM Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  }
+  body[dir="rtl"]{direction:rtl;}
+  .wrap{max-width:560px;margin:0 auto;padding:18px 16px;}
+  .screen{display:none;}
+  .screen.active{display:block;animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+  .hd{background:linear-gradient(135deg,#1D4ED8 0%,#3B82F6 100%);color:#fff;border-radius:18px;padding:20px;text-align:center;margin-bottom:16px;}
+  .hd .em{font-size:34px;}
+  .hd h1{font-size:20px;font-weight:800;margin:6px 0 2px;letter-spacing:-0.3px;}
+  .hd .sub{font-size:13px;color:rgba(255,255,255,0.9);font-weight:600;}
+
+  .card{background:#fff;border:1px solid #E5E7EB;border-radius:16px;padding:16px;margin-bottom:14px;}
+  .card-lab{font-size:11px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;color:#3B82F6;margin-bottom:10px;}
+
+  .langs{display:flex;flex-wrap:wrap;gap:8px;}
+  .lang{flex:1;min-width:120px;background:#F8FAFC;border:1.5px solid #E5E7EB;border-radius:12px;padding:10px;font-size:14px;font-weight:700;font-family:inherit;color:#334155;cursor:pointer;transition:all .15s;}
+  .lang.active{background:#3B82F6;border-color:#3B82F6;color:#fff;}
+
+  .part{border-left:3px solid #3B82F6;background:#F8FAFC;border-radius:0 12px 12px 0;padding:10px 14px;margin-bottom:10px;}
+  .part-tag{font-size:11px;font-weight:800;color:#3B82F6;text-transform:uppercase;letter-spacing:0.4px;}
+  .part-de{font-size:15px;font-weight:700;color:#1F2937;margin-top:3px;line-height:1.4;}
+  .part-inst{font-size:13px;color:#64748B;margin-top:4px;line-height:1.5;}
+
+  .counter{display:inline-block;background:#EFF6FF;color:#1D4ED8;font-size:12px;font-weight:700;border-radius:20px;padding:5px 12px;margin-top:8px;}
+
+  .btn{width:100%;border:none;border-radius:14px;padding:15px;font-size:16px;font-weight:800;font-family:inherit;cursor:pointer;transition:filter .15s,transform .1s;}
+  .btn:active{transform:scale(0.99);}
+  .btn-primary{background:#3B82F6;color:#fff;box-shadow:0 6px 18px rgba(59,130,246,0.35);}
+  .btn-primary:hover{filter:brightness(1.05);}
+  .btn-primary:disabled{opacity:0.55;cursor:default;box-shadow:none;}
+  .btn-ghost{background:#fff;border:1.5px solid #E5E7EB;color:#334155;margin-top:10px;}
+  .btn-warn{background:#FEE2E2;color:#B91C1C;}
+
+  .tips{font-size:13px;color:#475569;line-height:1.7;}
+  .tips li{margin-bottom:4px;}
+
+  /* Active session */
+  .stage{background:#fff;border:1px solid #E5E7EB;border-radius:18px;padding:26px 18px;text-align:center;margin-bottom:14px;}
+  .orb{width:120px;height:120px;border-radius:50%;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:48px;background:radial-gradient(circle at 50% 40%,#DBEAFE,#EFF6FF);position:relative;transition:transform .2s;}
+  .orb.speaking{animation:pulse 1.1s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,0.35);}50%{box-shadow:0 0 0 18px rgba(59,130,246,0);}}
+  .wave{display:flex;gap:4px;align-items:center;justify-content:center;height:24px;margin-top:6px;}
+  .wave span{width:4px;height:8px;background:#3B82F6;border-radius:2px;animation:w 1s ease-in-out infinite;}
+  .wave span:nth-child(2){animation-delay:.15s;} .wave span:nth-child(3){animation-delay:.3s;}
+  .wave span:nth-child(4){animation-delay:.45s;} .wave span:nth-child(5){animation-delay:.6s;}
+  @keyframes w{0%,100%{height:8px;}50%{height:22px;}}
+  .wave.idle span{animation:none;height:6px;background:#CBD5E1;}
+  .stage-status{font-size:15px;font-weight:700;color:#1F2937;margin-top:6px;}
+  .mic-state{font-size:13px;color:#64748B;margin-top:4px;}
+  .part-pills{display:flex;gap:8px;justify-content:center;margin-bottom:12px;}
+  .ppill{flex:1;background:#fff;border:1.5px solid #E5E7EB;border-radius:12px;padding:8px;font-size:12px;font-weight:700;color:#94A3B8;text-align:center;}
+  .ppill.active{background:#3B82F6;border-color:#3B82F6;color:#fff;}
+  .meta-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#64748B;font-weight:600;margin-bottom:12px;}
+  .timer{font-variant-numeric:tabular-nums;font-weight:800;color:#1F2937;}
+  .transcript{background:#F8FAFC;border:1px solid #E5E7EB;border-radius:12px;padding:10px 12px;max-height:140px;overflow-y:auto;font-size:13px;line-height:1.5;margin-bottom:12px;}
+  .tline{margin-bottom:5px;} .tline .who{font-weight:800;}
+  .tline.examiner .who{color:#1D4ED8;} .tline.candidate .who{color:#15803D;}
+
+  /* Feedback */
+  .score-hero{text-align:center;padding:8px 0 4px;}
+  .stars{font-size:30px;letter-spacing:3px;color:#F59E0B;}
+  .score-num{font-size:14px;font-weight:700;color:#64748B;margin-top:2px;}
+  .bar-row{margin-bottom:10px;}
+  .bar-top{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:4px;}
+  .bar{height:9px;background:#E5E7EB;border-radius:6px;overflow:hidden;}
+  .bar-fill{height:100%;background:linear-gradient(90deg,#3B82F6,#2563EB);border-radius:6px;transition:width .5s;}
+  .fb-sec{border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:14px;line-height:1.6;}
+  .fb-sec .t{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;}
+  .fb-open{background:#EFF6FF;color:#1E3A8A;}
+  .fb-well{background:#F0FDF4;color:#14532D;} .fb-well .t{color:#15803D;}
+  .fb-improve{background:#EFF6FF;color:#1E3A8A;} .fb-improve .t{color:#1D4ED8;}
+  .fb-tip{background:#FEFCE8;color:#713F12;} .fb-tip .t{color:#A16207;}
+  .fb-enc{background:#FDF2F8;color:#831843;text-align:center;font-weight:700;}
+
+  .notice{background:#fff;border:1px dashed #CBD5E1;border-radius:12px;padding:14px;font-size:14px;color:#475569;text-align:center;line-height:1.6;}
+
+  /* Bottom nav */
+  .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #E5E7EB;display:flex;justify-content:space-around;padding:10px 0 18px;z-index:100;box-shadow:0 -4px 20px rgba(0,0,0,0.06);}
+  .nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 8px;border-radius:10px;transition:all .2s;border:none;background:none;color:#9CA3AF;text-decoration:none;flex:1;max-width:80px;}
+  .nav-item:hover,.nav-item.active{color:#3B82F6;}
+  .nav-icon{font-size:20px;line-height:1;} .nav-label{font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;}
+  @media (max-width:380px){ .nav-item{padding:6px 3px;} .nav-label{font-size:9px;letter-spacing:0.2px;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ── SCREEN 0: COMING SOON (shown while live voice is being enabled) ── -->
+  <section class="screen active" id="screen-coming">
+    <div class="hd">
+      <div class="em">🎤</div>
+      <h1>Sprechen Simulation — Coming Soon!</h1>
+      <div class="sub">Practice your German speaking with an AI examiner.</div>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:42px;margin-bottom:10px;">🚀</div>
+      <div style="font-size:16px;font-weight:800;color:#1F2937;margin-bottom:8px;">This feature is launching very soon.</div>
+      <div style="font-size:14px;color:#64748B;line-height:1.7;">You'll speak with a friendly AI examiner in the real Goethe A1 format — introduce yourself, describe a picture, and plan together — then get instant scored feedback in your language.</div>
+      <a href="/dashboard" class="btn btn-primary" style="display:block;text-decoration:none;margin-top:18px;">← Back to Dashboard</a>
+    </div>
+  </section>
+
+  <!-- ── SCREEN 1: PRE-SESSION ── -->
+  <section class="screen" id="screen-pre">
+    <div class="hd">
+      <div class="em">🎤</div>
+      <h1 id="t-title">Sprechen Simulation — A1</h1>
+      <div class="sub" id="t-subtitle">Practice the Goethe A1 speaking exam with an AI examiner</div>
+      <div class="counter" id="sessionCounter">…</div>
+    </div>
+
+    <div class="card">
+      <div class="card-lab" id="t-langlabel">Feedback language</div>
+      <div class="langs" id="langs">
+        <button class="lang active" data-lang="english">🇬🇧 English</button>
+        <button class="lang" data-lang="arabic">🇸🇦 العربية</button>
+        <button class="lang" data-lang="french">🇫🇷 Français</button>
+        <button class="lang" data-lang="portuguese">🇵🇹 Português</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-lab" id="t-topiclabel">Today's topics</div>
+      <div id="topicPreview"><div class="notice">Loading topics…</div></div>
+    </div>
+
+    <button class="btn btn-primary" id="startBtn" disabled>Start Session</button>
+
+    <div class="card" style="margin-top:14px;">
+      <div class="card-lab" id="t-tipslabel">What to expect</div>
+      <ul class="tips" id="tipsList">
+        <li>The examiner speaks only in simple German.</li>
+        <li>Speak clearly into your microphone — take your time.</li>
+        <li>3 parts: introduce yourself, describe a picture, plan together.</li>
+        <li>You'll get scored feedback in your language at the end.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── SCREEN 2: ACTIVE SESSION ── -->
+  <section class="screen" id="screen-active">
+    <div class="part-pills">
+      <div class="ppill active" id="pp1">Part 1</div>
+      <div class="ppill" id="pp2">Part 2</div>
+      <div class="ppill" id="pp3">Part 3</div>
+    </div>
+    <div class="meta-row">
+      <span id="remainNote"></span>
+      <span class="timer" id="timer">00:00</span>
+    </div>
+
+    <div class="stage">
+      <div class="orb" id="orb">🧑‍🏫</div>
+      <div class="wave idle" id="wave"><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="stage-status" id="stageStatus">Connecting to examiner…</div>
+      <div class="mic-state" id="micState">🎙️ Microphone ready</div>
+    </div>
+
+    <div class="transcript" id="transcript"></div>
+
+    <button class="btn btn-warn" id="endBtn">End session</button>
+  </section>
+
+  <!-- ── SCREEN 3: FEEDBACK ── -->
+  <section class="screen" id="screen-feedback">
+    <div class="hd">
+      <div class="em">🎉</div>
+      <h1 id="t-fbtitle">Your results</h1>
+    </div>
+    <div class="card">
+      <div class="score-hero">
+        <div class="stars" id="stars">☆☆☆☆☆</div>
+        <div class="score-num" id="scoreNum"></div>
+      </div>
+      <div id="bars" style="margin-top:12px;"></div>
+    </div>
+    <div id="fbSections"></div>
+    <button class="btn btn-primary" id="againBtn">Practice again</button>
+    <button class="btn btn-ghost" id="upgradeBtn" style="display:none;">Upgrade for more sessions</button>
+    <a class="btn btn-ghost" href="/dashboard" style="display:block;text-align:center;text-decoration:none;">← Dashboard</a>
+  </section>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <a class="nav-item" href="/dashboard"><span class="nav-icon">📚</span><span class="nav-label">Modules</span></a>
+  <a class="nav-item" href="ai-tutor.html"><span class="nav-icon">👩‍🏫</span><span class="nav-label">AI Tutor</span></a>
+  <a class="nav-item" href="ai-pal.html"><span class="nav-icon">🤗</span><span class="nav-label">AI Pal</span></a>
+  <a class="nav-item" href="dictionary.html"><span class="nav-icon">📖</span><span class="nav-label">Wörterbuch</span></a>
+  <a class="nav-item active" href="sprechen.html"><span class="nav-icon">🎤</span><span class="nav-label">Sprechen</span></a>
+  <a class="nav-item" href="exam-vault.html"><span class="nav-icon">📝</span><span class="nav-label">Exam Vault</span></a>
+</nav>
+
+<script>
+(function(){
+  'use strict';
+
+  var API_BASE = 'https://deutschweg.onrender.com';
+  var isLocal  = (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+  var WS_URL   = isLocal ? ('ws://' + location.hostname + ':3000/sprechen-session')
+                         : 'wss://deutschweg.onrender.com/sprechen-session';
+  var sb = (typeof dwSupabase !== 'undefined') ? dwSupabase : null;
+
+  // Live voice (Gemini) is not enabled yet — show the Coming Soon screen and
+  // keep the full simulator dormant. Flip to false once a Live-capable
+  // GEMINI_API_KEY is in place on Render; everything below then activates.
+  var COMING_SOON = true;
+
+  // ── i18n (core UI strings) ───────────────────────────────────────────────
+  var I18N = {
+    english:    { title:'Sprechen Simulation — A1', subtitle:'Practice the Goethe A1 speaking exam with an AI examiner', langlabel:'Feedback language', topiclabel:"Today's topics", tipslabel:'What to expect', start:'Start Session', usedfmt:'{u} of {m} free sessions used', remainfmt:'{r} sessions remaining after this one', connecting:'Connecting to examiner…', listening:'Listening to the examiner', yourturn:'Your turn — speak now', micready:'🎙️ Microphone ready', end:'End session', fbtitle:'Your results', again:'Practice again', upgrade:'Upgrade for more sessions', well:'What went well', improve:'Areas to improve', tip:'Exam tip', capmsg:'You have used all your free sessions. Upgrade to continue.', micdenied:'We need microphone access to run the speaking test. Please allow it in your browser and try again.', error:'Something went wrong. Please try again.' },
+    arabic:     { title:'محاكاة التحدث — A1', subtitle:'تدرّب على امتحان التحدث A1 مع ممتحن ذكي', langlabel:'لغة الملاحظات', topiclabel:'مواضيع اليوم', tipslabel:'ماذا تتوقع', start:'ابدأ الجلسة', usedfmt:'تم استخدام {u} من {m} جلسات مجانية', remainfmt:'تبقّى {r} جلسات بعد هذه', connecting:'جارٍ الاتصال بالممتحن…', listening:'استمع إلى الممتحن', yourturn:'دورك — تحدّث الآن', micready:'🎙️ الميكروفون جاهز', end:'إنهاء الجلسة', fbtitle:'نتائجك', again:'تدرّب مرة أخرى', upgrade:'الترقية لمزيد من الجلسات', well:'ما الذي أبليت فيه حسناً', improve:'مجالات التحسين', tip:'نصيحة الامتحان', capmsg:'لقد استخدمت جميع جلساتك المجانية. قم بالترقية للمتابعة.', micdenied:'نحتاج إلى إذن الميكروفون لإجراء اختبار التحدث. يرجى السماح به والمحاولة مرة أخرى.', error:'حدث خطأ ما. حاول مرة أخرى.' },
+    french:     { title:'Simulation Sprechen — A1', subtitle:"Entraînez-vous à l'oral Goethe A1 avec un examinateur IA", langlabel:'Langue du feedback', topiclabel:"Sujets du jour", tipslabel:'À quoi s\'attendre', start:'Démarrer la session', usedfmt:'{u} sur {m} sessions gratuites utilisées', remainfmt:'{r} sessions restantes après celle-ci', connecting:"Connexion à l'examinateur…", listening:"Écoutez l'examinateur", yourturn:'À vous — parlez maintenant', micready:'🎙️ Micro prêt', end:'Terminer', fbtitle:'Vos résultats', again:"S'entraîner encore", upgrade:'Plus de sessions', well:'Points forts', improve:'À améliorer', tip:"Conseil d'examen", capmsg:'Vous avez utilisé toutes vos sessions gratuites. Passez à la version supérieure.', micdenied:"Nous avons besoin du micro pour l'oral. Autorisez-le et réessayez.", error:'Une erreur est survenue. Réessayez.' },
+    portuguese: { title:'Simulação Sprechen — A1', subtitle:'Pratique o exame oral Goethe A1 com um examinador de IA', langlabel:'Idioma do feedback', topiclabel:'Tópicos de hoje', tipslabel:'O que esperar', start:'Iniciar sessão', usedfmt:'{u} de {m} sessões gratuitas usadas', remainfmt:'{r} sessões restantes após esta', connecting:'Conectando ao examinador…', listening:'Ouça o examinador', yourturn:'Sua vez — fale agora', micready:'🎙️ Microfone pronto', end:'Encerrar', fbtitle:'Seus resultados', again:'Praticar de novo', upgrade:'Mais sessões', well:'O que correu bem', improve:'A melhorar', tip:'Dica de exame', capmsg:'Você usou todas as suas sessões gratuitas. Faça upgrade para continuar.', micdenied:'Precisamos do microfone para o teste oral. Permita o acesso e tente de novo.', error:'Algo correu mal. Tente novamente.' },
+  };
+
+  var state = {
+    lang: 'english', user: null, topics: null,
+    capUsed: 0, capMax: 10, capRemaining: 10,
+    sessionId: null,
+  };
+
+  // Audio + WS runtime
+  var ws = null, inCtx = null, outCtx = null, micStream = null, proc = null, micGain = null;
+  var playHead = 0, speakingUntil = 0, timerInt = null, secs = 0, currentPart = 1;
+  var feedbackShown = false, failed = false, hadAudio = false;
+
+  function t(k){ return (I18N[state.lang] && I18N[state.lang][k]) || I18N.english[k] || k; }
+  function $(id){ return document.getElementById(id); }
+  function show(id){ ['screen-pre','screen-active','screen-feedback'].forEach(function(s){ $(s).classList.toggle('active', s===id); }); }
+
+  // ── Apply language to static UI ──────────────────────────────────────────
+  function applyLang(){
+    document.body.setAttribute('dir', state.lang === 'arabic' ? 'rtl' : 'ltr');
+    $('t-title').textContent     = t('title');
+    $('t-subtitle').textContent  = t('subtitle');
+    $('t-langlabel').textContent = t('langlabel');
+    $('t-topiclabel').textContent= t('topiclabel');
+    $('t-tipslabel').textContent = t('tipslabel');
+    $('startBtn').textContent    = t('start');
+    $('endBtn').textContent      = t('end');
+    $('t-fbtitle').textContent   = t('fbtitle');
+    $('micState').textContent    = t('micready');
+    renderCounter();
+    renderTopics();
+  }
+
+  function renderCounter(){
+    $('sessionCounter').textContent = t('usedfmt').replace('{u}', state.capUsed).replace('{m}', state.capMax);
+  }
+
+  function renderTopics(){
+    var box = $('topicPreview');
+    if (!state.topics){ box.innerHTML = '<div class="notice">Loading topics…</div>'; return; }
+    var key = 'instructions_' + state.lang;
+    var parts = [
+      { tag:'Part 1 · Sich vorstellen', d:state.topics.part1 },
+      { tag:'Part 2 · Bild beschreiben', d:state.topics.part2 },
+      { tag:'Part 3 · Gemeinsam planen', d:state.topics.part3 },
+    ];
+    box.innerHTML = parts.map(function(p){
+      var inst = (p.d && (p.d[key] || p.d.instructions_english)) || '';
+      return '<div class="part"><div class="part-tag">' + p.tag + '</div>' +
+             '<div class="part-de"></div>' +
+             (inst ? '<div class="part-inst"></div>' : '') + '</div>';
+    }).join('');
+    // fill text safely
+    var nodes = box.querySelectorAll('.part');
+    parts.forEach(function(p, i){
+      nodes[i].querySelector('.part-de').textContent = (p.d && p.d.topic) || '';
+      var instEl = nodes[i].querySelector('.part-inst');
+      if (instEl) instEl.textContent = (p.d && (p.d[key] || p.d.instructions_english)) || '';
+    });
+  }
+
+  // ── Boot: auth, cap, topics ──────────────────────────────────────────────
+  function boot(){
+    if (COMING_SOON) return;   // Coming Soon screen is active by default; stay dormant.
+    applyLang();
+    if (!sb){ $('startBtn').disabled = true; return; }
+    sb.auth.getUser().then(function(res){
+      state.user = (res && res.data && res.data.user) || null;
+      return loadCap();
+    }).then(function(){ return loadTopics(); }).catch(function(){});
+  }
+
+  function loadCap(){
+    if (!state.user) return Promise.resolve();
+    return fetch(API_BASE + '/api/sprechen/cap/' + state.user.id + '/A1')
+      .then(function(r){ return r.json(); })
+      .then(function(c){
+        if (typeof c.remaining === 'number'){ state.capRemaining = c.remaining; }
+        if (c.allowed === false){ state.capUsed = state.capMax; }
+        else { state.capUsed = state.capMax - state.capRemaining; }
+        renderCounter();
+      }).catch(function(){});
+  }
+
+  function loadTopics(){
+    return fetch(API_BASE + '/api/sprechen/topics/generate', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ level:'A1' })
+    }).then(function(r){ return r.json(); }).then(function(j){
+      if (j && j.topics){ state.topics = j.topics; renderTopics(); $('startBtn').disabled = false; }
+      else { $('topicPreview').innerHTML = '<div class="notice">Could not load topics. Please refresh.</div>'; }
+    }).catch(function(){ $('topicPreview').innerHTML = '<div class="notice">Could not load topics. Please refresh.</div>'; });
+  }
+
+  // ── Language selector ─────────────────────────────────────────────────────
+  $('langs').addEventListener('click', function(e){
+    var b = e.target.closest('.lang'); if (!b) return;
+    state.lang = b.getAttribute('data-lang');
+    this.querySelectorAll('.lang').forEach(function(x){ x.classList.toggle('active', x===b); });
+    applyLang();
+  });
+
+  // ── Audio helpers ──────────────────────────────────────────────────────────
+  function b64FromBytes(bytes){ var bin=''; for (var i=0;i<bytes.length;i++) bin+=String.fromCharCode(bytes[i]); return btoa(bin); }
+  function bytesFromB64(b64){ var bin=atob(b64); var b=new Uint8Array(bin.length); for (var i=0;i<bin.length;i++) b[i]=bin.charCodeAt(i); return b; }
+
+  // Float32 @ inRate → PCM16 @ 16kHz (nearest-sample decimation) → base64
+  function floatToPcm16Base64(float32, inRate){
+    var ratio = inRate / 16000;
+    var outLen = Math.max(1, Math.floor(float32.length / ratio));
+    var out = new Int16Array(outLen);
+    for (var i=0;i<outLen;i++){
+      var s = float32[Math.floor(i*ratio)] || 0;
+      s = Math.max(-1, Math.min(1, s));
+      out[i] = s < 0 ? s*0x8000 : s*0x7FFF;
+    }
+    return b64FromBytes(new Uint8Array(out.buffer));
+  }
+
+  // base64 PCM16 @ 24kHz → schedule playback
+  function playPcm16Base64(b64){
+    if (!outCtx) return;
+    var bytes = bytesFromB64(b64);
+    var n = Math.floor(bytes.byteLength/2);
+    var int16 = new Int16Array(bytes.buffer, bytes.byteOffset, n);
+    var f32 = new Float32Array(n);
+    for (var i=0;i<n;i++) f32[i] = int16[i]/0x8000;
+    var buf = outCtx.createBuffer(1, n, 24000);
+    buf.getChannelData(0).set(f32);
+    var src = outCtx.createBufferSource(); src.buffer = buf; src.connect(outCtx.destination);
+    var startAt = Math.max(outCtx.currentTime, playHead);
+    src.start(startAt);
+    playHead = startAt + buf.duration;
+    speakingUntil = performance.now() + (playHead - outCtx.currentTime)*1000;
+    setExaminerSpeaking(true);
+  }
+
+  function setExaminerSpeaking(on){
+    $('orb').classList.toggle('speaking', on);
+    $('wave').classList.toggle('idle', !on);
+    $('stageStatus').textContent = on ? t('listening') : t('yourturn');
+  }
+  // Poll to flip back to "your turn" when examiner audio finishes.
+  setInterval(function(){
+    if (speakingUntil && performance.now() > speakingUntil){ speakingUntil = 0; setExaminerSpeaking(false); }
+  }, 200);
+
+  function setPart(n){
+    if (n === currentPart) return;
+    currentPart = n;
+    [1,2,3].forEach(function(i){ $('pp'+i).classList.toggle('active', i===n); });
+  }
+  // Heuristic part tracking from examiner German cues.
+  function trackPartFromText(text){
+    var s = (text||'').toLowerCase();
+    if (/teil\s*(3|drei)|zusammen|planen|gemeinsam/.test(s)) setPart(3);
+    else if (/teil\s*(2|zwei)|bild|foto|beschreiben/.test(s)) setPart(2);
+  }
+
+  function addTranscript(role, text){
+    var d = document.createElement('div');
+    d.className = 'tline ' + role;
+    var who = document.createElement('span'); who.className='who';
+    who.textContent = (role==='examiner' ? '🧑‍🏫 ' : '🗣️ ');
+    d.appendChild(who);
+    d.appendChild(document.createTextNode(text));
+    var box = $('transcript'); box.appendChild(d); box.scrollTop = box.scrollHeight;
+  }
+
+  // ── Start session ──────────────────────────────────────────────────────────
+  $('startBtn').addEventListener('click', startSession);
+  $('endBtn').addEventListener('click', function(){ endSession(); });
+  $('againBtn').addEventListener('click', function(){ location.reload(); });
+
+  function startSession(){
+    if (!state.user){ alert('Please sign in to start a speaking session.'); return; }
+    if (state.capRemaining <= 0){ alert(t('capmsg')); return; }
+    $('startBtn').disabled = true;
+    feedbackShown = false; failed = false; hadAudio = false;
+
+    // Mic permission first.
+    navigator.mediaDevices.getUserMedia({ audio: { channelCount:1, echoCancellation:true, noiseSuppression:true } })
+      .then(function(stream){
+        micStream = stream;
+        show('screen-active');
+        $('remainNote').textContent = t('remainfmt').replace('{r}', Math.max(0, state.capRemaining - 1));
+        $('stageStatus').textContent = t('connecting');
+        startTimer();
+        openSocket();
+      })
+      .catch(function(){
+        $('startBtn').disabled = false;
+        alert(t('micdenied'));
+      });
+  }
+
+  function openSocket(){
+    ws = new WebSocket(WS_URL);
+    ws.onopen = function(){
+      ws.send(JSON.stringify({
+        type:'init', user_id: state.user.id, level:'A1',
+        preferred_language: state.lang, topics: state.topics,
+      }));
+    };
+    ws.onmessage = function(ev){
+      var msg = null; try { msg = JSON.parse(ev.data); } catch(_){ return; }
+      if (msg.type === 'ready'){ startMicStreaming(); setExaminerSpeaking(false); }
+      else if (msg.type === 'audio'){ hadAudio = true; playPcm16Base64(msg.data); }
+      else if (msg.type === 'transcript'){
+        hadAudio = true;
+        addTranscript(msg.role, msg.text);
+        if (msg.role === 'examiner') trackPartFromText(msg.text);
+      }
+      else if (msg.type === 'cap_exceeded'){ failToPre(msg.message || t('capmsg')); }
+      else if (msg.type === 'error'){ failToPre(msg.message || t('error')); }
+      else if (msg.type === 'feedback'){ feedbackShown = true; teardownAudio(); renderFeedback(msg.feedback); }
+      else if (msg.type === 'done'){ if (!feedbackShown) failToPre(t('error')); }
+    };
+    ws.onerror = function(){ failToPre(t('error')); };
+    ws.onclose = function(){ if (!feedbackShown && $('screen-active').classList.contains('active')) failToPre(t('error')); };
+  }
+
+  function teardownAudio(){ cleanupAudio(); try { if (outCtx) outCtx.close(); } catch(_){} outCtx = null; }
+
+  // Graceful failure: never strand the user on a blank screen — tear down,
+  // return to the pre-session screen, and explain what happened.
+  function failToPre(message){
+    if (failed) return; failed = true;
+    teardownAudio();
+    show('screen-pre');
+    $('startBtn').disabled = false;
+    $('endBtn').disabled = false;
+    if (message) setTimeout(function(){ alert(message); }, 60);
+  }
+
+  function startMicStreaming(){
+    try {
+      inCtx = new (window.AudioContext || window.webkitAudioContext)();
+      outCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+      playHead = outCtx.currentTime;
+      var source = inCtx.createMediaStreamSource(micStream);
+      // ScriptProcessor is deprecated but universally supported; fine for voice.
+      proc = inCtx.createScriptProcessor(4096, 1, 1);
+      micGain = inCtx.createGain(); micGain.gain.value = 0; // silent sink (no echo)
+      source.connect(proc); proc.connect(micGain); micGain.connect(inCtx.destination);
+      proc.onaudioprocess = function(e){
+        if (!ws || ws.readyState !== 1) return;
+        var input = e.inputBuffer.getChannelData(0);
+        ws.send(JSON.stringify({ type:'audio', data: floatToPcm16Base64(input, inCtx.sampleRate) }));
+      };
+      $('micState').textContent = t('micready');
+    } catch (err){
+      $('stageStatus').textContent = t('error');
+    }
+  }
+
+  function startTimer(){
+    secs = 0; $('timer').textContent = '00:00';
+    timerInt = setInterval(function(){
+      secs++;
+      var m = String(Math.floor(secs/60)).padStart(2,'0');
+      var s = String(secs%60).padStart(2,'0');
+      $('timer').textContent = m + ':' + s;
+      if (secs >= 15*60) endSession();
+    }, 1000);
+  }
+
+  function cleanupAudio(){
+    if (timerInt){ clearInterval(timerInt); timerInt = null; }
+    try { if (proc){ proc.disconnect(); proc.onaudioprocess = null; } } catch(_){}
+    try { if (micGain) micGain.disconnect(); } catch(_){}
+    try { if (micStream) micStream.getTracks().forEach(function(tk){ tk.stop(); }); } catch(_){}
+    try { if (inCtx) inCtx.close(); } catch(_){}
+    proc = null; micStream = null; inCtx = null;
+  }
+
+  function endSession(){
+    try { if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type:'end' })); } catch(_){}
+    cleanupAudio();
+    $('stageStatus').textContent = 'Generating your feedback…';
+    $('endBtn').disabled = true;
+  }
+
+  // ── Feedback rendering ───────────────────────────────────────────────────
+  function renderFeedback(fb){
+    if (!fb){ show('screen-feedback'); return; }
+    var ov = Math.max(1, Math.min(5, Math.round(fb.score_overall || 0)));
+    $('stars').textContent = '★★★★★☆☆☆☆☆'.slice(5-ov, 10-ov);
+    $('scoreNum').textContent = ov + ' / 5';
+
+    var bars = [
+      ['Aussprache', fb.score_aussprache],
+      ['Kommunikation', fb.score_kommunikation],
+      ['Grammatik', fb.score_grammatik],
+      ['Wortschatz', fb.score_wortschatz],
+    ];
+    $('bars').innerHTML = bars.map(function(b){
+      var v = Math.max(0, Math.min(5, Math.round(b[1]||0)));
+      return '<div class="bar-row"><div class="bar-top"><span>'+b[0]+'</span><span>'+v+'/5</span></div>' +
+             '<div class="bar"><div class="bar-fill" style="width:'+(v/5*100)+'%"></div></div></div>';
+    }).join('');
+
+    var secs = [
+      { cls:'fb-open',    title:'',          text: fb.opening },
+      { cls:'fb-well',    title:t('well'),    text: fb.what_went_well },
+      { cls:'fb-improve', title:t('improve'), text: fb.areas_to_improve },
+      { cls:'fb-tip',     title:t('tip'),     text: fb.exam_tip },
+      { cls:'fb-enc',     title:'',          text: fb.encouragement },
+    ];
+    var box = $('fbSections'); box.innerHTML = '';
+    secs.forEach(function(s){
+      if (!s.text) return;
+      var d = document.createElement('div'); d.className = 'fb-sec ' + s.cls;
+      if (s.title){ var tt = document.createElement('div'); tt.className='t'; tt.textContent = s.title; d.appendChild(tt); }
+      d.appendChild(document.createTextNode(s.text));
+      box.appendChild(d);
+    });
+
+    // Buttons by remaining cap (this session counted).
+    var remainingAfter = Math.max(0, state.capRemaining - 1);
+    $('againBtn').style.display    = remainingAfter > 0 ? 'block' : 'none';
+    $('upgradeBtn').style.display  = remainingAfter > 0 ? 'none'  : 'block';
+    show('screen-feedback');
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>

@@ -8,6 +8,7 @@ console.log('Key loaded:', process.env.CLAUDE_API_KEY
 const express = require('express');
 const cors    = require('cors');
 const fetch   = require('node-fetch');
+const { WebSocketServer } = require('ws');
 const { createClient } = require('@supabase/supabase-js');
 
 const app  = express();
@@ -1341,6 +1342,237 @@ app.get('/api/dictionary/:word', async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════════════════════
+// SPRECHEN — Goethe A1 speaking simulator (topics + cap + feedback; the live
+// voice session is the WebSocket server attached at the bottom of this file).
+// ═══════════════════════════════════════════════════════════════════════════
+
+const SPRECHEN_LANGS = { english: 'English', arabic: 'Arabic', french: 'French', portuguese: 'Portuguese' };
+function sprechenLang(v) { return SPRECHEN_LANGS[String(v || '').toLowerCase()] ? String(v).toLowerCase() : 'english'; }
+
+const SPRECHEN_TOPIC_SYSTEM_PROMPT = `You are generating Goethe A1 Sprechen exam topics for African learners preparing for the German exam.
+
+Generate exactly 3 topics following the official Goethe A1 Sprechen format:
+
+Part 1 — Sich vorstellen (introduce yourself)
+Generate a natural self-introduction prompt.
+Example: "Stellen Sie sich vor — sagen Sie Ihren Namen, woher Sie kommen und was Sie arbeiten."
+
+Part 2 — Bild beschreiben (describe a picture)
+Generate a simple everyday scene relevant to life in Germany.
+Example: "Beschreiben Sie das Bild — was sehen Sie?"
+
+Part 3 — Gemeinsam planen (plan together)
+Generate a simple planning task the examiner and learner do together.
+Example: "Sie möchten zusammen kochen. Was brauchen Sie?"
+
+Rules:
+- All topics must be genuine A1 level — simple vocabulary only
+- Topics must be relevant to African immigrants in Germany
+- Part 3 must feel like a natural conversation not an interrogation
+- Return only valid JSON:
+
+{
+  "part1": {
+    "topic": "",
+    "instructions_english": "",
+    "instructions_arabic": "",
+    "instructions_french": "",
+    "instructions_portuguese": ""
+  },
+  "part2": {
+    "topic": "",
+    "image_description": "",
+    "instructions_english": "",
+    "instructions_arabic": "",
+    "instructions_french": "",
+    "instructions_portuguese": ""
+  },
+  "part3": {
+    "topic": "",
+    "instructions_english": "",
+    "instructions_arabic": "",
+    "instructions_french": "",
+    "instructions_portuguese": ""
+  }
+}`;
+
+function parseJsonLoose(raw) {
+  try { return JSON.parse(String(raw).replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '')); }
+  catch (_) { return null; }
+}
+
+async function callClaudeJSON(systemPrompt, userMsg, maxTokens) {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.CLAUDE_API_KEY, 'anthropic-version': '2023-06-01' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: maxTokens || 1200,
+      temperature: 0.6,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userMsg }],
+    }),
+  });
+  if (!response.ok) {
+    const errBody = await response.json().catch(() => ({}));
+    throw new Error(errBody?.error?.message || `Claude API returned ${response.status}`);
+  }
+  const data = await response.json();
+  return parseJsonLoose(data?.content?.[0]?.text?.trim() ?? '');
+}
+
+// ── Part 2: POST /api/sprechen/topics/generate ─────────────────────────────
+app.post('/api/sprechen/topics/generate', async (req, res) => {
+  const level = (req.body && req.body.level) || 'A1';
+  if (!process.env.CLAUDE_API_KEY) return res.status(500).json({ error: 'API key not configured.' });
+  console.log(`[/api/sprechen/topics] generate level=${level}`);
+  try {
+    const topics = await callClaudeJSON(SPRECHEN_TOPIC_SYSTEM_PROMPT, 'Generate the 3 A1 Sprechen topics now.', 1600);
+    if (!topics || !topics.part1 || !topics.part2 || !topics.part3) {
+      return res.status(502).json({ error: 'Could not generate topics.' });
+    }
+    // Persist (best-effort) — one row per part.
+    if (supabaseAdmin) {
+      const rows = [
+        { level, part: 1, topic_text: topics.part1.topic || '', instructions: topics.part1 },
+        { level, part: 2, topic_text: topics.part2.topic || '', example_image_url: null, instructions: topics.part2 },
+        { level, part: 3, topic_text: topics.part3.topic || '', instructions: topics.part3 },
+      ];
+      supabaseAdmin.from('sprechen_topics').insert(rows).then(function(){}, function(){});
+    }
+    return res.json({ level, topics });
+  } catch (err) {
+    console.error('[/api/sprechen/topics] error:', err.message);
+    return res.status(502).json({ error: err.message });
+  }
+});
+
+// ── Part 3: GET /api/sprechen/cap/:userId/:level ───────────────────────────
+async function sprechenGetCap(userId, level) {
+  if (!supabaseAdmin) return { allowed: true, remaining: 10 };
+  const { data } = await supabaseAdmin
+    .from('sprechen_session_caps').select('sessions_used, max_sessions')
+    .eq('user_id', userId).eq('level', level).maybeSingle();
+  const used = data ? (data.sessions_used || 0) : 0;
+  const max  = data ? (data.max_sessions || 10) : 10;
+  if (used >= max) {
+    return { allowed: false, remaining: 0, message: `You have used all ${max} free sessions for ${level}. Upgrade to continue.` };
+  }
+  return { allowed: true, remaining: max - used };
+}
+
+app.get('/api/sprechen/cap/:userId/:level', async (req, res) => {
+  try {
+    const out = await sprechenGetCap(req.params.userId, req.params.level || 'A1');
+    return res.json(out);
+  } catch (err) {
+    console.error('[/api/sprechen/cap] error:', err.message);
+    return res.status(500).json({ error: 'Could not check session cap.' });
+  }
+});
+
+// Increment sessions_used after a completed session (upsert the cap row).
+async function sprechenIncrementCap(userId, level) {
+  if (!supabaseAdmin) return;
+  const { data } = await supabaseAdmin
+    .from('sprechen_session_caps').select('sessions_used, max_sessions')
+    .eq('user_id', userId).eq('level', level).maybeSingle();
+  const used = data ? (data.sessions_used || 0) : 0;
+  const max  = data ? (data.max_sessions || 10) : 10;
+  await supabaseAdmin.from('sprechen_session_caps').upsert({
+    user_id: userId, level, sessions_used: used + 1, max_sessions: max,
+    last_session_date: new Date().toISOString(),
+  }, { onConflict: 'user_id,level' });
+}
+
+// ── Part 5: post-session feedback (shared builder + endpoint) ───────────────
+function buildSprechenFeedbackPrompt(language) {
+  const langName = SPRECHEN_LANGS[language] || 'English';
+  return `You are a Goethe A1 exam feedback specialist for African learners.
+
+Analyze this Sprechen session transcript and generate structured feedback.
+
+The candidate is an African immigrant learning German for life in Germany
+and the Goethe A1 exam.
+
+Generate ALL feedback in ${langName}.
+
+Score each area 1-5:
+- Aussprache (pronunciation)
+- Kommunikation (did they get the message across?)
+- Grammatik (grammar accuracy)
+- Wortschatz (vocabulary range)
+- Overall score
+
+Feedback structure:
+1. OPENING — one warm encouraging sentence acknowledging their effort
+2. WHAT WENT WELL — 2-3 specific things they did well with examples from transcript
+3. AREAS TO IMPROVE — 2-3 specific improvements with examples from transcript
+4. EXAM TIP — one specific Goethe A1 tip based on their performance
+5. ENCOURAGEMENT — one final motivating sentence connecting to their Germany goal
+
+Rules:
+- Be specific — reference actual words or sentences from the transcript
+- Be encouraging — this learner has high stakes (visa, family reunification, Ausbildung)
+- Never be harsh or discouraging
+- Keep each section short — maximum 3 sentences
+- Generate everything in ${langName}
+
+Return valid JSON only:
+{
+  "score_overall": ,
+  "score_aussprache": ,
+  "score_kommunikation": ,
+  "score_grammatik": ,
+  "score_wortschatz": ,
+  "opening": "",
+  "what_went_well": "",
+  "areas_to_improve": "",
+  "exam_tip": "",
+  "encouragement": ""
+}`;
+}
+
+function clampScore(v) { var n = Math.round(Number(v)); return isNaN(n) ? null : Math.max(1, Math.min(5, n)); }
+
+async function generateSprechenFeedback(transcript, language) {
+  const fb = await callClaudeJSON(
+    buildSprechenFeedbackPrompt(language),
+    `Here is the session transcript:\n\n${String(transcript || '').slice(0, 12000)}`,
+    1100
+  );
+  if (!fb) return null;
+  ['score_overall','score_aussprache','score_kommunikation','score_grammatik','score_wortschatz']
+    .forEach(function(k){ fb[k] = clampScore(fb[k]); });
+  return fb;
+}
+
+app.post('/api/sprechen/feedback', async (req, res) => {
+  const { transcript, user_id, session_id, preferred_language } = req.body || {};
+  const language = sprechenLang(preferred_language);
+  if (!transcript || String(transcript).trim().length < 10) {
+    return res.status(400).json({ error: 'Transcript too short for feedback.' });
+  }
+  if (!process.env.CLAUDE_API_KEY) return res.status(500).json({ error: 'API key not configured.' });
+  try {
+    const fb = await generateSprechenFeedback(transcript, language);
+    if (!fb) return res.status(502).json({ error: 'Could not generate feedback.' });
+    if (supabaseAdmin && session_id) {
+      supabaseAdmin.from('sprechen_sessions').update({
+        feedback: fb, feedback_language: language,
+        score_overall: fb.score_overall, score_aussprache: fb.score_aussprache,
+        score_kommunikation: fb.score_kommunikation, score_grammatik: fb.score_grammatik,
+        score_wortschatz: fb.score_wortschatz, completed: true,
+      }).eq('id', session_id).then(function(){}, function(){});
+    }
+    return res.json(fb);
+  } catch (err) {
+    console.error('[/api/sprechen/feedback] error:', err.message);
+    return res.status(502).json({ error: err.message });
+  }
+});
+
 // ── POST /api/exam-grade ─────────────────────────────────────────────────────
 // Grades a structured A1 Schreiben exam submission (form fill + short message).
 // Returns a JSON response with per-task scores, rubric breakdown, top mistakes,
@@ -1824,13 +2056,218 @@ app.post('/api/tts', async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════════════════════
+// SPRECHEN — Part 4: Gemini Live WebSocket (wss://…/sprechen-session)
+// The browser streams 16kHz PCM mic audio here; we proxy to Gemini Live (the
+// examiner) and stream 24kHz PCM audio back. Transcripts are collected, and on
+// session end we save the session, generate feedback, and bump the cap.
+// ═══════════════════════════════════════════════════════════════════════════
+
+const SPRECHEN_GEMINI_MODEL = 'gemini-2.0-flash-live-001'; // Gemini Live (Dev API, v1alpha)
+const SPRECHEN_MAX_MS = 15 * 60 * 1000;
+
+function buildExaminerPrompt(topics) {
+  const t = topics || {};
+  const p1 = (t.part1 && t.part1.topic) || 'Stellen Sie sich vor — Name, Herkunft, Beruf.';
+  const p2 = (t.part2 && t.part2.topic) || 'Beschreiben Sie das Bild — was sehen Sie?';
+  const p3 = (t.part3 && t.part3.topic) || 'Planen Sie etwas zusammen.';
+  return `You are a Goethe A1 German exam examiner conducting an official speaking test.
+
+Your role:
+- Speak ONLY in German throughout the entire session
+- Use simple A1 level German only — short sentences, basic vocabulary
+- Be warm, patient and encouraging — many candidates are nervous
+- Follow the official 3-part Goethe A1 Sprechen format exactly
+- Never switch to English or any other language during the session
+- Speak clearly and at a measured pace suitable for beginners
+- If the candidate struggles, gently repeat or rephrase in simpler German
+- Never correct grammar mid-sentence — let the candidate finish
+- React naturally like a real examiner would
+
+Session structure:
+Part 1 — Sich vorstellen: ${p1}
+Part 2 — Bild beschreiben: ${p2}
+Part 3 — Gemeinsam planen: ${p3}
+
+Begin the session warmly in German. Introduce yourself as the examiner and start Part 1.`;
+}
+
+function attachSprechenWebSocket(server) {
+  let GoogleGenAI, Modality;
+  try { ({ GoogleGenAI, Modality } = require('@google/genai')); }
+  catch (e) { console.warn('[sprechen-ws] @google/genai not installed — live sessions disabled'); }
+
+  const wss = new WebSocketServer({ server, path: '/sprechen-session' });
+  console.log('  ✦ WSS /sprechen-session ready (Gemini Live examiner)');
+
+  wss.on('connection', function (ws) {
+    let gemini = null;          // Gemini Live session
+    let started = false;        // init received
+    let finalized = false;
+    let sessionId = null;
+    let userId = null, level = 'A1', language = 'english';
+    let startedAt = Date.now();
+    let timeout = null;
+    const transcript = [];      // [{role, text}]
+
+    const send = (obj) => { try { if (ws.readyState === 1) ws.send(JSON.stringify(obj)); } catch (_) {} };
+
+    function appendTranscript(role, text) {
+      if (!text) return;
+      const last = transcript[transcript.length - 1];
+      if (last && last.role === role) last.text += text;
+      else transcript.push({ role, text });
+    }
+    function transcriptString() {
+      return transcript.map(t => (t.role === 'examiner' ? 'Examiner (Prüfer): ' : 'Candidate (Kandidat): ') + t.text.trim()).join('\n');
+    }
+
+    async function finalize(reason) {
+      if (finalized) return;
+      finalized = true;
+      if (timeout) clearTimeout(timeout);
+      try { if (gemini) gemini.close(); } catch (_) {}
+      const duration = Math.round((Date.now() - startedAt) / 1000);
+      const fullTranscript = transcriptString();
+
+      // Persist transcript + duration on the session row.
+      if (supabaseAdmin && sessionId) {
+        supabaseAdmin.from('sprechen_sessions')
+          .update({ transcript: fullTranscript, duration_seconds: duration })
+          .eq('id', sessionId).then(function(){}, function(){});
+      }
+
+      // Feedback (only if there was a real conversation).
+      if (fullTranscript.trim().length > 20 && process.env.CLAUDE_API_KEY) {
+        try {
+          const fb = await generateSprechenFeedback(fullTranscript, language);
+          if (fb && supabaseAdmin && sessionId) {
+            await supabaseAdmin.from('sprechen_sessions').update({
+              feedback: fb, feedback_language: language,
+              score_overall: fb.score_overall, score_aussprache: fb.score_aussprache,
+              score_kommunikation: fb.score_kommunikation, score_grammatik: fb.score_grammatik,
+              score_wortschatz: fb.score_wortschatz, completed: true, duration_seconds: duration,
+            }).eq('id', sessionId);
+          }
+          send({ type: 'feedback', feedback: fb, session_id: sessionId, duration_seconds: duration });
+        } catch (e) {
+          send({ type: 'error', message: 'Feedback generation failed: ' + e.message });
+        }
+      } else {
+        send({ type: 'done', session_id: sessionId, duration_seconds: duration });
+      }
+
+      // Count the session against the cap.
+      if (userId) { try { await sprechenIncrementCap(userId, level); } catch (_) {} }
+      try { ws.close(); } catch (_) {}
+    }
+
+    async function startSession(init) {
+      userId   = init.user_id || null;
+      level    = init.level || 'A1';
+      language = sprechenLang(init.preferred_language);
+
+      if (!GoogleGenAI || !process.env.GEMINI_API_KEY) {
+        send({ type: 'error', message: 'Live speaking is temporarily unavailable. Please try again later.' });
+        return ws.close();
+      }
+      // Cap gate.
+      try {
+        const cap = await sprechenGetCap(userId, level);
+        if (!cap.allowed) { send({ type: 'cap_exceeded', message: cap.message }); return ws.close(); }
+      } catch (_) {}
+
+      // Create the session row up front.
+      if (supabaseAdmin && userId) {
+        const { data } = await supabaseAdmin.from('sprechen_sessions')
+          .insert({ user_id: userId, level, feedback_language: language, completed: false })
+          .select('id').maybeSingle();
+        sessionId = data && data.id;
+      }
+      startedAt = Date.now();
+      timeout = setTimeout(() => finalize('timeout'), SPRECHEN_MAX_MS);
+
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY, httpOptions: { apiVersion: 'v1alpha' } });
+      try {
+        gemini = await ai.live.connect({
+          model: SPRECHEN_GEMINI_MODEL,
+          config: {
+            responseModalities: [Modality.AUDIO],
+            systemInstruction: buildExaminerPrompt(init.topics),
+            inputAudioTranscription: {},
+            outputAudioTranscription: {},
+            speechConfig: { languageCode: 'de-DE' },
+          },
+          callbacks: {
+            onopen: () => { console.log('[sprechen-ws] gemini onopen'); send({ type: 'ready' }); },
+            onmessage: (msg) => {
+              const sc = msg && msg.serverContent;
+              if (!sc) return;
+              if (sc.outputTranscription && sc.outputTranscription.text) {
+                appendTranscript('examiner', sc.outputTranscription.text);
+                send({ type: 'transcript', role: 'examiner', text: sc.outputTranscription.text });
+              }
+              if (sc.inputTranscription && sc.inputTranscription.text) {
+                appendTranscript('candidate', sc.inputTranscription.text);
+                send({ type: 'transcript', role: 'candidate', text: sc.inputTranscription.text });
+              }
+              const parts = sc.modelTurn && sc.modelTurn.parts;
+              if (Array.isArray(parts)) {
+                parts.forEach((p) => {
+                  if (p.inlineData && p.inlineData.data) {
+                    send({ type: 'audio', data: p.inlineData.data, mimeType: p.inlineData.mimeType || 'audio/pcm;rate=24000' });
+                  }
+                });
+              }
+              if (sc.turnComplete) send({ type: 'turn_complete' });
+            },
+            onerror: (e) => { send({ type: 'error', message: 'Examiner connection error.' }); console.error('[sprechen-ws] gemini onerror:', (e && (e.message || e.reason)) || e); },
+            onclose: (e) => { console.log('[sprechen-ws] gemini onclose code=' + (e && e.code) + ' reason=' + (e && e.reason)); finalize('gemini_closed'); },
+          },
+        });
+        // Examiner speaks first — nudge now that the session is open and assigned.
+        try {
+          gemini.sendClientContent({
+            turns: [{ role: 'user', parts: [{ text: 'Der Kandidat ist bereit. Bitte beginnen Sie jetzt mit der Prüfung.' }] }],
+            turnComplete: true,
+          });
+          console.log('[sprechen-ws] sent opening nudge');
+        } catch (e) { console.error('[sprechen-ws] nudge failed:', e && e.message); }
+      } catch (e) {
+        console.error('[sprechen-ws] connect failed', e && e.message);
+        send({ type: 'error', message: 'Could not start the examiner. Please try again.' });
+        return ws.close();
+      }
+    }
+
+    ws.on('message', (raw) => {
+      let msg = null;
+      try { msg = JSON.parse(raw.toString()); } catch (_) { return; }
+      if (msg.type === 'init') {
+        if (started) return;
+        started = true;
+        startSession(msg).catch((e) => { send({ type: 'error', message: e.message }); });
+      } else if (msg.type === 'audio' && gemini && msg.data) {
+        try { gemini.sendRealtimeInput({ audio: { data: msg.data, mimeType: 'audio/pcm;rate=16000' } }); } catch (_) {}
+      } else if (msg.type === 'end') {
+        finalize('client_end');
+      }
+    });
+
+    ws.on('close', () => { finalize('ws_closed'); });
+    ws.on('error', () => { finalize('ws_error'); });
+  });
+}
+
 // ── Start ────────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log('');
   console.log('  ✦ DeutschWeg Exam Whisperer API');
   console.log(`  ✦ Running at http://localhost:${PORT}`);
   console.log('  ✦ POST /api/score to score a Schreiben submission');
   console.log('  ✦ POST /api/exam-grade to grade a Schreiben exam');
   console.log('  ✦ POST /api/tts   to generate audio for AI Tutor replies');
+  console.log('  ✦ POST /api/sprechen/* + WSS /sprechen-session (A1 speaking)');
   console.log('');
 });
+attachSprechenWebSocket(server);
