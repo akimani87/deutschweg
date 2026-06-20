@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Goethe A1 Prüfungsvorbereitung — Deutschweg</title>
+<meta name="description" content="Strukturierte Vorbereitung auf die Goethe-Zertifikat A1 Prüfung — alle 4 Module Lesen, Hören, Schreiben, Sprechen. Ein klarer Plan für komplette Anfänger.">
+<link rel="stylesheet" href="./deutschweg-theme.css">
+<style>
+  :root{ --blue:#3B82F6; --blue-dark:#2563EB; --ink:#1F2937; --muted:#64748B; --line:#E5E7EB; --bg:#F8FAFC; }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Plus Jakarta Sans","DM Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; line-height:1.55; }
+
+  /* Nav */
+  .nav{ position:sticky; top:0; z-index:50; background:rgba(255,255,255,0.95); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; padding:12px 18px; }
+  .nav .logo{ font-weight:800; font-size:18px; letter-spacing:-0.3px; color:var(--ink); text-decoration:none; }
+  .nav .logo span{ color:var(--blue); }
+  .nav .spacer{ flex:1; }
+  .lang-toggle{ display:inline-flex; border:1.5px solid var(--line); border-radius:999px; overflow:hidden; background:#fff; }
+  .lang-seg{ border:none; background:none; font-family:inherit; font-weight:800; font-size:13px; padding:7px 12px; cursor:pointer; color:var(--muted); }
+  .lang-seg.active{ background:var(--blue); color:#fff; }
+  .nav-cta{ display:none; background:var(--blue); color:#fff; text-decoration:none; font-weight:800; font-size:13px; padding:9px 14px; border-radius:10px; }
+  @media(min-width:680px){ .nav-cta{ display:inline-block; } }
+
+  .skip{ position:absolute; left:-9999px; top:0; background:var(--blue); color:#fff; padding:8px 14px; border-radius:0 0 8px 0; z-index:100; }
+  .skip:focus{ left:0; }
+
+  .wrap{ max-width:760px; margin:0 auto; padding:0 18px; }
+  section{ padding:30px 0; border-bottom:1px solid var(--line); }
+  section:last-of-type{ border-bottom:none; }
+  h1{ font-size:30px; font-weight:800; letter-spacing:-0.6px; line-height:1.2; margin:0 0 12px; }
+  h2{ font-size:22px; font-weight:800; letter-spacing:-0.3px; margin:0 0 12px; }
+  h3{ font-size:17px; font-weight:800; margin:18px 0 6px; color:var(--blue-dark); }
+  p{ margin:0 0 12px; }
+  .muted{ color:var(--muted); }
+  ul{ margin:0 0 12px; padding-left:0; list-style:none; }
+  li{ position:relative; padding-left:26px; margin-bottom:8px; }
+  li::before{ content:"›"; position:absolute; left:8px; color:var(--blue); font-weight:800; }
+  .lead{ font-size:16px; }
+
+  /* Hero */
+  .hero{ background:linear-gradient(135deg,#1D4ED8 0%, #3B82F6 100%); color:#fff; border-bottom:none; }
+  .hero .wrap{ padding-top:40px; padding-bottom:40px; }
+  .hero h1{ color:#fff; }
+  .hero .sub{ font-size:17px; color:rgba(255,255,255,0.92); max-width:560px; margin:0 0 22px; }
+  .cta-row{ display:flex; flex-direction:column; gap:12px; align-items:flex-start; }
+  .btn{ font-family:inherit; font-weight:800; text-decoration:none; cursor:pointer; border:none; border-radius:12px; text-align:center; transition:transform .1s, filter .15s; }
+  .btn:active{ transform:scale(0.99); }
+  .btn-primary{ background:#fff; color:var(--blue-dark); font-size:17px; padding:15px 24px; box-shadow:0 8px 24px rgba(0,0,0,0.18); width:100%; max-width:360px; }
+  .btn-primary:hover{ filter:brightness(0.97); }
+  .btn-secondary{ background:rgba(255,255,255,0.14); color:#fff; border:1.5px solid rgba(255,255,255,0.55); font-size:14px; padding:11px 18px; }
+  .btn-tertiary{ background:none; color:#fff; font-size:14px; font-weight:700; padding:8px 4px; text-decoration:underline; text-underline-offset:3px; }
+  .hero .trust{ margin-top:18px; font-size:13px; color:rgba(255,255,255,0.85); font-weight:600; }
+
+  .module-card{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin-bottom:12px; }
+  .module-card h3{ margin-top:0; }
+  .pill-row{ display:flex; flex-wrap:wrap; gap:8px; margin:6px 0 14px; }
+  .pill{ background:#EFF6FF; color:var(--blue-dark); border:1px solid #DBEAFE; border-radius:999px; padding:5px 12px; font-size:13px; font-weight:700; }
+  .week li{ background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px 12px 10px 30px; }
+  .week li::before{ left:12px; }
+  .faq-item{ border:1px solid var(--line); border-radius:12px; background:#fff; margin-bottom:10px; padding:14px 16px; }
+  .faq-item h3{ margin:0 0 6px; color:var(--ink); font-size:15.5px; }
+  .faq-item p{ margin:0; color:var(--muted); font-size:14.5px; }
+  .flex-note{ background:#FEFCE8; border:1px solid #FEF08A; border-radius:12px; padding:12px 14px; color:#713F12; font-size:14.5px; }
+  .ew{ font-weight:800; color:var(--blue-dark); }
+
+  .backtop{ display:inline-block; margin:24px 0 40px; color:var(--blue-dark); font-weight:700; text-decoration:none; font-size:14px; }
+  footer{ text-align:center; padding:24px; color:var(--muted); font-size:13px; }
+</style>
+</head>
+<body>
+<a class="skip" id="skipLink" href="#main">Zum Inhalt springen</a>
+
+<nav class="nav" id="top">
+  <a class="logo" id="logo" href="/"><span>Deutsch</span>weg</a>
+  <div class="spacer"></div>
+  <a class="nav-cta" id="navCta" href="signup.html">A1-Vorbereitung starten</a>
+  <div class="lang-toggle" id="langToggle" role="group">
+    <button class="lang-seg active" id="segDe" data-lang="de" type="button">DE</button>
+    <button class="lang-seg" id="segEn" data-lang="en" type="button">EN</button>
+  </div>
+</nav>
+
+<!-- HERO (rendered) -->
+<header class="hero">
+  <div class="wrap">
+    <h1 id="heroH1"></h1>
+    <p class="sub" id="heroSub"></p>
+    <div class="cta-row">
+      <a class="btn btn-primary"   id="ctaPrimary"   href="signup.html"></a>
+      <a class="btn btn-secondary" id="ctaSecondary" href="dashboard.html"></a>
+      <a class="btn btn-tertiary"  id="ctaTertiary"  href="onboarding.html"></a>
+    </div>
+    <div class="trust" id="heroTrust"></div>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap">
+    <section id="ueberblick"   data-sec="overview"></section>
+    <section id="koennen"      data-sec="canDo"></section>
+    <section id="vorbereitung" data-sec="prep"></section>
+    <section id="module"       data-sec="modules"></section>
+    <section id="lernplan"     data-sec="plan"></section>
+    <section id="angebot"      data-sec="offer"></section>
+    <section id="faq"          data-sec="faq"></section>
+    <a class="backtop" id="backTop" href="#top"></a>
+  </div>
+</main>
+
+<footer><span id="footerText"></span></footer>
+
+<script>
+(function(){
+  'use strict';
+
+  // ── Two static content sets. No translation API, no backend. ─────────────
+  var CONTENT = {
+    de: {
+      htmlLang: 'de',
+      title: 'Goethe A1 Prüfungsvorbereitung — Deutschweg',
+      logoAria: 'Deutschweg – Startseite',
+      skip: 'Zum Inhalt springen',
+      navCta: 'A1-Vorbereitung starten',
+      toggleAria: 'Sprache wechseln – aktuell Deutsch',
+      backTop: '↑ Nach oben',
+      footer: '© Deutschweg · Goethe-Zertifikat A1 Prüfungsvorbereitung',
+
+      hero: {
+        h1: 'Bestehe deine Goethe-A1-Prüfung – mit Plan statt Raten.',
+        sub: 'Strukturierte Vorbereitung auf alle 4 Module – Lesen, Hören, Schreiben, Sprechen. Ein klarer, einfacher Weg, gemacht für komplette Anfänger.',
+        cta1: 'Starte deine A1-Prüfungsvorbereitung',
+        cta2: 'Starte mit A1-Lektionen',
+        cta3: 'Mach den Einstufungstest',
+        cta1Aria: 'Starte deine A1-Prüfungsvorbereitung',
+        cta2Aria: 'Direkt mit den A1-Lektionen starten',
+        cta3Aria: 'Einstufungstest machen, um dein Niveau zu finden',
+        trust: 'Für komplette Anfänger · Alle 4 Module · Klarer Plan bis zur Prüfung'
+      },
+
+      overview: {
+        h2: 'Die Prüfung im Überblick (Goethe-Zertifikat A1)',
+        intro: 'Das Goethe-Zertifikat A1 zeigt, dass du dich in einfachen, alltäglichen Situationen auf Deutsch verständigen kannst – zum Beispiel beim Einkaufen, beim Begrüßen oder beim Ausfüllen eines Formulars. Es ist der erste offizielle Schritt und genau für Anfänger gemacht.',
+        testedTitle: 'In der A1-Prüfung wirst du geprüft in:',
+        modules: ['Lesen', 'Hören', 'Schreiben', 'Sprechen'],
+        structureTitle: 'So sehen die Aufgaben grob aus:',
+        structure: [
+          'Lesen: sehr kurze Texte, Schilder und Anzeigen verstehen',
+          'Hören: einfache Gespräche und Ansagen verstehen',
+          'Schreiben: ein kurzes Formular ausfüllen und eine kleine Nachricht schreiben',
+          'Sprechen: dich vorstellen, einfache Fragen stellen und beantworten'
+        ]
+      },
+
+      canDo: {
+        h2: 'Was du nach A1 kannst',
+        bullets: [
+          'Du kannst dich auf Deutsch vorstellen und einfache Fragen zu deiner Person beantworten.',
+          'Du kannst in Alltagssituationen einfach kommunizieren – einkaufen, grüßen, nach dem Weg fragen.',
+          'Du kannst kurze, einfache Schilder, Anzeigen und Formulare verstehen.',
+          'Du kannst eine kurze Nachricht schreiben, zum Beispiel eine einfache Notiz oder E-Mail.',
+          'Du kannst langsame, deutliche Sprache zu vertrauten Themen verstehen.'
+        ]
+      },
+
+      prep: {
+        h2: 'Wie Deutschweg dich auf A1 vorbereitet',
+        intro: 'Deutschweg gibt dir einen klaren Fahrplan bis zur Prüfung. Du musst nicht raten, was du als Nächstes lernen sollst – jeder Schritt ist vorbereitet, einfach erklärt und auf die echte Prüfung ausgerichtet.',
+        bullets: [
+          'Ein klarer 6–8-Wochen-Plan bis zur A1-Prüfung',
+          'Tägliche Mini-Aufgaben für Lesen, Hören, Schreiben und Sprechen',
+          'Prüfungsnahe Aufgaben im echten Goethe-A1-Format (Formulare, kurze Dialoge, Anzeigen)',
+          'Regelmäßige Mini-Tests und eine komplette Probeprüfung',
+          'Einfache Vorlagen und Satzbausteine für Nachrichten und kurze Texte',
+          'Feedback zu deinen geschriebenen Texten über {EW} – wahlweise im Practice Mode (ohne Zeitdruck, zum Üben) oder im Exam Pressure Mode (zeitlich wie die echte Prüfung, zum Testen)'
+        ]
+      },
+
+      modules: {
+        h2: 'Die 4 Module im Detail',
+        items: [
+          { h3: 'Lesen', intro: 'Im Lesen zeigst du, dass du sehr kurze, einfache Texte aus dem Alltag verstehst. Es geht nicht um lange Artikel, sondern um Informationen, die du auch im echten Leben schnell erfassen musst.',
+            bullets: [
+              'Typische Prüfungsteile: Schilder, kurze Anzeigen, einfache Mitteilungen und Zuordnungsaufgaben',
+              'Training bei Deutschweg: tägliche Lese-Minis im Prüfungsformat',
+              'Themenbezogene Wortschatzlisten, damit dir die wichtigen Wörter vertraut sind',
+              'Strategie-Übungen: „schnell die wichtige Information finden“ statt jedes Wort zu lesen',
+              'Wiederholung schwieriger Wörter, bis sie sitzen'
+            ] },
+          { h3: 'Hören', intro: 'Im Hören verstehst du einfache Ansagen und kurze Gespräche – langsam und deutlich gesprochen. Genau das, was du am Bahnhof, im Geschäft oder am Telefon hörst.',
+            bullets: [
+              'Typische Prüfungsteile: einfache Ansagen, kurze Dialoge und Gespräche',
+              'Training bei Deutschweg: langsame Audios, die du so oft wiederholen kannst, wie du brauchst',
+              'Aufgaben mit Bildern und Antwortoptionen, damit du das Format kennst',
+              'Hörstrategien: auf Zahlen, Zeiten und Schlüsselwörter achten',
+              'Tägliches Kurz-Training fürs Ohr, schon ab Woche 1'
+            ] },
+          { h3: 'Schreiben', intro: 'Im Schreiben füllst du ein kurzes Formular aus und schreibst eine kleine Nachricht. Mit den richtigen Vorlagen ist das gut machbar – auch als Anfänger.',
+            bullets: [
+              'Typische Prüfungsteile: ein Formular ausfüllen und eine kurze Nachricht schreiben (z. B. Notiz oder E-Mail)',
+              'Training bei Deutschweg: fertige Vorlagen, Satzbausteine und häufige Redemittel',
+              'Schritt-für-Schritt-Aufgaben, die dich sicher zum fertigen Text führen',
+              'Feedback über {EW}: dein Text wird nach denselben Bewertungskategorien geprüft, die auch echte Prüfer benutzen',
+              'Du entscheidest selbst: Practice Mode (ohne Zeitdruck, ideal zum Üben) oder Exam Pressure Mode (zeitlich wie die echte Prüfung, ideal zum Testen, ob du bereit bist)'
+            ] },
+          { h3: 'Sprechen', intro: 'Im Sprechen stellst du dich vor und stellst und beantwortest einfache Fragen – oft zusammen mit einer anderen Person. Mit Übung wird das schnell vertraut.',
+            bullets: [
+              'Typische Prüfungsteile: sich vorstellen, Fragen stellen und beantworten, kleine Aufgaben mit Partner:in',
+              'Training bei Deutschweg: Sprechkarten für jede typische Prüfungssituation',
+              'Rollenspiele und Beispieldialoge zum Mitsprechen',
+              'Audio-Feedback zu Aussprache und Verständlichkeit',
+              'Wiederkehrende Übungssätze, damit dir die wichtigen Formulierungen leicht über die Lippen kommen'
+            ] }
+        ]
+      },
+
+      plan: {
+        h2: 'Dein Lernplan bis zur A1-Prüfung',
+        intro: 'Für A1 sind etwa 6–8 Wochen ein realistischer Zeitraum, wenn du regelmäßig übst oder nebenbei einen Kurs machst. Du lernst Schritt für Schritt – jede Woche steht ein Schwerpunkt im Mittelpunkt, kombiniert mit kurzer Wiederholung aus den Vorwochen, damit nichts verloren geht. Zum Schluss machst du eine komplette Probeprüfung.',
+        weekTitle: 'So könnte eine Woche aussehen:',
+        week: [
+          'Montag: Hören-Mini + neuer Wortschatz',
+          'Dienstag: Lesen-Mini + kurze Schreibaufgabe mit Feedback über {EW} im Practice Mode (ohne Zeitdruck)',
+          'Mittwoch: Sprechen – Sprechkarte und Beispieldialog',
+          'Donnerstag: Wiederholung des Wortschatzes + Lesen im Prüfungsformat',
+          'Freitag: Schreiben – Formular ausfüllen und kurze Nachricht',
+          'Samstag: Mini-Test über alle 4 Module',
+          'Sonntag: leichte Wiederholung oder Pause – dranbleiben ist wichtiger als alles auf einmal'
+        ]
+      },
+
+      offer: {
+        h2: 'Was du bei Deutschweg für A1 bekommst',
+        bullets: [
+          'Zugang zu allen A1-Lektionen und Übungen',
+          'Audios für dein Hören-Training, beliebig oft wiederholbar',
+          'Schreibaufgaben mit fertigen Vorlagen und Satzbausteinen',
+          'Feedback zu deinen Texten über {EW} – im Practice Mode oder im Exam Pressure Mode',
+          'Eine komplette Probeprüfung im A1-Format',
+          'Mini-Tests, um deinen Fortschritt zu sehen',
+          'Hilfe per Chat und Austausch, wenn du eine Frage hast'
+        ],
+        flex: 'Du lernst mit Handy oder Laptop – wann es dir passt, auch neben Arbeit oder Studium. An Tagen, an denen du wenig Zeit hast, reichen schon ein paar Minuten; an freien Tagen kannst du mehr machen.'
+      },
+
+      faq: {
+        h2: 'FAQ zur A1-Prüfung',
+        items: [
+          { q: 'Wie gut muss ich Deutsch können, bevor ich mit der A1-Vorbereitung starte?',
+            a: 'Du kannst bei null anfangen. A1 ist die Anfängerstufe, und der Lernplan setzt kein Vorwissen voraus. Wenn du schon ein paar Wörter kennst, gehst du eben etwas schneller durch die ersten Lektionen.' },
+          { q: 'Wie viele Punkte brauche ich, um die A1-Prüfung zu bestehen?',
+            a: 'Du brauchst 60 von 100 Punkten, also 60 %. Die Punkte verteilen sich auf die 4 Module. Genau darauf bereiten dich die Mini-Tests und die Probeprüfung vor – damit du vorher weißt, wo du stehst.' },
+          { q: 'Wie lange dauert die Goethe-A1-Prüfung ungefähr?',
+            a: 'Der schriftliche Teil (Lesen, Hören, Schreiben) dauert zusammen rund eine Stunde, der mündliche Teil (Sprechen) etwa 15 Minuten und findet oft in einer kleinen Gruppe statt. Plane für den Prüfungstag insgesamt etwas mehr Zeit für die Organisation ein.' },
+          { q: 'Kann ich mich auch vorbereiten, wenn ich noch nie einen Kurs besucht habe?',
+            a: 'Ja. Das Programm ist genau dafür gemacht. Jede Lektion ist einfach erklärt, mit vielen Beispielen, und du gehst Schritt für Schritt vor – ganz ohne vorherigen Kurs.' },
+          { q: 'Muss ich meine Schreibaufgaben immer unter Zeitdruck üben?',
+            a: 'Nein. Bei {EW} entscheidest du selbst. Im Practice Mode schreibst du ohne Uhr, wann immer du ein paar Minuten hast – ideal, um Schritt für Schritt besser zu werden. Im Exam Pressure Mode übst du zeitlich genau wie in der echten Prüfung – ideal, um kurz vor der Prüfung zu testen, ob du wirklich bereit bist.' },
+          { q: 'Was passiert, wenn ich durchfalle – wie kann ich mich dann verbessern?',
+            a: 'Durchfallen ist kein Drama – viele bestehen beim zweiten Versuch. Mit den Mini-Tests und der Probeprüfung siehst du genau, welches Modul noch schwach ist, und kannst gezielt dort weiterüben. Du wiederholst dann nicht alles, sondern genau das, was dir noch Punkte kostet.' }
+        ]
+      }
+    },
+
+    en: {
+      htmlLang: 'en',
+      title: 'Goethe A1 Exam Preparation — Deutschweg',
+      logoAria: 'Deutschweg – Home',
+      skip: 'Skip to content',
+      navCta: 'Start A1 Prep',
+      toggleAria: 'Switch language — currently English',
+      backTop: '↑ Back to top',
+      footer: '© Deutschweg · Goethe-Zertifikat A1 exam preparation',
+
+      hero: {
+        h1: 'Pass Your Goethe A1 Exam — With a Plan, Not Guesswork.',
+        sub: 'Structured preparation for all 4 modules — Lesen, Hören, Schreiben, Sprechen. One simple path, made for complete beginners.',
+        cta1: 'Start Your A1 Exam Prep',
+        cta2: 'Start A1 Lessons',
+        cta3: 'Take the Placement Test',
+        cta1Aria: 'Start your A1 exam preparation',
+        cta2Aria: 'Jump straight into the A1 lessons',
+        cta3Aria: 'Take the placement test to find your level',
+        trust: 'For complete beginners · All 4 modules · A clear plan up to exam day'
+      },
+
+      overview: {
+        h2: 'The Exam at a Glance (Goethe-Zertifikat A1)',
+        intro: 'The Goethe-Zertifikat A1 shows that you can communicate in simple, everyday situations in German — shopping, greetings, filling out a form. It is the first official step, and it is made for beginners.',
+        testedTitle: 'What you will be tested on in the A1 exam:',
+        modules: ['Lesen', 'Hören', 'Schreiben', 'Sprechen'],
+        structureTitle: 'Roughly what the tasks look like:',
+        structure: [
+          'Lesen: understand very short texts, signs and notices',
+          'Hören: understand simple conversations and announcements',
+          'Schreiben: fill out a short form and write a small message',
+          'Sprechen: introduce yourself, ask and answer simple questions'
+        ]
+      },
+
+      canDo: {
+        h2: 'What You Can Do After A1',
+        bullets: [
+          'You can introduce yourself in German and answer simple questions about yourself.',
+          'You can handle everyday situations simply — shopping, greetings, asking for directions.',
+          'You can understand short, simple signs, notices and forms.',
+          'You can write a short message, such as a simple note or email.',
+          'You can understand slow, clear speech on familiar topics.'
+        ]
+      },
+
+      prep: {
+        h2: 'How Deutschweg Prepares You for A1',
+        intro: 'Deutschweg gives you a clear roadmap all the way to exam day. You never have to guess what to learn next — every step is prepared, simply explained, and built around the real exam.',
+        bullets: [
+          'A clear 6–8 week plan up to your A1 exam',
+          'Daily mini-tasks for Lesen, Hören, Schreiben and Sprechen',
+          'Exam-style tasks in the real Goethe A1 format (forms, short dialogues, notices)',
+          'Regular mini-tests and one full mock exam',
+          'Simple templates and sentence building blocks for messages and short texts',
+          'Feedback on your written texts through {EW} — you choose between Practice Mode (no clock, for building skill) or Exam Pressure Mode (timed, just like the real exam, for testing readiness)'
+        ]
+      },
+
+      modules: {
+        h2: 'The 4 Modules in Detail',
+        items: [
+          { h3: 'Lesen (Reading)', intro: 'In Lesen, you show that you understand very short, simple everyday texts. It is not about long articles — it is about quickly grasping the information you would really need in daily life.',
+            bullets: [
+              'Typical exam parts: signs, short notices, simple messages, and matching tasks',
+              'Training at Deutschweg: daily reading minis in the exam format',
+              'Topic-based vocabulary lists so the key words feel familiar',
+              'Strategy practice: "find the important information fast" instead of reading every word',
+              'Repetition of tricky words until they stick'
+            ] },
+          { h3: 'Hören (Listening)', intro: 'In Hören, you understand simple announcements and short conversations — spoken slowly and clearly. Exactly what you would hear at a station, in a shop, or on the phone.',
+            bullets: [
+              'Typical exam parts: simple announcements, short dialogues and conversations',
+              'Training at Deutschweg: slow audio you can replay as often as you need',
+              'Tasks with images and answer options so you know the format',
+              'Listening strategies: focus on numbers, times and key words',
+              'Short daily ear-training, starting in week 1'
+            ] },
+          { h3: 'Schreiben (Writing)', intro: 'In Schreiben, you fill out a short form and write a small message. With the right templates, this is very doable — even as a beginner.',
+            bullets: [
+              'Typical exam parts: fill out a form and write a short message (e.g. a note or email)',
+              'Training at Deutschweg: ready-made templates, sentence building blocks and common phrases',
+              'Step-by-step tasks that guide you to a finished text',
+              'Feedback through {EW}: your text is graded against the same scoring categories real examiners use',
+              'You decide: Practice Mode (no clock, ideal for building skill) or Exam Pressure Mode (timed like the real exam, ideal for testing whether you are ready)'
+            ] },
+          { h3: 'Sprechen (Speaking)', intro: 'In Sprechen, you introduce yourself and ask and answer simple questions — often with another person. With practice, this quickly starts to feel natural.',
+            bullets: [
+              'Typical exam parts: introduce yourself, ask and answer questions, small tasks with a partner',
+              'Training at Deutschweg: speaking cards for every typical exam situation',
+              'Role-plays and example dialogues to speak along with',
+              'Audio feedback on pronunciation and clarity',
+              'Recurring practice phrases so the important expressions come easily'
+            ] }
+        ]
+      },
+
+      plan: {
+        h2: 'Your Study Plan Up to the A1 Exam',
+        intro: 'For A1, about 6–8 weeks is a realistic timeframe if you practice regularly or take a course alongside. You learn step by step — each week centers on one focus, combined with short review from earlier weeks so nothing slips away. At the end, you sit a full mock exam.',
+        weekTitle: 'Here is what one week could look like:',
+        week: [
+          'Monday: Hören mini + new vocabulary',
+          'Tuesday: Lesen mini + a short writing task with feedback through {EW} in Practice Mode (no clock)',
+          'Wednesday: Sprechen — a speaking card and example dialogue',
+          'Thursday: vocabulary review + Lesen in the exam format',
+          'Friday: Schreiben — fill out a form and write a short message',
+          'Saturday: mini-test across all 4 modules',
+          'Sunday: light review or a rest day — staying consistent matters more than doing everything at once'
+        ]
+      },
+
+      offer: {
+        h2: "What You Get with Deutschweg for A1",
+        bullets: [
+          'Access to all A1 lessons and exercises',
+          'Audio for your Hören training, replayable as often as you like',
+          'Writing tasks with ready-made templates and sentence building blocks',
+          'Feedback on your texts through {EW} — in Practice Mode or Exam Pressure Mode',
+          'One full mock exam in the A1 format',
+          'Mini-tests so you can see your progress',
+          'Help via chat and a place to ask questions'
+        ],
+        flex: 'You learn on your phone or laptop, whenever it suits you — even alongside work or studies. On busy days, a few minutes is enough; on free days, you can do more.'
+      },
+
+      faq: {
+        h2: 'A1 Exam FAQ',
+        items: [
+          { q: 'How much German do I need before I start preparing for A1?',
+            a: 'You can start from zero. A1 is the beginner level, and the plan assumes no prior knowledge. If you already know a few words, you will simply move through the first lessons a little faster.' },
+          { q: 'How many points do I need to pass the A1 exam?',
+            a: 'You need 60 out of 100 points — that is 60%. The points are spread across the 4 modules. The mini-tests and mock exam prepare you for exactly this, so you know where you stand beforehand.' },
+          { q: 'Roughly how long does the Goethe A1 exam take?',
+            a: 'The written part (Lesen, Hören, Schreiben) takes about an hour in total, and the speaking part (Sprechen) about 15 minutes, often in a small group. Plan a bit of extra time on exam day for organization.' },
+          { q: 'Can I prepare with this program even if I have never taken a course?',
+            a: 'Yes. The program is built exactly for that. Every lesson is simply explained, with lots of examples, and you go step by step — no prior course needed.' },
+          { q: 'Do I always have to practice my writing tasks under time pressure?',
+            a: 'No. With {EW}, you decide. In Practice Mode you write without a clock, whenever you have a few minutes — ideal for improving step by step. In Exam Pressure Mode you practice under the same timing as the real exam — ideal for checking, shortly before exam day, whether you are truly ready.' },
+          { q: 'What happens if I fail — how do I improve then?',
+            a: 'Failing is not the end — many people pass on the second attempt. With the mini-tests and mock exam, you can see exactly which module is still weak and focus your practice there. You will not redo everything, just the parts that are still costing you points.' }
+        ]
+      }
+    }
+  };
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function esc(s){ return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  // {EW} placeholder → styled, untranslated "Exam Whisperer".
+  function ew(s){ return esc(s).replace(/\{EW\}/g, '<span class="ew">Exam Whisperer</span>'); }
+  function listHtml(items, cls){ return '<ul' + (cls ? ' class="' + cls + '"' : '') + '>' +
+    items.map(function(i){ return '<li>' + ew(i) + '</li>'; }).join('') + '</ul>'; }
+  function $(id){ return document.getElementById(id); }
+
+  function render(lang){
+    var c = CONTENT[lang] || CONTENT.de;
+    document.documentElement.lang = c.htmlLang;
+    document.title = c.title;
+
+    // Nav / chrome
+    $('skipLink').textContent = c.skip;
+    $('logo').setAttribute('aria-label', c.logoAria);
+    $('navCta').textContent = c.navCta;
+    $('langToggle').setAttribute('aria-label', c.toggleAria);
+    $('backTop').textContent = c.backTop;
+    $('footerText').textContent = c.footer;
+
+    // Hero
+    $('heroH1').textContent  = c.hero.h1;
+    $('heroSub').textContent = c.hero.sub;
+    var p = $('ctaPrimary'), s = $('ctaSecondary'), t = $('ctaTertiary');
+    p.textContent = c.hero.cta1; p.setAttribute('aria-label', c.hero.cta1Aria);
+    s.textContent = c.hero.cta2; s.setAttribute('aria-label', c.hero.cta2Aria);
+    t.textContent = c.hero.cta3; t.setAttribute('aria-label', c.hero.cta3Aria);
+    $('heroTrust').textContent = c.hero.trust;
+
+    // Overview
+    $('ueberblick').innerHTML =
+      '<h2>' + esc(c.overview.h2) + '</h2>' +
+      '<p class="lead">' + esc(c.overview.intro) + '</p>' +
+      '<p><strong>' + esc(c.overview.testedTitle) + '</strong></p>' +
+      listHtml(c.overview.modules) +
+      '<p><strong>' + esc(c.overview.structureTitle) + '</strong></p>' +
+      listHtml(c.overview.structure);
+
+    // Can do
+    $('koennen').innerHTML =
+      '<h2>' + esc(c.canDo.h2) + '</h2>' + listHtml(c.canDo.bullets);
+
+    // Prep
+    $('vorbereitung').innerHTML =
+      '<h2>' + esc(c.prep.h2) + '</h2>' +
+      '<p>' + esc(c.prep.intro) + '</p>' + listHtml(c.prep.bullets);
+
+    // Modules
+    $('module').innerHTML =
+      '<h2>' + esc(c.modules.h2) + '</h2>' +
+      c.modules.items.map(function(m){
+        return '<div class="module-card"><h3>' + esc(m.h3) + '</h3>' +
+          '<p>' + esc(m.intro) + '</p>' + listHtml(m.bullets) + '</div>';
+      }).join('');
+
+    // Plan
+    $('lernplan').innerHTML =
+      '<h2>' + esc(c.plan.h2) + '</h2>' +
+      '<p>' + esc(c.plan.intro) + '</p>' +
+      '<p><strong>' + esc(c.plan.weekTitle) + '</strong></p>' +
+      listHtml(c.plan.week, 'week');
+
+    // Offer
+    $('angebot').innerHTML =
+      '<h2>' + esc(c.offer.h2) + '</h2>' +
+      listHtml(c.offer.bullets) +
+      '<div class="flex-note">' + esc(c.offer.flex) + '</div>';
+
+    // FAQ
+    $('faq').innerHTML =
+      '<h2>' + esc(c.faq.h2) + '</h2>' +
+      c.faq.items.map(function(f){
+        return '<div class="faq-item"><h3>' + esc(f.q) + '</h3><p>' + ew(f.a) + '</p></div>';
+      }).join('');
+
+    // Toggle active state
+    $('segDe').classList.toggle('active', lang === 'de');
+    $('segEn').classList.toggle('active', lang === 'en');
+    try { localStorage.setItem('dw_a1_lang', lang); } catch (_) {}
+  }
+
+  // ── Init: default German; remember last choice ───────────────────────────
+  var lang = 'de';
+  try { var saved = localStorage.getItem('dw_a1_lang'); if (saved === 'en' || saved === 'de') lang = saved; } catch (_) {}
+
+  $('langToggle').addEventListener('click', function(e){
+    var b = e.target.closest('.lang-seg'); if (!b) return;
+    lang = b.getAttribute('data-lang'); render(lang);
+  });
+
+  render(lang);
+})();
+</script>
+</body>
+</html>
