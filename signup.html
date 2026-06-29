@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- DW SEO INJECT -->
-<meta name="title" content="DeutschWeg — Start Your Free Trial">
+<meta name="title" content="DeutschWeg — Create Your Account">
 <meta name="description" content="Prepare for your Goethe German exam with AI-powered lessons. A1, A2, B1, B2 — built for African learners. Start free today.">
 <meta name="keywords" content="Goethe exam, German exam Africa, learn German Kenya, Goethe A1 B1, German certificate, Ausbildung German, family reunification German">
 <meta name="robots" content="index, follow">
@@ -15,16 +15,16 @@
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://deutschweg.de/signup">
-<meta property="og:title" content="DeutschWeg — Start Your Free Trial">
+<meta property="og:title" content="DeutschWeg — Create Your Account">
 <meta property="og:description" content="Prepare for your Goethe German exam with AI-powered lessons. A1, A2, B1, B2 — built for African learners. Start free today.">
 <meta property="og:image" content="https://deutschweg.de/og-image.png">
 
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="DeutschWeg — Start Your Free Trial">
+<meta name="twitter:title" content="DeutschWeg — Create Your Account">
 <meta name="twitter:description" content="AI-powered German exam prep for African learners. A1 to B2. Start free.">
 <meta name="twitter:image" content="https://deutschweg.de/og-image.png">
 <!-- /DW SEO INJECT -->
-<title>DeutschWeg — Start Your Free Trial</title>
+<title>DeutschWeg — Create Your Account</title>
 <link rel="stylesheet" href="deutschweg-theme.css">
 <style>
   body{min-height:100vh;display:flex;flex-direction:column;opacity:0;transition:opacity 0.25s;}
@@ -595,8 +595,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!validate()) return;
     setLoading(true);
 
-    var trialStart = new Date();
-    var trialEnd   = new Date(trialStart.getTime() + 14 * 24 * 60 * 60 * 1000);
     var fullName   = nameI.value.trim();
     var email      = emailI.value.trim().toLowerCase();
     // Country is optional — convert the placeholder "" to null so
@@ -611,9 +609,6 @@ document.addEventListener('DOMContentLoaded', function() {
         data: {
           full_name:   fullName,
           country:     country,
-          trial_start: trialStart.toISOString(),
-          trial_end:   trialEnd.toISOString(),
-          plan:        'trial',
         }
       }
     }).then(function(res) {
@@ -637,9 +632,6 @@ document.addEventListener('DOMContentLoaded', function() {
           full_name:   fullName,
           email:       email,
           country:     country,
-          trial_start: trialStart.toISOString(),
-          trial_end:   trialEnd.toISOString(),
-          plan:        'trial',
         }).then(function() {}).catch(function() {});
       }
 

@@ -12,10 +12,9 @@
  *   full_name    text,
  *   email        text,
  *   country      text,
- *   trial_start  timestamptz DEFAULT now(),
- *   trial_end    timestamptz DEFAULT (now() + interval '14 days'),
- *   plan         text DEFAULT 'trial',
  *   created_at   timestamptz DEFAULT now()
+ *   -- trial_start / trial_end / plan: legacy trial columns, no longer used.
+ *   -- Access is per-course via the `entitlements` table; there is no trial.
  * );
  *
  * ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;

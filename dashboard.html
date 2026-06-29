@@ -351,7 +351,6 @@
   </a>
   <div style="display:flex;align-items:center;gap:10px;">
     <div id="adminBadge" style="display:none;font-size:10px;font-weight:700;letter-spacing:1px;padding:4px 12px;border-radius:20px;background:#F5F3FF;border:1px solid #DDD6FE;color:#7C3AED;">ADMIN</div>
-    <div id="trialBadge" style="display:none;font-size:10px;font-weight:700;letter-spacing:1px;padding:4px 12px;border-radius:20px;background:#EFF6FF;border:1px solid #DBEAFE;color:#3B82F6;"></div>
     <a href="exam-whisperer.html" style="font-size:13px;font-weight:600;color:#4B5563;text-decoration:none;display:none;" id="navWhisper">Exam Whisperer</a>
     <a href="exam-vault.html" style="font-size:13px;font-weight:600;color:#4B5563;text-decoration:none;" id="navVault">Exam Vault</a>
     <div class="xp-display">
@@ -1022,28 +1021,7 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    var trialEnd = meta.trial_end ? new Date(meta.trial_end) : null;
-    var now      = new Date();
-
-    // ── Trial expired — show friendly upgrade page ───────────────────────────
-    if (trialEnd && now > trialEnd) {
-      document.getElementById('upgradeOverlay').style.display = '';
-      document.body.classList.add('ready');
-      return;
-    }
-
-    // Show trial badge
-    var badge = document.getElementById('trialBadge');
-    if (trialEnd) {
-      var daysLeft = Math.max(0, Math.ceil((trialEnd - now) / 86400000));
-      badge.textContent = daysLeft + ' trial days left';
-      badge.style.display = '';
-      if (daysLeft <= 3) {
-        badge.style.borderColor = 'rgba(192,57,43,0.4)';
-        badge.style.background  = 'rgba(192,57,43,0.08)';
-        badge.style.color       = 'var(--red)';
-      }
-    }
+    // (Trial removed — no time-gate. Access is per-course via entitlements.)
 
     // Save name for greetings
     if (meta.full_name) {

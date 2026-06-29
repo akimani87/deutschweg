@@ -453,7 +453,7 @@ document.addEventListener('DOMContentLoaded', function() {
           showBanner(msg);
           return;
         }
-        // Successful login — check trial
+        // Successful login — route the user (onboarding gate handles the rest)
         var meta = res.data.user.user_metadata || {};
         localStorage.setItem('dw_user_name', (meta.full_name || '').split(' ')[0] || 'Student');
         routeAfterAuth(res.data.user.id);
