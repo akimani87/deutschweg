@@ -2343,6 +2343,26 @@ Part 3 — Gemeinsam planen: ${p3}
 Begin the session warmly in German. Introduce yourself as the examiner and start Part 1.`;
 }
 
+// German towns/cities the candidate may name when introducing themselves —
+// includes smaller/lower-frequency ones (not just Berlin/München) so Whisper
+// doesn't default to a higher-frequency look-alike (e.g. "Neunkirchen" heard
+// as "München") when an A1-accented place name is acoustically ambiguous.
+const SPRECHEN_PLACE_NAMES = 'Berlin, Hamburg, München, Köln, Frankfurt, Stuttgart, Düsseldorf, Leipzig, Dortmund, Essen, Bremen, Dresden, Hannover, Nürnberg, Duisburg, Bochum, Wuppertal, Bielefeld, Bonn, Münster, Karlsruhe, Mannheim, Augsburg, Wiesbaden, Mönchengladbach, Gelsenkirchen, Aachen, Braunschweig, Chemnitz, Kiel, Halle, Magdeburg, Freiburg, Krefeld, Lübeck, Mainz, Erfurt, Rostock, Kassel, Saarbrücken, Potsdam, Neunkirchen, Pforzheim, Würzburg, Göttingen, Wolfsburg, Offenbach, Heidelberg';
+
+// Whisper's transcription prompt is treated as preceding context, not an
+// instruction — it autoregressively continues from these tokens, so writing
+// it IN German (rather than describing German in English) is what actually
+// biases decoding toward German and away from acoustically-similar words in
+// other languages. Combined with transcription.language='de' below, this is
+// the fix for the "mein Name" → "mi nombre" language-switch bug: language
+// pins the model to German, the prompt nudges vocabulary within German.
+function buildTranscriptionPrompt(topics) {
+  const t = topics || {};
+  const topicWords = [t.part1 && t.part1.topic, t.part2 && t.part2.topic, t.part3 && t.part3.topic]
+    .filter(Boolean).join(' ');
+  return `Goethe-Zertifikat A1 Sprechprüfung. Der Kandidat spricht einfaches Deutsch, oft mit ausländischem Akzent. Themen: sich vorstellen (Name, Herkunftsland, Wohnort, Beruf), ein Bild beschreiben, gemeinsam planen. Deutsche Städte und Orte, auch kleinere: ${SPRECHEN_PLACE_NAMES}. ${topicWords}`.trim();
+}
+
 function attachSprechenWebSocket(server) {
   const wss = new WebSocketServer({ server, path: '/sprechen-session' });
   console.log('  ✦ WSS /sprechen-session ready (OpenAI Realtime examiner)');
@@ -2527,7 +2547,11 @@ function attachSprechenWebSocket(server) {
         console.log('[sprechen-ws] openai realtime open');
         // Configure the examiner (GA Realtime shape): German A1 voice,
         // server-side VAD turn-taking, pcm16 in/out (24kHz), Whisper
-        // transcription of the candidate.
+        // transcription of the candidate locked to German (language: 'de')
+        // — without this, Whisper auto-detects per-utterance and can drift
+        // to another language entirely (e.g. "mein Name" → "mi nombre")
+        // rather than just mishearing an accent. The prompt biases vocab
+        // toward expected A1-exam German and place names.
         toUpstream({
           type: 'session.update',
           session: {
@@ -2537,7 +2561,7 @@ function attachSprechenWebSocket(server) {
             audio: {
               input: {
                 format: { type: 'audio/pcm', rate: 24000 },
-                transcription: { model: 'whisper-1' },
+                transcription: { model: 'whisper-1', language: 'de', prompt: buildTranscriptionPrompt(init.topics) },
                 turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 600 },
               },
               output: {
