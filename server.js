@@ -1343,8 +1343,11 @@ app.get('/api/dictionary/:word', async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
-// SPRECHEN — Goethe A1 speaking simulator (topics + cap + feedback; the live
+// SPRECHEN — Goethe A1 speaking simulator (topics + caps + feedback; the live
 // voice session is the WebSocket server attached at the bottom of this file).
+// Two independent caps gate free A1 usage: a lifetime session-COUNT cap
+// (sprechen_session_caps) and a daily session-DURATION cap (sprechen_daily_usage,
+// 10 min/day, resets at UTC midnight).
 // ═══════════════════════════════════════════════════════════════════════════
 
 const SPRECHEN_LANGS = { english: 'English', arabic: 'Arabic', french: 'French', portuguese: 'Portuguese' };
@@ -1485,6 +1488,53 @@ async function sprechenIncrementCap(userId, level) {
     last_session_date: new Date().toISOString(),
   }, { onConflict: 'user_id,level' });
 }
+
+// ── Daily minute cap (free A1 tier only) ────────────────────────────────────
+// Separate from the lifetime session-COUNT cap above: this caps cumulative
+// session DURATION per calendar day and resets every day. Calendar day is
+// the server's UTC date (v1 — no per-user timezone).
+const SPRECHEN_DAILY_CAP_SECONDS = 10 * 60;
+const SPRECHEN_DAILY_WARNING_LEAD_SECONDS = 60;
+const SPRECHEN_DAILY_CAP_MESSAGE = "You've used your free Sprechen practice for today — come back tomorrow!";
+
+function sprechenTodayUTC() { return new Date().toISOString().slice(0, 10); }
+
+async function sprechenGetDailyUsage(userId) {
+  if (!supabaseAdmin) return { usedSeconds: 0, remainingSeconds: SPRECHEN_DAILY_CAP_SECONDS };
+  const { data } = await supabaseAdmin
+    .from('sprechen_daily_usage').select('seconds_used')
+    .eq('user_id', userId).eq('usage_date', sprechenTodayUTC()).maybeSingle();
+  const used = data ? (data.seconds_used || 0) : 0;
+  return { usedSeconds: used, remainingSeconds: Math.max(0, SPRECHEN_DAILY_CAP_SECONDS - used) };
+}
+
+// Add elapsed seconds to today's row (best-effort read-then-upsert).
+async function sprechenAddDailyUsage(userId, addSeconds) {
+  if (!supabaseAdmin || !userId || !addSeconds) return;
+  const date = sprechenTodayUTC();
+  const { data } = await supabaseAdmin
+    .from('sprechen_daily_usage').select('seconds_used')
+    .eq('user_id', userId).eq('usage_date', date).maybeSingle();
+  const used = data ? (data.seconds_used || 0) : 0;
+  await supabaseAdmin.from('sprechen_daily_usage').upsert({
+    user_id: userId, usage_date: date, seconds_used: used + Math.round(addSeconds),
+    updated_at: new Date().toISOString(),
+  }, { onConflict: 'user_id,usage_date' });
+}
+
+app.get('/api/sprechen/daily-usage/:userId', async (req, res) => {
+  try {
+    const out = await sprechenGetDailyUsage(req.params.userId);
+    return res.json({
+      used_seconds: out.usedSeconds, remaining_seconds: out.remainingSeconds,
+      cap_seconds: SPRECHEN_DAILY_CAP_SECONDS, allowed: out.remainingSeconds > 0,
+      message: out.remainingSeconds > 0 ? null : SPRECHEN_DAILY_CAP_MESSAGE,
+    });
+  } catch (err) {
+    console.error('[/api/sprechen/daily-usage] error:', err.message);
+    return res.status(500).json({ error: 'Could not check daily usage.' });
+  }
+});
 
 // ── Part 5: post-session feedback (shared builder + endpoint) ───────────────
 function buildSprechenFeedbackPrompt(language) {
@@ -2307,6 +2357,7 @@ function attachSprechenWebSocket(server) {
     let userId = null, level = 'A1', language = 'english';
     let startedAt = Date.now();
     let timeout = null;
+    let warnTimeout = null;
     const transcript = [];      // [{role, text}]
     const pendingAudio = [];    // base64 mic chunks queued before upstream is ready
 
@@ -2327,6 +2378,7 @@ function attachSprechenWebSocket(server) {
       if (finalized) return;
       finalized = true;
       if (timeout) clearTimeout(timeout);
+      if (warnTimeout) clearTimeout(warnTimeout);
       try { if (upstream) upstream.close(); } catch (_) {}
       const duration = Math.round((Date.now() - startedAt) / 1000);
       const fullTranscript = transcriptString();
@@ -2358,8 +2410,11 @@ function attachSprechenWebSocket(server) {
         send({ type: 'done', session_id: sessionId, duration_seconds: duration });
       }
 
-      // Count the session against the cap.
-      if (userId) { try { await sprechenIncrementCap(userId, level); } catch (_) {} }
+      // Count the session against the lifetime cap + (A1 only) today's minute cap.
+      if (userId) {
+        try { await sprechenIncrementCap(userId, level); } catch (_) {}
+        if (level === 'A1') { try { await sprechenAddDailyUsage(userId, duration); } catch (_) {} }
+      }
       try { ws.close(); } catch (_) {}
     }
 
@@ -2420,6 +2475,22 @@ function attachSprechenWebSocket(server) {
         if (!cap.allowed) { send({ type: 'cap_exceeded', message: cap.message }); return ws.close(); }
       } catch (_) {}
 
+      // Daily minute cap gate (free A1 tier — 10 cumulative minutes/day,
+      // resets at UTC midnight). Block the session before it ever opens the
+      // upstream OpenAI Realtime connection.
+      const isFreeA1 = level === 'A1';
+      let dailyRemainingSeconds = SPRECHEN_DAILY_CAP_SECONDS;
+      if (isFreeA1) {
+        try {
+          const daily = await sprechenGetDailyUsage(userId);
+          dailyRemainingSeconds = daily.remainingSeconds;
+          if (dailyRemainingSeconds <= 0) {
+            send({ type: 'daily_cap_exceeded', message: SPRECHEN_DAILY_CAP_MESSAGE });
+            return ws.close();
+          }
+        } catch (_) {}
+      }
+
       // Create the session row up front.
       if (supabaseAdmin && userId) {
         const { data } = await supabaseAdmin.from('sprechen_sessions')
@@ -2428,7 +2499,24 @@ function attachSprechenWebSocket(server) {
         sessionId = data && data.id;
       }
       startedAt = Date.now();
-      timeout = setTimeout(() => finalize('timeout'), SPRECHEN_MAX_MS);
+
+      // The session's own clock is capped at whichever is shorter: the fixed
+      // 15-min per-session hard cap, or today's remaining daily allowance
+      // (A1 only). Warn ~1 min before a daily-cap-bound cutoff so the user
+      // isn't stopped mid-sentence without notice.
+      const dailyBound = isFreeA1 && (dailyRemainingSeconds * 1000 < SPRECHEN_MAX_MS);
+      const sessionCapMs = isFreeA1 ? Math.min(SPRECHEN_MAX_MS, dailyRemainingSeconds * 1000) : SPRECHEN_MAX_MS;
+      timeout = setTimeout(() => finalize('timeout'), sessionCapMs);
+      if (dailyBound) {
+        const warnLeadMs = SPRECHEN_DAILY_WARNING_LEAD_SECONDS * 1000;
+        if (sessionCapMs > warnLeadMs) {
+          warnTimeout = setTimeout(() => {
+            send({ type: 'daily_cap_warning', seconds_left: SPRECHEN_DAILY_WARNING_LEAD_SECONDS });
+          }, sessionCapMs - warnLeadMs);
+        } else {
+          send({ type: 'daily_cap_warning', seconds_left: Math.round(sessionCapMs / 1000) });
+        }
+      }
 
       const url = 'wss://api.openai.com/v1/realtime?model=' + encodeURIComponent(SPRECHEN_OPENAI_MODEL);
       upstream = new WebSocket(url, {

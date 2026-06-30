@@ -123,6 +123,7 @@
       <h1 id="t-title">Sprechen Simulation — A1</h1>
       <div class="sub" id="t-subtitle">Practice the Goethe A1 speaking exam with an AI examiner</div>
       <div class="counter" id="sessionCounter">…</div>
+      <div class="counter" id="dailyCounter" style="margin-top:6px;display:none;"></div>
     </div>
 
     <div class="card">
@@ -225,15 +226,16 @@
 
   // ── i18n (core UI strings) ───────────────────────────────────────────────
   var I18N = {
-    english:    { title:'Sprechen Simulation — A1', subtitle:'Practice the Goethe A1 speaking exam with an AI examiner', langlabel:'Feedback language', topiclabel:"Today's topics", tipslabel:'What to expect', start:'Start Session', usedfmt:'{u} of {m} free sessions used', remainfmt:'{r} sessions remaining after this one', connecting:'Connecting to examiner…', listening:'Listening to the examiner', yourturn:'Your turn — speak now', micready:'🎙️ Microphone ready', end:'End session', fbtitle:'Your results', again:'Practice again', upgrade:'Upgrade for more sessions', well:'What went well', improve:'Areas to improve', tip:'Exam tip', capmsg:'You have used all your free sessions. Upgrade to continue.', micdenied:'We need microphone access to run the speaking test. Please allow it in your browser and try again.', error:'Something went wrong. Please try again.' },
-    arabic:     { title:'محاكاة التحدث — A1', subtitle:'تدرّب على امتحان التحدث A1 مع ممتحن ذكي', langlabel:'لغة الملاحظات', topiclabel:'مواضيع اليوم', tipslabel:'ماذا تتوقع', start:'ابدأ الجلسة', usedfmt:'تم استخدام {u} من {m} جلسات مجانية', remainfmt:'تبقّى {r} جلسات بعد هذه', connecting:'جارٍ الاتصال بالممتحن…', listening:'استمع إلى الممتحن', yourturn:'دورك — تحدّث الآن', micready:'🎙️ الميكروفون جاهز', end:'إنهاء الجلسة', fbtitle:'نتائجك', again:'تدرّب مرة أخرى', upgrade:'الترقية لمزيد من الجلسات', well:'ما الذي أبليت فيه حسناً', improve:'مجالات التحسين', tip:'نصيحة الامتحان', capmsg:'لقد استخدمت جميع جلساتك المجانية. قم بالترقية للمتابعة.', micdenied:'نحتاج إلى إذن الميكروفون لإجراء اختبار التحدث. يرجى السماح به والمحاولة مرة أخرى.', error:'حدث خطأ ما. حاول مرة أخرى.' },
-    french:     { title:'Simulation Sprechen — A1', subtitle:"Entraînez-vous à l'oral Goethe A1 avec un examinateur IA", langlabel:'Langue du feedback', topiclabel:"Sujets du jour", tipslabel:'À quoi s\'attendre', start:'Démarrer la session', usedfmt:'{u} sur {m} sessions gratuites utilisées', remainfmt:'{r} sessions restantes après celle-ci', connecting:"Connexion à l'examinateur…", listening:"Écoutez l'examinateur", yourturn:'À vous — parlez maintenant', micready:'🎙️ Micro prêt', end:'Terminer', fbtitle:'Vos résultats', again:"S'entraîner encore", upgrade:'Plus de sessions', well:'Points forts', improve:'À améliorer', tip:"Conseil d'examen", capmsg:'Vous avez utilisé toutes vos sessions gratuites. Passez à la version supérieure.', micdenied:"Nous avons besoin du micro pour l'oral. Autorisez-le et réessayez.", error:'Une erreur est survenue. Réessayez.' },
-    portuguese: { title:'Simulação Sprechen — A1', subtitle:'Pratique o exame oral Goethe A1 com um examinador de IA', langlabel:'Idioma do feedback', topiclabel:'Tópicos de hoje', tipslabel:'O que esperar', start:'Iniciar sessão', usedfmt:'{u} de {m} sessões gratuitas usadas', remainfmt:'{r} sessões restantes após esta', connecting:'Conectando ao examinador…', listening:'Ouça o examinador', yourturn:'Sua vez — fale agora', micready:'🎙️ Microfone pronto', end:'Encerrar', fbtitle:'Seus resultados', again:'Praticar de novo', upgrade:'Mais sessões', well:'O que correu bem', improve:'A melhorar', tip:'Dica de exame', capmsg:'Você usou todas as suas sessões gratuitas. Faça upgrade para continuar.', micdenied:'Precisamos do microfone para o teste oral. Permita o acesso e tente de novo.', error:'Algo correu mal. Tente novamente.' },
+    english:    { title:'Sprechen Simulation — A1', subtitle:'Practice the Goethe A1 speaking exam with an AI examiner', langlabel:'Feedback language', topiclabel:"Today's topics", tipslabel:'What to expect', start:'Start Session', usedfmt:'{u} of {m} free sessions used', remainfmt:'{r} sessions remaining after this one', connecting:'Connecting to examiner…', listening:'Listening to the examiner', yourturn:'Your turn — speak now', micready:'🎙️ Microphone ready', end:'End session', fbtitle:'Your results', again:'Practice again', upgrade:'Upgrade for more sessions', well:'What went well', improve:'Areas to improve', tip:'Exam tip', capmsg:'You have used all your free sessions. Upgrade to continue.', micdenied:'We need microphone access to run the speaking test. Please allow it in your browser and try again.', error:'Something went wrong. Please try again.', dailycapmsg:"You've used your free Sprechen practice for today — come back tomorrow!", dailyleftfmt:'⏱️ {m} min of free practice left today', dailywarnfmt:'⏱️ {s}s left in today\'s free practice' },
+    arabic:     { title:'محاكاة التحدث — A1', subtitle:'تدرّب على امتحان التحدث A1 مع ممتحن ذكي', langlabel:'لغة الملاحظات', topiclabel:'مواضيع اليوم', tipslabel:'ماذا تتوقع', start:'ابدأ الجلسة', usedfmt:'تم استخدام {u} من {m} جلسات مجانية', remainfmt:'تبقّى {r} جلسات بعد هذه', connecting:'جارٍ الاتصال بالممتحن…', listening:'استمع إلى الممتحن', yourturn:'دورك — تحدّث الآن', micready:'🎙️ الميكروفون جاهز', end:'إنهاء الجلسة', fbtitle:'نتائجك', again:'تدرّب مرة أخرى', upgrade:'الترقية لمزيد من الجلسات', well:'ما الذي أبليت فيه حسناً', improve:'مجالات التحسين', tip:'نصيحة الامتحان', capmsg:'لقد استخدمت جميع جلساتك المجانية. قم بالترقية للمتابعة.', micdenied:'نحتاج إلى إذن الميكروفون لإجراء اختبار التحدث. يرجى السماح به والمحاولة مرة أخرى.', error:'حدث خطأ ما. حاول مرة أخرى.', dailycapmsg:'لقد استخدمت تدريب التحدث المجاني لهذا اليوم — عُد غداً!', dailyleftfmt:'⏱️ تبقّى {m} دقيقة من التدريب المجاني اليوم', dailywarnfmt:'⏱️ تبقّى {s} ثانية من التدريب المجاني اليوم' },
+    french:     { title:'Simulation Sprechen — A1', subtitle:"Entraînez-vous à l'oral Goethe A1 avec un examinateur IA", langlabel:'Langue du feedback', topiclabel:"Sujets du jour", tipslabel:'À quoi s\'attendre', start:'Démarrer la session', usedfmt:'{u} sur {m} sessions gratuites utilisées', remainfmt:'{r} sessions restantes après celle-ci', connecting:"Connexion à l'examinateur…", listening:"Écoutez l'examinateur", yourturn:'À vous — parlez maintenant', micready:'🎙️ Micro prêt', end:'Terminer', fbtitle:'Vos résultats', again:"S'entraîner encore", upgrade:'Plus de sessions', well:'Points forts', improve:'À améliorer', tip:"Conseil d'examen", capmsg:'Vous avez utilisé toutes vos sessions gratuites. Passez à la version supérieure.', micdenied:"Nous avons besoin du micro pour l'oral. Autorisez-le et réessayez.", error:'Une erreur est survenue. Réessayez.', dailycapmsg:"Vous avez utilisé votre pratique Sprechen gratuite d'aujourd'hui — revenez demain !", dailyleftfmt:'⏱️ {m} min de pratique gratuite restantes aujourd\'hui', dailywarnfmt:"⏱️ {s}s restantes dans la pratique gratuite d'aujourd'hui" },
+    portuguese: { title:'Simulação Sprechen — A1', subtitle:'Pratique o exame oral Goethe A1 com um examinador de IA', langlabel:'Idioma do feedback', topiclabel:'Tópicos de hoje', tipslabel:'O que esperar', start:'Iniciar sessão', usedfmt:'{u} de {m} sessões gratuitas usadas', remainfmt:'{r} sessões restantes após esta', connecting:'Conectando ao examinador…', listening:'Ouça o examinador', yourturn:'Sua vez — fale agora', micready:'🎙️ Microfone pronto', end:'Encerrar', fbtitle:'Seus resultados', again:'Praticar de novo', upgrade:'Mais sessões', well:'O que correu bem', improve:'A melhorar', tip:'Dica de exame', capmsg:'Você usou todas as suas sessões gratuitas. Faça upgrade para continuar.', micdenied:'Precisamos do microfone para o teste oral. Permita o acesso e tente de novo.', error:'Algo correu mal. Tente novamente.', dailycapmsg:'Você já usou sua prática gratuita de Sprechen de hoje — volte amanhã!', dailyleftfmt:'⏱️ Restam {m} min de prática gratuita hoje', dailywarnfmt:'⏱️ Restam {s}s na prática gratuita de hoje' },
   };
 
   var state = {
     lang: 'english', user: null, topics: null,
     capUsed: 0, capMax: 10, capRemaining: 10,
+    dailyRemainingSeconds: 600, dailyCapSeconds: 600,
     sessionId: null,
   };
 
@@ -259,11 +261,23 @@
     $('t-fbtitle').textContent   = t('fbtitle');
     $('micState').textContent    = t('micready');
     renderCounter();
+    renderDailyCounter();
     renderTopics();
   }
 
   function renderCounter(){
     $('sessionCounter').textContent = t('usedfmt').replace('{u}', state.capUsed).replace('{m}', state.capMax);
+  }
+
+  function renderDailyCounter(){
+    var el = $('dailyCounter');
+    if (state.dailyRemainingSeconds <= 0){
+      el.style.display = 'block';
+      el.textContent = t('dailycapmsg');
+      return;
+    }
+    el.style.display = 'block';
+    el.textContent = t('dailyleftfmt').replace('{m}', Math.max(1, Math.ceil(state.dailyRemainingSeconds / 60)));
   }
 
   function renderTopics(){
@@ -301,7 +315,16 @@
     sb.auth.getUser().then(function(res){
       state.user = (res && res.data && res.data.user) || null;
       return loadCap();
-    }).then(function(){ return loadTopics(); }).catch(function(){});
+    }).then(function(){ return loadDailyUsage(); }).then(function(){
+      if (state.dailyRemainingSeconds <= 0){
+        // Daily free practice is gone — don't bother generating topics
+        // (saves a Claude call) and block the Start button outright.
+        $('topicPreview').innerHTML = '<div class="notice">' + t('dailycapmsg') + '</div>';
+        $('startBtn').disabled = true;
+        return;
+      }
+      return loadTopics();
+    }).catch(function(){});
   }
 
   function loadCap(){
@@ -313,6 +336,17 @@
         if (c.allowed === false){ state.capUsed = state.capMax; }
         else { state.capUsed = state.capMax - state.capRemaining; }
         renderCounter();
+      }).catch(function(){});
+  }
+
+  function loadDailyUsage(){
+    if (!state.user) return Promise.resolve();
+    return fetch(API_BASE + '/api/sprechen/daily-usage/' + state.user.id)
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (typeof d.remaining_seconds === 'number'){ state.dailyRemainingSeconds = d.remaining_seconds; }
+        if (typeof d.cap_seconds === 'number'){ state.dailyCapSeconds = d.cap_seconds; }
+        renderDailyCounter();
       }).catch(function(){});
   }
 
@@ -409,6 +443,7 @@
   function startSession(){
     if (!state.user){ alert('Please sign in to start a speaking session.'); return; }
     if (state.capRemaining <= 0){ alert(t('capmsg')); return; }
+    if (state.dailyRemainingSeconds <= 0){ alert(t('dailycapmsg')); return; }
     $('startBtn').disabled = true;
     feedbackShown = false; failed = false; hadAudio = false;
 
@@ -446,6 +481,10 @@
         if (msg.role === 'examiner') trackPartFromText(msg.text);
       }
       else if (msg.type === 'cap_exceeded'){ failToPre(msg.message || t('capmsg')); }
+      else if (msg.type === 'daily_cap_exceeded'){ state.dailyRemainingSeconds = 0; failToPre(msg.message || t('dailycapmsg')); }
+      else if (msg.type === 'daily_cap_warning'){
+        $('remainNote').textContent = t('dailywarnfmt').replace('{s}', msg.seconds_left);
+      }
       else if (msg.type === 'error'){ failToPre(msg.message || t('error')); }
       else if (msg.type === 'feedback'){ feedbackShown = true; teardownAudio(); renderFeedback(msg.feedback); }
       else if (msg.type === 'done'){ if (!feedbackShown) failToPre(t('error')); }
