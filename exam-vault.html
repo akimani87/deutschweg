@@ -90,6 +90,12 @@
   .exam-pill.active {
     background: var(--blue-light); color: var(--blue); border-color: var(--blue-mid);
   }
+  /* Hören/Sprechen pills outside A1 — no content yet, so the pill is
+     visible (it's part of the level's full section set) but inert. */
+  .exam-pill.coming-soon {
+    color: var(--mid); opacity: 0.55; cursor: default; pointer-events: none;
+  }
+  .exam-pill.coming-soon:hover { background: transparent; color: var(--mid); }
 
   /* ── Loading + error states ──────────────────────────────── */
   .state {
@@ -811,6 +817,15 @@
     <a class="exam-pill" id="pillLesen"     role="tab">📖 Lesen</a>
   </div>
 
+  <!-- Hören / Sprechen — separate standalone pages (own UI + grading),
+       not part of this page's in-page Schreiben/Lesen task engine. Both
+       are A1-only today; wireExtraPills() shows them as live links on A1
+       and as an inert "coming soon" pill on A2/B1/B2. -->
+  <div class="exam-selector" role="tablist" aria-label="Choose section (audio/voice)" style="margin-bottom:26px;">
+    <a class="exam-pill" id="pillHoeren"    role="tab">🎧 Hören</a>
+    <a class="exam-pill" id="pillSprechen"  role="tab">🎤 Sprechen</a>
+  </div>
+
   <!-- Übungssatz dropdown — visible only when 2+ exams exist for the section -->
   <div id="examSetSelector" style="display:none; margin-bottom: 20px;">
     <label for="examSetSelect" style="font-size:12.5px; font-weight:700; color:var(--mid); display:block; margin-bottom:6px;">Übungssatz wählen</label>
@@ -965,6 +980,35 @@
     el('pillLesen').href     = '?level=' + level + '&section=lesen';
     el('pillSchreiben').classList.toggle('active', section === 'schreiben');
     el('pillLesen').classList.toggle('active',     section === 'lesen');
+  }
+
+  // Hören/Sprechen — real navigation to their own standalone pages, not
+  // in-page section switches (no exam_tasks data exists for them, and
+  // they don't go through the schreiben/lesen task engine at all). Both
+  // are A1-only today, so non-A1 levels get an inert "coming soon" pill
+  // instead of a link into a page with nothing to show.
+  var EXTRA_PILLS = [
+    { id: 'pillHoeren',   href: 'hoerverstehen.html', label: '🎧 Hören' },
+    { id: 'pillSprechen', href: 'sprechen.html',      label: '🎤 Sprechen' },
+  ];
+  function wireExtraPills(level) {
+    var isA1 = level === 'A1';
+    EXTRA_PILLS.forEach(function (cfg) {
+      var p = el(cfg.id);
+      if (!p) return;
+      p.classList.toggle('coming-soon', !isA1);
+      if (isA1) {
+        p.href = cfg.href;
+        p.textContent = cfg.label;
+        p.removeAttribute('aria-disabled');
+        p.title = '';
+      } else {
+        p.removeAttribute('href');
+        p.textContent = cfg.label + ' · Coming soon';
+        p.setAttribute('aria-disabled', 'true');
+        p.title = cfg.label.replace(/^\S+\s/, '') + ' for ' + level + ' isn’t available yet.';
+      }
+    });
   }
 
   // ── Bilingual instruction helper ───────────────────────────
@@ -2912,6 +2956,7 @@
     currentLevel   = getActiveLevel();
     currentSection = getActiveSection();
     wirePills(currentLevel, currentSection);
+    wireExtraPills(currentLevel);
     el('examEyebrow').textContent = currentLevel + ' · Exam Vault';
 
     if (typeof dwSupabase === 'undefined') {
