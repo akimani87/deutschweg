@@ -29,6 +29,7 @@
 <link rel="stylesheet" href="./deutschweg-theme.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./supabase-config.js"></script>
+<script src="./paywall.js"></script>
 <style>
   body { background: var(--bg); }
 
@@ -2972,6 +2973,30 @@
       ? 'Goethe-format Schreiben practice. Write the message(s), then submit for instant AI grading.'
       : 'Goethe-format Lesen practice. Answer all questions to enable submit; auto-grading is instant.';
 
+    // ── Paywall gate (A2/B1/B2) ──────────────────────────────────
+    // Exam Vault had no gate at all — reachable for free via direct URL
+    // (?level=A2/B1/B2). Gated on the same {level}_module entitlement
+    // that unlocks the lesson modules (one purchase covers both). A1 is
+    // always free — moduleKeyForLevel returns null for A1, so this is a
+    // no-op on the free level.
+    var pwKey = window.dwPaywall ? window.dwPaywall.moduleKeyForLevel(currentLevel) : null;
+    if (!pwKey) { fetchExams(); return; }
+    dwSupabase.auth.getUser().catch(function () { return { data: { user: null } }; })
+      .then(function (authRes) {
+        var user = authRes && authRes.data && authRes.data.user;
+        return window.dwPaywall.hasAccess(user, pwKey).then(function (ok) {
+          if (ok) { fetchExams(); return; }
+          // Drop the .state card styling (spinner box) so the unlock
+          // screen's own card isn't nested inside another one.
+          el('loadingState').className = '';
+          window.dwPaywall.renderUnlockScreen(el('loadingState'), pwKey, {
+            anonymous: !user, backHref: '/dashboard', backLabel: '← Back to Dashboard'
+          });
+        });
+      });
+    return;
+
+    function fetchExams() {
     dwSupabase.from('exams')
       .select('id, level, title, section, is_published, created_at')
       .eq('level',        currentLevel)
@@ -3027,6 +3052,7 @@
         // here (it would filter by a still-null exam_id).
         loadExam(exams[0].id, exams[0].title);
       });
+    }
   }
 
   // ── loadExam: swap in a single exam's tasks ────────────────
