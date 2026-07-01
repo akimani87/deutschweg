@@ -27,9 +27,12 @@
 <meta name="description" content="Learn German for your life in Germany — visa, Ausbildung, study, or work. Start A1 free.">
 <link rel="stylesheet" href="deutschweg-theme.css">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<!-- Pricing on this page reads from paywall.js's CATALOG so there's one place
-     to change a price (paywall.js). Supabase is NOT loaded here — the CATALOG
-     is plain data with no API dependency. -->
+<!-- Pricing reads from paywall.js CATALOG only (no Supabase dependency).
+     Phase 2: Supabase IS loaded here so logged-in users see their real
+     Germany Readiness % instead of the demo zeros. Anonymous visitors
+     still see the zero/new-user state (no fetch attempted). -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
 <script src="./paywall.js?v=2"></script>
 <script src="./germany-readiness.js"></script>
 <style>
@@ -1390,15 +1393,62 @@ if(document.readyState==='complete'||document.readyState==='interactive'){docume
 })();
 </script>
 
-<!-- Germany Readiness Bar — homepage demo (new-user state: all 0%).
-     Phase 2: replace the hard-coded zeros with real per-level completion %
-     fetched from Supabase after authentication. The component API is stable. -->
+<!-- Germany Readiness Bar — shows demo zeros for anonymous visitors,
+     real per-level progress for logged-in users. Uses the same
+     computeLevelPct logic as dashboard.html. -->
 <script>
 (function () {
   var el = document.getElementById('hero-readiness-bar');
-  if (el && window.dwReadinessBar) {
-    window.dwReadinessBar.render(el, { a1Pct: 0, a2Pct: 0, b1Pct: 0 });
-  }
+  if (!el || !window.dwReadinessBar) return;
+
+  // Render demo/zero state immediately (anonymous fallback)
+  window.dwReadinessBar.render(el, { a1Pct: 0, a2Pct: 0, b1Pct: 0 });
+
+  // If Supabase is available, check auth and replace with real data
+  if (!window.dwSupabase) return;
+  window.dwSupabase.auth.getUser().then(function (res) {
+    var user = res && res.data && res.data.user;
+    if (!user) return; // anonymous — keep demo zeros
+
+    // Fetch all module IDs + user progress in parallel
+    Promise.all([
+      window.dwSupabase.from('modules')
+        .select('id, level').eq('is_published', true),
+      window.dwSupabase.from('lessons').select('id, module_id'),
+      window.dwSupabase.from('user_progress').select('module_id, lesson_id')
+        .eq('user_id', user.id).eq('status', 'completed')
+    ]).then(function (results) {
+      var mods    = (results[0].data || []);
+      var lessons = (results[1].data || []);
+      var prog    = (results[2].data || []);
+
+      // Build progressByMod (same shape as dashboard.html)
+      var byMod = {};
+      lessons.forEach(function (l) {
+        if (!byMod[l.module_id]) byMod[l.module_id] = { completed: new Set(), total: 0 };
+        byMod[l.module_id].total++;
+      });
+      prog.forEach(function (r) {
+        if (!byMod[r.module_id]) byMod[r.module_id] = { completed: new Set(), total: 0 };
+        if (r.lesson_id) byMod[r.module_id].completed.add(r.lesson_id);
+      });
+
+      function pct(level) {
+        var total = 0, done = 0;
+        mods.filter(function (m) { return m.level === level; }).forEach(function (m) {
+          var p = byMod[m.id];
+          if (!p || p.total === 0) return;
+          total += p.total;
+          done  += p.completed.size;
+        });
+        return total === 0 ? 0 : Math.round(done / total * 100);
+      }
+
+      window.dwReadinessBar.render(el, {
+        a1Pct: pct('A1'), a2Pct: pct('A2'), b1Pct: pct('B1')
+      });
+    }).catch(function () { /* keep demo zeros on any fetch error */ });
+  }).catch(function () {});
 }());
 </script>
 </body>

@@ -29,6 +29,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./supabase-config.js"></script>
 <script src="./paywall.js?v=2"></script>
+<script src="./germany-readiness.js"></script>
 <style>
   /* Legacy tokens kept for JS that reads them */
   :root {
@@ -339,6 +340,98 @@
     flex:1;border:none;width:100%;height:100%;
     background:#F8FAFC;
   }
+
+  /* ── PHASE 2: Welcome + Readiness section ─── */
+  .dash-welcome-section{
+    background:#fff;border:1px solid #E5E7EB;border-radius:16px;
+    padding:20px 22px;margin:0 0 18px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.07);
+  }
+  .dash-welcome-row{
+    display:flex;align-items:flex-start;justify-content:space-between;
+    gap:14px;margin-bottom:14px;
+  }
+  .dash-greeting{
+    font-size:20px;font-weight:800;color:#1F2937;line-height:1.25;margin-bottom:4px;
+  }
+  .dash-goal{
+    font-size:13.5px;color:#4B5563;
+  }
+  .dash-streak-badge{
+    display:flex;flex-direction:column;align-items:center;
+    background:#EFF6FF;border:1px solid #DBEAFE;
+    border-radius:12px;padding:10px 16px;flex-shrink:0;min-width:80px;text-align:center;
+  }
+  .dash-streak-num{font-size:22px;font-weight:800;color:#3B82F6;line-height:1;}
+  .dash-streak-label{font-size:11px;font-weight:600;color:#4B5563;margin-top:3px;white-space:nowrap;}
+  .dash-motivational{
+    margin-top:14px;padding:11px 14px;
+    background:#ECFDF5;border:1px solid #A7F3D0;border-radius:10px;
+    font-size:13px;color:#065F46;font-style:italic;
+  }
+
+  /* ── PHASE 2: End-of-A1 screen ────────────── */
+  .eoa-screen{
+    position:fixed;inset:0;z-index:150;overflow-y:auto;
+    background:#F8FAFC;padding:0;
+    display:flex;flex-direction:column;
+  }
+  .eoa-inner{
+    max-width:600px;margin:0 auto;padding:40px 24px 80px;
+    width:100%;
+  }
+  .eoa-eyebrow{
+    font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+    color:#3B82F6;margin-bottom:16px;
+  }
+  .eoa-h1{
+    font-size:28px;font-weight:800;color:#1F2937;
+    line-height:1.25;letter-spacing:-0.3px;margin-bottom:16px;
+  }
+  .eoa-body{
+    font-size:15px;color:#4B5563;line-height:1.75;margin-bottom:22px;
+  }
+  .eoa-status-card{
+    background:#fff;border:1px solid #E5E7EB;border-radius:14px;
+    padding:18px 20px;margin-bottom:22px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.07);
+  }
+  .eoa-status-title{
+    font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;
+    color:#9CA3AF;margin-bottom:12px;
+  }
+  .eoa-status-row{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:9px 0;border-bottom:1px solid #F1F5F9;font-size:13.5px;
+  }
+  .eoa-status-row:last-child{border-bottom:none;}
+  .eoa-status-label{color:#4B5563;}
+  .eoa-status-value{font-weight:700;color:#1F2937;}
+  .eoa-status-value.done{color:#10B981;}
+  .eoa-status-value.gap{color:#3B82F6;}
+  .eoa-cta-btn{
+    display:flex;align-items:center;justify-content:center;
+    width:100%;padding:16px 24px;border-radius:12px;border:none;
+    background:#3B82F6;color:#fff;
+    font-size:16px;font-weight:700;font-family:inherit;
+    cursor:pointer;text-decoration:none;
+    box-shadow:0 4px 14px rgba(59,130,246,0.3);
+    transition:background 0.2s,transform 0.1s;
+    margin-top:22px;
+  }
+  .eoa-cta-btn:hover{background:#2563EB;transform:translateY(-1px);}
+  .eoa-reassurance{
+    font-size:13.5px;color:#4B5563;line-height:1.75;
+    margin-top:20px;
+  }
+  .eoa-footer-note{
+    font-size:12px;color:#9CA3AF;margin-top:14px;line-height:1.6;
+  }
+
+  @media(max-width:640px){
+    .dash-welcome-row{flex-direction:column;}
+    .eoa-h1{font-size:24px;}
+  }
 </style>
 </head>
 <body>
@@ -389,6 +482,27 @@
 
 <!-- MAIN CONTENT -->
 <div class="main">
+
+  <!-- WELCOME + GERMANY READINESS + STREAK (Phase 2) -->
+  <!-- JS populates #dashGreeting with name, #dash-readiness-bar with real
+       per-level %s, #dashStreakNum with localStorage streak, and reveals
+       #dashMotivational after a completed lesson is detected. -->
+  <div class="dash-welcome-section">
+    <div class="dash-welcome-row">
+      <div>
+        <div class="dash-greeting" id="dashGreeting">Welcome back!</div>
+        <div class="dash-goal" id="dashGoal">Today's goal: complete your next lesson 🎯</div>
+      </div>
+      <div class="dash-streak-badge">
+        <span class="dash-streak-num" id="dashStreakNum">0</span>
+        <span class="dash-streak-label">day streak 🔥</span>
+      </div>
+    </div>
+    <div id="dash-readiness-bar"></div>
+    <div class="dash-motivational" id="dashMotivational">
+      Every lesson brings you closer to life in Germany.
+    </div>
+  </div>
 
   <!-- COURSE HEADER -->
   <div class="course-header">
@@ -583,6 +697,43 @@
   </div><!-- /level-b2 -->
 
 </div><!-- /main -->
+
+<!-- END-OF-A1 SCREEN (Phase 2) ─────────────────────────────────────────
+     Shown once when the user's A1 completion reaches 100%.
+     A localStorage flag ('dw_a1_screen_seen') prevents repeat display.
+     JS renders the readiness bar inside #endOfA1ReadinessBar using the
+     same computed a1Pct/a2Pct/b1Pct values as the dashboard bar. -->
+<div class="eoa-screen" id="endOfA1Screen" style="display:none;" aria-label="A1 completion milestone">
+  <div class="eoa-inner">
+    <div class="eoa-eyebrow">🎉 Milestone reached</div>
+    <h1 class="eoa-h1">You just finished A1. That's real.</h1>
+    <p class="eoa-body">You can introduce yourself, handle numbers and time, navigate a shop, take the train, and manage basic daily situations — in German. Most people who start never get this far.</p>
+
+    <div class="eoa-status-card">
+      <div class="eoa-status-title">Where you stand</div>
+      <div class="eoa-status-row">
+        <span class="eoa-status-label">Your level now</span>
+        <span class="eoa-status-value done">A1 — Basic communication ✅</span>
+      </div>
+      <div class="eoa-status-row">
+        <span class="eoa-status-label">What most visas require</span>
+        <span class="eoa-status-value">B1 — Independent, exam-certified German</span>
+      </div>
+      <div class="eoa-status-row">
+        <span class="eoa-status-label">What you still need</span>
+        <span class="eoa-status-value gap">A2 + B1</span>
+      </div>
+    </div>
+
+    <div id="endOfA1ReadinessBar"></div>
+
+    <p class="eoa-reassurance">A1 gets you through a shop, a train station, a first conversation. B1 is what gets you through the Goethe exam most visas, Ausbildung programs, and employers actually require. That's not a small step from here — it's the difference between getting by and qualifying.</p>
+    <p class="eoa-reassurance" style="margin-top:12px;">You've already proven you can do this. The next stretch is where it counts.</p>
+
+    <a href="/freischalten/a2" class="eoa-cta-btn">Continue to A2 →</a>
+    <p class="eoa-footer-note">A2 picks up exactly where you left off — no restart, no repeated basics.</p>
+  </div>
+</div>
 
 <!-- MODULE VIEWER OVERLAY -->
 <div class="module-overlay" id="moduleOverlay">
@@ -989,6 +1140,69 @@
         //    Runs whether or not the user is signed in (anonymous gets 0s
         //    with the encouraging hint, which matches the empty card chips).
         updateBannerProgress(progressByMod, modRes.data || []);
+
+        // ── Germany Readiness Bar (Phase 2) ─────────────────────────────
+        // Per-level completion % = Σ completed lessons / Σ total lessons
+        // for modules in that level. Mirrors updateBannerProgress() logic
+        // but scoped to each level individually.
+        function computeLevelPct(levelMods, byMod) {
+          var total = 0, done = 0;
+          (levelMods || []).forEach(function(m) {
+            var p = byMod[m.id];
+            if (!p || p.total === 0) return; // skip modules with no published lessons
+            total += p.total;
+            done  += p.completed.size;
+          });
+          return total === 0 ? 0 : Math.round(done / total * 100);
+        }
+        var a1Pct = computeLevelPct(byLevel.A1, progressByMod);
+        var a2Pct = computeLevelPct(byLevel.A2, progressByMod);
+        var b1Pct = computeLevelPct(byLevel.B1, progressByMod);
+
+        // Render bar in the dashboard welcome section
+        var dashBar = document.getElementById('dash-readiness-bar');
+        if (dashBar && window.dwReadinessBar) {
+          window.dwReadinessBar.render(dashBar, { a1Pct: a1Pct, a2Pct: a2Pct, b1Pct: b1Pct });
+        }
+
+        // Populate streak in the welcome row (reuses the same localStorage
+        // key that updateStreakAndLevelTiles() writes to)
+        var dashStreakEl = document.getElementById('dashStreakNum');
+        if (dashStreakEl) {
+          dashStreakEl.textContent = parseInt(localStorage.getItem('dw_streak') || '0');
+        }
+
+        // Personalise the greeting with user's display name if available
+        var greetEl = document.getElementById('dashGreeting');
+        if (greetEl && user) {
+          var name = (user.user_metadata && user.user_metadata.full_name)
+            ? user.user_metadata.full_name.split(' ')[0]
+            : null;
+          greetEl.textContent = name ? 'Welcome back, ' + name + '!' : 'Welcome back!';
+        }
+
+        // Show motivational line when any lesson has been completed
+        var hasAnyProgress = Object.keys(progressByMod).some(function(id) {
+          return progressByMod[id].completed.size > 0;
+        });
+        var motivEl = document.getElementById('dashMotivational');
+        if (motivEl && hasAnyProgress) motivEl.style.display = '';
+
+        // ── End-of-A1 screen (Phase 2) ──────────────────────────────────
+        // Shown once when A1 completion reaches 100% for a signed-in user.
+        // localStorage flag prevents the screen from re-appearing on repeat visits.
+        if (user && a1Pct === 100 && !localStorage.getItem('dw_a1_screen_seen')) {
+          var eoaScreen = document.getElementById('endOfA1Screen');
+          if (eoaScreen) {
+            eoaScreen.style.display = 'flex';
+            localStorage.setItem('dw_a1_screen_seen', '1');
+            // Render the readiness bar inside the end-of-A1 screen too
+            var eoaBar = document.getElementById('endOfA1ReadinessBar');
+            if (eoaBar && window.dwReadinessBar) {
+              window.dwReadinessBar.render(eoaBar, { a1Pct: a1Pct, a2Pct: a2Pct, b1Pct: b1Pct });
+            }
+          }
+        }
       });
     }).catch(function(e) {
       console.error('[dashboard] modules fetch threw:', e);
