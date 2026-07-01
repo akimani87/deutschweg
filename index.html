@@ -31,6 +31,7 @@
      to change a price (paywall.js). Supabase is NOT loaded here — the CATALOG
      is plain data with no API dependency. -->
 <script src="./paywall.js?v=2"></script>
+<script src="./germany-readiness.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
@@ -666,73 +667,33 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
       <!-- LEFT — promise + first step -->
       <div>
         <div class="hero-badge">🌍 Built for African Learners</div>
-        <h1 class="hero-h1">Bestehe die Goethe-Prüfung — ohne dich <span class="accent">allein und überfordert</span> zu fühlen.</h1>
-        <p class="hero-p">Schritt für Schritt. Mit einem KI-Tutor, der weiß, wo du stehst, und Übungsprüfungen, die dich wirklich vorbereiten.</p>
+        <h1 class="hero-h1">Germany isn't just a language. It's a <span class="accent">life you're building.</span></h1>
+        <p class="hero-p">DeutschWeg prepares you for the Goethe exam — the language proof you need before the visa, the Ausbildung, the job. Start with A1, free.</p>
         <div class="hero-btns">
-          <a href="signup.html" class="btn-primary btn-large">Start with A1 free →</a>
+          <a href="signup.html" class="btn-primary btn-large">Start A1 Free →</a>
         </div>
-        <div class="hero-trust">
-          <div class="trust-avs">
-            <div class="trust-av av1">K</div>
-            <div class="trust-av av2">A</div>
-            <div class="trust-av av3">O</div>
-            <div class="trust-av av4">N</div>
-          </div>
-          <div class="trust-text">
-            <strong>Learners from Kenya, Nigeria, Ghana &amp; more</strong>
-            On their way to Goethe A1, A2, B1 and B2
-          </div>
+        <div class="hero-bullets">
+          <div class="hero-bullet"><span class="hero-bullet-check">✓</span>Free A1 Foundation</div>
+          <div class="hero-bullet"><span class="hero-bullet-check">✓</span>Interactive practice</div>
+          <div class="hero-bullet"><span class="hero-bullet-check">✓</span>Instant feedback</div>
+          <div class="hero-bullet"><span class="hero-bullet-check">✓</span>Exam-focused learning</div>
+          <div class="hero-bullet"><span class="hero-bullet-check">✓</span>Real German for daily life in Germany</div>
         </div>
       </div>
-      <!-- RIGHT — belonging image placeholder; upload to /assets/hero-learners.jpg.
-           If the file is missing we hide the <img> via onerror, leaving the wrapper's
-           background-color visible so the layout stays clean (no broken-image icon). -->
-      <div class="hero-img-col">
-        <div class="hero-img-wrap">
-          <img
-            src="/assets/hero-learners.jpg"
-            alt="Learners studying German with DeutschWeg"
-            class="hero-img"
-            loading="eager"
-            decoding="async"
-            onerror="this.style.display='none';"
-          >
-        </div>
-      </div>
-      <!-- Removed: demo-question card (English placeholder). New design leads
-           with a belonging image; concrete feature points live in the
-           "Was dich bei DeutschWeg erwartet" section below. -->
-      <div style="display:none">
-        <div class="hero-card">
-          <div class="hc-chip">A2 · MODULE 5</div>
-          <div class="hc-progress-row">
-            <span class="hc-progress-label">Progress</span>
-            <span class="hc-progress-label">60%</span>
-          </div>
-          <div class="hc-bar"><div class="hc-fill"></div></div>
-          <div class="hc-q">Er schreibt <em>_____</em> Frau einen Brief.</div>
-          <div class="hc-opts">
-            <div class="hc-opt">
-              <div class="opt-dot"></div>einen
-            </div>
-            <div class="hc-opt correct">
-              <div class="opt-dot">✓</div>der
-            </div>
-            <div class="hc-opt">
-              <div class="opt-dot"></div>die
-            </div>
-            <div class="hc-opt">
-              <div class="opt-dot"></div>dem
-            </div>
-          </div>
-          <div class="hc-feedback">
-            <strong>Correct! Dative case after "schreiben"</strong>
-            "der Frau" — Dative feminine. The verb "schreiben" takes Dative for the recipient.
-          </div>
-        </div>
-        <div class="float-card bottom-left">
-          <div class="fc-dot fc-blue"></div>
-          🎯 AI Exam Whisperer — Instant Scoring
+      <!-- RIGHT — Germany Readiness bar preview (demo/new-user state).
+           Phase 2: replace the static render() call at the bottom of this
+           file with a call that passes real per-level completion % from
+           Supabase. The component handles all rendering — no markup changes
+           needed here for Phase 2. -->
+      <div class="hero-right" style="display:flex;flex-direction:column;gap:16px;">
+        <!-- Label above the component so visitors immediately understand what they're seeing -->
+        <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--light);">Your progress tracker</div>
+        <!-- Container for the Germany Readiness Bar component -->
+        <div id="hero-readiness-bar"></div>
+        <!-- Contextual note: keeps the bar honest (0% for new users) -->
+        <div style="background:var(--blue-light);border:1px solid var(--blue-mid);border-radius:12px;padding:14px 16px;">
+          <div style="font-size:13px;font-weight:600;color:#1D4ED8;margin-bottom:4px;">A1 is free — start today</div>
+          <div style="font-size:12.5px;color:var(--mid);line-height:1.6;">Every module you complete moves this bar. A2, B1 unlock when you're ready — one-time, no subscription.</div>
         </div>
       </div>
     </div>
@@ -1427,6 +1388,18 @@ if(document.readyState==='complete'||document.readyState==='interactive'){docume
     });
   }
 })();
+</script>
+
+<!-- Germany Readiness Bar — homepage demo (new-user state: all 0%).
+     Phase 2: replace the hard-coded zeros with real per-level completion %
+     fetched from Supabase after authentication. The component API is stable. -->
+<script>
+(function () {
+  var el = document.getElementById('hero-readiness-bar');
+  if (el && window.dwReadinessBar) {
+    window.dwReadinessBar.render(el, { a1Pct: 0, a2Pct: 0, b1Pct: 0 });
+  }
+}());
 </script>
 </body>
 </html>
