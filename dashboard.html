@@ -875,23 +875,25 @@
     'B1-13': './module-b1-13-mock-exam.html'
   };
 
-  // Phase 3: real-life outcome lines for A1 modules, keyed by order_index (1-based).
-  // Copy is display-only — no data change. Module 14 (Perfekt Tense) has no entry
-  // intentionally; the map simply returns undefined and the line is omitted.
+  // Phase 3: real-life outcome lines for A1 modules, keyed by exact module title
+  // (m.title from Supabase) as rendered on the live cards. Title-keying is used
+  // instead of order_index because order_index was misaligned in production.
+  // Titles confirmed verbatim by the product owner from the live card list.
+  // Any A1 module whose title doesn't exactly match a key here renders no line.
   var A1_OUTCOME_LINES = {
-    1:  'Sound confident from your very first sentence.',
-    2:  'Book appointments, tell time, and handle dates at the Bürgeramt.',
-    3:  'Introduce yourself the way Germans actually expect.',
-    4:  'The two verbs behind almost every sentence you\'ll ever say.',
-    5:  'Get articles right — the detail that signals real fluency.',
-    6:  'Say what you\'re buying, ordering, or asking for directly.',
-    7:  'Say who something is for — giving, showing, helping.',
-    8:  'Put your words in the right order so people actually understand you.',
-    9:  'Talk about your daily life, your job, your plans — right now.',
-    10: 'Talk about you, them, us — without second-guessing yourself.',
-    11: 'Talk about more than one — appears in nearly every reading task.',
-    12: 'Say what something isn\'t — tested in every writing task.',
-    13: 'Say what you can, must, or want to do — the core of every spoken answer.'
+    'German Pronunciation & Sounds':          'Sound confident from your very first sentence.',
+    'Numbers, Time & Dates':                  'Book appointments, tell time, and handle dates at the Bürgeramt.',
+    'Greetings, Introductions & Social Scripts': 'Introduce yourself the way Germans actually expect.',
+    'Haben & Sein':                           'The two verbs behind almost every sentence you\'ll ever say.',
+    'Der, Die, Das':                          'Get articles right — the detail that signals real fluency.',
+    'Akkusativ Case':                         'Say what you\'re buying, ordering, or asking for directly.',
+    'Dativ Case':                             'Say who something is for — giving, showing, helping.',
+    'Sentence Structure & Word Order':        'Put your words in the right order so people actually understand you.',
+    'Present Tense':                          'Talk about your daily life, your job, your plans — right now.',
+    'Personal Pronouns':                      'Talk about you, them, us — without second-guessing yourself.',
+    'Plural Forms of Nouns':                  'Talk about more than one — appears in nearly every reading task.',
+    'Negation: nicht and kein':               'Say what something isn\'t — tested in every writing task.',
+    'Modal Verbs':                            'Say what you can, must, or want to do — the core of every spoken answer.'
   };
 
   function renderCard(m) {
@@ -925,8 +927,8 @@
       }
     }
 
-    var outcomeLine = (m.level === 'A1' && m.order_index && A1_OUTCOME_LINES[m.order_index])
-      ? '<div class="mc-outcome">' + escapeHtml(A1_OUTCOME_LINES[m.order_index]) + '</div>'
+    var outcomeLine = (m.level === 'A1' && m.title && A1_OUTCOME_LINES[m.title])
+      ? '<div class="mc-outcome">' + escapeHtml(A1_OUTCOME_LINES[m.title]) + '</div>'
       : '';
 
     return (
