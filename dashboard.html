@@ -875,50 +875,74 @@
     'B1-13': './module-b1-13-mock-exam.html'
   };
 
-  // Phase 3: real-life outcome lines for A1 modules.
-  // Keyed by m.title (Supabase modules.title). Both the user-confirmed "live"
-  // titles AND the snapshot/legacy titles are included as aliases for each
-  // module, because the local snapshot and the live DB appear to disagree on
-  // 9 of the 13 titles (e.g. "Pronunciation" vs "German Pronunciation & Sounds").
-  // Covering both forms means the correct line shows regardless of which title
-  // is actually stored. The 4 modules whose titles match in both sources are
-  // listed once. Any unrecognised title renders no line — safe no-op.
+  // Phase 3: outcome lines keyed by m.title (Supabase modules.title).
+  // Three title variants exist across different DB states and seed runs:
+  //   A = user-confirmed "live" titles (longer, clean)
+  //   B = working-copy JSON titles (shorter, clean — from uncommitted all-modules.json)
+  //   C = committed-seed JSON titles (concatenated, missing spaces — original buggy seed)
+  // All known variants for every module are listed so the line shows
+  // regardless of which seed run actually populated the DB.
   var A1_OUTCOME_LINES = {
-    // ── Pronunciation ──
-    'German Pronunciation & Sounds': 'Sound confident from your very first sentence.',
-    'Pronunciation':                 'Sound confident from your very first sentence.',
-    // ── Numbers ──
-    'Numbers, Time & Dates':         'Book appointments, tell time, and handle dates at the Bürgeramt.',
-    // ── Greetings ──
-    'Greetings, Introductions & Social Scripts': 'Introduce yourself the way Germans actually expect.',
-    'Greetings & Social Scripts':                'Introduce yourself the way Germans actually expect.',
-    // ── Haben & Sein ──
-    'Haben & Sein':    'The two verbs behind almost every sentence you\'ll ever say.',
-    'haben and sein':  'The two verbs behind almost every sentence you\'ll ever say.',
-    // ── Articles ──
-    'Der, Die, Das':   'Get articles right — the detail that signals real fluency.',
-    'Nouns and Gender':'Get articles right — the detail that signals real fluency.',
-    // ── Akkusativ ──
-    'Akkusativ Case':      'Say what you\'re buying, ordering, or asking for directly.',
-    'The Akkusativ Case':  'Say what you\'re buying, ordering, or asking for directly.',
-    // ── Dativ ──
-    'Dativ Case':      'Say who something is for — giving, showing, helping.',
-    'The Dativ Case':  'Say who something is for — giving, showing, helping.',
-    // ── Word Order ──
-    'Sentence Structure & Word Order': 'Put your words in the right order so people actually understand you.',
-    'Sentence Structure':              'Put your words in the right order so people actually understand you.',
-    // ── Present Tense ──
-    'Present Tense':             'Talk about your daily life, your job, your plans — right now.',
-    'Present Tense Conjugation': 'Talk about your daily life, your job, your plans — right now.',
-    // ── Pronouns ──
-    'Personal Pronouns': 'Talk about you, them, us — without second-guessing yourself.',
-    // ── Plurals ──
-    'Plural Forms of Nouns': 'Talk about more than one — appears in nearly every reading task.',
-    // ── Negation ──
-    'Negation: nicht and kein':   'Say what something isn\'t — tested in every writing task.',
-    'Negation (nicht and kein)':  'Say what something isn\'t — tested in every writing task.',
-    // ── Modal Verbs ──
-    'Modal Verbs': 'Say what you can, must, or want to do — the core of every spoken answer.'
+    // ── Pronunciation ──────────────────────────────────────────────────────
+    'German Pronunciation & Sounds':  'Sound confident from your very first sentence.', // A
+    'Pronunciation':                  'Sound confident from your very first sentence.', // B
+    'German Pronunciation& Sounds':   'Sound confident from your very first sentence.', // C
+
+    // ── Numbers ────────────────────────────────────────────────────────────
+    'Numbers, Time & Dates':          'Book appointments, tell time, and handle dates at the Bürgeramt.', // A+B
+    'Numbers, Time& Dates':           'Book appointments, tell time, and handle dates at the Bürgeramt.', // C
+
+    // ── Greetings ──────────────────────────────────────────────────────────
+    'Greetings, Introductions & Social Scripts': 'Introduce yourself the way Germans actually expect.', // A
+    'Greetings & Social Scripts':                'Introduce yourself the way Germans actually expect.', // B
+    'Greetings, Introductions& Social Scripts':  'Introduce yourself the way Germans actually expect.', // C
+
+    // ── Haben & Sein ───────────────────────────────────────────────────────
+    'Haben & Sein':                              'The two verbs behind almost every sentence you\'ll ever say.', // A
+    'haben and sein':                            'The two verbs behind almost every sentence you\'ll ever say.', // B
+    'haben and seinThe Two Verbs That Run German':'The two verbs behind almost every sentence you\'ll ever say.', // C
+
+    // ── Articles / Gender ──────────────────────────────────────────────────
+    'Der, Die, Das':                  'Get articles right — the detail that signals real fluency.', // A
+    'Nouns and Gender':               'Get articles right — the detail that signals real fluency.', // B
+    'der · die · dasNouns and Gender': 'Get articles right — the detail that signals real fluency.', // C
+
+    // ── Akkusativ ──────────────────────────────────────────────────────────
+    'Akkusativ Case':                 'Say what you\'re buying, ordering, or asking for directly.', // A
+    'The Akkusativ Case':             'Say what you\'re buying, ordering, or asking for directly.', // B
+    'The Akkusativ CaseObjects in German': 'Say what you\'re buying, ordering, or asking for directly.', // C
+
+    // ── Dativ ──────────────────────────────────────────────────────────────
+    'Dativ Case':                     'Say who something is for — giving, showing, helping.', // A
+    'The Dativ Case':                 'Say who something is for — giving, showing, helping.', // B
+    'The Dativ CaseThe Indirect Object': 'Say who something is for — giving, showing, helping.', // C
+
+    // ── Word Order ─────────────────────────────────────────────────────────
+    'Sentence Structure & Word Order': 'Put your words in the right order so people actually understand you.', // A
+    'Sentence Structure':              'Put your words in the right order so people actually understand you.', // B
+    'Sentence Structure& Word Order':  'Put your words in the right order so people actually understand you.', // C
+
+    // ── Present Tense ──────────────────────────────────────────────────────
+    'Present Tense':                  'Talk about your daily life, your job, your plans — right now.', // A
+    'Present Tense Conjugation':      'Talk about your daily life, your job, your plans — right now.', // B
+    'Present TenseVerb Conjugation':  'Talk about your daily life, your job, your plans — right now.', // C
+
+    // ── Personal Pronouns ──────────────────────────────────────────────────
+    'Personal Pronouns':              'Talk about you, them, us — without second-guessing yourself.', // A+B
+    'PersonalPronouns':               'Talk about you, them, us — without second-guessing yourself.', // C
+
+    // ── Plurals ────────────────────────────────────────────────────────────
+    'Plural Forms of Nouns':          'Talk about more than one — appears in nearly every reading task.', // A+B
+    'Plural Formsof Nouns':           'Talk about more than one — appears in nearly every reading task.', // C
+
+    // ── Negation ───────────────────────────────────────────────────────────
+    'Negation: nicht and kein':       'Say what something isn\'t — tested in every writing task.', // A
+    'Negation (nicht and kein)':      'Say what something isn\'t — tested in every writing task.', // B
+    'Negation:nicht and kein':        'Say what something isn\'t — tested in every writing task.', // C
+
+    // ── Modal Verbs ────────────────────────────────────────────────────────
+    'Modal Verbs':                    'Say what you can, must, or want to do — the core of every spoken answer.', // A+B
+    'ModalVerbs':                     'Say what you can, must, or want to do — the core of every spoken answer.'  // C
   };
 
   function renderCard(m) {
