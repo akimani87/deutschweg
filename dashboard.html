@@ -875,25 +875,50 @@
     'B1-13': './module-b1-13-mock-exam.html'
   };
 
-  // Phase 3: real-life outcome lines for A1 modules, keyed by exact module title
-  // (m.title from Supabase) as rendered on the live cards. Title-keying is used
-  // instead of order_index because order_index was misaligned in production.
-  // Titles confirmed verbatim by the product owner from the live card list.
-  // Any A1 module whose title doesn't exactly match a key here renders no line.
+  // Phase 3: real-life outcome lines for A1 modules.
+  // Keyed by m.title (Supabase modules.title). Both the user-confirmed "live"
+  // titles AND the snapshot/legacy titles are included as aliases for each
+  // module, because the local snapshot and the live DB appear to disagree on
+  // 9 of the 13 titles (e.g. "Pronunciation" vs "German Pronunciation & Sounds").
+  // Covering both forms means the correct line shows regardless of which title
+  // is actually stored. The 4 modules whose titles match in both sources are
+  // listed once. Any unrecognised title renders no line — safe no-op.
   var A1_OUTCOME_LINES = {
-    'German Pronunciation & Sounds':          'Sound confident from your very first sentence.',
-    'Numbers, Time & Dates':                  'Book appointments, tell time, and handle dates at the Bürgeramt.',
+    // ── Pronunciation ──
+    'German Pronunciation & Sounds': 'Sound confident from your very first sentence.',
+    'Pronunciation':                 'Sound confident from your very first sentence.',
+    // ── Numbers ──
+    'Numbers, Time & Dates':         'Book appointments, tell time, and handle dates at the Bürgeramt.',
+    // ── Greetings ──
     'Greetings, Introductions & Social Scripts': 'Introduce yourself the way Germans actually expect.',
-    'Haben & Sein':                           'The two verbs behind almost every sentence you\'ll ever say.',
-    'Der, Die, Das':                          'Get articles right — the detail that signals real fluency.',
-    'Akkusativ Case':                         'Say what you\'re buying, ordering, or asking for directly.',
-    'Dativ Case':                             'Say who something is for — giving, showing, helping.',
-    'Sentence Structure & Word Order':        'Put your words in the right order so people actually understand you.',
-    'Present Tense':                          'Talk about your daily life, your job, your plans — right now.',
-    'Personal Pronouns':                      'Talk about you, them, us — without second-guessing yourself.',
-    'Plural Forms of Nouns':                  'Talk about more than one — appears in nearly every reading task.',
-    'Negation: nicht and kein':               'Say what something isn\'t — tested in every writing task.',
-    'Modal Verbs':                            'Say what you can, must, or want to do — the core of every spoken answer.'
+    'Greetings & Social Scripts':                'Introduce yourself the way Germans actually expect.',
+    // ── Haben & Sein ──
+    'Haben & Sein':    'The two verbs behind almost every sentence you\'ll ever say.',
+    'haben and sein':  'The two verbs behind almost every sentence you\'ll ever say.',
+    // ── Articles ──
+    'Der, Die, Das':   'Get articles right — the detail that signals real fluency.',
+    'Nouns and Gender':'Get articles right — the detail that signals real fluency.',
+    // ── Akkusativ ──
+    'Akkusativ Case':      'Say what you\'re buying, ordering, or asking for directly.',
+    'The Akkusativ Case':  'Say what you\'re buying, ordering, or asking for directly.',
+    // ── Dativ ──
+    'Dativ Case':      'Say who something is for — giving, showing, helping.',
+    'The Dativ Case':  'Say who something is for — giving, showing, helping.',
+    // ── Word Order ──
+    'Sentence Structure & Word Order': 'Put your words in the right order so people actually understand you.',
+    'Sentence Structure':              'Put your words in the right order so people actually understand you.',
+    // ── Present Tense ──
+    'Present Tense':             'Talk about your daily life, your job, your plans — right now.',
+    'Present Tense Conjugation': 'Talk about your daily life, your job, your plans — right now.',
+    // ── Pronouns ──
+    'Personal Pronouns': 'Talk about you, them, us — without second-guessing yourself.',
+    // ── Plurals ──
+    'Plural Forms of Nouns': 'Talk about more than one — appears in nearly every reading task.',
+    // ── Negation ──
+    'Negation: nicht and kein':   'Say what something isn\'t — tested in every writing task.',
+    'Negation (nicht and kein)':  'Say what something isn\'t — tested in every writing task.',
+    // ── Modal Verbs ──
+    'Modal Verbs': 'Say what you can, must, or want to do — the core of every spoken answer.'
   };
 
   function renderCard(m) {
