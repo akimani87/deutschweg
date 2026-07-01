@@ -26,353 +26,232 @@
 <meta name="twitter:image" content="https://deutschweg.de/og-image.png">
 <!-- /DW SEO INJECT -->
 
+<link rel="stylesheet" href="/deutschweg-theme.css">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  /* ── GRAMMAR PAGE CHROME ── */
+  .g-header {
+    background: #fff; border-bottom: 1px solid var(--border);
+    padding: 14px 24px; display: flex; align-items: center; gap: 14px;
+    position: sticky; top: 0; z-index: 50; box-shadow: var(--shadow-sm);
+  }
+  .g-back { color: var(--mid); font-size: 13px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; transition: all .18s; }
+  .g-back:hover { color: var(--blue); background: var(--blue-light); }
+  .g-logo { display: flex; align-items: center; gap: 9px; text-decoration: none; margin-left: auto; }
+  .g-logo-icon { width: 30px; height: 30px; background: var(--blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; font-weight: 800; }
+  .g-logo-text { font-size: 16px; font-weight: 800; color: var(--dark); letter-spacing: -0.3px; }
+  .g-logo-text span { color: var(--blue); }
+  .g-badge { background: var(--blue-light); color: #1D4ED8; border: 1px solid var(--blue-mid); font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 999px; white-space: nowrap; }
 
-  :root {
-    --navy:   #0d1b2a;
-    --navy2:  #1a2f44;
-    --gold:   #f59e0b;
-    --gold2:  #fbbf24;
-    --green:  #10b981;
-    --red:    #ef4444;
-    --blue:   #3b82f6;
-    --purple: #8b5cf6;
-    --text:   #f1f5f9;
-    --muted:  #94a3b8;
-    --card:   #162030;
-    --border: #1e3a52;
-  }
+  .g-wrap { max-width: 760px; margin: 0 auto; padding: 36px 20px 80px; }
+  .g-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--blue); text-transform: uppercase; margin-bottom: 10px; }
+  .g-title { font-size: 28px; font-weight: 800; color: var(--dark); letter-spacing: -0.5px; line-height: 1.25; margin-bottom: 12px; }
+  .g-sub { font-size: 15px; color: var(--mid); line-height: 1.7; margin-bottom: 28px; }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  .g-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 24px; box-shadow: var(--shadow-sm); margin-bottom: 18px; }
+  .g-card-title { font-size: 11px; font-weight: 800; letter-spacing: 1.2px; color: var(--blue); text-transform: uppercase; margin-bottom: 16px; }
 
-  body {
-    font-family: 'Inter', system-ui, sans-serif;
-    background: var(--navy);
-    color: var(--text);
-    min-height: 100vh;
-  }
+  .g-tip { background: var(--blue-light); border: 1px solid var(--blue-mid); border-radius: var(--radius-sm); padding: 14px 18px; margin-top: 16px; font-size: 13px; line-height: 1.65; color: #1D4ED8; }
+  .g-tip strong { font-weight: 700; }
 
-  /* ── HEADER ─────────────────────────────────── */
-  header {
-    background: linear-gradient(135deg, #0d1b2a 0%, #0f2740 100%);
-    border-bottom: 1px solid var(--border);
-    padding: 20px 32px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  .logo {
-    width: 44px; height: 44px;
-    background: var(--gold);
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px; font-weight: 900; color: var(--navy);
-    flex-shrink: 0;
-  }
-  .brand-text .brand-name { font-size: 20px; font-weight: 800; letter-spacing: -0.3px; }
-  .brand-text p  { font-size: 13px; color: var(--muted); margin-top: 1px; }
-  .badge {
-    margin-left: auto;
-    background: rgba(245,158,11,0.15);
-    border: 1px solid rgba(245,158,11,0.35);
-    color: var(--gold2);
-    font-size: 12px; font-weight: 600;
-    padding: 4px 12px; border-radius: 999px;
-  }
+  /* ── SENTENCE DEMO ── */
+  .g-demo { background: var(--bg); border-left: 3px solid var(--blue); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; padding: 14px 18px; margin: 10px 0; }
+  .g-demo .de { font-size: 17px; font-weight: 700; color: var(--dark); margin-bottom: 4px; }
+  .g-demo .en { font-size: 13px; color: var(--mid); }
+  .g-demo .hl { color: var(--blue); }
 
-  /* ── MAIN ───────────────────────────────────── */
-  main { padding: 32px; max-width: 960px; margin: 0 auto; }
+  /* ── CASE TABLE ── */
+  .g-case-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .g-case-table th { background: var(--bg); padding: 11px 14px; text-align: left; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .7px; color: var(--light); border-bottom: 1px solid var(--border); }
+  .g-case-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .g-case-table tr:last-child td { border-bottom: none; }
+  .g-case-table tr:hover td { background: #FAFAFA; }
+  .g-case-name { font-weight: 800; font-size: 13px; }
+  .g-case-q { color: var(--light); font-size: 11.5px; margin-top: 2px; }
 
-  .section-title {
-    font-size: 22px; font-weight: 800;
-    margin-bottom: 6px;
-  }
-  .section-sub {
-    color: var(--muted); font-size: 14px;
-    margin-bottom: 28px; line-height: 1.6;
-  }
+  /* 4-color case system — borrowed from the CEFR level badge palette already
+     established in deutschweg-theme.css (mt-quick-btn.*). */
+  .cn-nom { color: #1D4ED8; }
+  .cn-akk { color: #92400E; }
+  .cn-dat { color: #059669; }
+  .cn-gen { color: #5B21B6; }
 
-  /* ── CARD ───────────────────────────────────── */
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 24px;
-    margin-bottom: 20px;
-  }
-  .card-title {
-    font-size: 13px; font-weight: 700;
-    text-transform: uppercase; letter-spacing: .8px;
-    color: var(--gold);
-    margin-bottom: 16px;
-  }
+  /* Article pills: gender-based color coding (consistent within each column) */
+  .gp { display: inline-block; padding: 3px 10px; border-radius: 6px; font-weight: 700; font-size: 13.5px; margin: 1px; }
+  .gp-m   { background: var(--blue-light); color: #1D4ED8; }
+  .gp-f   { background: #F5F3FF; color: #5B21B6; }
+  .gp-n   { background: var(--green-light); color: #059669; }
+  .gp-pl  { background: #FFFBEB; color: #92400E; }
+  /* Akkusativ masc. 'den' — orange to signal the key change from 'der' */
+  .gp-changed { background: #FFF7ED; border: 1.5px solid #FED7AA; color: #C2410C; }
+  /* Dativ — all green */
+  .gp-dat { background: var(--green-light); color: #059669; }
+  /* Genitiv — all purple */
+  .gp-gen { background: #F5F3FF; color: #5B21B6; }
 
-  /* ── CASE TABLE ─────────────────────────────── */
-  .case-table {
-    width: 100%; border-collapse: collapse;
-    font-size: 14px;
-  }
-  .case-table th {
-    background: rgba(255,255,255,.06);
-    padding: 12px 16px; text-align: left;
-    font-weight: 700; font-size: 12px;
-    text-transform: uppercase; letter-spacing: .7px;
-    color: var(--muted);
-    border-bottom: 1px solid var(--border);
-  }
-  .case-table td {
-    padding: 13px 16px;
-    border-bottom: 1px solid rgba(30,58,82,.6);
-    vertical-align: middle;
-  }
-  .case-table tr:last-child td { border-bottom: none; }
-  .case-table tr:hover td { background: rgba(255,255,255,.03); }
+  /* ── QUIZ ── */
+  .g-quiz-q p { font-size: 15px; font-weight: 600; color: var(--dark); margin-bottom: 12px; }
+  .g-quiz-opts { display: flex; gap: 8px; flex-wrap: wrap; }
+  .g-quiz-btn { background: #fff; border: 2px solid var(--border); border-radius: var(--radius-sm); padding: 10px 18px; color: var(--dark); font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all .18s; }
+  .g-quiz-btn:hover { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
+  .g-quiz-btn.correct { border-color: var(--green); background: var(--green-light); color: #059669; }
+  .g-quiz-btn.wrong   { border-color: var(--red); background: var(--red-light); color: var(--red); }
+  .g-quiz-fb { font-size: 13px; margin-top: 10px; display: none; padding: 10px 14px; border-radius: var(--radius-sm); }
+  .g-quiz-fb.show { display: block; }
+  .g-quiz-fb.ok  { background: var(--green-light); border: 1px solid var(--green-border); color: #065F46; }
+  .g-quiz-fb.bad { background: var(--red-light); border: 1px solid #FECACA; color: #991B1B; }
 
-  .case-name {
-    font-weight: 800; font-size: 13px;
-  }
-  .case-name.nom { color: #60a5fa; }
-  .case-name.akk { color: #f472b6; }
-  .case-name.dat { color: #4ade80; }
-  .case-name.gen { color: #fbbf24; }
+  /* ── CTA ── */
+  .g-cta { background: var(--blue-light); border-left: 4px solid var(--blue); border-radius: 0 var(--radius-md) var(--radius-md) 0; padding: 20px 24px; margin-top: 8px; margin-bottom: 8px; }
+  .g-cta p { font-size: 14px; color: #1E3A5F; font-weight: 500; line-height: 1.65; margin-bottom: 16px; }
+  .g-cta p strong { color: #1D4ED8; font-weight: 700; }
+  .g-cta-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  .g-cta-primary { background: var(--blue); color: #fff; padding: 11px 22px; border-radius: 10px; font-size: 14px; font-weight: 700; text-decoration: none; box-shadow: 0 2px 8px rgba(59,130,246,.25); display: inline-flex; align-items: center; gap: 5px; transition: background .18s, transform .1s; }
+  .g-cta-primary:hover { background: var(--blue-dark); transform: translateY(-1px); }
+  .g-cta-secondary { background: #fff; border: 1.5px solid var(--border); color: var(--mid); padding: 11px 20px; border-radius: 10px; font-size: 14px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; transition: all .18s; }
+  .g-cta-secondary:hover { border-color: var(--blue); color: var(--blue); }
+  .g-cta-note { font-size: 12px; color: #4B7399; }
 
-  .case-question { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  /* ── OTHER TOPICS ── */
+  .g-topics { margin-top: 28px; padding-top: 22px; border-top: 1px solid var(--border); }
+  .g-topics-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--light); margin-bottom: 12px; }
+  .g-topic-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .g-topic-pill { padding: 7px 14px; border-radius: 999px; background: #fff; border: 1.5px solid var(--border); color: var(--mid); font-size: 13px; font-weight: 600; text-decoration: none; transition: all .18s; }
+  .g-topic-pill:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
 
-  .article-pill {
-    display: inline-block;
-    padding: 4px 10px; border-radius: 6px;
-    font-weight: 700; font-size: 14px;
-    margin: 1px;
-  }
-  .ap-m  { background: rgba(59,130,246,.2);  color: #93c5fd; }
-  .ap-f  { background: rgba(139,92,246,.2);  color: #c4b5fd; }
-  .ap-n  { background: rgba(16,185,129,.2);  color: #6ee7b7; }
-  .ap-pl { background: rgba(251,191,36,.15); color: #fde68a; }
+  .g-footer { text-align: center; padding: 24px; color: var(--light); font-size: 12px; border-top: 1px solid var(--border); margin-top: 12px; }
+  .g-footer a { color: var(--mid); text-decoration: none; }
+  .g-footer a:hover { color: var(--blue); }
 
-  .tip-bar {
-    background: rgba(245,158,11,.1);
-    border: 1px solid rgba(245,158,11,.25);
-    border-radius: 10px;
-    padding: 14px 18px;
-    margin-top: 16px;
-    font-size: 13px; line-height: 1.6;
-    color: #fde68a;
-  }
-  .tip-bar strong { color: var(--gold); }
-
-  .sentence-demo {
-    background: rgba(255,255,255,.04);
-    border: 1px solid var(--border);
-    border-radius: 10px; padding: 16px 20px;
-    margin: 12px 0;
-  }
-  .sentence-demo .de { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-  .sentence-demo .en { font-size: 13px; color: var(--muted); }
-  .sentence-demo .highlight { color: var(--gold); }
-
-  /* ── RESPONSIVE ─────────────────────────────── */
-  @media (max-width: 620px) {
-    main { padding: 16px; }
-  }
-
-  /* ── FOOTER ─────────────────────────────────── */
-  footer {
-    text-align: center;
-    padding: 28px;
-    color: var(--muted);
-    font-size: 12px;
-    border-top: 1px solid var(--border);
-    margin-top: 16px;
-  }
-  footer a { color: var(--gold); text-decoration: none; }
-
-  /* ── QUIZ ELEMENTS ──────────────────────────── */
-  .quiz-q p { font-size: 16px; font-weight: 600; margin-bottom: 14px; }
-  .quiz-opts { display: flex; gap: 8px; flex-wrap: wrap; }
-  .quiz-btn {
-    background: rgba(255,255,255,.06);
-    border: 1px solid var(--border);
-    border-radius: 8px; padding: 10px 18px;
-    color: var(--text); font-size: 14px; font-weight: 600;
-    cursor: pointer; transition: all .2s;
-  }
-  .quiz-btn:hover { background: rgba(245,158,11,.15); border-color: var(--gold); color: var(--gold); }
-  .quiz-btn.correct { background: rgba(16,185,129,.2); border-color: var(--green); color: #6ee7b7; }
-  .quiz-btn.wrong   { background: rgba(239,68,68,.2);  border-color: var(--red);   color: #f87171; }
-  .quiz-feedback { font-size: 13px; margin-top: 10px; display: none; padding: 8px 12px; border-radius: 8px; }
-  .quiz-feedback.show { display: block; }
-  .quiz-feedback.ok  { background: rgba(16,185,129,.15); color: #6ee7b7; }
-  .quiz-feedback.bad { background: rgba(239,68,68,.15);  color: #f87171; }
-
-  /* ── CTA (course upsell) ────────────────────── */
-  .cta-card {
-    border-radius: 16px;
-    padding: 24px;
-    margin-top: 12px;
-    background: linear-gradient(135deg, rgba(245,158,11,.1), rgba(245,158,11,.04));
-    border: 1px solid rgba(245,158,11,.3);
-  }
-  .cta-card p { font-size: 14px; line-height: 1.7; color: var(--text); margin-bottom: 18px; }
-  .cta-card p strong { color: var(--gold2); }
-  .cta-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
-  .cta-btn {
-    display: inline-block; padding: 12px 22px; border-radius: 10px;
-    font-size: 14px; font-weight: 700; text-decoration: none;
-    transition: filter .2s, transform .1s;
-  }
-  .cta-btn:active { transform: scale(.98); }
-  .cta-btn.primary { background: var(--gold); color: var(--navy); }
-  .cta-btn.primary:hover { filter: brightness(1.08); }
-  .cta-btn.secondary { background: transparent; border: 1.5px solid var(--border); color: var(--text); }
-  .cta-btn.secondary:hover { border-color: var(--gold); color: var(--gold); }
-  .cta-note { font-size: 12px; color: var(--muted); }
-
-  /* ── Other grammar topics ───────────────────── */
-  .topic-links {
-    margin-top: 28px; padding-top: 22px;
-    border-top: 1px solid var(--border);
-  }
-  .topic-links-label {
-    font-size: 12px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: .6px; color: var(--muted); margin-bottom: 12px;
-  }
-  .topic-pills { display: flex; flex-wrap: wrap; gap: 8px; }
-  .topic-pill {
-    display: inline-block; padding: 8px 14px; border-radius: 999px;
-    background: rgba(255,255,255,.05); border: 1px solid var(--border);
-    color: var(--muted); font-size: 13px; font-weight: 600; text-decoration: none;
-    transition: all .2s;
-  }
-  .topic-pill:hover { color: var(--gold); border-color: var(--gold); background: rgba(245,158,11,.08); }
+  @media (max-width: 620px) { .g-wrap { padding: 22px 14px 80px; } }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">D</div>
-  <div class="brand-text">
-    <div class="brand-name">DeutschWeg</div>
-    <p>German Exam Prep for African Learners</p>
-  </div>
-  <span class="badge">🎓 Cases</span>
+<header class="g-header">
+  <a class="g-back" href="/">← DeutschWeg</a>
+  <a class="g-logo" href="/">
+    <div class="g-logo-icon">D</div>
+    <span class="g-logo-text">Deutsch<span>Weg</span></span>
+  </a>
+  <span class="g-badge">A1 Grammar</span>
 </header>
 
-<main>
+<main class="g-wrap">
 
-  <h1 class="section-title">The Four German Cases</h1>
-  <p class="section-sub">Cases show the role a noun plays in a sentence. This is what the Goethe exam tests heavily — learn the patterns, not just the table.</p>
+  <div class="g-eyebrow">A1 Grammar Guide</div>
+  <h1 class="g-title">The Four German Cases</h1>
+  <p class="g-sub">Cases show the role a noun plays in a sentence. This is what the Goethe exam tests heavily — learn the patterns, not just the table.</p>
 
-  <div class="card">
-    <div class="card-title">Article Changes by Case</div>
-    <table class="case-table">
+  <div class="g-card">
+    <div class="g-card-title">Article Changes by Case</div>
+    <table class="g-case-table">
       <thead>
         <tr>
           <th>Case</th>
           <th>Question</th>
-          <th style="color:#93c5fd">Masculine</th>
-          <th style="color:#c4b5fd">Feminine</th>
-          <th style="color:#6ee7b7">Neuter</th>
-          <th style="color:#fde68a">Plural</th>
+          <th style="color:#1D4ED8">Masculine</th>
+          <th style="color:#5B21B6">Feminine</th>
+          <th style="color:#059669">Neuter</th>
+          <th style="color:#92400E">Plural</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><div class="case-name nom">Nominativ</div><div class="case-question">Who / What?</div></td>
-          <td style="color:var(--muted);font-size:13px">Subject</td>
-          <td><span class="article-pill ap-m">der</span></td>
-          <td><span class="article-pill ap-f">die</span></td>
-          <td><span class="article-pill ap-n">das</span></td>
-          <td><span class="article-pill ap-pl">die</span></td>
+          <td><div class="g-case-name cn-nom">Nominativ</div><div class="g-case-q">Who / What?</div></td>
+          <td style="color:var(--light);font-size:12.5px">Subject</td>
+          <td><span class="gp gp-m">der</span></td>
+          <td><span class="gp gp-f">die</span></td>
+          <td><span class="gp gp-n">das</span></td>
+          <td><span class="gp gp-pl">die</span></td>
         </tr>
         <tr>
-          <td><div class="case-name akk">Akkusativ</div><div class="case-question">Whom / What?</div></td>
-          <td style="color:var(--muted);font-size:13px">Direct object</td>
-          <td><span class="article-pill ap-m" style="color:#f9a8d4;background:rgba(244,114,182,.2)">den</span></td>
-          <td><span class="article-pill ap-f">die</span></td>
-          <td><span class="article-pill ap-n">das</span></td>
-          <td><span class="article-pill ap-pl">die</span></td>
+          <td><div class="g-case-name cn-akk">Akkusativ</div><div class="g-case-q">Whom / What?</div></td>
+          <td style="color:var(--light);font-size:12.5px">Direct object</td>
+          <td><span class="gp gp-changed">den</span></td>
+          <td><span class="gp gp-f">die</span></td>
+          <td><span class="gp gp-n">das</span></td>
+          <td><span class="gp gp-pl">die</span></td>
         </tr>
         <tr>
-          <td><div class="case-name dat">Dativ</div><div class="case-question">To whom?</div></td>
-          <td style="color:var(--muted);font-size:13px">Indirect object</td>
-          <td><span class="article-pill ap-m" style="color:#86efac;background:rgba(74,222,128,.2)">dem</span></td>
-          <td><span class="article-pill ap-f" style="color:#86efac;background:rgba(74,222,128,.2)">der</span></td>
-          <td><span class="article-pill ap-n" style="color:#86efac;background:rgba(74,222,128,.2)">dem</span></td>
-          <td><span class="article-pill ap-pl" style="color:#86efac;background:rgba(74,222,128,.2)">den</span></td>
+          <td><div class="g-case-name cn-dat">Dativ</div><div class="g-case-q">To whom?</div></td>
+          <td style="color:var(--light);font-size:12.5px">Indirect object</td>
+          <td><span class="gp gp-dat">dem</span></td>
+          <td><span class="gp gp-dat">der</span></td>
+          <td><span class="gp gp-dat">dem</span></td>
+          <td><span class="gp gp-dat">den</span></td>
         </tr>
         <tr>
-          <td><div class="case-name gen">Genitiv</div><div class="case-question">Whose?</div></td>
-          <td style="color:var(--muted);font-size:13px">Possession</td>
-          <td><span class="article-pill ap-m" style="color:#fde68a;background:rgba(251,191,36,.15)">des</span></td>
-          <td><span class="article-pill ap-f" style="color:#fde68a;background:rgba(251,191,36,.15)">der</span></td>
-          <td><span class="article-pill ap-n" style="color:#fde68a;background:rgba(251,191,36,.15)">des</span></td>
-          <td><span class="article-pill ap-pl" style="color:#fde68a;background:rgba(251,191,36,.15)">der</span></td>
+          <td><div class="g-case-name cn-gen">Genitiv</div><div class="g-case-q">Whose?</div></td>
+          <td style="color:var(--light);font-size:12.5px">Possession</td>
+          <td><span class="gp gp-gen">des</span></td>
+          <td><span class="gp gp-gen">der</span></td>
+          <td><span class="gp gp-gen">des</span></td>
+          <td><span class="gp gp-gen">der</span></td>
         </tr>
       </tbody>
     </table>
   </div>
 
-  <div class="card">
-    <div class="card-title">Real Sentences — Each Case in Action</div>
-    <div class="sentence-demo">
-      <div class="de"><span class="highlight">Der</span> Mann arbeitet. <span style="font-size:13px;color:var(--muted)">(NOM)</span></div>
+  <div class="g-card">
+    <div class="g-card-title">Real Sentences — Each Case in Action</div>
+    <div class="g-demo">
+      <div class="de"><span class="hl">Der</span> Mann arbeitet. <span style="font-size:12px;color:var(--light)">(NOM)</span></div>
       <div class="en">The man works. → <em>der Mann</em> is the subject (Nominativ)</div>
     </div>
-    <div class="sentence-demo">
-      <div class="de">Amina kauft <span class="highlight">den</span> Bus. <span style="font-size:13px;color:var(--muted)">(AKK)</span></div>
+    <div class="g-demo">
+      <div class="de">Amina kauft <span class="hl">den</span> Bus. <span style="font-size:12px;color:var(--light)">(AKK)</span></div>
       <div class="en">Amina buys the bus. → <em>den Bus</em> is the direct object (Akkusativ) — masc. changes!</div>
     </div>
-    <div class="sentence-demo">
-      <div class="de">Kwame gibt <span class="highlight">dem</span> Kind ein Buch. <span style="font-size:13px;color:var(--muted)">(DAT)</span></div>
+    <div class="g-demo">
+      <div class="de">Kwame gibt <span class="hl">dem</span> Kind ein Buch. <span style="font-size:12px;color:var(--light)">(DAT)</span></div>
       <div class="en">Kwame gives the child a book. → <em>dem Kind</em> is the indirect object (Dativ)</div>
     </div>
-    <div class="sentence-demo">
-      <div class="de">Das ist das Haus <span class="highlight">des</span> Mannes. <span style="font-size:13px;color:var(--muted)">(GEN)</span></div>
+    <div class="g-demo">
+      <div class="de">Das ist das Haus <span class="hl">des</span> Mannes. <span style="font-size:12px;color:var(--light)">(GEN)</span></div>
       <div class="en">This is the man's house. → <em>des Mannes</em> shows possession (Genitiv)</div>
     </div>
   </div>
 
-  <div class="tip-bar">
+  <div class="g-tip">
     <strong>💡 Only masculine changes in Akkusativ:</strong> der → den. This is the #1 Goethe exam trap. Feminine, neuter and plural stay the same from Nominativ to Akkusativ.
   </div>
 
-  <div class="card" style="margin-top:20px">
-    <div class="card-title">✏️ Quick Check</div>
-    <div class="quiz-q" id="q1">
+  <div class="g-card" style="margin-top:18px">
+    <div class="g-card-title">✏️ Quick Check</div>
+    <div class="g-quiz-q" id="q1">
       <p>Amina kauft ___ Bus. (der Bus — Akkusativ)</p>
-      <div class="quiz-opts">
-        <button class="quiz-btn" onclick="check(this,'q1','wrong','❌ Remember: masculine changes in Akkusativ — der → den')">der</button>
-        <button class="quiz-btn" onclick="check(this,'q1','correct','✅ Richtig! Masculine changes der → den in Akkusativ.')">den</button>
-        <button class="quiz-btn" onclick="check(this,'q1','wrong','❌ dem is Dativ, not Akkusativ.')">dem</button>
+      <div class="g-quiz-opts">
+        <button class="g-quiz-btn" onclick="check(this,'q1','wrong','❌ Remember: masculine changes in Akkusativ — der → den')">der</button>
+        <button class="g-quiz-btn" onclick="check(this,'q1','correct','✅ Richtig! Masculine changes der → den in Akkusativ.')">den</button>
+        <button class="g-quiz-btn" onclick="check(this,'q1','wrong','❌ dem is Dativ, not Akkusativ.')">dem</button>
       </div>
-      <div class="quiz-feedback" id="q1-fb"></div>
+      <div class="g-quiz-fb" id="q1-fb"></div>
     </div>
   </div>
 
-  <div class="cta-card">
-    <p>📚 This topic is part of <strong>Module 5 (Akkusativ) and Module 6 (Dativ)</strong> — pieces of DeutschWeg's complete <strong>A1 German course, free forever</strong>. Sign up to track your progress and get the full lesson with practice exercises for every topic.</p>
-    <div class="cta-actions">
-      <a class="cta-btn primary" href="signup.html">Start free — Sign up →</a>
-      <a class="cta-btn secondary" href="module5-akkusativ.html">Open Module 5 →</a>
+  <div class="g-cta">
+    <p>📚 This topic is part of <strong>Module 5 (Akkusativ) and Module 6 (Dativ)</strong> — pieces of DeutschWeg's complete <strong>A1 German course, free forever</strong>. Sign up to track your progress and unlock practice exercises for every topic.</p>
+    <div class="g-cta-actions">
+      <a class="g-cta-primary" href="/signup.html">Start free — Sign up →</a>
+      <a class="g-cta-secondary" href="/module5-akkusativ.html">Open Module 5 →</a>
     </div>
-    <p class="cta-note">Want to go further? DeutschWeg also covers A2, B1 and B2 for the complete Goethe exam journey.</p>
+    <p class="g-cta-note">Want to go further? DeutschWeg also covers A2, B1 and B2 for the complete Goethe exam journey.</p>
   </div>
 
-  <div class="topic-links">
-    <div class="topic-links-label">More Grammar Topics</div>
-    <div class="topic-pills">
-      <a class="topic-pill" href="/grammatik/artikel">Articles (der/die/das)</a>
-      <a class="topic-pill" href="/grammatik/wortstellung">Word Order</a>
-      <a class="topic-pill" href="/grammatik/sein-haben">sein &amp; haben</a>
-      <a class="topic-pill" href="/grammatik/negation">Negation (nicht/kein)</a>
+  <div class="g-topics">
+    <div class="g-topics-label">More Grammar Topics</div>
+    <div class="g-topic-pills">
+      <a class="g-topic-pill" href="/grammatik/artikel">Articles (der/die/das)</a>
+      <a class="g-topic-pill" href="/grammatik/wortstellung">Word Order</a>
+      <a class="g-topic-pill" href="/grammatik/sein-haben">sein &amp; haben</a>
+      <a class="g-topic-pill" href="/grammatik/negation">Negation (nicht/kein)</a>
     </div>
   </div>
 
 </main>
 
-<footer>
-  Made for <a href="https://deutschweg.de" target="_blank">DeutschWeg</a> — German Exam Prep for African Learners 🌍 &nbsp;|&nbsp; A1 is free forever →
+<footer class="g-footer">
+  Made for <a href="https://deutschweg.de">DeutschWeg</a> — German Exam Prep for African Learners 🌍 &nbsp;|&nbsp; A1 is free forever →
 </footer>
 
 <script>
@@ -384,7 +263,7 @@
     const fb = document.getElementById(qId + '-fb');
     fb.textContent = msg;
     fb.classList.add('show', result === 'correct' ? 'ok' : 'bad');
-    q.querySelectorAll('.quiz-btn').forEach(b => b.style.cursor = 'default');
+    q.querySelectorAll('.g-quiz-btn').forEach(b => b.style.cursor = 'default');
   }
 </script>
 
