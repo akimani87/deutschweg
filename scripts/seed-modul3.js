@@ -321,28 +321,73 @@ const LESSONS = [
 // ── Seed ─────────────────────────────────────────────────────────────────
 
 async function run() {
-  // 1. Find the module
-  const { data: mod, error: modErr } = await supabase
+  // 1. Find the module — title-based lookup is safer than order_index alone
+  //    because order_index differs between the local snapshot and the live DB
+  //    (live DB has Numbers at order_index=3, not 2). We match by both to be
+  //    sure, and print the confirmed title before touching anything.
+  const { data: mods, error: modErr } = await supabase
     .from('modules')
-    .select('id, title')
+    .select('id, title, order_index')
     .eq('level', 'A1')
-    .eq('order_index', 2)
-    .maybeSingle();
+    .order('order_index', { ascending: true });
 
-  if (modErr || !mod) {
-    console.error('✗ Could not find A1 Module 2 (Numbers, Time & Dates):', modErr?.message || 'not found');
-    console.error('  Make sure seed-modules.js has been run first.');
+  if (modErr) {
+    console.error('✗ Could not query modules:', modErr.message);
     process.exit(1);
   }
-  console.log('✓ Found module:', mod.title, '(id:', mod.id + ')');
 
-  // 2. Delete existing lessons for this module
+  // Find the Numbers module by title substring (handles buggy-concatenated DB titles)
+  const mod = (mods || []).find(function(m) {
+    return (m.title || '').toLowerCase().includes('number');
+  });
+
+  if (!mod) {
+    console.error('✗ Could not find a Numbers module in A1. Titles found:');
+    (mods || []).forEach(function(m) { console.error('  oi:' + m.order_index + ' | ' + m.title); });
+    process.exit(1);
+  }
+
+  console.log('✓ Target module confirmed:');
+  console.log('    title:       ', mod.title);
+  console.log('    order_index: ', mod.order_index);
+  console.log('    id:          ', mod.id);
+  console.log('');
+
+  // Guard: refuse to run if the found module looks like Pronunciation or Greetings
+  if (/(pronunc|greet|begrüß)/i.test(mod.title)) {
+    console.error('✗ Safety check failed: found module looks like Pronunciation/Greetings, not Numbers.');
+    console.error('  Aborting without touching the database.');
+    process.exit(1);
+  }
+
+  // 2. Fetch and log existing lessons BEFORE deleting (backup to console + JSON file)
+  const { data: existing, error: fetchErr } = await supabase
+    .from('lessons')
+    .select('id, order_index, title, content_json, lernziel_intro, lernziel_completion')
+    .eq('module_id', mod.id)
+    .order('order_index', { ascending: true });
+
+  if (fetchErr) {
+    console.warn('  Warning: could not pre-fetch existing lessons:', fetchErr.message);
+  } else if (existing && existing.length > 0) {
+    const backupPath = require('path').resolve(__dirname, '../.seed-modul3-backup.json');
+    require('fs').writeFileSync(backupPath, JSON.stringify({ module: mod, lessons: existing }, null, 2));
+    console.log('  Backed up', existing.length, 'existing lesson(s) to .seed-modul3-backup.json');
+    existing.forEach(function(l) {
+      console.log('    oi:' + l.order_index + ' | ' + l.title + ' | ' + l.id);
+    });
+    console.log('');
+  } else {
+    console.log('  No existing lessons found for this module (clean insert).');
+  }
+
+  // 3. Delete existing lessons
   const { error: delErr } = await supabase
     .from('lessons')
     .delete()
     .eq('module_id', mod.id);
   if (delErr) console.warn('  Warning: could not delete old lessons:', delErr.message);
-  else console.log('  Deleted existing lessons for module', mod.id);
+  else console.log('  Cleared existing lessons for module', mod.id);
 
   // 3. Insert the four new lessons
   for (const lesson of LESSONS) {
