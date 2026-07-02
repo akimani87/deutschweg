@@ -538,13 +538,45 @@
 <!-- Audio playback for content_json audio blocks. Defined at global scope
      so inline onclick handlers can reach it. -->
 <script>
-  function speakText(text, lang) {
-    if (typeof window.speechSynthesis === 'undefined') return;
-    window.speechSynthesis.cancel();
-    var u = new SpeechSynthesisUtterance(text);
-    u.lang = lang || 'de-DE';
-    u.rate = 0.85;
-    window.speechSynthesis.speak(u);
+  // speakText — uses /api/tts (ElevenLabs) for consistent German audio.
+  // Falls back to Web Speech API only if the fetch fails (e.g. offline).
+  var _currentAudio = null;
+  function speakText(text) {
+    if (!text) return;
+    // Stop any currently playing audio immediately.
+    if (_currentAudio) {
+      _currentAudio.pause();
+      try { URL.revokeObjectURL(_currentAudio.src); } catch(_) {}
+      _currentAudio = null;
+    }
+    fetch(DW_API + '/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: String(text) })
+    })
+    .then(function(r) {
+      if (!r.ok) throw new Error('TTS ' + r.status);
+      return r.blob();
+    })
+    .then(function(blob) {
+      var url = URL.createObjectURL(blob);
+      var audio = new Audio(url);
+      _currentAudio = audio;
+      audio.onended = function() {
+        URL.revokeObjectURL(url);
+        if (_currentAudio === audio) _currentAudio = null;
+      };
+      audio.play();
+    })
+    .catch(function() {
+      // Fallback: browser TTS (inconsistent but better than silence).
+      if (typeof window.speechSynthesis !== 'undefined') {
+        window.speechSynthesis.cancel();
+        var u = new SpeechSynthesisUtterance(String(text));
+        u.lang = 'de-DE'; u.rate = 0.85;
+        window.speechSynthesis.speak(u);
+      }
+    });
   }
 
   // ── dwTiles: tile-assembly interactive controller ─────────────────────
