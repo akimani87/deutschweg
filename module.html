@@ -300,6 +300,13 @@
   .dw-clock-opt.wrong   { border-color:#EF4444; background:#FEF2F2; color:#991B1B; }
   .dw-clock-next { width:100%; background:#16A34A; color:#fff; border:none; border-radius:10px; padding:12px; font-size:15px; font-weight:700; font-family:inherit; cursor:pointer; margin-top:10px; display:none; }
   .dw-clock-progress { font-size:12px; color:#9CA3AF; text-align:right; margin-bottom:10px; }
+  /* Listening mode: face shows a tap-to-hear prompt instead of a time */
+  .dw-clock-quiz-face.listening-face {
+    background:#EFF6FF; color:#2563EB; border:2px solid #BFDBFE;
+    font-size:20px; cursor:pointer; letter-spacing:0; font-family:inherit;
+    transition:background .15s;
+  }
+  .dw-clock-quiz-face.listening-face:hover { background:#DBEAFE; }
 
   /* listening-input — hear audio → type the digits */
   .dw-listen { margin:12px 0 20px; }
@@ -690,10 +697,24 @@
       var ridx   = getRidx(el);
       if (ridx >= rounds.length) { el.innerHTML = '<div class="dw-tiles-score">✅ Clock practice complete!</div>'; return; }
       var r = rounds[ridx];
+      var isListening = el.getAttribute('data-mode') === 'listening';
 
       el.querySelector('.ck-cur').textContent = ridx + 1;
       el.querySelector('.ck-tot').textContent = rounds.length;
-      el.querySelector('.ck-face').textContent = r.time || '--:--';
+
+      // Listening mode: face is a tap-to-replay button; auto-play on load.
+      // Regular mode: face shows the time/emoji prompt as text.
+      var faceEl = el.querySelector('.ck-face');
+      if (isListening && r.audio) {
+        faceEl.textContent = '🔊 Tap to hear again';
+        faceEl.classList.add('listening-face');
+        faceEl.onclick = function() { speakText(r.audio, 'de-DE'); };
+        setTimeout(function() { speakText(r.audio, 'de-DE'); }, 350);
+      } else {
+        faceEl.textContent = r.time || '--:--';
+        faceEl.classList.remove('listening-face');
+        faceEl.onclick = null;
+      }
 
       var opts  = el.querySelector('.ck-opts');
       var nxt   = el.querySelector('.dw-clock-next');
@@ -1004,10 +1025,11 @@
             return '<div class="dw-clock">' + ckHtml + '</div>';
           }
 
-          // quiz mode
+          // quiz mode (regular or listening)
           var ckId = 'ck-' + Math.random().toString(36).slice(2,7);
+          var ckMode = block.mode || '';
           var ckRounds = JSON.stringify(ckItems).replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-          return '<div class="dw-clock" id="' + ckId + '" data-rounds="' + ckRounds + '" data-ridx="0">' +
+          return '<div class="dw-clock" id="' + ckId + '" data-rounds="' + ckRounds + '" data-ridx="0"' + (ckMode ? ' data-mode="' + ckMode + '"' : '') + '>' +
             '<div class="dw-clock-progress">Round <span class="ck-cur">1</span> / <span class="ck-tot">?</span></div>' +
             '<div class="dw-clock-quiz-prompt">' +
               '<div class="dw-clock-quiz-face ck-face">--:--</div>' +
