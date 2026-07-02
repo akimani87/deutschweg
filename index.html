@@ -765,7 +765,7 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
 
     <div class="paths-foot">
       <p class="paths-foot-row"><a class="paths-foot-link" href="/blog.html">See all 7 pathways →</a></p>
-      <p class="paths-foot-row">Not sure of your level?<a class="paths-foot-link" href="signup.html">Take the quick placement check →</a></p>
+      <p class="paths-foot-row">Not sure where to start?<a class="paths-foot-link" href="signup.html">Start with free A1 →</a></p>
     </div>
   </div>
 </section>
@@ -867,7 +867,7 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
       <div class="why-points">
         <div class="why-point">
           <span class="why-check">✓</span>
-          <div>Simple English explanations — not designed for Europeans</div>
+          <div>Explained in the English you actually learned — built for African learners, not European classrooms</div>
         </div>
         <div class="why-point">
           <span class="why-check">✓</span>
@@ -1039,28 +1039,28 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
     <div class="section-h">Start at your level</div>
     <div class="section-sub">Whether you're a complete beginner or ready for intermediate, we have a structured path built for you.</div>
     <div class="levels-grid">
-      <a href="/dashboard" class="level-card">
+      <a href="/signup.html?level=a1" class="level-card" data-level-href-auth="/dashboard" data-level-href-anon="/signup.html?level=a1">
         <div class="level-badge">A1 · ANFÄNGER</div>
         <div class="level-title">Complete Beginner</div>
         <div class="level-sub">Zero German required</div>
         <div class="level-desc">Start from scratch. Learn greetings, numbers, basic nouns and simple sentences. Perfect for first-time learners.</div>
-        <div class="level-meta">12 modules · Goethe A1 prep</div>
+        <div class="level-meta">13 modules · Goethe A1 prep</div>
       </a>
-      <a href="/dashboard" class="level-card">
+      <a href="/signup.html?level=a2" class="level-card" data-level-href-auth="/dashboard" data-level-href-anon="/signup.html?level=a2">
         <div class="level-badge">A2 · GRUNDSTUFE</div>
         <div class="level-title">Elementary</div>
         <div class="level-sub">Basic German knowledge</div>
         <div class="level-desc">Build on your foundation. Master accusative and dative cases, past tense, and everyday conversation skills.</div>
-        <div class="level-meta">14 modules · Goethe A2 prep</div>
+        <div class="level-meta">12 modules · Goethe A2 prep</div>
       </a>
-      <a href="/dashboard" class="level-card">
+      <a href="/signup.html?level=b1" class="level-card" data-level-href-auth="/dashboard" data-level-href-anon="/signup.html?level=b1">
         <div class="level-badge">B1 · MITTELSTUFE</div>
         <div class="level-title">Intermediate</div>
         <div class="level-sub">Confident A2 speaker</div>
         <div class="level-desc">Master complex grammar, write formal letters, speak fluently in exams. Full Goethe B1 mock exam included.</div>
         <div class="level-meta">13 modules · Goethe B1 prep</div>
       </a>
-      <a href="/dashboard" class="level-card">
+      <a href="/signup.html?level=b2" class="level-card" data-level-href-auth="/dashboard" data-level-href-anon="/signup.html?level=b2">
         <div class="level-badge">B2 · OBERSTUFE</div>
         <div class="level-title">Upper Intermediate</div>
         <div class="level-sub">Solid B1 foundation</div>
@@ -1107,6 +1107,7 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
           <li><a href="exam-whisperer.html">Exam Whisperer</a></li>
           <li><a href="sprechen-prep.html">Sprechen Prep</a></li>
           <li><a href="lesson-new.html">Lessons</a></li>
+          <li><a href="/grammar">Grammar Guides</a></li>
         </ul>
       </div>
       <div>
@@ -1128,7 +1129,7 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
       </div>
     </div>
     <div class="footer-bottom">
-      <span>© 2025 DeutschWeg. All rights reserved.</span>
+      <span>© <span id="footer-year">2026</span> DeutschWeg. All rights reserved.</span>
       <a href="mailto:hello@deutschweg.com">hello@deutschweg.com</a>
     </div>
   </div>
@@ -1137,6 +1138,19 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
 <script>
 document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('ready');});
 if(document.readyState==='complete'||document.readyState==='interactive'){document.body.classList.add('ready');}
+// Dynamic footer year — avoids hardcoded year becoming stale
+var fyEl=document.getElementById('footer-year');if(fyEl)fyEl.textContent=new Date().getFullYear();
+// Level card links: logged-in → /dashboard, logged-out → /signup?level=X
+// dwSupabase is already loaded on this page (Phase 2 progress bar)
+if(window.dwSupabase){
+  window.dwSupabase.auth.getUser().then(function(res){
+    var user=res&&res.data&&res.data.user;
+    if(!user)return; // keep default anon href
+    document.querySelectorAll('[data-level-href-auth]').forEach(function(el){
+      el.href=el.getAttribute('data-level-href-auth');
+    });
+  }).catch(function(){});
+}
 </script>
 <script src="./cookie-banner.js"></script>
 

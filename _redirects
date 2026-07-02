@@ -9,10 +9,21 @@
 /blog/skilled-worker        /blog-skilled-worker-visa.html   200
 /blog/integration-course    /blog-integration-course.html    200
 
-# Clean grammar topic URLs (SEO-indexable, standalone — no login required)
-/grammatik/artikel          /grammatik-artikel.html          200
-/grammatik/kasus            /grammatik-kasus.html            200
-/grammatik/akkusativ        /grammatik-kasus.html            200
-/grammatik/wortstellung     /grammatik-wortstellung.html     200
-/grammatik/sein-haben       /grammatik-sein-haben.html       200
-/grammatik/negation         /grammatik-negation.html         200
+# Grammar hub
+/grammar  /grammar.html  200
+
+# Grammar topic pages — English keyword slugs (canonical URLs for SEO)
+/grammar/german-articles-der-die-das   /grammatik-artikel.html       200
+/grammar/german-cases                  /grammatik-kasus.html         200
+/grammar/german-word-order             /grammatik-wortstellung.html  200
+/grammar/sein-haben                    /grammatik-sein-haben.html    200
+/grammar/german-negation-nicht-kein    /grammatik-negation.html      200
+
+# 301 redirects from old /grammatik/* slugs to canonical /grammar/* URLs
+# (preserves any inbound links, consolidates SEO signals)
+/grammatik/artikel       /grammar/german-articles-der-die-das    301
+/grammatik/kasus         /grammar/german-cases                   301
+/grammatik/akkusativ     /grammar/german-cases                   301
+/grammatik/wortstellung  /grammar/german-word-order              301
+/grammatik/sein-haben    /grammar/sein-haben                     301
+/grammatik/negation      /grammar/german-negation-nicht-kein     301
