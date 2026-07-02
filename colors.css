@@ -1,0 +1,92 @@
+/**
+ * DeutschWeg — Semantic Color System
+ * ===================================
+ * Single source of truth for all lesson color semantics.
+ * Import this file; never hardcode these values in lesson HTML/CSS.
+ *
+ * ⚠️  CONFIRM WITH ANGELA: these defaults follow common German-teaching
+ *     conventions, but must match the DeutschWeg TikTok palette exactly.
+ *     If TikToks use different colors, the TikTok palette wins — change
+ *     the :root values below before teaching content is shipped.
+ *
+ * Usage rules (from the DeutschWeg Constitution):
+ *  1. A color always means the same thing on every screen, lesson, and level.
+ *  2. Max 2 semantic colors visible per screen (plus neutral text). More = noise.
+ *  3. Color must never be the ONLY signal (accessibility): pair with bold or
+ *     underline where the distinction is critical.
+ *  4. --dw-change (amber) is EXCLUSIVELY for the changing element in a pattern.
+ *     Never use it decoratively.
+ */
+
+:root {
+  /* ── GENDER / ARTICLE COLORS ─────────────────────────── */
+  --dw-masc:        #2563EB;      /* Maskulin  (der)  — blue   */
+  --dw-masc-bg:     #EFF6FF;      /* Maskulin background tint  */
+  --dw-masc-border: #BFDBFE;      /* Maskulin border tint      */
+
+  --dw-fem:         #DC2626;      /* Feminin   (die)  — red    */
+  --dw-fem-bg:      #FEF2F2;      /* Feminin background tint   */
+  --dw-fem-border:  #FECACA;      /* Feminin border tint       */
+
+  --dw-neut:        #16A34A;      /* Neutrum   (das)  — green  */
+  --dw-neut-bg:     #F0FDF4;      /* Neutrum background tint   */
+  --dw-neut-border: #BBF7D0;      /* Neutrum border tint       */
+
+  --dw-plural:      #9333EA;      /* Plural    (die)  — purple */
+  --dw-plural-bg:   #FAF5FF;      /* Plural background tint    */
+  --dw-plural-border:#E9D5FF;     /* Plural border tint        */
+
+  /* ── THE "WHAT CHANGES" HIGHLIGHT ───────────────────── */
+  /* Amber: reserved EXCLUSIVELY for the changing element   */
+  /* in any pattern. Never use for decoration.              */
+  --dw-change:      #F59E0B;      /* Amber — the changing part */
+  --dw-change-bg:   #FFFBEB;      /* Amber background          */
+  --dw-change-border:#FDE68A;     /* Amber border              */
+  --dw-change-text: #92400E;      /* Amber text (on bg)        */
+
+  /* ── VERB TYPE COLORS (for Perfekt and beyond) ──────── */
+  --dw-haben:       #0891B2;      /* haben-verbs  — teal       */
+  --dw-haben-bg:    #ECFEFF;
+  --dw-haben-border:#A5F3FC;
+
+  --dw-sein:        #EA580C;      /* sein-verbs (movement)     */
+  --dw-sein-bg:     #FFF7ED;
+  --dw-sein-border: #FED7AA;
+
+  /* ── LESSON UI TOKENS ───────────────────────────────── */
+  /* Re-export of deutschweg-theme.css values so lesson     */
+  /* components can reference one file.                     */
+  --dw-blue:        #3B82F6;
+  --dw-dark:        #1F2937;
+  --dw-mid:         #4B5563;
+  --dw-light:       #9CA3AF;
+  --dw-bg:          #F8FAFC;
+  --dw-white:       #FFFFFF;
+  --dw-border:      #E5E7EB;
+  --dw-green:       #10B981;
+  --dw-red:         #EF4444;
+}
+
+/* ── CONVENIENCE UTILITY CLASSES ─────────────────────────
+   Use these directly in lesson HTML instead of inline styles.
+   Class names describe MEANING, not appearance.              */
+
+/* Article/gender chips */
+.dw-masc   { color: var(--dw-masc);   background: var(--dw-masc-bg);    border: 1px solid var(--dw-masc-border);   }
+.dw-fem    { color: var(--dw-fem);    background: var(--dw-fem-bg);     border: 1px solid var(--dw-fem-border);    }
+.dw-neut   { color: var(--dw-neut);   background: var(--dw-neut-bg);    border: 1px solid var(--dw-neut-border);   }
+.dw-plural { color: var(--dw-plural); background: var(--dw-plural-bg);  border: 1px solid var(--dw-plural-border); }
+
+/* The changing element — apply to a <span> wrapping just the suffix/ending */
+.dw-change {
+  color: var(--dw-change-text);
+  background: var(--dw-change-bg);
+  border-bottom: 2px solid var(--dw-change);
+  border-radius: 3px;
+  padding: 0 2px;
+  font-weight: 700;
+}
+
+/* Verb type chips */
+.dw-haben  { color: #0E7490; background: var(--dw-haben-bg);  border: 1px solid var(--dw-haben-border); }
+.dw-sein   { color: #C2410C; background: var(--dw-sein-bg);   border: 1px solid var(--dw-sein-border);  }
