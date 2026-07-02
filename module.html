@@ -26,6 +26,7 @@
 <!-- /DW SEO INJECT -->
 <title>Module — DeutschWeg</title>
 <link rel="stylesheet" href="./deutschweg-theme.css">
+<link rel="stylesheet" href="./colors.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./supabase-config.js"></script>
 <script src="./paywall.js?v=2"></script>
@@ -195,6 +196,143 @@
   .lesson-table th{ text-align:left; padding:10px 14px; background:#F8FAFC; color:#475569; font-weight:700; border-bottom:1px solid #E5E7EB; font-size:12px; letter-spacing:0.5px; text-transform:uppercase; }
   .lesson-table td{ padding:10px 14px; border-bottom:1px solid #F1F5F9; color:#1F2937; }
   .lesson-table tr:last-child td { border-bottom:none; }
+
+  /* ── NEW BLOCK TYPES (Modul 3+) ─────────────────────── */
+
+  /* pattern-table — stem + changing suffix visual */
+  .dw-pt { display:flex; flex-direction:column; gap:6px; margin:12px 0 20px; }
+  .dw-pt-label { font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#9CA3AF; margin-bottom:4px; }
+  .dw-pt-row {
+    display:grid; grid-template-columns:1fr 18px auto;
+    align-items:center; gap:8px;
+    background:#fff; border:1px solid #E5E7EB; border-radius:12px; padding:11px 14px;
+  }
+  .dw-pt-word { display:flex; align-items:center; gap:8px; font-size:18px; font-weight:700; color:#1F2937; }
+  .dw-pt-arrow { color:#9CA3AF; font-size:13px; text-align:center; }
+  .dw-pt-digits { font-size:13px; color:#6B7280; font-weight:500; text-align:right; white-space:nowrap; }
+  /* reversal variant */
+  .dw-pt-rev { display:flex; flex-direction:column; gap:6px; margin:12px 0 14px; }
+  .dw-pt-rev-row {
+    background:#fff; border:1px solid #E5E7EB; border-radius:12px; padding:13px 14px;
+    display:grid; grid-template-columns:1fr 24px 1fr; align-items:center; gap:8px;
+  }
+  .dw-pt-rev-de { font-size:17px; font-weight:800; color:#1F2937; line-height:1.35; }
+  .dw-pt-rev-de .und { color:#9CA3AF; font-weight:500; }
+  .dw-pt-rev-swap { color:#9CA3AF; font-size:16px; text-align:center; }
+  .dw-pt-rev-eq { font-size:13px; color:#6B7280; line-height:1.6; text-align:right; }
+  .dw-pt-rev-eq strong { color:#1F2937; font-size:14px; display:block; }
+  .dw-pt-note {
+    background:#FFFBEB; border:1px solid #FCD34D; border-radius:10px;
+    padding:12px 14px; font-size:13.5px; color:#78350F; line-height:1.65; margin:0 0 8px;
+  }
+
+  /* tile-assembly — tap tiles to build the answer */
+  .dw-tiles { margin:12px 0 20px; }
+  .dw-tiles-prompt {
+    background:#EFF6FF; border:1px solid #BFDBFE; border-radius:10px;
+    padding:14px; text-align:center; font-size:24px; font-weight:800; color:#1D4ED8;
+    margin-bottom:14px; letter-spacing:-0.5px;
+  }
+  .dw-tiles-prompt .pt-label { font-size:11px; font-weight:700; letter-spacing:1px; color:#60A5FA; display:block; margin-bottom:4px; text-transform:uppercase; }
+  .dw-tiles-answer {
+    min-height:52px; background:#F8FAFC; border:2px dashed #E5E7EB; border-radius:10px;
+    display:flex; flex-wrap:wrap; gap:6px; padding:10px 12px; margin-bottom:12px;
+    align-items:center;
+  }
+  .dw-tiles-answer.correct { border-color:#16A34A; background:#F0FDF4; }
+  .dw-tiles-answer.wrong   { border-color:#EF4444; background:#FEF2F2; }
+  .dw-tiles-bank { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+  .dw-tile {
+    background:#fff; border:2px solid #E5E7EB; border-radius:10px;
+    padding:10px 16px; font-size:15px; font-weight:700; cursor:pointer;
+    transition:all .15s; user-select:none; color:#1F2937;
+  }
+  .dw-tile:hover:not(.used) { border-color:#3B82F6; color:#2563EB; }
+  .dw-tile.used { opacity:.35; cursor:default; }
+  .dw-tile.in-answer { background:#EFF6FF; border-color:#3B82F6; color:#1D4ED8; }
+  .dw-tiles-check {
+    width:100%; background:#3B82F6; color:#fff; border:none; border-radius:10px;
+    padding:13px; font-size:15px; font-weight:700; font-family:inherit;
+    cursor:pointer; transition:background .15s;
+  }
+  .dw-tiles-check:disabled { opacity:.45; cursor:default; }
+  .dw-tiles-feedback { margin-top:10px; padding:10px 14px; border-radius:10px; font-size:13.5px; display:none; }
+  .dw-tiles-feedback.show { display:block; }
+  .dw-tiles-feedback.ok  { background:#F0FDF4; border:1px solid #A7F3D0; color:#166534; }
+  .dw-tiles-feedback.bad { background:#FEF2F2; border:1px solid #FECACA; color:#991B1B; }
+  .dw-tiles-next {
+    width:100%; background:#16A34A; color:#fff; border:none; border-radius:10px;
+    padding:12px; font-size:15px; font-weight:700; font-family:inherit;
+    cursor:pointer; margin-top:8px; display:none;
+  }
+  .dw-tiles-progress { font-size:12px; color:#9CA3AF; text-align:right; margin-bottom:6px; }
+  .dw-tiles-score { font-size:14px; font-weight:700; color:#1F2937; text-align:center; margin-top:10px; }
+
+  /* clock-quiz — digital clock pattern + practice */
+  .dw-clock { margin:12px 0 20px; }
+  .dw-clock-item {
+    background:#fff; border:1px solid #E5E7EB; border-radius:12px;
+    padding:16px; display:flex; align-items:center; gap:16px; margin-bottom:8px;
+  }
+  .dw-clock-face {
+    background:#1F2937; color:#F59E0B; border-radius:10px;
+    padding:8px 14px; font-size:22px; font-weight:800; font-family:monospace;
+    flex-shrink:0; letter-spacing:1px; min-width:80px; text-align:center;
+  }
+  .dw-clock-sentence { font-size:16px; font-weight:700; color:#1F2937; }
+  .dw-clock-audio { color:#9CA3AF; font-size:20px; cursor:pointer; transition:color .15s; margin-left:auto; flex-shrink:0; }
+  .dw-clock-audio:hover { color:#3B82F6; }
+  /* quiz mode */
+  .dw-clock-quiz-prompt { text-align:center; margin-bottom:16px; }
+  .dw-clock-quiz-face {
+    background:#1F2937; color:#F59E0B; border-radius:14px;
+    padding:16px 24px; font-size:32px; font-weight:800; font-family:monospace;
+    display:inline-block; margin:0 auto 12px; letter-spacing:2px;
+  }
+  .dw-clock-opts { display:flex; flex-direction:column; gap:8px; }
+  .dw-clock-opt {
+    background:#fff; border:2px solid #E5E7EB; border-radius:10px;
+    padding:12px 16px; font-size:15px; font-weight:600; color:#1F2937;
+    cursor:pointer; transition:all .15s; text-align:left;
+  }
+  .dw-clock-opt:hover:not(:disabled) { border-color:#3B82F6; color:#2563EB; }
+  .dw-clock-opt.correct { border-color:#16A34A; background:#F0FDF4; color:#166534; }
+  .dw-clock-opt.wrong   { border-color:#EF4444; background:#FEF2F2; color:#991B1B; }
+  .dw-clock-next { width:100%; background:#16A34A; color:#fff; border:none; border-radius:10px; padding:12px; font-size:15px; font-weight:700; font-family:inherit; cursor:pointer; margin-top:10px; display:none; }
+  .dw-clock-progress { font-size:12px; color:#9CA3AF; text-align:right; margin-bottom:10px; }
+
+  /* listening-input — hear audio → type the digits */
+  .dw-listen { margin:12px 0 20px; }
+  .dw-listen-progress { font-size:12px; color:#9CA3AF; text-align:right; margin-bottom:8px; }
+  .dw-listen-card { background:#fff; border:1px solid #E5E7EB; border-radius:12px; padding:20px; }
+  .dw-listen-btn {
+    width:100%; background:#EFF6FF; border:2px solid #BFDBFE; border-radius:10px;
+    padding:18px; font-size:32px; cursor:pointer; margin-bottom:16px; transition:all .15s;
+    color:#2563EB;
+  }
+  .dw-listen-btn:hover { background:#DBEAFE; border-color:#93C5FD; }
+  .dw-listen-btn:active { transform:scale(.97); }
+  .dw-listen-input {
+    width:100%; font-size:28px; font-weight:800; text-align:center; letter-spacing:4px;
+    padding:12px; border:2px solid #E5E7EB; border-radius:10px; font-family:monospace;
+    color:#1F2937; background:#F8FAFC; outline:none;
+    transition:border-color .15s;
+  }
+  .dw-listen-input:focus { border-color:#3B82F6; background:#fff; }
+  .dw-listen-input.correct { border-color:#16A34A; background:#F0FDF4; color:#166534; }
+  .dw-listen-input.wrong   { border-color:#EF4444; background:#FEF2F2; color:#991B1B; }
+  .dw-listen-check { width:100%; background:#3B82F6; color:#fff; border:none; border-radius:10px; padding:13px; font-size:15px; font-weight:700; font-family:inherit; cursor:pointer; margin-top:10px; transition:background .15s; }
+  .dw-listen-next  { width:100%; background:#16A34A; color:#fff; border:none; border-radius:10px; padding:12px; font-size:15px; font-weight:700; font-family:inherit; cursor:pointer; margin-top:8px; display:none; }
+  .dw-listen-feedback { font-size:13.5px; margin-top:10px; padding:10px 14px; border-radius:10px; display:none; }
+  .dw-listen-feedback.show { display:block; }
+  .dw-listen-feedback.ok { background:#F0FDF4; border:1px solid #A7F3D0; color:#166534; }
+  .dw-listen-feedback.bad { background:#FEF2F2; border:1px solid #FECACA; color:#991B1B; }
+
+  @media(max-width:400px) {
+    .dw-pt-rev-row { grid-template-columns:1fr; }
+    .dw-pt-rev-swap { display:none; }
+    .dw-pt-rev-eq { text-align:left; border-top:1px solid #E5E7EB; padding-top:8px; margin-top:4px; }
+  }
 
   /* ── BUTTONS ── */
   .btn {
@@ -395,11 +533,272 @@
 <script>
   function speakText(text, lang) {
     if (typeof window.speechSynthesis === 'undefined') return;
+    window.speechSynthesis.cancel();
     var u = new SpeechSynthesisUtterance(text);
     u.lang = lang || 'de-DE';
     u.rate = 0.85;
     window.speechSynthesis.speak(u);
   }
+
+  // ── dwTiles: tile-assembly interactive controller ─────────────────────
+  // Each tile-assembly block is identified by a unique DOM id.
+  // State lives on the DOM element's dataset to survive re-renders.
+  var dwTiles = (function() {
+    function getRounds(el) {
+      try { return JSON.parse(el.getAttribute('data-rounds') || '[]'); } catch(e) { return []; }
+    }
+    function getRidx(el) { return parseInt(el.getAttribute('data-ridx') || '0', 10); }
+
+    function render(id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var rounds = getRounds(el);
+      var ridx   = getRidx(el);
+      if (ridx >= rounds.length) { done(el, rounds.length); return; }
+      var r = rounds[ridx];
+
+      el.querySelector('.ta-cur').textContent = ridx + 1;
+      el.querySelector('.ta-tot').textContent = rounds.length;
+      el.querySelector('.ta-prompt-val').textContent = r.prompt || '';
+
+      var bank   = el.querySelector('.dw-tiles-bank');
+      var answer = el.querySelector('.dw-tiles-answer');
+      var check  = el.querySelector('.dw-tiles-check');
+      var fb     = el.querySelector('.dw-tiles-feedback');
+      var nxt    = el.querySelector('.dw-tiles-next');
+
+      // Shuffle tiles
+      var tiles = (r.tiles || []).slice().sort(function(){ return Math.random() - .5; });
+      bank.innerHTML   = tiles.map(function(t,i) {
+        return '<div class="dw-tile" data-tile="' + i + '" data-val="' + t.replace(/"/g,'&quot;') + '" onclick="dwTiles.tap(\'' + id + '\',' + i + ')">' + t + '</div>';
+      }).join('');
+      answer.innerHTML = '';
+      answer.className = 'dw-tiles-answer';
+      check.disabled   = true;
+      fb.className     = 'dw-tiles-feedback';
+      fb.textContent   = '';
+      nxt.style.display = 'none';
+      el.setAttribute('data-selected', '[]');
+    }
+
+    function tap(id, tileIdx) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var rounds = getRounds(el);
+      var r = rounds[getRidx(el)];
+      var selected = JSON.parse(el.getAttribute('data-selected') || '[]');
+      if (selected.length >= (r.answer || []).length) return; // answer full
+
+      var tileEl = el.querySelector('[data-tile="' + tileIdx + '"]');
+      if (!tileEl || tileEl.classList.contains('used')) return;
+      tileEl.classList.add('used');
+
+      var val = tileEl.getAttribute('data-val');
+      selected.push({ idx: tileIdx, val: val });
+      el.setAttribute('data-selected', JSON.stringify(selected));
+
+      var answerEl = el.querySelector('.dw-tiles-answer');
+      var chip = document.createElement('div');
+      chip.className = 'dw-tile in-answer';
+      chip.textContent = val;
+      chip.setAttribute('data-sel-idx', selected.length - 1);
+      chip.onclick = function() { untap(id, selected.length - 1, tileIdx); };
+      answerEl.appendChild(chip);
+
+      var check = el.querySelector('.dw-tiles-check');
+      if (selected.length === (r.answer || []).length) check.disabled = false;
+    }
+
+    function untap(id, selIdx, tileIdx) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var selected = JSON.parse(el.getAttribute('data-selected') || '[]');
+      // Only allow removing the last tile (keep it simple)
+      if (selIdx !== selected.length - 1) return;
+      selected.pop();
+      el.setAttribute('data-selected', JSON.stringify(selected));
+
+      var tileEl = el.querySelector('[data-tile="' + tileIdx + '"]');
+      if (tileEl) tileEl.classList.remove('used');
+
+      var chips = el.querySelectorAll('.in-answer');
+      if (chips.length) chips[chips.length - 1].remove();
+
+      el.querySelector('.dw-tiles-check').disabled = true;
+    }
+
+    function check(id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var rounds   = getRounds(el);
+      var r        = rounds[getRidx(el)];
+      var selected = JSON.parse(el.getAttribute('data-selected') || '[]');
+      var answer   = r.answer || [];
+
+      var correct = selected.length === answer.length &&
+        selected.every(function(s, i) { return s.val === answer[i]; });
+
+      var answerEl = el.querySelector('.dw-tiles-answer');
+      var fb       = el.querySelector('.dw-tiles-feedback');
+      var nxt      = el.querySelector('.dw-tiles-next');
+      var checkBtn = el.querySelector('.dw-tiles-check');
+
+      answerEl.classList.add(correct ? 'correct' : 'wrong');
+      fb.className  = 'dw-tiles-feedback show ' + (correct ? 'ok' : 'bad');
+      fb.textContent = correct
+        ? '✓ Richtig! ' + (r.audio || answer.join(''))
+        : '✗ ' + answer.join('') + ' (' + (r.audio || '') + ')';
+      if (r.audio) speakText(r.audio, 'de-DE');
+      checkBtn.style.display = 'none';
+      nxt.style.display = '';
+    }
+
+    function next(id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var ridx   = getRidx(el) + 1;
+      var rounds = getRounds(el);
+      el.setAttribute('data-ridx', ridx);
+      if (ridx >= rounds.length) { done(el, rounds.length); return; }
+      render(id);
+    }
+
+    function done(el, total) {
+      el.innerHTML = '<div class="dw-tiles-score">✅ All ' + total + ' rounds complete!</div>';
+    }
+
+    // Called by inline <script> injected by renderContent
+    function init(id) {
+      // Defer until current render pass is complete
+      setTimeout(function() { render(id); }, 0);
+    }
+
+    return { init: init, tap: tap, check: check, next: next };
+  }());
+
+  // ── dwClock: clock-quiz interactive controller ────────────────────────
+  var dwClock = (function() {
+    function getRounds(el) {
+      try { return JSON.parse(el.getAttribute('data-rounds') || '[]'); } catch(e) { return []; }
+    }
+    function getRidx(el) { return parseInt(el.getAttribute('data-ridx') || '0', 10); }
+
+    function render(id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var rounds = getRounds(el);
+      var ridx   = getRidx(el);
+      if (ridx >= rounds.length) { el.innerHTML = '<div class="dw-tiles-score">✅ Clock practice complete!</div>'; return; }
+      var r = rounds[ridx];
+
+      el.querySelector('.ck-cur').textContent = ridx + 1;
+      el.querySelector('.ck-tot').textContent = rounds.length;
+      el.querySelector('.ck-face').textContent = r.time || '--:--';
+
+      var opts  = el.querySelector('.ck-opts');
+      var nxt   = el.querySelector('.dw-clock-next');
+      opts.innerHTML = (r.options || []).map(function(opt, i) {
+        var correct = opt === r.sentence;
+        return '<button class="dw-clock-opt" onclick="dwClock.pick(\'' + id + '\',' + i + ',' + correct + ')">' + opt + '</button>';
+      }).join('');
+      nxt.style.display = 'none';
+    }
+
+    function pick(id, idx, correct) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var rounds = getRounds(el);
+      var r = rounds[getRidx(el)];
+      var opts = el.querySelectorAll('.dw-clock-opt');
+      opts.forEach(function(b) { b.disabled = true; });
+      opts[idx].classList.add(correct ? 'correct' : 'wrong');
+      if (!correct) {
+        opts.forEach(function(b) { if (b.textContent === r.sentence) b.classList.add('correct'); });
+      }
+      if (r.audio || r.sentence) speakText(r.audio || r.sentence, 'de-DE');
+      el.querySelector('.dw-clock-next').style.display = '';
+    }
+
+    function next(id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.setAttribute('data-ridx', getRidx(el) + 1);
+      render(id);
+    }
+
+    function init(id) { setTimeout(function() { render(id); }, 0); }
+    return { init: init, pick: pick, next: next };
+  }());
+
+  // ── dwListen: listening-input interactive controller ──────────────────
+  var dwListen = (function() {
+    function getRounds(el) {
+      try { return JSON.parse(el.getAttribute('data-rounds') || '[]'); } catch(e) { return []; }
+    }
+    function getRidx(el) { return parseInt(el.getAttribute('data-ridx') || '0', 10); }
+
+    function render(id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var rounds = getRounds(el);
+      var ridx   = getRidx(el);
+      if (ridx >= rounds.length) { el.innerHTML = '<div class="dw-tiles-score">✅ Listening practice complete!</div>'; return; }
+      el.querySelector('.li-cur').textContent = ridx + 1;
+      el.querySelector('.li-tot').textContent = rounds.length;
+      var inp  = el.querySelector('.dw-listen-input');
+      var fb   = el.querySelector('.dw-listen-feedback');
+      var chk  = el.querySelector('.dw-tiles-check');
+      var nxt  = el.querySelector('.dw-listen-next');
+      inp.value = ''; inp.className = 'dw-listen-input'; inp.disabled = false;
+      fb.className = 'dw-listen-feedback'; fb.textContent = '';
+      chk.disabled = true; chk.style.display = '';
+      nxt.style.display = 'none';
+    }
+
+    function play(id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var rounds = getRounds(el);
+      var r = rounds[getRidx(el)];
+      if (r && r.audio) speakText(r.audio, 'de-DE');
+    }
+
+    function onInput(id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var inp = el.querySelector('.dw-listen-input');
+      el.querySelector('.dw-tiles-check').disabled = !(inp.value.trim().length);
+    }
+
+    function check(id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var rounds  = getRounds(el);
+      var r       = rounds[getRidx(el)];
+      var inp     = el.querySelector('.dw-listen-input');
+      var fb      = el.querySelector('.dw-listen-feedback');
+      var chk     = el.querySelector('.dw-tiles-check');
+      var nxt     = el.querySelector('.dw-listen-next');
+      var correct = inp.value.trim() === String(r.answer);
+      inp.className = 'dw-listen-input ' + (correct ? 'correct' : 'wrong');
+      inp.disabled  = true;
+      fb.className  = 'dw-listen-feedback show ' + (correct ? 'ok' : 'bad');
+      fb.textContent = correct ? '✓ Richtig! ' + r.answer : '✗ ' + r.answer + ' — hear it again:';
+      speakText(r.audio, 'de-DE');
+      chk.style.display = 'none';
+      nxt.style.display = '';
+    }
+
+    function next(id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.setAttribute('data-ridx', getRidx(el) + 1);
+      render(id);
+    }
+
+    function init(id) { setTimeout(function() { render(id); }, 0); }
+    return { init: init, play: play, onInput: onInput, check: check, next: next };
+  }());
 </script>
 
 <script>
@@ -514,6 +913,131 @@
             return '<tr>' + cells.map(function(c){ return '<td>' + escapeHtml(c) + '</td>'; }).join('') + '</tr>';
           }).join('') + '</tbody>';
           return '<div class="lesson-table-wrap"><table class="lesson-table">' + thead + tbody + '</table></div>';
+
+        // ── pattern-table ─────────────────────────────────────────────────
+        // Renders the stem→suffix building-block pattern rows.
+        // Two variants: "suffix" (drei+zehn→13) and "reversal" (einundzwanzig).
+        // Data shape: { type, variant, label, rows: [{stem,change,digits,audio}]
+        //               or [{change_part,connector,tens,equation,audio}] }
+        case 'pattern-table': {
+          var ptLabel = block.label ? '<div class="dw-pt-label">' + escapeHtml(block.label) + '</div>' : '';
+          var ptVariant = block.variant || 'suffix';
+          var ptRows = Array.isArray(block.rows) ? block.rows : [];
+
+          if (ptVariant === 'reversal') {
+            var revHtml = ptRows.map(function(r) {
+              var jsAudio = String(r.audio || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+              return '<div class="dw-pt-rev-row">' +
+                '<div>' +
+                  '<div class="dw-pt-rev-de">' +
+                    '<span class="dw-change">' + escapeHtml(r.change_part || '') + '</span>' +
+                    '<span class="und">' + escapeHtml(r.connector || 'und') + '</span>' +
+                    escapeHtml(r.tens || '') +
+                  '</div>' +
+                  (r.audio ? '<button class="audio-btn" onclick="speakText(\'' + jsAudio + '\',\'de-DE\')" style="font-size:14px;margin-top:6px;color:#9CA3AF;background:none;border:none;cursor:pointer;">🔊 ' + escapeHtml(r.audio) + '</button>' : '') +
+                '</div>' +
+                '<div class="dw-pt-rev-swap">⇄</div>' +
+                '<div class="dw-pt-rev-eq">' +
+                  '<span class="dw-change" style="font-weight:800;">' + escapeHtml(r.ones_label || '') + '</span> + und + ' + escapeHtml(r.tens_label || '') +
+                  '<strong>' + escapeHtml(r.equation || '') + '</strong>' +
+                '</div>' +
+              '</div>';
+            }).join('');
+            var noteHtml = block.note ? '<div class="dw-pt-note">' + escapeHtml(block.note) + '</div>' : '';
+            return '<div class="dw-pt-rev">' + ptLabel + revHtml + '</div>' + noteHtml;
+          }
+
+          // default: suffix variant
+          var rowsHtml = ptRows.map(function(r) {
+            var jsAudio = String(r.audio || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+            return '<div class="dw-pt-row">' +
+              '<div class="dw-pt-word">' +
+                escapeHtml(r.stem || '') +
+                '<span class="dw-change">' + escapeHtml(r.change || '') + '</span>' +
+                (r.audio ? '<button class="audio-btn" onclick="speakText(\'' + jsAudio + '\',\'de-DE\')" style="font-size:17px;background:none;border:none;cursor:pointer;padding:0;line-height:1;" title="Listen">🔊</button>' : '') +
+              '</div>' +
+              '<div class="dw-pt-arrow">→</div>' +
+              '<div class="dw-pt-digits">' + escapeHtml(r.digits || '') + '</div>' +
+            '</div>';
+          }).join('');
+          return '<div class="dw-pt">' + ptLabel + rowsHtml + '</div>';
+        }
+
+        // ── tile-assembly ─────────────────────────────────────────────────
+        // Learner taps tiles to assemble the correct word/number.
+        // Data shape: { type, rounds: [{prompt, prompt_type, tiles, answer, audio}] }
+        // Renders as a self-contained interactive widget; dwModule.initTiles()
+        // wires the click handlers after DOM insertion.
+        case 'tile-assembly': {
+          var taId = 'ta-' + Math.random().toString(36).slice(2,7);
+          var taRounds = JSON.stringify(Array.isArray(block.rounds) ? block.rounds : [])
+            .replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+          return '<div class="dw-tiles" id="' + taId + '" data-rounds="' + taRounds + '" data-ridx="0">' +
+            '<div class="dw-tiles-progress">Round <span class="ta-cur">1</span> / <span class="ta-tot">?</span></div>' +
+            '<div class="dw-tiles-prompt"><span class="pt-label">Build the number</span><span class="ta-prompt-val"></span></div>' +
+            '<div class="dw-tiles-answer" aria-label="Your answer"></div>' +
+            '<div class="dw-tiles-bank"></div>' +
+            '<button class="dw-tiles-check" disabled onclick="dwTiles.check(\'' + taId + '\')">Check →</button>' +
+            '<div class="dw-tiles-feedback"></div>' +
+            '<button class="dw-tiles-next" onclick="dwTiles.next(\'' + taId + '\')">Next →</button>' +
+          '</div>' +
+          '<script>dwTiles.init("' + taId + '")<\/script>';
+        }
+
+        // ── clock-quiz ────────────────────────────────────────────────────
+        // Two modes: pattern (show examples) and quiz (pick correct phrase).
+        // Data shape: { type, style:"digital", variant:"pattern"|"quiz",
+        //               items:[{time, sentence, audio, options:[]}] }
+        case 'clock-quiz': {
+          var ckVariant = block.variant || 'pattern';
+          var ckItems = Array.isArray(block.items) ? block.items : [];
+
+          if (ckVariant === 'pattern') {
+            var ckHtml = ckItems.map(function(item) {
+              var jsAudio = String(item.audio || item.sentence || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+              return '<div class="dw-clock-item">' +
+                '<div class="dw-clock-face">' + escapeHtml(item.time || '') + '</div>' +
+                '<div class="dw-clock-sentence">' + escapeHtml(item.sentence || '') + '</div>' +
+                (item.audio || item.sentence ? '<span class="dw-clock-audio" onclick="speakText(\'' + jsAudio + '\',\'de-DE\')" title="Listen">🔊</span>' : '') +
+              '</div>';
+            }).join('');
+            return '<div class="dw-clock">' + ckHtml + '</div>';
+          }
+
+          // quiz mode
+          var ckId = 'ck-' + Math.random().toString(36).slice(2,7);
+          var ckRounds = JSON.stringify(ckItems).replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+          return '<div class="dw-clock" id="' + ckId + '" data-rounds="' + ckRounds + '" data-ridx="0">' +
+            '<div class="dw-clock-progress">Round <span class="ck-cur">1</span> / <span class="ck-tot">?</span></div>' +
+            '<div class="dw-clock-quiz-prompt">' +
+              '<div class="dw-clock-quiz-face ck-face">--:--</div>' +
+            '</div>' +
+            '<div class="dw-clock-opts ck-opts"></div>' +
+            '<button class="dw-clock-next" onclick="dwClock.next(\'' + ckId + '\')">Next →</button>' +
+          '</div>' +
+          '<script>dwClock.init("' + ckId + '")<\/script>';
+        }
+
+        // ── listening-input ───────────────────────────────────────────────
+        // Learner hears a German number and types the digits.
+        // Data shape: { type, rounds:[{audio, answer}] }
+        case 'listening-input': {
+          var liId = 'li-' + Math.random().toString(36).slice(2,7);
+          var liRounds = JSON.stringify(Array.isArray(block.rounds) ? block.rounds : [])
+            .replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+          return '<div class="dw-listen" id="' + liId + '" data-rounds="' + liRounds + '" data-ridx="0">' +
+            '<div class="dw-listen-progress">Round <span class="li-cur">1</span> / <span class="li-tot">?</span></div>' +
+            '<div class="dw-listen-card">' +
+              '<button class="dw-listen-btn" onclick="dwListen.play(\'' + liId + '\')" title="Play number">🔊 Tap to listen</button>' +
+              '<input class="dw-listen-input" type="number" inputmode="numeric" pattern="[0-9]*" placeholder="??" maxlength="3" oninput="dwListen.onInput(\'' + liId + '\')" />' +
+              '<button class="dw-tiles-check" onclick="dwListen.check(\'' + liId + '\')" style="margin-top:10px;" disabled>Check →</button>' +
+              '<div class="dw-listen-feedback"></div>' +
+              '<button class="dw-listen-next" onclick="dwListen.next(\'' + liId + '\')">Next →</button>' +
+            '</div>' +
+          '</div>' +
+          '<script>dwListen.init("' + liId + '")<\/script>';
+        }
+
         default:
           return '';
       }

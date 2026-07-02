@@ -3,15 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-<title>PROTOTYPE — Lesson 3.2 Pattern Screen</title>
+<title>PROTOTYPE — Lesson 3.2 Pattern Screen (v2 heavier fill)</title>
 <link rel="stylesheet" href="./colors.css">
 <style>
-  /* ── Reset & base ── */
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-    background: #F8FAFC;
-    color: #1F2937;
+    background: var(--dw-bg);
+    color: var(--dw-dark);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -28,8 +27,9 @@
     position: sticky;
     top: 0;
     z-index: 10;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
   }
-  .lesson-back { font-size: 18px; cursor: pointer; color: var(--dw-mid); text-decoration: none; }
+  .lesson-back { font-size: 20px; cursor: pointer; color: var(--dw-mid); text-decoration: none; line-height: 1; }
   .lesson-module-label {
     font-size: 11px;
     font-weight: 700;
@@ -37,45 +37,41 @@
     text-transform: uppercase;
     color: var(--dw-light);
   }
-
-  /* 4-dot progress indicator */
   .lesson-progress {
     display: flex;
     gap: 6px;
     margin-left: auto;
+    align-items: center;
   }
   .prog-dot {
     width: 8px; height: 8px; border-radius: 50%;
     background: var(--dw-border);
-    transition: background 0.3s;
+    transition: background .25s;
   }
-  .prog-dot.done  { background: var(--dw-blue); }
-  .prog-dot.active { background: var(--dw-blue); opacity: 0.4; }
+  .prog-dot.done   { background: var(--dw-blue); }
+  .prog-dot.active { background: var(--dw-blue); opacity: 0.45; }
 
-  /* ── Main lesson area ── */
+  /* ── Main ── */
   .lesson-body {
     flex: 1;
-    padding: 24px 20px 120px;
+    padding: 20px 20px 120px;
     max-width: 480px;
     margin: 0 auto;
     width: 100%;
   }
 
-  /* ── Screen label ── */
-  .screen-label {
+  .screen-eyebrow {
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 1.5px;
     text-transform: uppercase;
     color: var(--dw-light);
-    margin-bottom: 16px;
+    margin-bottom: 18px;
   }
 
-  /* ── PATTERN SCREEN — the stem→compound table ── */
-
-  /* Section divider within the pattern screen */
-  .pattern-section-title {
-    font-size: 12px;
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 1px;
     text-transform: uppercase;
@@ -83,103 +79,109 @@
     margin: 0 0 10px;
   }
 
-  /* The pattern table */
-  .pattern-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 6px;
-    margin-bottom: 24px;
-  }
-  .pattern-table tr td {
-    padding: 10px 12px;
-    background: #fff;
-    border: 1px solid var(--dw-border);
-    font-size: 18px;
-    font-weight: 700;
-  }
-  .pattern-table tr td:first-child { border-radius: 10px 0 0 10px; border-right: none; }
-  .pattern-table tr td:last-child  { border-radius: 0 10px 10px 0; border-left: none; text-align: right; color: var(--dw-light); font-size: 14px; font-weight: 500; }
-  /* Arrow cell */
-  .pattern-table tr td.arrow-cell {
-    border-left: none; border-right: none;
-    background: transparent;
-    border-top: none;
-    border-bottom: none;
-    color: var(--dw-light);
-    font-size: 16px;
-    padding: 10px 2px;
-    text-align: center;
-    width: 24px;
-  }
+  /* ── PATTERN TABLE ── */
+  /* Each row: [number-word + audio] [→] [digit mapping] */
+  .pattern-rows { display: flex; flex-direction: column; gap: 6px; margin-bottom: 28px; }
 
-  /* The number word itself: stem + changing suffix */
-  .num-word { display: inline-flex; align-items: baseline; gap: 0; }
-  .stem { color: var(--dw-dark); }
-
-  /* The reversal section */
-  .reversal-card {
-    background: #fff;
-    border: 1px solid var(--dw-border);
-    border-radius: 14px;
-    padding: 16px;
-    margin-bottom: 8px;
+  .pattern-row {
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    grid-template-columns: 1fr 20px auto;
     align-items: center;
     gap: 8px;
+    background: #fff;
+    border: 1px solid var(--dw-border);
+    border-radius: 12px;
+    padding: 11px 14px;
   }
-  .reversal-german {
-    font-size: 16px;
-    font-weight: 800;
+
+  .pattern-word {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 19px;
+    font-weight: 700;
     color: var(--dw-dark);
-    line-height: 1.3;
+    letter-spacing: -0.2px;
   }
-  .reversal-swap-arrow {
-    font-size: 20px;
+  /* .dw-change is the heavy-fill class from colors.css */
+
+  .pattern-arrow {
     color: var(--dw-light);
+    font-size: 14px;
     text-align: center;
   }
-  .reversal-breakdown {
+
+  .pattern-digits {
     font-size: 13px;
     color: var(--dw-mid);
-    line-height: 1.6;
+    font-weight: 500;
     text-align: right;
-  }
-  .reversal-equals {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--dw-dark);
-    margin-top: 4px;
+    white-space: nowrap;
   }
 
-  /* Annotation under the reversal section */
-  .reversal-insight {
-    background: var(--dw-change-bg);
-    border: 1px solid var(--dw-change-border);
-    border-radius: 10px;
-    padding: 12px 14px;
-    font-size: 13px;
-    color: var(--dw-change-text);
-    line-height: 1.6;
-    margin-bottom: 24px;
-  }
-
-  /* Audio button inline */
   .audio-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
     background: none;
     border: none;
     cursor: pointer;
+    font-size: 16px;
     padding: 0;
-    font-size: 15px;
-    color: var(--dw-mid);
-    vertical-align: middle;
-    transition: color 0.15s;
+    line-height: 1;
+    transition: transform .15s;
+    flex-shrink: 0;
   }
-  .audio-btn:hover { color: var(--dw-blue); }
-  .audio-btn .audio-icon { font-size: 14px; }
+  .audio-btn:active { transform: scale(.88); }
+
+  /* ── REVERSAL SECTION ── */
+  .reversal-rows { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+
+  .reversal-row {
+    background: #fff;
+    border: 1px solid var(--dw-border);
+    border-radius: 12px;
+    padding: 14px;
+    display: grid;
+    grid-template-columns: 1fr 28px 1fr;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .rev-german {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--dw-dark);
+    line-height: 1.35;
+  }
+  .rev-german .und { color: var(--dw-mid); font-weight: 500; }
+
+  .rev-swap {
+    font-size: 18px;
+    color: var(--dw-light);
+    text-align: center;
+  }
+
+  .rev-breakdown {
+    text-align: right;
+    font-size: 13px;
+    color: var(--dw-mid);
+    line-height: 1.6;
+  }
+  .rev-breakdown .equals {
+    font-weight: 700;
+    color: var(--dw-dark);
+    font-size: 14px;
+  }
+
+  /* Small amber-tinted note — the only text on this screen */
+  .pattern-note {
+    background: var(--dw-change-bg);
+    border: 1px solid var(--dw-change-bd);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 13.5px;
+    color: var(--dw-change-text);
+    line-height: 1.65;
+    margin-bottom: 0;
+  }
 
   /* ── Bottom CTA ── */
   .lesson-footer {
@@ -189,9 +191,13 @@
     border-top: 1px solid var(--dw-border);
     padding: 14px 20px;
     z-index: 10;
+    box-shadow: 0 -2px 8px rgba(0,0,0,.06);
   }
   .btn-continue {
     width: 100%;
+    max-width: 480px;
+    display: block;
+    margin: 0 auto;
     background: var(--dw-blue);
     color: #fff;
     border: none;
@@ -201,12 +207,12 @@
     font-weight: 700;
     font-family: inherit;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(59,130,246,0.3);
-    transition: background 0.15s, transform 0.1s;
+    box-shadow: 0 2px 8px rgba(59,130,246,.28);
+    transition: background .15s, transform .1s;
   }
-  .btn-continue:active { transform: scale(0.99); }
+  .btn-continue:active { transform: scale(.99); }
 
-  /* ── PROTOTYPE ANNOTATION BANNER ── */
+  /* ── Prototype banner ── */
   .proto-banner {
     background: #1D4ED8;
     color: #fff;
@@ -214,29 +220,26 @@
     padding: 8px 16px;
     font-size: 12px;
     font-weight: 600;
-    letter-spacing: 0.3px;
+    letter-spacing: .3px;
   }
 
-  /* ── Responsive: works at 380px ── */
+  /* ── 380px check ── */
   @media (max-width: 400px) {
-    .reversal-card { grid-template-columns: 1fr; }
-    .reversal-swap-arrow { display: none; }
-    .reversal-breakdown { text-align: left; }
-    .pattern-table tr td { font-size: 16px; }
+    .reversal-row { grid-template-columns: 1fr; }
+    .rev-swap     { display: none; }
+    .rev-breakdown { text-align: left; border-top: 1px solid var(--dw-border); padding-top: 8px; margin-top: 4px; }
+    .pattern-word { font-size: 17px; }
   }
 </style>
 </head>
 <body>
 
-<div class="proto-banner">
-  PROTOTYPE — Lesson 3.2 Pattern Screen — for visual approval only
-</div>
+<div class="proto-banner">PROTOTYPE v2 — heavier fill — open at 380px to check mobile</div>
 
 <header class="lesson-header">
-  <a class="lesson-back" href="#">←</a>
-  <span class="lesson-module-label">A1 · Modul 3 · Lesson 3.2</span>
+  <span class="lesson-back">←</span>
+  <span class="lesson-module-label">A1 · Lektion 3.2</span>
   <div class="lesson-progress">
-    <!-- Lesson 3.2 is the 2nd of 4 lessons; screen 1 of 4 screens -->
     <div class="prog-dot done"></div>
     <div class="prog-dot active"></div>
     <div class="prog-dot"></div>
@@ -246,156 +249,138 @@
 
 <main class="lesson-body">
 
-  <div class="screen-label">Pattern</div>
+  <div class="screen-eyebrow">Pattern</div>
 
-  <!-- ────────────────────────────────────────────
-       SECTION 1: The stem + suffix building pattern
-       Amber (.dw-change) on the suffix only.
-       No explanation text — the pattern IS the explanation.
-  ─────────────────────────────────────────────── -->
+  <!-- ─────────────────────────────────────────────
+       SECTION 1: stem + suffix
+       .dw-change wraps ONLY the suffix — heavy fill
+       makes the pattern unmissable.
+  ────────────────────────────────────────────── -->
 
-  <p class="pattern-section-title">3 → 13, 30 &nbsp;·&nbsp; 4 → 14, 40</p>
+  <p class="section-label">small number + ending = big number</p>
 
-  <table class="pattern-table">
-    <tbody>
-      <tr>
-        <td>
-          <div class="num-word">
-            <span class="stem">drei</span><span class="dw-change">zehn</span>
-          </div>
-          <button class="audio-btn" onclick="speak('dreizehn')" title="Listen">
-            <span class="audio-icon">🔊</span>
-          </button>
-        </td>
-        <td class="arrow-cell">→</td>
-        <td>3 → 13</td>
-      </tr>
-      <tr>
-        <td>
-          <div class="num-word">
-            <span class="stem">vier</span><span class="dw-change">zehn</span>
-          </div>
-          <button class="audio-btn" onclick="speak('vierzehn')" title="Listen">
-            <span class="audio-icon">🔊</span>
-          </button>
-        </td>
-        <td class="arrow-cell">→</td>
-        <td>4 → 14</td>
-      </tr>
-      <tr>
-        <td>
-          <div class="num-word">
-            <span class="stem">drei</span><span class="dw-change">ßig</span>
-          </div>
-          <button class="audio-btn" onclick="speak('dreißig')" title="Listen">
-            <span class="audio-icon">🔊</span>
-          </button>
-        </td>
-        <td class="arrow-cell">→</td>
-        <td>3 → 30</td>
-      </tr>
-      <tr>
-        <td>
-          <div class="num-word">
-            <span class="stem">vier</span><span class="dw-change">zig</span>
-          </div>
-          <button class="audio-btn" onclick="speak('vierzig')" title="Listen">
-            <span class="audio-icon">🔊</span>
-          </button>
-        </td>
-        <td class="arrow-cell">→</td>
-        <td>4 → 40</td>
-      </tr>
-      <tr>
-        <td>
-          <div class="num-word">
-            <span class="stem">fünf</span><span class="dw-change">zehn</span>
-          </div>
-          <button class="audio-btn" onclick="speak('fünfzehn')" title="Listen">
-            <span class="audio-icon">🔊</span>
-          </button>
-        </td>
-        <td class="arrow-cell">→</td>
-        <td>5 → 15</td>
-      </tr>
-      <tr>
-        <td>
-          <div class="num-word">
-            <span class="stem">fünf</span><span class="dw-change">zig</span>
-          </div>
-          <button class="audio-btn" onclick="speak('fünfzig')" title="Listen">
-            <span class="audio-icon">🔊</span>
-          </button>
-        </td>
-        <td class="arrow-cell">→</td>
-        <td>5 → 50</td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="pattern-rows">
 
-  <!-- ────────────────────────────────────────────
-       SECTION 2: The reversal / und-pattern
-       The visual carries the "backwards" insight.
-       Amber on the ones-digit (the part that surprises).
-  ─────────────────────────────────────────────── -->
-
-  <p class="pattern-section-title" style="margin-top:8px;">21, 47 — the reversal</p>
-
-  <div class="reversal-card">
-    <div>
-      <div class="reversal-german">
-        <span class="dw-change">ein</span>und<span>zwanzig</span>
+    <div class="pattern-row">
+      <div class="pattern-word">
+        drei<span class="dw-change">zehn</span>
+        <button class="audio-btn" onclick="speak('dreizehn')" title="Listen">🔊</button>
       </div>
-      <button class="audio-btn" onclick="speak('einundzwanzig')" title="Listen" style="margin-top:4px;">
-        <span class="audio-icon">🔊</span> einundzwanzig
-      </button>
+      <div class="pattern-arrow">→</div>
+      <div class="pattern-digits">3 → 13</div>
     </div>
-    <div class="reversal-swap-arrow">⇄</div>
-    <div class="reversal-breakdown">
-      <span class="dw-change" style="font-weight:700;">1</span> + und + 20
-      <div class="reversal-equals">= 21</div>
+
+    <div class="pattern-row">
+      <div class="pattern-word">
+        vier<span class="dw-change">zehn</span>
+        <button class="audio-btn" onclick="speak('vierzehn')" title="Listen">🔊</button>
+      </div>
+      <div class="pattern-arrow">→</div>
+      <div class="pattern-digits">4 → 14</div>
     </div>
+
+    <div class="pattern-row">
+      <div class="pattern-word">
+        drei<span class="dw-change">ßig</span>
+        <button class="audio-btn" onclick="speak('dreißig')" title="Listen">🔊</button>
+      </div>
+      <div class="pattern-arrow">→</div>
+      <div class="pattern-digits">3 → 30</div>
+    </div>
+
+    <div class="pattern-row">
+      <div class="pattern-word">
+        vier<span class="dw-change">zig</span>
+        <button class="audio-btn" onclick="speak('vierzig')" title="Listen">🔊</button>
+      </div>
+      <div class="pattern-arrow">→</div>
+      <div class="pattern-digits">4 → 40</div>
+    </div>
+
+    <div class="pattern-row">
+      <div class="pattern-word">
+        fünf<span class="dw-change">zehn</span>
+        <button class="audio-btn" onclick="speak('fünfzehn')" title="Listen">🔊</button>
+      </div>
+      <div class="pattern-arrow">→</div>
+      <div class="pattern-digits">5 → 15</div>
+    </div>
+
+    <div class="pattern-row">
+      <div class="pattern-word">
+        fünf<span class="dw-change">zig</span>
+        <button class="audio-btn" onclick="speak('fünfzig')" title="Listen">🔊</button>
+      </div>
+      <div class="pattern-arrow">→</div>
+      <div class="pattern-digits">5 → 50</div>
+    </div>
+
   </div>
 
-  <div class="reversal-card">
-    <div>
-      <div class="reversal-german">
-        <span class="dw-change">sieben</span>und<span>vierzig</span>
+  <!-- ─────────────────────────────────────────────
+       SECTION 2: the und-reversal
+       Amber on the ones-digit (what surprises learners).
+       ⇄ makes the English vs German ordering visual.
+  ────────────────────────────────────────────── -->
+
+  <p class="section-label" style="margin-top:4px;">21, 47 — German says it backwards</p>
+
+  <div class="reversal-rows">
+
+    <div class="reversal-row">
+      <div>
+        <div class="rev-german">
+          <span class="dw-change">ein</span><span class="und">und</span>zwanzig
+        </div>
+        <button class="audio-btn" onclick="speak('einundzwanzig')" style="font-size:14px;margin-top:6px;color:var(--dw-mid);">
+          🔊 einundzwanzig
+        </button>
       </div>
-      <button class="audio-btn" onclick="speak('siebenundvierzig')" title="Listen" style="margin-top:4px;">
-        <span class="audio-icon">🔊</span> siebenundvierzig
-      </button>
+      <div class="rev-swap">⇄</div>
+      <div class="rev-breakdown">
+        <span class="dw-change" style="font-weight:800;">1</span> + und + 20
+        <div class="equals">= 21</div>
+      </div>
     </div>
-    <div class="reversal-swap-arrow">⇄</div>
-    <div class="reversal-breakdown">
-      <span class="dw-change" style="font-weight:700;">7</span> + und + 40
-      <div class="reversal-equals">= 47</div>
+
+    <div class="reversal-row">
+      <div>
+        <div class="rev-german">
+          <span class="dw-change">sieben</span><span class="und">und</span>vierzig
+        </div>
+        <button class="audio-btn" onclick="speak('siebenundvierzig')" style="font-size:14px;margin-top:6px;color:var(--dw-mid);">
+          🔊 siebenundvierzig
+        </button>
+      </div>
+      <div class="rev-swap">⇄</div>
+      <div class="rev-breakdown">
+        <span class="dw-change" style="font-weight:800;">7</span> + und + 40
+        <div class="equals">= 47</div>
+      </div>
     </div>
+
   </div>
 
-  <div class="reversal-insight">
+  <div class="pattern-note">
     German says the <strong>small number first</strong> — then <em>und</em> — then the tens.<br>
-    Backwards from English. Completely consistent.
+    Backwards from English. 100% consistent.
   </div>
 
 </main>
 
 <footer class="lesson-footer">
-  <button class="btn-continue" onclick="alert('Next: the one-line rule screen')">
-    Got it →
-  </button>
+  <button class="btn-continue" onclick="alert('Next: the one-line rule')">Got it →</button>
 </footer>
 
 <script>
-  function speak(text) {
-    if ('speechSynthesis' in window) {
-      var u = new SpeechSynthesisUtterance(text);
-      u.lang = 'de-DE';
-      u.rate = 0.85;
-      speechSynthesis.cancel();
-      speechSynthesis.speak(u);
-    }
+function speak(text) {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = 'de-DE'; u.rate = 0.85;
+    window.speechSynthesis.speak(u);
   }
+}
 </script>
 
 </body>

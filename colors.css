@@ -2,91 +2,109 @@
  * DeutschWeg — Semantic Color System
  * ===================================
  * Single source of truth for all lesson color semantics.
- * Import this file; never hardcode these values in lesson HTML/CSS.
+ * Import this file; never hardcode semantic colors in lesson HTML/CSS.
  *
- * ⚠️  CONFIRM WITH ANGELA: these defaults follow common German-teaching
- *     conventions, but must match the DeutschWeg TikTok palette exactly.
- *     If TikToks use different colors, the TikTok palette wins — change
- *     the :root values below before teaching content is shipped.
+ * ⚠️  These values match the proven DeutschWeg TikTok palette.
+ *     If TikTok visuals are ever updated, change here first — lessons
+ *     and TikToks must use identical colors or the cross-channel
+ *     learning signal breaks.
  *
- * Usage rules (from the DeutschWeg Constitution):
- *  1. A color always means the same thing on every screen, lesson, and level.
+ * Usage rules:
+ *  1. A color always means the same thing on every screen, level, and TikTok.
  *  2. Max 2 semantic colors visible per screen (plus neutral text). More = noise.
- *  3. Color must never be the ONLY signal (accessibility): pair with bold or
- *     underline where the distinction is critical.
- *  4. --dw-change (amber) is EXCLUSIVELY for the changing element in a pattern.
- *     Never use it decoratively.
+ *  3. Color must never be the ONLY signal (accessibility): pair with bold
+ *     or underline where the distinction is critical.
+ *  4. --dw-change is EXCLUSIVELY for "the part that changes" in a pattern.
+ *     It is a background-fill token. Never use it as a text color.
+ *  5. Gender colors (der/die/das) are DEFERRED — do not define or use them
+ *     until Modul 5 rebuild. They will be chosen to avoid collision with
+ *     the sentence-role family below.
  */
 
 :root {
-  /* ── GENDER / ARTICLE COLORS ─────────────────────────── */
-  --dw-masc:        #2563EB;      /* Maskulin  (der)  — blue   */
-  --dw-masc-bg:     #EFF6FF;      /* Maskulin background tint  */
-  --dw-masc-border: #BFDBFE;      /* Maskulin border tint      */
 
-  --dw-fem:         #DC2626;      /* Feminin   (die)  — red    */
-  --dw-fem-bg:      #FEF2F2;      /* Feminin background tint   */
-  --dw-fem-border:  #FECACA;      /* Feminin border tint       */
+  /* ── FAMILY 1: SENTENCE ROLES ────────────────────────────────
+     Primary palette. Matches best-performing TikTok visuals.
+     Use these to color-code the grammatical role of each word
+     in an example sentence or pattern table.              */
 
-  --dw-neut:        #16A34A;      /* Neutrum   (das)  — green  */
-  --dw-neut-bg:     #F0FDF4;      /* Neutrum background tint   */
-  --dw-neut-border: #BBF7D0;      /* Neutrum border tint       */
+  --dw-subject:    #16A34A;   /* Subjekt — green                           */
+  --dw-subject-bg: #F0FDF4;
+  --dw-subject-bd: #BBF7D0;
 
-  --dw-plural:      #9333EA;      /* Plural    (die)  — purple */
-  --dw-plural-bg:   #FAF5FF;      /* Plural background tint    */
-  --dw-plural-border:#E9D5FF;     /* Plural border tint        */
+  --dw-verb:       #DB2777;   /* Konjugiertes Verb / Modalverb — pink-red  */
+  --dw-verb-bg:    #FDF2F8;
+  --dw-verb-bd:    #FBCFE8;
 
-  /* ── THE "WHAT CHANGES" HIGHLIGHT ───────────────────── */
-  /* Amber: reserved EXCLUSIVELY for the changing element   */
-  /* in any pattern. Never use for decoration.              */
-  --dw-change:      #F59E0B;      /* Amber — the changing part */
-  --dw-change-bg:   #FFFBEB;      /* Amber background          */
-  --dw-change-border:#FDE68A;     /* Amber border              */
-  --dw-change-text: #92400E;      /* Amber text (on bg)        */
+  --dw-infinitive: #2563EB;   /* Infinitiv / zweites Verb — blue           */
+  --dw-inf-bg:     #EFF6FF;
+  --dw-inf-bd:     #BFDBFE;
 
-  /* ── VERB TYPE COLORS (for Perfekt and beyond) ──────── */
-  --dw-haben:       #0891B2;      /* haben-verbs  — teal       */
-  --dw-haben-bg:    #ECFEFF;
-  --dw-haben-border:#A5F3FC;
+  /* --dw-rest is a TEXT color for the "rest of the sentence" role.
+     Deliberately darker/browner than --dw-change to prevent confusion:
+     rest = text color; change = background fill.                    */
+  --dw-rest:       #B45309;   /* Rest des Satzes — dark amber/orange-brown */
+  --dw-rest-bg:    #FFFBEB;
+  --dw-rest-bd:    #FDE68A;
 
-  --dw-sein:        #EA580C;      /* sein-verbs (movement)     */
-  --dw-sein-bg:     #FFF7ED;
-  --dw-sein-border: #FED7AA;
+  /* ── FAMILY 2: PATTERN HIGHLIGHT ────────────────────────────
+     --dw-change is a BACKGROUND-FILL token only.
+     Reserved exclusively for "the element that changes" in any
+     pattern (suffix, vowel shift, ending, etc.).
+     Never use as a text color. Never use decoratively.      */
 
-  /* ── LESSON UI TOKENS ───────────────────────────────── */
-  /* Re-export of deutschweg-theme.css values so lesson     */
-  /* components can reference one file.                     */
-  --dw-blue:        #3B82F6;
-  --dw-dark:        #1F2937;
-  --dw-mid:         #4B5563;
-  --dw-light:       #9CA3AF;
-  --dw-bg:          #F8FAFC;
-  --dw-white:       #FFFFFF;
-  --dw-border:      #E5E7EB;
-  --dw-green:       #10B981;
-  --dw-red:         #EF4444;
+  --dw-change:     #F59E0B;   /* Amber — the changing element (bg fill)    */
+  --dw-change-bg:  #FEF3C7;   /* Background: clearly lighter than --dw-rest */
+  --dw-change-bd:  #FCD34D;
+  --dw-change-text:#78350F;   /* Text on --dw-change-bg                    */
+
+  /* ── VERB-TYPE COLORS (for Perfekt rebuilds) ────────────────
+     Defined now so future lessons can reference them without
+     conflicts. Not yet used in any shipped lesson.          */
+
+  --dw-haben:      #0891B2;   /* haben-verbs — teal                        */
+  --dw-haben-bg:   #ECFEFF;
+  --dw-haben-bd:   #A5F3FC;
+
+  --dw-sein:       #EA580C;   /* sein-verbs (movement/change) — orange     */
+  --dw-sein-bg:    #FFF7ED;
+  --dw-sein-bd:    #FED7AA;
+
+  /* ── LESSON UI TOKENS ────────────────────────────────────────
+     Re-export of deutschweg-theme.css values so lesson
+     components only need to import one file.               */
+  --dw-blue:       #3B82F6;
+  --dw-dark:       #1F2937;
+  --dw-mid:        #4B5563;
+  --dw-light:      #9CA3AF;
+  --dw-bg:         #F8FAFC;
+  --dw-white:      #FFFFFF;
+  --dw-border:     #E5E7EB;
+  --dw-green:      #10B981;
+  --dw-red:        #EF4444;
 }
 
-/* ── CONVENIENCE UTILITY CLASSES ─────────────────────────
-   Use these directly in lesson HTML instead of inline styles.
-   Class names describe MEANING, not appearance.              */
+/* ── UTILITY CLASSES ─────────────────────────────────────────
+   Apply directly to inline elements (<span>, <td>, etc.).
+   Class names describe MEANING, not appearance.            */
 
-/* Article/gender chips */
-.dw-masc   { color: var(--dw-masc);   background: var(--dw-masc-bg);    border: 1px solid var(--dw-masc-border);   }
-.dw-fem    { color: var(--dw-fem);    background: var(--dw-fem-bg);     border: 1px solid var(--dw-fem-border);    }
-.dw-neut   { color: var(--dw-neut);   background: var(--dw-neut-bg);    border: 1px solid var(--dw-neut-border);   }
-.dw-plural { color: var(--dw-plural); background: var(--dw-plural-bg);  border: 1px solid var(--dw-plural-border); }
+/* Sentence-role chips — wrap a word or phrase */
+.dw-subject    { color: var(--dw-subject);    background: var(--dw-subject-bg); border: 1px solid var(--dw-subject-bd); border-radius: 4px; padding: 0 4px; font-weight: 700; }
+.dw-verb       { color: var(--dw-verb);       background: var(--dw-verb-bg);    border: 1px solid var(--dw-verb-bd);    border-radius: 4px; padding: 0 4px; font-weight: 700; }
+.dw-infinitive { color: var(--dw-infinitive); background: var(--dw-inf-bg);     border: 1px solid var(--dw-inf-bd);     border-radius: 4px; padding: 0 4px; font-weight: 700; }
+.dw-rest       { color: var(--dw-rest);       background: var(--dw-rest-bg);    border: 1px solid var(--dw-rest-bd);    border-radius: 4px; padding: 0 4px; font-weight: 700; }
 
-/* The changing element — apply to a <span> wrapping just the suffix/ending */
+/* Pattern highlight — wrap ONLY the changing element (suffix, ending, etc.)
+   Background fill (not text color). Heavier signal than a role chip.       */
 .dw-change {
-  color: var(--dw-change-text);
   background: var(--dw-change-bg);
-  border-bottom: 2px solid var(--dw-change);
-  border-radius: 3px;
-  padding: 0 2px;
-  font-weight: 700;
+  color: var(--dw-change-text);
+  border-radius: 5px;
+  padding: 1px 5px;
+  font-weight: 800;
+  /* No border — the fill is the signal, a border would add visual noise */
 }
 
-/* Verb type chips */
-.dw-haben  { color: #0E7490; background: var(--dw-haben-bg);  border: 1px solid var(--dw-haben-border); }
-.dw-sein   { color: #C2410C; background: var(--dw-sein-bg);   border: 1px solid var(--dw-sein-border);  }
+/* Verb-type chips (for Perfekt lessons) */
+.dw-haben { color: #0E7490; background: var(--dw-haben-bg); border: 1px solid var(--dw-haben-bd); border-radius: 4px; padding: 0 4px; font-weight: 700; }
+.dw-sein  { color: #C2410C; background: var(--dw-sein-bg);  border: 1px solid var(--dw-sein-bd);  border-radius: 4px; padding: 0 4px; font-weight: 700; }
