@@ -1018,10 +1018,12 @@
           var rowsHtml = ptRows.map(function(r) {
             var jsAudio = String(r.audio || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
             var subjectHtml = r.subject ? '<span class="dw-subject">' + escapeHtml(r.subject) + '</span>' : '';
+            var verbHtml    = r.verb    ? '<span class="dw-verb">'    + escapeHtml(r.verb)    + '</span>' : '';
             var restHtml    = r.rest    ? escapeHtml(r.rest)    : '';
             return '<div class="dw-pt-row">' +
               '<div class="dw-pt-word">' +
                 subjectHtml +
+                verbHtml +
                 escapeHtml(r.stem || '') +
                 '<span class="dw-change">' + escapeHtml(r.change || '') + '</span>' +
                 restHtml +
