@@ -1240,9 +1240,11 @@ Rules:
 - Never say "I want..." — say "I would like..." in English translations
 - Return only valid JSON, no markdown, no explanation`;
 
-// Strip a leading der/die/das so "das Haus" and "Haus" share one cache entry.
+// Strip a leading der/die/das and lowercase so "das Haus", "Haus", "haus",
+// and "HAUS" all resolve to the same cache entry. Lowercase also lets
+// Postgres use the expression index lower(word) to speed up the ilike lookup.
 function normalizeDictWord(raw) {
-  return String(raw || '').trim().replace(/^(der|die|das)\s+/i, '').trim();
+  return String(raw || '').trim().replace(/^(der|die|das)\s+/i, '').trim().toLowerCase();
 }
 
 // Map Claude's (umlaut) JSON keys onto our ASCII columns + coerce shapes.

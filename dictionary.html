@@ -189,6 +189,25 @@
   var API_BASE = 'https://deutschweg.onrender.com';
   var sb = (typeof dwSupabase !== 'undefined') ? dwSupabase : null;
 
+  // Fix 3 — Warm the Render server on page load so it's ready when the
+  // user taps a word. Fire-and-forget: errors are silently swallowed.
+  fetch(API_BASE + '/').catch(function(){});
+
+  // Fix 2 — Session-level cache: avoids a full network round-trip for
+  // any word already looked up in this browser session. Keyed on the
+  // same lowercased-trimmed form used by the server (normalizeDictWord).
+  var SESSION_PREFIX = 'dw_dict_';
+  function cacheKey(word) {
+    return SESSION_PREFIX + word.trim().replace(/^(der|die|das)\s+/i, '').trim().toLowerCase();
+  }
+  function cacheGet(word) {
+    try { var v = sessionStorage.getItem(cacheKey(word)); return v ? JSON.parse(v) : null; }
+    catch(_) { return null; }
+  }
+  function cacheSet(word, entry) {
+    try { sessionStorage.setItem(cacheKey(word), JSON.stringify(entry)); } catch(_) {}
+  }
+
   var listEl   = document.getElementById('list');
   var searchEl = document.getElementById('search');
   var modalEl  = document.getElementById('modal');
@@ -372,11 +391,20 @@
       '<div class="card-body"><div class="card-spinner"><div class="spin"></div><div>Generating entry…</div></div></div>';
     document.getElementById('cardClose').addEventListener('click', closeModal);
 
+    // Check session cache first — avoids Render + Supabase round-trip
+    // for any word already looked up in this browser session.
+    var cached = cacheGet(word);
+    if (cached) { renderCard(cached); return; }
+
     fetch(API_BASE + '/api/dictionary/' + encodeURIComponent(word))
       .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, body: j }; }); })
       .then(function(res){
-        if (res.ok && res.body && res.body.word) renderCard(res.body);
-        else cardError((res.body && res.body.error) || 'Could not load this word.');
+        if (res.ok && res.body && res.body.word) {
+          cacheSet(word, res.body);   // store for instant repeat lookups
+          renderCard(res.body);
+        } else {
+          cardError((res.body && res.body.error) || 'Could not load this word.');
+        }
       })
       .catch(function(){ cardError('Connection problem. Please try again.'); });
   }
