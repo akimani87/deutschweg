@@ -1012,12 +1012,19 @@
           }
 
           // default: suffix variant
+          // Optional fields: r.subject (rendered in --dw-subject green, before stem)
+          //                  r.rest    (plain text after the change span, before audio btn)
+          // These are backward-compatible — unused rows just get empty strings.
           var rowsHtml = ptRows.map(function(r) {
             var jsAudio = String(r.audio || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+            var subjectHtml = r.subject ? '<span class="dw-subject">' + escapeHtml(r.subject) + '</span>' : '';
+            var restHtml    = r.rest    ? escapeHtml(r.rest)    : '';
             return '<div class="dw-pt-row">' +
               '<div class="dw-pt-word">' +
+                subjectHtml +
                 escapeHtml(r.stem || '') +
                 '<span class="dw-change">' + escapeHtml(r.change || '') + '</span>' +
+                restHtml +
                 (r.audio ? '<button class="audio-btn" onclick="speakText(\'' + jsAudio + '\',\'de-DE\')" style="font-size:17px;background:none;border:none;cursor:pointer;padding:0;line-height:1;" title="Listen">🔊</button>' : '') +
               '</div>' +
               '<div class="dw-pt-arrow">→</div>' +
@@ -1038,7 +1045,7 @@
             .replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
           return '<div class="dw-tiles" id="' + taId + '" data-rounds="' + taRounds + '" data-ridx="0" data-init="dwTiles">' +
             '<div class="dw-tiles-progress">Round <span class="ta-cur">1</span> / <span class="ta-tot">?</span></div>' +
-            '<div class="dw-tiles-prompt"><span class="pt-label">Build the number</span><span class="ta-prompt-val"></span></div>' +
+            '<div class="dw-tiles-prompt"><span class="pt-label">' + escapeHtml(block.prompt_label || 'Build it →') + '</span><span class="ta-prompt-val"></span></div>' +
             '<div class="dw-tiles-answer" aria-label="Your answer"></div>' +
             '<div class="dw-tiles-bank"></div>' +
             '<button class="dw-tiles-check" disabled onclick="dwTiles.check(\'' + taId + '\')">Check →</button>' +
