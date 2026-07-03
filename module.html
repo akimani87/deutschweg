@@ -300,6 +300,12 @@
   .dw-clock-opt.wrong   { border-color:#EF4444; background:#FEF2F2; color:#991B1B; }
   .dw-clock-next { width:100%; background:#16A34A; color:#fff; border:none; border-radius:10px; padding:12px; font-size:15px; font-weight:700; font-family:inherit; cursor:pointer; margin-top:10px; display:none; }
   .dw-clock-progress { font-size:12px; color:#9CA3AF; text-align:right; margin-bottom:10px; }
+  /* Scenario mode: face shows emoji/text prompt instead of a digital time */
+  .dw-clock-quiz-face.scenario-face {
+    background:#EFF6FF; color:#1D4ED8; border:2px solid #BFDBFE;
+    font-size:20px; letter-spacing:0; font-family:inherit;
+    padding:14px 20px; line-height:1.35;
+  }
   /* Listening mode: face shows a tap-to-hear prompt instead of a time */
   .dw-clock-quiz-face.listening-face {
     background:#EFF6FF; color:#2563EB; border:2px solid #BFDBFE;
@@ -540,6 +546,8 @@
 <script>
   // speakText — uses /api/tts (ElevenLabs) for consistent German audio.
   // Falls back to Web Speech API only if the fetch fails (e.g. offline).
+  // DW_API is defined here (not in the IIFE below) so speakText() can reach it.
+  var _SPEAK_API = 'https://deutschweg.onrender.com';
   var _currentAudio = null;
   function speakText(text) {
     if (!text) return;
@@ -549,7 +557,7 @@
       try { URL.revokeObjectURL(_currentAudio.src); } catch(_) {}
       _currentAudio = null;
     }
-    fetch(DW_API + '/api/tts', {
+    fetch(_SPEAK_API + '/api/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: String(text) })
@@ -746,6 +754,9 @@
         faceEl.textContent = r.time || '--:--';
         faceEl.classList.remove('listening-face');
         faceEl.onclick = null;
+        // Non-time content (emoji/scenario text) gets a softer style
+        var isScenario = r.time && !/^\d+:\d+$/.test(r.time.trim());
+        faceEl.classList.toggle('scenario-face', isScenario);
       }
 
       var opts  = el.querySelector('.ck-opts');
@@ -1025,7 +1036,7 @@
           var taId = 'ta-' + Math.random().toString(36).slice(2,7);
           var taRounds = JSON.stringify(Array.isArray(block.rounds) ? block.rounds : [])
             .replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-          return '<div class="dw-tiles" id="' + taId + '" data-rounds="' + taRounds + '" data-ridx="0">' +
+          return '<div class="dw-tiles" id="' + taId + '" data-rounds="' + taRounds + '" data-ridx="0" data-init="dwTiles">' +
             '<div class="dw-tiles-progress">Round <span class="ta-cur">1</span> / <span class="ta-tot">?</span></div>' +
             '<div class="dw-tiles-prompt"><span class="pt-label">Build the number</span><span class="ta-prompt-val"></span></div>' +
             '<div class="dw-tiles-answer" aria-label="Your answer"></div>' +
@@ -1033,8 +1044,7 @@
             '<button class="dw-tiles-check" disabled onclick="dwTiles.check(\'' + taId + '\')">Check →</button>' +
             '<div class="dw-tiles-feedback"></div>' +
             '<button class="dw-tiles-next" onclick="dwTiles.next(\'' + taId + '\')">Next →</button>' +
-          '</div>' +
-          '<script>dwTiles.init("' + taId + '")<\/script>';
+          '</div>';
         }
 
         // ── clock-quiz ────────────────────────────────────────────────────
@@ -1061,15 +1071,15 @@
           var ckId = 'ck-' + Math.random().toString(36).slice(2,7);
           var ckMode = block.mode || '';
           var ckRounds = JSON.stringify(ckItems).replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-          return '<div class="dw-clock" id="' + ckId + '" data-rounds="' + ckRounds + '" data-ridx="0"' + (ckMode ? ' data-mode="' + ckMode + '"' : '') + '>' +
+          // data-init="dwClock" — read by initInteractiveBlocks() after innerHTML
+          return '<div class="dw-clock" id="' + ckId + '" data-rounds="' + ckRounds + '" data-ridx="0" data-init="dwClock"' + (ckMode ? ' data-mode="' + ckMode + '"' : '') + '>' +
             '<div class="dw-clock-progress">Round <span class="ck-cur">1</span> / <span class="ck-tot">?</span></div>' +
             '<div class="dw-clock-quiz-prompt">' +
               '<div class="dw-clock-quiz-face ck-face">--:--</div>' +
             '</div>' +
             '<div class="dw-clock-opts ck-opts"></div>' +
             '<button class="dw-clock-next" onclick="dwClock.next(\'' + ckId + '\')">Next →</button>' +
-          '</div>' +
-          '<script>dwClock.init("' + ckId + '")<\/script>';
+          '</div>';
         }
 
         // ── listening-input ───────────────────────────────────────────────
@@ -1079,7 +1089,7 @@
           var liId = 'li-' + Math.random().toString(36).slice(2,7);
           var liRounds = JSON.stringify(Array.isArray(block.rounds) ? block.rounds : [])
             .replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-          return '<div class="dw-listen" id="' + liId + '" data-rounds="' + liRounds + '" data-ridx="0">' +
+          return '<div class="dw-listen" id="' + liId + '" data-rounds="' + liRounds + '" data-ridx="0" data-init="dwListen">' +
             '<div class="dw-listen-progress">Round <span class="li-cur">1</span> / <span class="li-tot">?</span></div>' +
             '<div class="dw-listen-card">' +
               '<button class="dw-listen-btn" onclick="dwListen.play(\'' + liId + '\')" title="Play number">🔊 Tap to listen</button>' +
@@ -1088,8 +1098,7 @@
               '<div class="dw-listen-feedback"></div>' +
               '<button class="dw-listen-next" onclick="dwListen.next(\'' + liId + '\')">Next →</button>' +
             '</div>' +
-          '</div>' +
-          '<script>dwListen.init("' + liId + '")<\/script>';
+          '</div>';
         }
 
         default:
@@ -1382,6 +1391,11 @@
 
       container.appendChild(screen);
     });
+
+    // Initialise interactive content blocks (pattern-table with tiles,
+    // clock-quiz, listening-input). Scripts injected via innerHTML don't
+    // execute in browsers, so we scan for data-init attributes instead.
+    initInteractiveBlocks(container);
 
     finalizeBoot();
     // AI Pal v2 — proactive opener once the lesson UI is ready (signed-in only).
@@ -1824,6 +1838,21 @@
   function pickQuizSuccessMessage() {
     var i = Math.floor(Math.random() * QUIZ_SUCCESS_MESSAGES.length);
     return QUIZ_SUCCESS_MESSAGES[i];
+  }
+
+  // Scan root for interactive block containers and call their init functions.
+  // Called after all innerHTML assignments are complete so the DOM is stable.
+  function initInteractiveBlocks(root) {
+    var scope = root || document;
+    scope.querySelectorAll('[data-init="dwTiles"][id]').forEach(function(el) {
+      dwTiles.init(el.id);
+    });
+    scope.querySelectorAll('[data-init="dwClock"][id]').forEach(function(el) {
+      dwClock.init(el.id);
+    });
+    scope.querySelectorAll('[data-init="dwListen"][id]').forEach(function(el) {
+      dwListen.init(el.id);
+    });
   }
 
   function finalizeBoot() {

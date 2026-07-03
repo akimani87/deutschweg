@@ -124,6 +124,13 @@ const LESSON = {
       ]
     },
 
+    // ── Screen 4b: Context line below the table ───────────────────────────
+    // No grammar terminology. One plain sentence.
+    {
+      type: 'text',
+      content: "Germans switch between two modes: relaxed with friends, polite with strangers and officials. You'll learn the full system later — for now, just pick the right column."
+    },
+
     // ── Screen 5: Rule — exactly one sentence ─────────────────────────────
     {
       type: 'text',
