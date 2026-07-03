@@ -355,6 +355,16 @@
   .dw-listen-feedback.ok { background:#F0FDF4; border:1px solid #A7F3D0; color:#166534; }
   .dw-listen-feedback.bad { background:#FEF2F2; border:1px solid #FECACA; color:#991B1B; }
 
+  /* Sequential content blocks — only the active block is visible */
+  .dw-block { animation:fadeIn .2s ease; }
+  .dw-block-continue {
+    display:block; width:100%; margin-top:16px;
+    background:#EFF6FF; border:1.5px solid #BFDBFE; color:#1D4ED8;
+    border-radius:10px; padding:12px; font-size:14px; font-weight:700;
+    font-family:inherit; cursor:pointer; transition:all .15s;
+  }
+  .dw-block-continue:hover { background:#DBEAFE; }
+
   /* dialogue — module completion script, role-colored lines + audio */
   .dw-dialogue { background:#fff; border:1px solid var(--dw-border); border-radius:14px; padding:16px 20px; margin:12px 0 20px; }
   .dw-dialogue-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#9CA3AF; margin-bottom:12px; }
@@ -735,6 +745,11 @@
 
     function done(el, total) {
       el.innerHTML = '<div class="dw-tiles-score">✅ All ' + total + ' rounds complete!</div>';
+      var li = el.getAttribute('data-lesson-idx');
+      var bi = el.getAttribute('data-block-idx');
+      if (li !== null && bi !== null) {
+        setTimeout(function() { nextBlock(+li, +bi); }, 1000);
+      }
     }
 
     // Called by inline <script> injected by renderContent
@@ -758,7 +773,13 @@
       if (!el) return;
       var rounds = getRounds(el);
       var ridx   = getRidx(el);
-      if (ridx >= rounds.length) { el.innerHTML = '<div class="dw-tiles-score">✅ Clock practice complete!</div>'; return; }
+      if (ridx >= rounds.length) {
+        el.innerHTML = '<div class="dw-tiles-score">✅ Practice complete!</div>';
+        var li = el.getAttribute('data-lesson-idx');
+        var bi = el.getAttribute('data-block-idx');
+        if (li !== null && bi !== null) { setTimeout(function() { nextBlock(+li, +bi); }, 1000); }
+        return;
+      }
       var r = rounds[ridx];
       var isListening = el.getAttribute('data-mode') === 'listening';
 
@@ -829,7 +850,13 @@
       if (!el) return;
       var rounds = getRounds(el);
       var ridx   = getRidx(el);
-      if (ridx >= rounds.length) { el.innerHTML = '<div class="dw-tiles-score">✅ Listening practice complete!</div>'; return; }
+      if (ridx >= rounds.length) {
+        el.innerHTML = '<div class="dw-tiles-score">✅ Listening complete!</div>';
+        var li = el.getAttribute('data-lesson-idx');
+        var bi = el.getAttribute('data-block-idx');
+        if (li !== null && bi !== null) { setTimeout(function() { nextBlock(+li, +bi); }, 1000); }
+        return;
+      }
       el.querySelector('.li-cur').textContent = ridx + 1;
       el.querySelector('.li-tot').textContent = rounds.length;
       var inp  = el.querySelector('.dw-listen-input');
@@ -934,7 +961,11 @@
 
   // Render a content_json array of structured blocks into HTML. Each block is
   // wrapped in a div whose class lines up with the .lesson-* CSS rules.
-  function renderContent(blocks) {
+  // Interactive block types — these auto-advance to the next block when done,
+  // so they don't get a manual "Continue →" button.
+  var INTERACTIVE_TYPES = { 'tile-assembly':1, 'clock-quiz':1, 'listening-input':1 };
+
+  function renderContent(blocks, lessonIdx) {
     if (!blocks || !Array.isArray(blocks) || blocks.length === 0) {
       return '<div class="body-text empty">Content coming soon.</div>';
     }
@@ -960,7 +991,10 @@
              '</div>';
     }
 
-    return blocks.map(function (block) {
+    return blocks.map(function (block, bi) {
+      // Capture the rendered HTML for this block using an IIFE so the
+      // existing return statements in the switch work unchanged.
+      var blockHtml = (function() {
       switch (block && block.type) {
         case 'intro':
           return '<div class="lesson-intro">' + escapeHtml(block.content) + '</div>';
@@ -1068,7 +1102,8 @@
           var taId = 'ta-' + Math.random().toString(36).slice(2,7);
           var taRounds = JSON.stringify(Array.isArray(block.rounds) ? block.rounds : [])
             .replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-          return '<div class="dw-tiles" id="' + taId + '" data-rounds="' + taRounds + '" data-ridx="0" data-init="dwTiles">' +
+          return '<div class="dw-tiles" id="' + taId + '" data-rounds="' + taRounds + '" data-ridx="0" data-init="dwTiles"' +
+            (lessonIdx !== undefined ? ' data-lesson-idx="' + lessonIdx + '" data-block-idx="' + bi + '"' : '') + '>' +
             '<div class="dw-tiles-progress">Round <span class="ta-cur">1</span> / <span class="ta-tot">?</span></div>' +
             '<div class="dw-tiles-prompt"><span class="pt-label">' + escapeHtml(block.prompt_label || 'Build it →') + '</span><span class="ta-prompt-val"></span></div>' +
             '<div class="dw-tiles-answer" aria-label="Your answer"></div>' +
@@ -1104,7 +1139,9 @@
           var ckMode = block.mode || '';
           var ckRounds = JSON.stringify(ckItems).replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
           // data-init="dwClock" — read by initInteractiveBlocks() after innerHTML
-          return '<div class="dw-clock" id="' + ckId + '" data-rounds="' + ckRounds + '" data-ridx="0" data-init="dwClock"' + (ckMode ? ' data-mode="' + ckMode + '"' : '') + '>' +
+          return '<div class="dw-clock" id="' + ckId + '" data-rounds="' + ckRounds + '" data-ridx="0" data-init="dwClock"' +
+            (ckMode ? ' data-mode="' + ckMode + '"' : '') +
+            (lessonIdx !== undefined ? ' data-lesson-idx="' + lessonIdx + '" data-block-idx="' + bi + '"' : '') + '>' +
             '<div class="dw-clock-progress">Round <span class="ck-cur">1</span> / <span class="ck-tot">?</span></div>' +
             '<div class="dw-clock-quiz-prompt">' +
               '<div class="dw-clock-quiz-face ck-face">--:--</div>' +
@@ -1121,7 +1158,8 @@
           var liId = 'li-' + Math.random().toString(36).slice(2,7);
           var liRounds = JSON.stringify(Array.isArray(block.rounds) ? block.rounds : [])
             .replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-          return '<div class="dw-listen" id="' + liId + '" data-rounds="' + liRounds + '" data-ridx="0" data-init="dwListen">' +
+          return '<div class="dw-listen" id="' + liId + '" data-rounds="' + liRounds + '" data-ridx="0" data-init="dwListen"' +
+            (lessonIdx !== undefined ? ' data-lesson-idx="' + lessonIdx + '" data-block-idx="' + bi + '"' : '') + '>' +
             '<div class="dw-listen-progress">Round <span class="li-cur">1</span> / <span class="li-tot">?</span></div>' +
             '<div class="dw-listen-card">' +
               '<button class="dw-listen-btn" onclick="dwListen.play(\'' + liId + '\')" title="Play number">🔊 Tap to listen</button>' +
@@ -1158,6 +1196,27 @@
         default:
           return '';
       }
+      }()); // end IIFE
+
+      if (!blockHtml) return '';
+
+      // If no lessonIdx was passed (e.g. from a legacy call site), return
+      // the raw HTML — all blocks visible at once (backward-compatible).
+      if (lessonIdx === undefined || lessonIdx === null) return blockHtml;
+
+      // Sequential block wrapper. Only block 0 is visible on lesson open;
+      // the rest are revealed one-by-one via dwModule.nextBlock().
+      // Interactive blocks (clock-quiz, tile-assembly, listening-input) carry
+      // their own "Next →" button generated when the practice completes, so
+      // they don't get a manual Continue button.
+      var isInteractive = INTERACTIVE_TYPES[block && block.type || ''];
+      var continueBtn = isInteractive ? '' :
+        '<button class="dw-block-continue" onclick="dwModule.nextBlock(' + lessonIdx + ',' + bi + ')">Continue →</button>';
+
+      return '<div class="dw-block" id="blk-' + lessonIdx + '-' + bi + '"' +
+        (bi > 0 ? ' style="display:none"' : '') + '>' +
+        blockHtml + continueBtn +
+      '</div>';
     }).join('');
   }
 
@@ -1378,7 +1437,7 @@
       var contentHtml;
       // Prefer structured content_json; fall back to plain content_text; finally a placeholder.
       if (Array.isArray(lesson.content_json) && lesson.content_json.length > 0) {
-        contentHtml = renderContent(lesson.content_json);
+        contentHtml = renderContent(lesson.content_json, idx);
       } else if (lesson.content_text && String(lesson.content_text).trim().length > 0) {
         contentHtml = '<div class="body-text">' + escapeHtml(lesson.content_text) + '</div>';
       } else {
@@ -1426,7 +1485,14 @@
           '<h1 class="lesson-h">' + escapeHtml(lessonTitle) + '</h1>' +
           outcomeHtml +
           contentHtml +
-          '<button class="btn btn-primary" onclick="dwModule.advance(' + idx + ', 0)">' + nextLabel + '</button>' +
+          // The advance button starts hidden. dwModule.nextBlock() reveals it
+          // once the learner has seen the final content block. On lessons with
+          // no content_json blocks (or legacy calls without lessonIdx), it is
+          // visible immediately (display:'' = no style override).
+          '<div id="blk-adv-' + idx + '"' +
+            (Array.isArray(lesson.content_json) && lesson.content_json.length > 0 ? ' style="display:none"' : '') + '>' +
+            '<button class="btn btn-primary" onclick="dwModule.advance(' + idx + ', 0)">' + nextLabel + '</button>' +
+          '</div>' +
           navHtml +
         '</div>';
       screen.appendChild(contentStep);
@@ -1895,18 +1961,39 @@
   }
 
   // Scan root for interactive block containers and call their init functions.
-  // Called after all innerHTML assignments are complete so the DOM is stable.
+  // Only initialises VISIBLE blocks (offsetParent !== null) — hidden blocks
+  // inside dw-block divs are skipped and will be initialised by nextBlock()
+  // when they become visible. This prevents audio autoplaying on lesson open.
   function initInteractiveBlocks(root) {
     var scope = root || document;
     scope.querySelectorAll('[data-init="dwTiles"][id]').forEach(function(el) {
-      dwTiles.init(el.id);
+      if (el.offsetParent !== null) dwTiles.init(el.id);
     });
     scope.querySelectorAll('[data-init="dwClock"][id]').forEach(function(el) {
-      dwClock.init(el.id);
+      if (el.offsetParent !== null) dwClock.init(el.id);
     });
     scope.querySelectorAll('[data-init="dwListen"][id]').forEach(function(el) {
-      dwListen.init(el.id);
+      if (el.offsetParent !== null) dwListen.init(el.id);
     });
+  }
+
+  // Reveal the next sequential content block within a lesson.
+  // Called by "Continue →" buttons on non-interactive blocks and auto-called
+  // by interactive blocks when all their rounds complete.
+  function nextBlock(lessonIdx, blockIdx) {
+    var curr = document.getElementById('blk-' + lessonIdx + '-' + blockIdx);
+    if (curr) curr.style.display = 'none';
+    var next = document.getElementById('blk-' + lessonIdx + '-' + (blockIdx + 1));
+    if (next) {
+      next.style.display = '';
+      // Init any interactive block that just became visible
+      initInteractiveBlocks(next);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      // All content blocks shown — reveal the lesson advance button
+      var advBtn = document.getElementById('blk-adv-' + lessonIdx);
+      if (advBtn) { advBtn.style.display = ''; window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    }
   }
 
   function finalizeBoot() {
@@ -2301,6 +2388,9 @@
 
   // ── Public handlers ─────────────────────────────────────────────────────
   window.dwModule = {
+    // Expose nextBlock so inline onclick handlers in content blocks can reach it.
+    nextBlock: function(lessonIdx, blockIdx) { nextBlock(lessonIdx, blockIdx); },
+
     answer: function(lIdx, eIdx, choiceIdx, correctIdx) {
       var key = lIdx + '-' + eIdx;
       var first = !state.answeredKeys[key];
