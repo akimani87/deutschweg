@@ -172,6 +172,7 @@
   .tts-btn:active{ transform:scale(0.95); }
   .tts-btn.loading{ cursor:wait; animation:ttsPulse 1s ease-in-out infinite; }
   .tts-btn.playing{ background:#3B82F6; border-color:#3B82F6; color:#fff; }
+  .tts-btn.playing:hover{ background:#2563EB; }
   .tts-btn.error{ border-color:#EF4444; color:#EF4444; }
   @keyframes ttsPulse{ 0%,100%{opacity:1;} 50%{opacity:0.55;} }
 
@@ -540,17 +541,35 @@
   }
 
   // ── On-demand TTS playback ──────────────────────────────────────────────
-  // Tap → fetch /api/tts → blob → <audio>.play(). First successful response
-  // is cached on the button so a second tap is a free replay. Loading and
-  // playing states never overlap; a duplicate tap mid-load is ignored.
+  // Button acts as play/stop toggle: tap to play, tap again to stop.
+  // Only one button plays at a time — starting a new one stops any other.
+  var _activeTtsBtn = null;
+
+  function stopActiveTts() {
+    if (!_activeTtsBtn) return;
+    var prev = _activeTtsBtn;
+    _activeTtsBtn = null;
+    if (prev._ttsAudio) {
+      prev._ttsAudio.pause();
+      try { prev._ttsAudio.currentTime = 0; } catch(e){}
+    }
+    setTtsState(prev, 'idle');
+  }
+
   function speakWithTTS(btn){
-    if (btn._ttsState === 'loading' || btn._ttsState === 'playing') return;
+    // Tapping the active button stops it.
+    if (btn._ttsState === 'playing') { stopActiveTts(); return; }
+    if (btn._ttsState === 'loading') return;
+
+    // Stop any other button that is currently playing.
+    stopActiveTts();
 
     if (btn._ttsAudio) {
-      // Replay path — no network call.
+      // Replay from cache — no network call.
+      _activeTtsBtn = btn;
       setTtsState(btn, 'playing');
       try { btn._ttsAudio.currentTime = 0; } catch(e){}
-      btn._ttsAudio.play().catch(function(){ setTtsState(btn, 'idle'); });
+      btn._ttsAudio.play().catch(function(){ stopActiveTts(); });
       return;
     }
 
@@ -568,15 +587,16 @@
         var url = URL.createObjectURL(blob);
         var audio = new Audio(url);
         btn._ttsAudio = audio;
-        audio.addEventListener('ended', function(){ setTtsState(btn, 'idle'); });
-        audio.addEventListener('error', function(){ setTtsState(btn, 'error'); });
+        audio.addEventListener('ended', function(){ if(_activeTtsBtn===btn) stopActiveTts(); });
+        audio.addEventListener('error', function(){ setTtsState(btn, 'error'); _activeTtsBtn=null; });
+        _activeTtsBtn = btn;
         setTtsState(btn, 'playing');
         return audio.play();
       })
       .catch(function(err){
         console.warn('[tts]', err && err.message);
+        _activeTtsBtn = null;
         setTtsState(btn, 'error');
-        // Reset to idle after a moment so the user can try again
         setTimeout(function(){ if (btn._ttsState === 'error') setTtsState(btn, 'idle'); }, 2200);
       });
   }
@@ -585,7 +605,8 @@
     btn._ttsState = state;
     btn.classList.remove('loading','playing','error');
     if (state === 'loading') { btn.classList.add('loading'); btn.innerHTML = '⏳'; }
-    else if (state === 'playing') { btn.classList.add('playing'); btn.innerHTML = '🔊'; }
+    // ⏹ while playing = tap again to stop
+    else if (state === 'playing') { btn.classList.add('playing'); btn.innerHTML = '⏹'; }
     else if (state === 'error') { btn.classList.add('error'); btn.innerHTML = '⚠️'; }
     else { btn.innerHTML = '🔊'; }
   }
