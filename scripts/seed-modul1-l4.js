@@ -48,6 +48,12 @@ const LESSON = {
       ]
     },
 
+    // Screen 1b — Wörterbuch pointer
+    {
+      type: 'tip',
+      content: "Your profession isn't listed? Search the Wörterbuch — it shows the exact article and German form you need for 'Ich bin ___ von Beruf.'"
+    },
+
     // Screen 2 — Rule: one sentence
     {
       type: 'text',
