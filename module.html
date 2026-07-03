@@ -199,27 +199,41 @@
 
   /* ── NEW BLOCK TYPES (Modul 3+) ─────────────────────── */
 
-  /* pattern-table — stem + changing suffix visual */
-  .dw-pt { display:flex; flex-direction:column; gap:6px; margin:12px 0 20px; }
+  /* pattern-table — mobile-first: stack vertically, side-by-side on wider screens */
+  .dw-pt { display:flex; flex-direction:column; gap:6px; margin:12px 0 20px; max-width:100%; }
   .dw-pt-label { font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#9CA3AF; margin-bottom:4px; }
   .dw-pt-row {
-    display:grid; grid-template-columns:1fr 18px auto;
-    align-items:center; gap:8px;
+    /* Mobile-first: German phrase on top, translation below — NO horizontal overflow */
+    display:flex; flex-direction:column; gap:4px;
     background:#fff; border:1px solid #E5E7EB; border-radius:12px; padding:11px 14px;
+    max-width:100%; box-sizing:border-box; overflow:hidden;
   }
-  .dw-pt-word { display:flex; align-items:center; gap:8px; font-size:18px; font-weight:700; color:#1F2937; }
-  .dw-pt-arrow { color:#9CA3AF; font-size:13px; text-align:center; }
-  .dw-pt-digits { font-size:13px; color:#6B7280; font-weight:500; text-align:right; white-space:nowrap; }
+  .dw-pt-word {
+    display:flex; align-items:center; gap:6px; flex-wrap:wrap;
+    font-size:17px; font-weight:700; color:#1F2937;
+    min-width:0; overflow-wrap:break-word; word-break:break-word;
+  }
+  /* Arrow hidden on mobile — digits text already contains → where needed */
+  .dw-pt-arrow { display:none; }
+  .dw-pt-digits { font-size:12.5px; color:#9CA3AF; font-weight:500; overflow-wrap:break-word; }
+  /* Desktop: 3-column side-by-side layout */
+  @media(min-width:481px) {
+    .dw-pt-row { flex-direction:row; align-items:center; gap:8px; }
+    .dw-pt-word { flex:1; font-size:18px; }
+    .dw-pt-arrow { display:block; color:#9CA3AF; font-size:13px; flex-shrink:0; }
+    .dw-pt-digits { text-align:right; flex-shrink:0; max-width:42%; font-size:13px; }
+  }
   /* reversal variant */
   .dw-pt-rev { display:flex; flex-direction:column; gap:6px; margin:12px 0 14px; }
   .dw-pt-rev-row {
     background:#fff; border:1px solid #E5E7EB; border-radius:12px; padding:13px 14px;
     display:grid; grid-template-columns:1fr 24px 1fr; align-items:center; gap:8px;
+    max-width:100%; box-sizing:border-box; overflow:hidden;
   }
-  .dw-pt-rev-de { font-size:17px; font-weight:800; color:#1F2937; line-height:1.35; }
+  .dw-pt-rev-de { font-size:17px; font-weight:800; color:#1F2937; line-height:1.35; min-width:0; overflow-wrap:break-word; }
   .dw-pt-rev-de .und { color:#9CA3AF; font-weight:500; }
   .dw-pt-rev-swap { color:#9CA3AF; font-size:16px; text-align:center; }
-  .dw-pt-rev-eq { font-size:13px; color:#6B7280; line-height:1.6; text-align:right; }
+  .dw-pt-rev-eq { font-size:13px; color:#6B7280; line-height:1.6; text-align:right; min-width:0; overflow-wrap:break-word; }
   .dw-pt-rev-eq strong { color:#1F2937; font-size:14px; display:block; }
   .dw-pt-note {
     background:#FFFBEB; border:1px solid #FCD34D; border-radius:10px;
@@ -350,7 +364,7 @@
   .dw-dl-audio { background:none; border:none; cursor:pointer; font-size:16px; color:#9CA3AF; flex-shrink:0; transition:color .15s; padding:0; }
   .dw-dl-audio:hover { color:#3B82F6; }
 
-  @media(max-width:400px) {
+  @media(max-width:480px) {
     .dw-pt-rev-row { grid-template-columns:1fr; }
     .dw-pt-rev-swap { display:none; }
     .dw-pt-rev-eq { text-align:left; border-top:1px solid #E5E7EB; padding-top:8px; margin-top:4px; }
