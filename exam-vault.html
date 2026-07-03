@@ -666,22 +666,39 @@
   .history-icon {
     font-size: 18px; flex-shrink: 0;
   }
-  .history-meta { flex: 1; min-width: 0; }
-  .history-title { font-size: 13.5px; font-weight: 700; color: var(--dark); margin-bottom: 2px; }
+  .history-meta { flex: 1; min-width: 0; overflow: hidden; }
+  /* overflow guard: prevents long exam titles (e.g. "Prüfungsvorbereitung")
+     from bleeding over the score at 380px */
+  .history-title {
+    font-size: 13.5px; font-weight: 700; color: var(--dark); margin-bottom: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
   .history-date { font-size: 12px; color: var(--light); }
+  /* score + status grouped so they move together on mobile */
+  .history-right {
+    display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+  }
   .history-score {
     font-size: 14px; font-weight: 800; color: var(--dark);
     font-variant-numeric: tabular-nums;
-    min-width: 60px; text-align: right;
   }
   .history-status {
     font-size: 11px; font-weight: 800; letter-spacing: 0.5px;
     padding: 4px 10px; border-radius: 50px;
     display: inline-flex; align-items: center; gap: 4px;
-    min-width: 70px; justify-content: center;
+    white-space: nowrap;
   }
   .history-status.pass { background: var(--green-light); color: #065F46; border: 1px solid var(--green-border); }
   .history-status.fail { background: var(--red-light);   color: #991B1B; border: 1px solid #FECACA; }
+  /* mobile: score + badge drop to a second line, right-aligned */
+  @media (max-width: 480px) {
+    .history-row { flex-wrap: wrap; align-items: flex-start; gap: 4px 8px; }
+    .history-right {
+      flex-basis: 100%;          /* force to new line */
+      justify-content: flex-end;
+      padding-left: 26px;        /* indent past icon so it aligns under title */
+    }
+  }
 
   /* ── Weakness panel — averages across all attempts at the
        current level + section. Per-criterion breakdown for
@@ -2726,8 +2743,10 @@
         +   '<div class="history-title">' + escapeHtml(examTitle) + '</div>'
         +   '<div class="history-date">' + escapeHtml(formatDate(r.completed_at)) + '</div>'
         + '</div>'
-        + '<span class="history-score">' + escapeHtml(sc) + ' / ' + escapeHtml(max) + '</span>'
-        + '<span class="history-status ' + statusCls + '">' + statusTxt + '</span>'
+        + '<div class="history-right">'
+        +   '<span class="history-score">' + escapeHtml(sc) + ' / ' + escapeHtml(max) + '</span>'
+        +   '<span class="history-status ' + statusCls + '">' + statusTxt + '</span>'
+        + '</div>'
         + '</div>';
     }).join('');
   }
