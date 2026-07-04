@@ -1435,9 +1435,24 @@
       var lessonNo   = lesson.order_index || (idx + 1);
       var lessonTitle = lesson.title || ('Lesson ' + lessonNo);
       var contentHtml;
+      // Sequential block display only applies to lessons that contain at least
+      // one new-style block (pattern-table, tile-assembly, clock-quiz,
+      // listening-input, dialogue). Legacy A2/B1/B2 lessons that use only old
+      // block types (intro, text, example, audio, table, infobox, tip, warning)
+      // must show all blocks at once — same behaviour as before the sequential
+      // system was introduced. Passing lessonIdx=undefined to renderContent
+      // triggers the legacy "all visible" path.
+      var NEW_BLOCK_TYPES = {
+        'pattern-table':1, 'tile-assembly':1, 'clock-quiz':1,
+        'listening-input':1, 'dialogue':1
+      };
+      var hasNewBlocks = Array.isArray(lesson.content_json) && lesson.content_json.some(function(b) {
+        return NEW_BLOCK_TYPES[b && b.type];
+      });
+
       // Prefer structured content_json; fall back to plain content_text; finally a placeholder.
       if (Array.isArray(lesson.content_json) && lesson.content_json.length > 0) {
-        contentHtml = renderContent(lesson.content_json, idx);
+        contentHtml = renderContent(lesson.content_json, hasNewBlocks ? idx : undefined);
       } else if (lesson.content_text && String(lesson.content_text).trim().length > 0) {
         contentHtml = '<div class="body-text">' + escapeHtml(lesson.content_text) + '</div>';
       } else {
@@ -1490,7 +1505,7 @@
           // no content_json blocks (or legacy calls without lessonIdx), it is
           // visible immediately (display:'' = no style override).
           '<div id="blk-adv-' + idx + '"' +
-            (Array.isArray(lesson.content_json) && lesson.content_json.length > 0 ? ' style="display:none"' : '') + '>' +
+            (hasNewBlocks ? ' style="display:none"' : '') + '>' +
             '<button class="btn btn-primary" onclick="dwModule.advance(' + idx + ', 0)">' + nextLabel + '</button>' +
           '</div>' +
           navHtml +
@@ -1975,6 +1990,23 @@
     scope.querySelectorAll('[data-init="dwListen"][id]').forEach(function(el) {
       if (el.offsetParent !== null) dwListen.init(el.id);
     });
+  }
+
+  // Reset a lesson's sequential block state to its initial view:
+  // block 0 visible, all subsequent blocks hidden, advance button hidden.
+  // Called whenever navigating TO a lesson (goToLesson / nextLesson)
+  // so the learner always starts from block 0 regardless of prior progress.
+  function resetLessonBlocks(lessonIdx) {
+    var contentStep = document.getElementById('s-' + lessonIdx + '-content');
+    if (!contentStep) return;
+    var blocks = contentStep.querySelectorAll('.dw-block');
+    blocks.forEach(function(bl, bi) {
+      bl.style.display = bi === 0 ? '' : 'none';
+    });
+    var advBtn = document.getElementById('blk-adv-' + lessonIdx);
+    if (advBtn) advBtn.style.display = 'none';
+    // Re-init any interactive block that is now visible (block 0)
+    if (blocks.length > 0) initInteractiveBlocks(blocks[0]);
   }
 
   // Reveal the next sequential content block within a lesson.
@@ -2552,6 +2584,8 @@
         nextScreen.querySelectorAll('.step').forEach(function(s) { s.classList.remove('active'); });
         var firstStep = document.getElementById('s-' + nextIdx + '-content');
         if (firstStep) firstStep.classList.add('active');
+        // Reset sequential blocks so the new lesson starts at block 0
+        resetLessonBlocks(nextIdx);
       }
       updateProgress();
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2607,6 +2641,8 @@
         target.querySelectorAll('.step').forEach(function(s) { s.classList.remove('active'); });
         var first = document.getElementById('s-' + targetIdx + '-content');
         if (first) first.classList.add('active');
+        // Reset sequential blocks so the lesson always starts at block 0
+        resetLessonBlocks(targetIdx);
       }
 
       // Make sure the completion screen is hidden if we jump back from it
