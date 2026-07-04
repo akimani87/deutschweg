@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unlock — DeutschWeg</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="./deutschweg-theme.css">
+<!-- Lemon Squeezy overlay script — opens checkout in an iframe overlay -->
+<script src="https://app.lemonsqueezy.com/js/lemon.js" defer></script>
+<style>
+  body { background: var(--bg); }
+  .unlock-wrap {
+    max-width: 480px; margin: 0 auto;
+    padding: 40px 20px 80px;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center;
+  }
+  .unlock-logo {
+    display: flex; align-items: center; gap: 9px;
+    text-decoration: none; margin-bottom: 36px;
+  }
+  .unlock-logo-icon {
+    width: 32px; height: 32px; background: var(--blue);
+    border-radius: 9px; display: flex; align-items: center;
+    justify-content: center; color: #fff; font-size: 16px; font-weight: 800;
+  }
+  .unlock-logo-text { font-size: 17px; font-weight: 800; color: var(--dark); }
+  .unlock-logo-text span { color: var(--blue); }
+
+  .unlock-card {
+    background: #fff; border: 1px solid var(--border);
+    border-radius: 20px; padding: 32px 28px;
+    box-shadow: var(--shadow-md); width: 100%;
+  }
+  .unlock-level-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
+    text-transform: uppercase; padding: 5px 14px; border-radius: 50px;
+    margin-bottom: 16px;
+  }
+  .chip-a2 { background: #F5F3FF; color: #5B21B6; border: 1px solid #DDD6FE; }
+  .chip-b1 { background: var(--blue-light); color: var(--blue); border: 1px solid var(--blue-mid); }
+  .chip-b2 { background: #FDF2F8; color: #9D174D; border: 1px solid #FBCFE8; }
+
+  .unlock-price {
+    font-size: 40px; font-weight: 900; color: var(--dark);
+    letter-spacing: -1px; line-height: 1; margin-bottom: 4px;
+  }
+  .unlock-price-note { font-size: 13px; color: var(--light); margin-bottom: 24px; }
+  .unlock-title { font-size: 22px; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
+  .unlock-desc { font-size: 14.5px; color: var(--mid); line-height: 1.7; margin-bottom: 24px; }
+
+  .unlock-features { list-style: none; text-align: left; margin-bottom: 28px; }
+  .unlock-features li {
+    font-size: 14px; color: var(--mid); padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .unlock-features li:last-child { border-bottom: none; }
+  .unlock-features li::before { content: '✓'; color: var(--green); font-weight: 800; flex-shrink: 0; margin-top: 1px; }
+
+  .unlock-btn {
+    display: block; width: 100%; padding: 15px;
+    border-radius: 12px; border: none;
+    background: var(--blue); color: #fff;
+    font-size: 16px; font-weight: 700; font-family: inherit;
+    cursor: pointer; text-decoration: none;
+    box-shadow: 0 4px 14px rgba(59,130,246,.3);
+    transition: background .15s, transform .1s;
+    margin-bottom: 12px;
+  }
+  .unlock-btn:hover { background: var(--blue-dark); transform: translateY(-1px); }
+  .unlock-btn:active { transform: scale(.99); }
+  .unlock-btn:disabled { opacity: .55; cursor: default; transform: none; box-shadow: none; }
+
+  .unlock-guarantee {
+    font-size: 12.5px; color: var(--light); margin-top: 8px;
+  }
+  .unlock-back {
+    font-size: 13px; color: var(--mid); text-decoration: none;
+    margin-top: 24px; display: inline-block;
+  }
+  .unlock-back:hover { color: var(--blue); }
+
+  .unlock-loading, .unlock-error {
+    font-size: 14px; color: var(--mid); padding: 20px 0;
+  }
+  .unlock-error { color: var(--red); }
+
+  .unlock-test-badge {
+    display: inline-block; background: #FFFBEB; border: 1px solid #FDE68A;
+    color: #92400E; font-size: 11px; font-weight: 700; letter-spacing: .5px;
+    padding: 3px 10px; border-radius: 50px; margin-bottom: 12px;
+  }
+</style>
+</head>
+<body>
+<div class="unlock-wrap">
+
+  <a class="unlock-logo" href="/">
+    <div class="unlock-logo-icon">D</div>
+    <span class="unlock-logo-text">Deutsch<span>Weg</span></span>
+  </a>
+
+  <div class="unlock-card" id="unlockCard">
+    <div class="unlock-loading">Loading…</div>
+  </div>
+
+  <a class="unlock-back" href="/dashboard">← Back to Dashboard</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
+<script>
+(function() {
+  'use strict';
+
+  var API_BASE = 'https://deutschweg.onrender.com';
+
+  // Derive level from pathname: /freischalten/a2 → 'a2'
+  var level = (location.pathname.match(/\/(a2|b1|b2)$/) || [])[1];
+  if (!level) { location.href = '/dashboard'; return; }
+
+  var LEVEL_INFO = {
+    a2: {
+      name: 'A2 — Grundstufe',
+      chipClass: 'chip-a2',
+      price: '€19',
+      title: 'Unlock A2',
+      desc: 'Build on your A1 foundation. 12 modules covering the Goethe A2 exam — past tense, cases in depth, everyday conversation.',
+      features: ['All 12 A2 modules', 'AI Tutor + AI Pal', 'Exam Vault A2 access', 'Goethe A2 exam prep'],
+    },
+    b1: {
+      name: 'B1 — Mittelstufe',
+      chipClass: 'chip-b1',
+      price: '€24',
+      title: 'Unlock B1',
+      desc: 'The level most visas, Ausbildung programs, and employers require. 13 modules + full Goethe B1 mock exam.',
+      features: ['All 13 B1 modules', 'AI Tutor + AI Pal', 'Exam Vault B1 access', 'Full Goethe B1 mock exam'],
+    },
+    b2: {
+      name: 'B2 — Oberstufe',
+      chipClass: 'chip-b2',
+      price: '€29',
+      title: 'Unlock B2',
+      desc: 'Academic language, advanced structures, all 4 exam skills. B2.1 grammar + B2.2 exam preparation.',
+      features: ['All 14 B2 modules', 'AI Tutor + AI Pal', 'Exam Vault B2 access', 'B2.1 grammar + B2.2 skills'],
+    },
+  };
+
+  var info = LEVEL_INFO[level];
+  var card = document.getElementById('unlockCard');
+
+  function showError(msg) {
+    card.innerHTML = '<div class="unlock-error">' + msg + '</div>';
+  }
+
+  function renderCard(checkoutUrl) {
+    card.innerHTML =
+      '<div class="unlock-test-badge">🧪 Test Mode</div>' +
+      '<div class="unlock-level-chip ' + info.chipClass + '">' + info.name + '</div>' +
+      '<div class="unlock-price">' + info.price + '</div>' +
+      '<div class="unlock-price-note">One-time · no subscription</div>' +
+      '<div class="unlock-title">' + info.title + '</div>' +
+      '<div class="unlock-desc">' + info.desc + '</div>' +
+      '<ul class="unlock-features">' +
+        info.features.map(function(f){ return '<li>' + f + '</li>'; }).join('') +
+      '</ul>' +
+      '<a id="checkoutBtn" class="unlock-btn lemonsqueezy-button" href="' + checkoutUrl + '">' +
+        'Unlock ' + level.toUpperCase() + ' — ' + info.price + ' →' +
+      '</a>' +
+      '<div class="unlock-guarantee">🔒 Secure checkout via Lemon Squeezy · one-time payment</div>';
+  }
+
+  function init(userId) {
+    var successUrl = 'https://deutschweg.de/freischalten/success?level=' + level;
+    var apiUrl = API_BASE + '/api/checkout-url?level=' + level +
+      '&userId=' + encodeURIComponent(userId) +
+      '&successUrl=' + encodeURIComponent(successUrl);
+
+    fetch(apiUrl)
+      .then(function(r) { return r.json(); })
+      .then(function(j) {
+        if (j.url) {
+          renderCard(j.url);
+          // Re-initialise Lemon Squeezy overlay after DOM update
+          if (window.createLemonSqueezy) window.createLemonSqueezy();
+        } else {
+          showError(j.error || 'Could not load checkout. Please try again.');
+        }
+      })
+      .catch(function() { showError('Connection problem. Please try again.'); });
+  }
+
+  // Auth check
+  if (typeof dwSupabase === 'undefined') {
+    showError('Could not connect. Please refresh.');
+    return;
+  }
+
+  dwSupabase.auth.getUser().then(function(res) {
+    var user = res && res.data && res.data.user;
+    if (!user) {
+      // Not logged in — store destination and redirect to signup
+      try { sessionStorage.setItem('dw_post_auth_return', location.href); } catch(_) {}
+      location.href = '/signup.html?return_to=' + encodeURIComponent(location.pathname);
+      return;
+    }
+    init(user.id);
+  }).catch(function() {
+    location.href = '/signup.html?return_to=' + encodeURIComponent(location.pathname);
+  });
+}());
+</script>
+</body>
+</html>

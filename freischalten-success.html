@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unlocked! — DeutschWeg</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="./deutschweg-theme.css">
+<style>
+  body { background: var(--bg); }
+  .success-wrap {
+    max-width: 480px; margin: 0 auto;
+    padding: 60px 20px 80px;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center;
+  }
+  .success-icon {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: var(--green-light); border: 2px solid var(--green-border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px; margin-bottom: 20px;
+  }
+  .success-title {
+    font-size: 26px; font-weight: 800; color: var(--dark);
+    margin-bottom: 8px; letter-spacing: -0.3px;
+  }
+  .success-level {
+    display: inline-block; font-size: 12px; font-weight: 800;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 4px 14px; border-radius: 50px; margin-bottom: 16px;
+  }
+  .badge-a2 { background: #F5F3FF; color: #5B21B6; border: 1px solid #DDD6FE; }
+  .badge-b1 { background: var(--blue-light); color: var(--blue); border: 1px solid var(--blue-mid); }
+  .badge-b2 { background: #FDF2F8; color: #9D174D; border: 1px solid #FBCFE8; }
+
+  .success-desc { font-size: 15px; color: var(--mid); line-height: 1.7; margin-bottom: 32px; }
+
+  .success-status {
+    width: 100%; background: #fff; border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px 20px; margin-bottom: 24px;
+    font-size: 13.5px; color: var(--mid); text-align: left;
+    box-shadow: var(--shadow-sm);
+  }
+  .success-status-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; }
+  .success-status-label { font-weight: 600; color: var(--dark); }
+  .success-status-val { color: var(--green); font-weight: 700; }
+
+  .success-btn {
+    display: block; width: 100%; padding: 15px;
+    border-radius: 12px; border: none;
+    background: var(--blue); color: #fff;
+    font-size: 16px; font-weight: 700; text-decoration: none;
+    box-shadow: 0 4px 14px rgba(59,130,246,.3);
+    transition: background .15s, transform .1s;
+    margin-bottom: 14px;
+  }
+  .success-btn:hover { background: var(--blue-dark); transform: translateY(-1px); }
+
+  .success-dash { font-size: 13.5px; color: var(--mid); text-decoration: none; }
+  .success-dash:hover { color: var(--blue); }
+
+  .success-loading { font-size: 14px; color: var(--mid); padding: 20px 0; }
+  .success-error { font-size: 14px; color: var(--red); padding: 20px 0; }
+</style>
+</head>
+<body>
+<div class="success-wrap">
+
+  <div class="success-icon">✓</div>
+
+  <div id="successContent">
+    <div class="success-loading">Confirming your purchase…</div>
+  </div>
+
+  <a class="success-dash" href="/dashboard" style="margin-top:20px">← Back to Dashboard</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
+<script>
+(function() {
+  'use strict';
+
+  var params = new URLSearchParams(location.search);
+  var level  = params.get('level') || 'a2';
+
+  var LEVEL_INFO = {
+    a2: {
+      name: 'A2 — Grundstufe',
+      badgeClass: 'badge-a2',
+      desc: 'Your A2 modules are now unlocked. Start from Module 13 — Perfekt is tested in every A2 Schreiben task.',
+      firstModuleUrl: '/dashboard',  // goes to dashboard; user can navigate to A2 tab
+    },
+    b1: {
+      name: 'B1 — Mittelstufe',
+      badgeClass: 'badge-b1',
+      desc: 'Your B1 modules are now unlocked. Start with B1 Module 1 — Konjunktiv II is tested in every B1 exam.',
+      firstModuleUrl: '/dashboard',
+    },
+    b2: {
+      name: 'B2 — Oberstufe',
+      badgeClass: 'badge-b2',
+      desc: 'Your B2 modules are now unlocked. Start with B2.1 Module 1 — the grammar foundation for all B2 skills.',
+      firstModuleUrl: '/dashboard',
+    },
+  };
+
+  var PRODUCT_KEYS = { a2: 'a2_module', b1: 'b1_module', b2: 'b2_module' };
+  var info = LEVEL_INFO[level] || LEVEL_INFO.a2;
+  var productKey = PRODUCT_KEYS[level] || 'a2_module';
+  var content = document.getElementById('successContent');
+
+  function showSuccess(confirmed) {
+    content.innerHTML =
+      '<div class="success-level ' + info.badgeClass + '">' + info.name + '</div>' +
+      '<div class="success-title">' + level.toUpperCase() + ' freigeschaltet ✓</div>' +
+      '<div class="success-desc">' + info.desc + '</div>' +
+      (confirmed ? '' :
+        '<div class="success-status">' +
+          '<div class="success-status-row">' +
+            '<span class="success-status-label">Status</span>' +
+            '<span style="color:var(--amber);font-weight:700">Processing…</span>' +
+          '</div>' +
+          '<div style="font-size:12px;color:var(--light);margin-top:4px;">Your access may take a few seconds to activate. Refresh the dashboard if modules still appear locked.</div>' +
+        '</div>'
+      ) +
+      (confirmed ?
+        '<div class="success-status">' +
+          '<div class="success-status-row">' +
+            '<span class="success-status-label">Access</span>' +
+            '<span class="success-status-val">Active ✓</span>' +
+          '</div>' +
+        '</div>' : ''
+      ) +
+      '<a class="success-btn" href="' + info.firstModuleUrl + '?level=' + level + '">Start ' + level.toUpperCase() + ' →</a>';
+  }
+
+  if (typeof dwSupabase === 'undefined') { showSuccess(false); return; }
+
+  // Check that the entitlement actually landed (webhook may have a few seconds delay)
+  function checkEntitlement(retries) {
+    dwSupabase.auth.getUser().then(function(res) {
+      var user = res && res.data && res.data.user;
+      if (!user) { showSuccess(false); return; }
+
+      dwSupabase.from('entitlements')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('product_key', productKey)
+        .maybeSingle()
+        .then(function(r) {
+          if (r.data) {
+            showSuccess(true);   // entitlement confirmed
+          } else if (retries > 0) {
+            setTimeout(function() { checkEntitlement(retries - 1); }, 2000);
+          } else {
+            showSuccess(false);  // show without confirmed badge — webhook still en route
+          }
+        })
+        .catch(function() { showSuccess(false); });
+    }).catch(function() { showSuccess(false); });
+  }
+
+  // Poll up to 3 times (6s total) to give the webhook time to fire
+  checkEntitlement(3);
+}());
+</script>
+</body>
+</html>

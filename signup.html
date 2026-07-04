@@ -525,9 +525,15 @@ document.addEventListener('DOMContentLoaded', function() {
   var successV = document.getElementById('successView');
   var pwToggle = document.getElementById('pwToggle');
 
-  // If already logged in, route through the onboarding gate.
+  // return_to: freischalten pages redirect here with ?return_to=/freischalten/a2
+  // so after login the user lands back on the checkout page.
+  var returnTo = new URLSearchParams(location.search).get('return_to') || '';
+  var safeReturn = /^\/freischalten\/(a2|b1|b2)$/.test(returnTo) ? returnTo : '';
+
+  // If already logged in, route through the onboarding gate (or return_to).
   dwSupabase.auth.getSession().then(function(res) {
     if (res.data && res.data.session) {
+      if (safeReturn) { window.location.href = safeReturn; return; }
       var uid = res.data.session.user.id;
       dwSupabase.from('profiles')
         .select('onboarding_completed')

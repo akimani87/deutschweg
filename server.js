@@ -8,6 +8,7 @@ console.log('Key loaded:', process.env.CLAUDE_API_KEY
 const express = require('express');
 const cors    = require('cors');
 const fetch   = require('node-fetch');
+const crypto  = require('crypto');
 const { WebSocketServer, WebSocket } = require('ws');
 const { createClient } = require('@supabase/supabase-js');
 
@@ -50,11 +51,181 @@ app.use(cors({
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type'],
 }));
-app.use(express.json());
+// Capture raw body for webhook signature verification (Lemon Squeezy needs
+// the original bytes before JSON parsing, not the parsed object).
+app.use(express.json({
+  verify: function(req, res, buf) {
+    if (req.path && req.path.startsWith('/api/webhooks/')) {
+      req.rawBody = buf;
+    }
+  }
+}));
 
 // ── Health check ────────────────────────────────────────────────────────────
 app.get('/', (req, res) => {
   res.json({ status: 'DeutschWeg Exam Whisperer API is running' });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LEMON SQUEEZY — Payment integration (TEST MODE)
+// Config via env vars — never hardcoded:
+//   LEMONSQUEEZY_WEBHOOK_SECRET  signing secret from LS dashboard
+//   LEMONSQUEEZY_STORE_SLUG      e.g. "deutschweg"
+//   LEMONSQUEEZY_VARIANT_A2      variant ID for A2 product
+//   LEMONSQUEEZY_VARIANT_B1      variant ID for B1 product
+//   LEMONSQUEEZY_VARIANT_B2      variant ID for B2 product
+// ═══════════════════════════════════════════════════════════════════════════
+
+const LS_VARIANT_MAP = {
+  a2: process.env.LEMONSQUEEZY_VARIANT_A2,
+  b1: process.env.LEMONSQUEEZY_VARIANT_B1,
+  b2: process.env.LEMONSQUEEZY_VARIANT_B2,
+};
+const LS_PRODUCT_KEYS = { a2: 'a2_module', b1: 'b1_module', b2: 'b2_module' };
+
+// ── GET /api/checkout-url ────────────────────────────────────────────────────
+// Returns a Lemon Squeezy checkout URL for the requested level.
+// Keeps variant IDs server-side (never in frontend source).
+// Query params: level (a2|b1|b2), userId (Supabase user UUID), successUrl.
+app.get('/api/checkout-url', (req, res) => {
+  const { level, userId, successUrl } = req.query;
+  const variantId = LS_VARIANT_MAP[level];
+  if (!variantId) return res.status(400).json({ error: 'Invalid level.' });
+  if (!userId)    return res.status(400).json({ error: 'userId is required.' });
+
+  const storeSlug = process.env.LEMONSQUEEZY_STORE_SLUG;
+  if (!storeSlug || !variantId) {
+    return res.status(500).json({ error: 'Payment not configured on the server.' });
+  }
+
+  const productKey = LS_PRODUCT_KEYS[level];
+  const params = new URLSearchParams({
+    'checkout[custom][user_id]':    userId,
+    'checkout[custom][product_key]': productKey,
+    'checkout[success_url]': successUrl || `https://deutschweg.de/freischalten/success?level=${level}`,
+  });
+
+  const url = `https://${storeSlug}.lemonsqueezy.com/checkout/buy/${variantId}?${params.toString()}`;
+  console.log(`[/api/checkout-url] level=${level} user=${userId}`);
+  return res.json({ url, productKey, level });
+});
+
+// ── POST /api/webhooks/lemonsqueezy ──────────────────────────────────────────
+// Verifies the Lemon Squeezy X-Signature header (HMAC-SHA256 of raw body).
+// Handles order_created (paid) → grant entitlement.
+// Handles order_refunded → revoke entitlement.
+// Idempotent: duplicate events for the same order are no-ops.
+app.post('/api/webhooks/lemonsqueezy', async (req, res) => {
+  const secret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET;
+  if (!secret) {
+    console.error('[LS webhook] LEMONSQUEEZY_WEBHOOK_SECRET not set');
+    return res.status(500).json({ error: 'Webhook not configured.' });
+  }
+
+  // ── 1. Verify signature ───────────────────────────────────────────────────
+  const signature = req.headers['x-signature'];
+  if (!signature || !req.rawBody) {
+    console.warn('[LS webhook] Missing signature or raw body');
+    return res.status(400).json({ error: 'Missing signature.' });
+  }
+  const computed = crypto
+    .createHmac('sha256', secret)
+    .update(req.rawBody)
+    .digest('hex');
+  const sigBuf  = Buffer.from(signature, 'hex');
+  const compBuf = Buffer.from(computed, 'hex');
+  const valid = sigBuf.length === compBuf.length &&
+    crypto.timingSafeEqual(sigBuf, compBuf);
+  if (!valid) {
+    console.warn('[LS webhook] Invalid signature — rejected');
+    return res.status(400).json({ error: 'Invalid signature.' });
+  }
+
+  // ── 2. Parse event ────────────────────────────────────────────────────────
+  const payload    = req.body;
+  const eventName  = payload?.meta?.event_name;
+  const customData = payload?.meta?.custom_data || {};
+  const attrs      = payload?.data?.attributes || {};
+  const orderId    = String(payload?.data?.id || '');
+  const userId     = customData.user_id;
+  const productKey = customData.product_key;
+
+  console.log(`[LS webhook] event=${eventName} orderId=${orderId} user=${userId} product=${productKey}`);
+
+  if (!userId || !productKey) {
+    // Event doesn't carry our custom data (e.g. manual test ping) — log & ack
+    console.warn('[LS webhook] No user_id/product_key in custom_data — skipping');
+    return res.status(200).json({ received: true, action: 'skipped' });
+  }
+
+  if (!supabaseAdmin) {
+    console.error('[LS webhook] supabaseAdmin not available');
+    return res.status(500).json({ error: 'DB not configured.' });
+  }
+
+  // ── 3. Handle events ──────────────────────────────────────────────────────
+  try {
+    if (eventName === 'order_created' && attrs.status === 'paid') {
+      // Idempotency: check if we already processed this order
+      const { data: existing } = await supabaseAdmin
+        .from('entitlements')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('product_key', productKey)
+        .maybeSingle();
+
+      if (existing) {
+        console.log(`[LS webhook] order_created — entitlement already exists for user=${userId} product=${productKey}, skipping`);
+        return res.status(200).json({ received: true, action: 'already_granted' });
+      }
+
+      const { error: insErr } = await supabaseAdmin
+        .from('entitlements')
+        .insert({
+          user_id:     userId,
+          product_key: productKey,
+          source:      'lemonsqueezy',
+          order_id:    orderId,
+        });
+
+      if (insErr) {
+        // Unique constraint violation = race condition, already inserted
+        if (insErr.code === '23505') {
+          console.log(`[LS webhook] order_created — concurrent insert detected, entitlement exists`);
+          return res.status(200).json({ received: true, action: 'already_granted' });
+        }
+        console.error('[LS webhook] insert error:', insErr.message);
+        return res.status(500).json({ error: 'DB write failed.' });
+      }
+
+      console.log(`[LS webhook] ✓ GRANTED ${productKey} to user=${userId} order=${orderId}`);
+      return res.status(200).json({ received: true, action: 'granted', productKey, userId });
+    }
+
+    if (eventName === 'order_refunded') {
+      const { error: delErr } = await supabaseAdmin
+        .from('entitlements')
+        .delete()
+        .eq('user_id', userId)
+        .eq('product_key', productKey);
+
+      if (delErr) {
+        console.error('[LS webhook] delete error:', delErr.message);
+        return res.status(500).json({ error: 'DB delete failed.' });
+      }
+
+      console.log(`[LS webhook] ✓ REVOKED ${productKey} from user=${userId} order=${orderId}`);
+      return res.status(200).json({ received: true, action: 'revoked', productKey, userId });
+    }
+
+    // Unhandled event — ack so Lemon Squeezy doesn't retry
+    console.log(`[LS webhook] unhandled event=${eventName} — acked`);
+    return res.status(200).json({ received: true, action: 'unhandled_event' });
+
+  } catch (err) {
+    console.error('[LS webhook] server error:', err.message);
+    return res.status(500).json({ error: 'Server error.' });
+  }
 });
 
 // ── POST /api/score ─────────────────────────────────────────────────────────
