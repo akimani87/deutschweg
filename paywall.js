@@ -17,7 +17,9 @@
   // ── Product catalog ────────────────────────────────────────────────────────
   // Single place to edit prices, titles, and unlock copy. The unlock screen
   // reads everything from this map; nothing else in the codebase should
-  // hard-code a price.
+  // hard-code a price. `price` (a plain number) is the only field that
+  // encodes an amount — `valueLine` and `priceLabel` below are derived from
+  // it, so changing a price is a one-line edit to `price`.
   //
   // Levels (A2/B1/B2) and Exam Whisperer per level are the only paid SKUs
   // for now. A1 is intentionally absent — A1 is always free and never gated.
@@ -26,7 +28,8 @@
       level:        'A2',
       kind:         'module',
       title:        'Unlock A2',
-      valueLine:    'All A2 modules — one-time 19 €',
+      price:        39,
+      description:  'All A2 modules',
       ctaLabel:     'Unlock',
       placeholder:  '/freischalten/a2'
     },
@@ -34,7 +37,8 @@
       level:        'B1',
       kind:         'module',
       title:        'Unlock B1',
-      valueLine:    'All B1 modules — one-time 24 €',
+      price:        44,
+      description:  'All B1 modules',
       ctaLabel:     'Unlock',
       placeholder:  '/freischalten/b1'
     },
@@ -42,7 +46,8 @@
       level:        'B2',
       kind:         'module',
       title:        'Unlock B2',
-      valueLine:    'All B2 modules — one-time 29 €',
+      price:        49,
+      description:  'All B2 modules',
       ctaLabel:     'Unlock',
       placeholder:  '/freischalten/b2'
     },
@@ -50,7 +55,8 @@
       level:        'A2',
       kind:         'examwhisperer',
       title:        'Unlock Exam Whisperer A2',
-      valueLine:    'AI scoring for A2 Schreiben — one-time 19 €',
+      price:        19,
+      description:  'AI scoring for A2 Schreiben',
       ctaLabel:     'Unlock',
       placeholder:  '/freischalten/examwhisperer-a2'
     },
@@ -58,7 +64,8 @@
       level:        'B1',
       kind:         'examwhisperer',
       title:        'Unlock Exam Whisperer B1',
-      valueLine:    'AI scoring for B1 Schreiben — one-time 19 €',
+      price:        19,
+      description:  'AI scoring for B1 Schreiben',
       ctaLabel:     'Unlock',
       placeholder:  '/freischalten/examwhisperer-b1'
     },
@@ -66,11 +73,21 @@
       level:        'B2',
       kind:         'examwhisperer',
       title:        'Unlock Exam Whisperer B2',
-      valueLine:    'AI scoring for B2 Schreiben — one-time 19 €',
+      price:        19,
+      description:  'AI scoring for B2 Schreiben',
       ctaLabel:     'Unlock',
       placeholder:  '/freischalten/examwhisperer-b2'
     }
   };
+
+  // Derive display strings from `price` so every consumer (unlock screen,
+  // landing page, dashboard tabs, chat widget) shows the same number without
+  // duplicating it.
+  Object.keys(CATALOG).forEach(function(key) {
+    var entry = CATALOG[key];
+    entry.priceLabel = '€' + entry.price;
+    entry.valueLine   = entry.description + ' — one-time ' + entry.price + ' €';
+  });
 
   // ── Key builders ───────────────────────────────────────────────────────────
   function moduleKeyForLevel(level) {

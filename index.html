@@ -964,7 +964,7 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
       <!-- A2 -->
       <div class="pricing-card">
         <div class="pricing-label">A2 · Grundstufe</div>
-        <div class="pricing-price" data-pw-price="a2_module">€19</div>
+        <div class="pricing-price" data-pw-price="a2_module">€39</div>
         <div class="pricing-sub">One-time — yours forever</div>
         <ul class="pricing-list">
           <li>All 12 A2 modules</li>
@@ -979,7 +979,7 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
       <!-- B1 -->
       <div class="pricing-card">
         <div class="pricing-label">B1 · Mittelstufe</div>
-        <div class="pricing-price" data-pw-price="b1_module">€24</div>
+        <div class="pricing-price" data-pw-price="b1_module">€44</div>
         <div class="pricing-sub">One-time — yours forever</div>
         <ul class="pricing-list">
           <li>All 13 B1 modules</li>
@@ -994,7 +994,7 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
       <!-- B2 -->
       <div class="pricing-card">
         <div class="pricing-label">B2 · Oberstufe</div>
-        <div class="pricing-price" data-pw-price="b2_module">€29</div>
+        <div class="pricing-price" data-pw-price="b2_module">€49</div>
         <div class="pricing-sub">One-time — yours forever</div>
         <ul class="pricing-list">
           <li>All 14 B2 modules</li>
@@ -1018,10 +1018,11 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
     </div>
 
     <div class="pricing-note">No subscriptions, no recurring charges. Pay once per level — keep it forever.</div>
+    <div class="pricing-note" style="margin-top:6px;">For comparison: the Goethe exam itself costs €155–359 — preparing for it costs less than a quarter of that.</div>
   </div>
   <script>
     // Pull prices from paywall.js's CATALOG so the price lives in exactly one
-    // place. Parses "… 19 €" out of the German valueLine; falls back to the
+    // place. Parses "… 39 €" out of the valueLine; falls back to the
     // hard-coded value in the markup if paywall.js didn't load (e.g., offline).
     (function() {
       if (!window.dwPaywall || !window.dwPaywall.catalog) return;
@@ -1185,9 +1186,15 @@ if(window.dwSupabase){
 
   // ── Rule tree ────────────────────────────────────────────────────────────
   // Every key is a question the visitor can tap. The bot answers verbatim
-  // from `answer` — no templating, no model. Prices come from the canonical
-  // one-time model and match paywall.js's CATALOG. If you change a price
-  // here, also update paywall.js (single grep: "19 €", "24 €", "29 €").
+  // from `answer` — no templating, no model. Prices are read live from
+  // paywall.js's CATALOG (the single source of truth) so this text never
+  // drifts out of sync with the pricing table.
+  var PW_CATALOG   = (window.dwPaywall && window.dwPaywall.catalog) || {};
+  var PRICE_A2     = (PW_CATALOG.a2_module && PW_CATALOG.a2_module.priceLabel) || '€39';
+  var PRICE_B1     = (PW_CATALOG.b1_module && PW_CATALOG.b1_module.priceLabel) || '€44';
+  var PRICE_B2     = (PW_CATALOG.b2_module && PW_CATALOG.b2_module.priceLabel) || '€49';
+  var PRICE_WHISPERER = (PW_CATALOG.examwhisperer_a2 && PW_CATALOG.examwhisperer_a2.priceLabel) || '€19';
+
   var INITIAL_GREETING = "Hi! 👋 I'm here to help. What would you like to know?";
 
   var INITIAL_OPTIONS = [
@@ -1201,10 +1208,10 @@ if(window.dwSupabase){
 
   var ANSWERS = {
     free_a1: {
-      text: "Yes! All of A1 is free, forever — no card needed. A2 (€19), B1 (€24) and B2 (€29) are one-time unlocks when you're ready."
+      text: "Yes! All of A1 is free, forever — no card needed. A2 (" + PRICE_A2 + "), B1 (" + PRICE_B1 + ") and B2 (" + PRICE_B2 + ") are one-time unlocks when you're ready."
     },
     cost: {
-      text: "A1 is free. A2 = €19, B1 = €24, B2 = €29 — one-time, no subscription. Exam Whisperer per level = €19. No recurring charges."
+      text: "A1 is free. A2 = " + PRICE_A2 + ", B1 = " + PRICE_B1 + ", B2 = " + PRICE_B2 + " — one-time, no subscription. Exam Whisperer per level = " + PRICE_WHISPERER + ". No recurring charges."
     },
     level_goal: {
       text: "Different goals need different Goethe levels. Au-pair → A1. Family reunification → A1. Ausbildung → B1. University → B2. Skilled worker visa → B1/B2. Tap a card on the homepage's \"Your path to Germany\" section for the full guide, or sign up free and take the 5-question placement check."
