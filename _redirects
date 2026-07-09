@@ -9,11 +9,14 @@
 /blog/skilled-worker        /blog-skilled-worker-visa.html   200
 /blog/integration-course    /blog-integration-course.html    200
 
-# Lemon Squeezy checkout + success pages
-/freischalten/a2       /freischalten.html          200
-/freischalten/b1       /freischalten.html          200
-/freischalten/b2       /freischalten.html          200
-/freischalten/success  /freischalten-success.html  200
+# Lemon Squeezy checkout + success pages — no rules needed. freischalten.html
+# and freischalten-success.html are served natively at their clean URLs
+# (/freischalten, /freischalten-success); the level is passed as
+# ?level=a2|b1|b2, not a path segment, so nothing here needs a rewrite.
+# (A prior version of this file rewrote /freischalten/a2 etc. → those rules
+# never actually applied: Cloudflare Pages' own clean-URL match on the
+# freischalten.html asset pre-empted them, 308-redirecting to /freischalten
+# and silently dropping the level.)
 
 # Grammar hub
 /grammar  /grammar.html  200

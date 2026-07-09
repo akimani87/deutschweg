@@ -123,8 +123,11 @@
 
   var API_BASE = 'https://deutschweg.onrender.com';
 
-  // Derive level from pathname: /freischalten/a2 → 'a2'
-  var level = (location.pathname.match(/\/(a2|b1|b2)$/) || [])[1];
+  // Derive level from the query string: /freischalten?level=a2 → 'a2'
+  // (Not the path — Cloudflare Pages' clean-URL resolution for the sibling
+  // freischalten.html asset 308s /freischalten/a2 down to plain /freischalten,
+  // dropping any path segment. Query strings survive that redirect intact.)
+  var level = (location.search.match(/[?&]level=(a2|b1|b2)\b/) || [])[1];
   if (!level) { location.href = '/dashboard'; return; }
 
   // Prices come from paywall.js's CATALOG — the single source of truth.
@@ -182,7 +185,7 @@
   }
 
   function init(userId) {
-    var successUrl = 'https://deutschweg.de/freischalten/success?level=' + level;
+    var successUrl = 'https://deutschweg.de/freischalten-success?level=' + level;
     var apiUrl = API_BASE + '/api/checkout-url?level=' + level +
       '&userId=' + encodeURIComponent(userId) +
       '&successUrl=' + encodeURIComponent(successUrl);
@@ -212,12 +215,12 @@
     if (!user) {
       // Not logged in — store destination and redirect to signup
       try { sessionStorage.setItem('dw_post_auth_return', location.href); } catch(_) {}
-      location.href = '/signup.html?return_to=' + encodeURIComponent(location.pathname);
+      location.href = '/signup.html?return_to=' + encodeURIComponent(location.pathname + location.search);
       return;
     }
     init(user.id);
   }).catch(function() {
-    location.href = '/signup.html?return_to=' + encodeURIComponent(location.pathname);
+    location.href = '/signup.html?return_to=' + encodeURIComponent(location.pathname + location.search);
   });
 }());
 </script>

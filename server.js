@@ -102,7 +102,7 @@ app.get('/api/checkout-url', (req, res) => {
   const params = new URLSearchParams({
     'checkout[custom][user_id]':    userId,
     'checkout[custom][product_key]': productKey,
-    'checkout[success_url]': successUrl || `https://deutschweg.de/freischalten/success?level=${level}`,
+    'checkout[success_url]': successUrl || `https://deutschweg.de/freischalten-success?level=${level}`,
   });
 
   const url = `https://${storeSlug}.lemonsqueezy.com/checkout/buy/${variantId}?${params.toString()}`;

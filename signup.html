@@ -525,10 +525,13 @@ document.addEventListener('DOMContentLoaded', function() {
   var successV = document.getElementById('successView');
   var pwToggle = document.getElementById('pwToggle');
 
-  // return_to: freischalten pages redirect here with ?return_to=/freischalten/a2
-  // so after login the user lands back on the checkout page.
+  // return_to: freischalten pages redirect here with
+  // ?return_to=/freischalten%3Flevel%3Da2 so after login the user lands back
+  // on the checkout page. Level lives in the query string, not the path —
+  // Cloudflare Pages' clean-URL resolution 308s /freischalten/a2 down to
+  // plain /freischalten, so the path alone can't carry the level anymore.
   var returnTo = new URLSearchParams(location.search).get('return_to') || '';
-  var safeReturn = /^\/freischalten\/(a2|b1|b2)$/.test(returnTo) ? returnTo : '';
+  var safeReturn = /^\/freischalten\?level=(a2|b1|b2)$/.test(returnTo) ? returnTo : '';
 
   // If already logged in, route through the onboarding gate (or return_to).
   dwSupabase.auth.getSession().then(function(res) {
