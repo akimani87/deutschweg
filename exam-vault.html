@@ -302,6 +302,7 @@
     width: 56px; height: 56px; border-radius: 50%; background: var(--green); color: #fff;
     font-size: 28px; display: flex; align-items: center; justify-content: center;
   }
+  .met-check.error { background: var(--red, #DC2626); }
   .met-text { font-size: 15px; font-weight: 700; color: #1F2937; }
 
   /* ── Task: discussion_post (B1 Schreiben — forum post + opinion) ─ */
@@ -1063,8 +1064,9 @@
        (Phase 3: no need to ask, there's nowhere else to go but onward). -->
   <div id="mockExamTransition" class="mock-exam-transition" style="display:none;">
     <div class="met-box">
-      <div class="met-check">✓</div>
+      <div class="met-check" id="metIcon">✓</div>
       <div class="met-text" id="metText"></div>
+      <button type="button" class="draft-banner-btn primary" id="metRetryBtn" style="display:none;">Tap to retry</button>
     </div>
   </div>
 
@@ -1217,13 +1219,46 @@
 
     dwSupabase.from('mock_exam_attempts').update(patch).eq('id', currentMockExamAttemptId)
       .then(function (res) {
-        if (res.error) { console.error('[mockExam] progress update failed', res.error.message); return; }
+        if (res.error) {
+          console.error('[mockExam] progress update failed', res.error.message);
+          showMockExamAdvanceError(savedAttemptRow);
+          return;
+        }
         // Combined mode: no "are you sure?" — the section is done, lock it
         // and move on, same lockSection() standalone practice already uses.
-        lockSection(currentLevel, currentSection);
+        // Mode-scoped so this never bleeds into Practice by Skill (Bug 1).
+        lockSection('combined', currentLevel, currentSection);
         if (next) showMockExamTransition(next);
         else      showMockExamFinished();
-      }, function () {});
+      }, function (err) {
+        console.error('[mockExam] progress update rejected', err);
+        showMockExamAdvanceError(savedAttemptRow);
+      });
+  }
+
+  // Shown when the mock_exam_attempts progress update fails or rejects —
+  // the learner's answers are already graded/saved (saveAttempt() ran
+  // first), only the umbrella-attempt cursor failed to move. Previously
+  // this failed completely silently, leaving the just-graded screen up
+  // with no indication anything was wrong (bug report, Bug 2). Retrying
+  // just re-runs the same patch — safe, since the update is idempotent
+  // (same section/attempt id each time).
+  function showMockExamAdvanceError(savedAttemptRow) {
+    hide('resultsArea');
+    hide('examContent');
+    el('metIcon').textContent = '⚠';
+    el('metIcon').classList.add('error');
+    el('metText').textContent = "Couldn't advance to the next section — your answers are saved. Tap to retry.";
+    show('mockExamTransition');
+    var btn = el('metRetryBtn');
+    btn.style.display = '';
+    btn.onclick = function () {
+      btn.style.display = 'none';
+      el('metIcon').classList.remove('error');
+      el('metIcon').textContent = '✓';
+      el('metText').textContent = 'Retrying…';
+      advanceMockExamProgress(savedAttemptRow);
+    };
   }
 
   function showMockExamTransition(nextSection) {
@@ -1250,8 +1285,13 @@
 
   function startCombinedMockExam() {
     el('examEyebrow').textContent = currentLevel + ' · Complete Mock Exam';
+    // Placeholder selection, not real set-picking: only one set per level
+    // is ever published today, so "lowest set_number" == "the only one".
+    // Once a 2nd Übungssatz exists this stops being a no-op choice — real
+    // set-picking UI for combined mode is separate future work.
     dwSupabase.from('mock_exam_sets')
-      .select('*').eq('level', currentLevel).eq('set_number', 1).eq('is_published', true)
+      .select('*').eq('level', currentLevel).eq('is_published', true)
+      .order('set_number', { ascending: true }).limit(1)
       .maybeSingle()
       .then(function (res) {
         if (res.error || !res.data) {
@@ -1259,6 +1299,10 @@
           return;
         }
         currentMockExamSet = res.data;
+        // Show the learner which Übungssatz they're about to take (was
+        // previously silent — just "A1 · Complete Mock Exam" with no set
+        // identifier) before any task content loads.
+        el('examEyebrow').textContent = res.data.title + ' · Complete Mock Exam';
         getOrCreateMockExamAttempt(res.data).then(function (attempt) {
           if (!attempt) {
             showLoadError('Sign in to start a Complete Mock Exam attempt.');
@@ -1386,13 +1430,18 @@
   // browser starts a new attempt, same as booking a new real exam sitting.
   var sectionJustCompleted = false; // graded this page-load, not yet confirmed-and-locked
 
-  function sectionLockKey(level, section) { return 'dwExamVaultLock:' + level + ':' + section; }
-  function isSectionLocked(level, section) {
-    try { return sessionStorage.getItem(sectionLockKey(level, section)) === '1'; }
+  // Mode-scoped (Bug 1 fix): "combined" (Complete Mock Exam) and "practice"
+  // (Practice by Skill) are separate attempts even for the same level+
+  // section, so a lock set by one must never be read by the other — a
+  // combined-mode Lesen completion used to also lock standalone Lesen and
+  // Schreiben in Practice by Skill, and vice versa.
+  function sectionLockKey(mode, level, section) { return 'dwExamVaultLock:' + mode + ':' + level + ':' + section; }
+  function isSectionLocked(mode, level, section) {
+    try { return sessionStorage.getItem(sectionLockKey(mode, level, section)) === '1'; }
     catch (_) { return false; }
   }
-  function lockSection(level, section) {
-    try { sessionStorage.setItem(sectionLockKey(level, section), '1'); } catch (_) {}
+  function lockSection(mode, level, section) {
+    try { sessionStorage.setItem(sectionLockKey(mode, level, section), '1'); } catch (_) {}
   }
 
   // Wired onto the 6 nav pills (4 levels + Schreiben/Lesen). Blocks entry
@@ -1401,17 +1450,20 @@
   // proceed. Anything else (switching before finishing, or leaving a
   // section that was already locked on a previous visit) navigates freely.
   function guardSectionNav(e, targetLevel, targetSection) {
-    if (isSectionLocked(targetLevel, targetSection)) {
+    // Only ever wired to the Practice by Skill pills — Complete Mock Exam
+    // has no pill nav (auto-advance replaces it) — so this always checks/
+    // sets the 'practice' lock, never 'combined'.
+    if (isSectionLocked('practice', targetLevel, targetSection)) {
       e.preventDefault();
       alert('This section is locked for this attempt — you already completed it. Start a new session (new tab or browser restart) to retake it.');
       return;
     }
     var leavingCurrent = targetLevel !== currentLevel || targetSection !== currentSection;
-    if (sectionJustCompleted && leavingCurrent && !isSectionLocked(currentLevel, currentSection)) {
+    if (sectionJustCompleted && leavingCurrent && !isSectionLocked('practice', currentLevel, currentSection)) {
       e.preventDefault();
       var ok = confirm('Once you continue, you cannot return to this section — just like the real exam. Continue?');
       if (ok) {
-        lockSection(currentLevel, currentSection);
+        lockSection('practice', currentLevel, currentSection);
         location.href = e.currentTarget.getAttribute('href');
       }
     }
@@ -1428,11 +1480,28 @@
   var draftCheckedForExam = null; // exam_id we've already offered/declined resume for, so
                                    // switching Übungssatz and back doesn't re-prompt mid-session
 
+  // Memoized per page load — getOrCreateMockExamAttempt(), checkForDraft-
+  // AndOfferResume() and persistTimerStart()/flushAutosave()/deleteDraft-
+  // ForCurrentExam() each used to call this independently, meaning a
+  // single combined-mode section load paid for 3 separate network round-
+  // trips to re-verify the same JWT (Bug 4). None of these call sites gate
+  // a write that needs getUser()'s server-side re-verification specifically
+  // — Supabase RLS re-checks the real bearer token on every request
+  // regardless of what user id the client believes it has, so a stale
+  // local id here can't bypass anything. One verified lookup per page load
+  // is reused for all of them. (saveAttempt()'s dwSupabase.auth.getUser()
+  // call, which gates the final graded exam_attempts insert, is a separate
+  // direct call left untouched — it isn't reached often enough to matter
+  // for load-time latency and there's no reason to share its result.)
+  var cachedUserPromise = null;
   function getUserOrNull() {
     if (typeof dwSupabase === 'undefined') return Promise.resolve(null);
-    return dwSupabase.auth.getUser().then(function (r) {
-      return (r && r.data && r.data.user) || null;
-    }).catch(function () { return null; });
+    if (!cachedUserPromise) {
+      cachedUserPromise = dwSupabase.auth.getUser().then(function (r) {
+        return (r && r.data && r.data.user) || null;
+      }).catch(function () { return null; });
+    }
+    return cachedUserPromise;
   }
 
   // True when the collected answers payload has nothing worth saving yet
@@ -3935,7 +4004,7 @@
     // section (Part 3) — the pill-click guard below only covers in-page
     // navigation, so this is the equivalent block for anyone landing here
     // by any other route once the section is locked for this session.
-    if (isSectionLocked(currentLevel, currentSection)) {
+    if (isSectionLocked('practice', currentLevel, currentSection)) {
       el('loadingState').innerHTML =
         '<div class="state-text">'
         + '<strong>This section is locked for this attempt.</strong><br>'
