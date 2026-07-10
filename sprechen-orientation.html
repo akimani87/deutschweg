@@ -256,6 +256,7 @@
         </div>
       </div>
 
+      <div class="ob-status" id="requirementHint"></div>
       <button class="btn btn-primary" id="finishBtn" onclick="finishOrientation()" disabled>Ich bin bereit — zur Sprechen-Prüfung →</button>
       <div class="ob-status" id="status-2"></div>
     </section>
@@ -325,8 +326,20 @@
   }
 
   function updateFinishState() {
-    document.getElementById('finishBtn').disabled =
-      !(allFieldsFilled() && rehearsalCount >= REHEARSAL_MIN);
+    var fieldsOk = allFieldsFilled();
+    var rehearsalOk = rehearsalCount >= REHEARSAL_MIN;
+    document.getElementById('finishBtn').disabled = !(fieldsOk && rehearsalOk);
+
+    var hint = document.getElementById('requirementHint');
+    if (fieldsOk && rehearsalOk) {
+      hint.textContent = '';
+    } else if (!fieldsOk && !rehearsalOk) {
+      hint.textContent = 'Füll alle 5 Felder aus und übe noch ' + (REHEARSAL_MIN - rehearsalCount) + '× laut, um weiterzumachen.';
+    } else if (!fieldsOk) {
+      hint.textContent = 'Füll alle 5 Felder oben aus, um weiterzumachen.';
+    } else {
+      hint.textContent = 'Übe noch ' + (REHEARSAL_MIN - rehearsalCount) + '× laut ("Ich habe es gesagt") — dann geht\'s weiter.';
+    }
   }
 
   // ── Rehearsal passes ─────────────────────────────────────────────────────
@@ -411,6 +424,18 @@
   // ── Boot: skip straight through if already done; pre-fill if we have data ──
   document.addEventListener('DOMContentLoaded', function() {
     document.body.classList.add('ready');
+
+    // Belt-and-suspenders: some browsers' autofill fills inputs without
+    // firing 'input' (only 'change', sometimes neither until blur), which
+    // would leave the Finish button silently stuck disabled even though the
+    // fields visibly look filled in. Re-check on change/blur too.
+    ['fName','fCountry','fAge','fLanguage','fHobby'].forEach(function(id) {
+      var el = document.getElementById(id);
+      el.addEventListener('change', renderPreview);
+      el.addEventListener('blur', renderPreview);
+    });
+
+    updateFinishState(); // show the initial "what's missing" hint right away
 
     ensureSignedIn(function(user) {
       currentUser = user;
