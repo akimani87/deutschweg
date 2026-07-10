@@ -1822,18 +1822,37 @@ app.post('/api/sprechen/feedback', async (req, res) => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 const HOEREN_TYPES   = ['announcement', 'conversation', 'voicemail'];
-const HOEREN_KEEP    = 5;            // cached exercises kept per type
+// Bumped from 5 -> 6: A1 Hören restructure (hoeren-a1-restructure-plan.md)
+// targets a 6-item pool for conversation (Teil 1, official item count) so
+// the next "Generate new" on the standalone practice page doesn't silently
+// prune the pool back down below that target.
+const HOEREN_KEEP    = 6;            // cached exercises kept per type
 const HOEREN_BUCKET  = 'hoerverstehen-audio';
 // Female voices (configurable). A = single-speaker (announcements/voicemail)
 // and Speaker 1 in conversations; B = Speaker 2 in conversations.
 const HOEREN_VOICE_A = process.env.HOEREN_VOICE_A || process.env.ELEVENLABS_VOICE_ID || 'rKiu7lQ4c5P3az3745s3';
 const HOEREN_VOICE_B = process.env.HOEREN_VOICE_B || 'EXAVITQu4vr4xnSDxMaL';
 
-function buildHoerenPrompt(type) {
+// `avoid` — optional array of short scenario descriptions already in use
+// for this type (both kept and replaced items), so a targeted regeneration
+// doesn't just reword the same premise. Not used by the live generate/
+// practice endpoints' default callers; only passed explicitly when needed.
+function buildHoerenPrompt(type, avoid) {
+  const avoidBlock = (Array.isArray(avoid) && avoid.length)
+    ? `\n\nSTRICT — do not reuse these scenarios, settings, or premises (already in use for this exercise type):\n` +
+      avoid.map((a) => `- ${a}`).join('\n') +
+      `\nGenerate a genuinely different situation: different setting, different reason for the conversation/call, different names. ` +
+      `Do not just reword one of the above with a different symptom, time, or café name — the underlying premise must be new.`
+    : '';
   const qFormat = {
     announcement: '- Use 3-4 true_false questions. Each: type "true_false", options ["Richtig","Falsch"], correct_answer exactly "Richtig" or "Falsch".',
     conversation: '- Use 3 multiple_choice questions. Each: type "multiple_choice", options = 3 short German answers, correct_answer = the exact text of the correct option.\n- Label the two speakers exactly as "Speaker 1:" and "Speaker 2:" at the start of each line. Both speakers are women.',
-    voicemail:    '- Use 3 fill_in questions (extract a detail: name, time, place, or phone number). Each: type "fill_in", options = 3 short choices, correct_answer = the exact text of the correct option.',
+    // Was "fill_in" — corrected per hoeren-a1-restructure-plan.md: the real
+    // Goethe A1 Teil 3 (monologue) is multiple-choice a/b/c, not fill-in.
+    // Functionally identical rendering/scoring to fill_in in this codebase
+    // (both already carry a 3-option array), so this is a label/semantics
+    // fix, not a UI change.
+    voicemail:    '- Use 3 multiple_choice questions (about a detail: name, time, place, or phone number). Each: type "multiple_choice", options = 3 short choices, correct_answer = the exact text of the correct option.',
   }[type];
   return `You are generating Goethe A1 Hörverstehen listening exercise scripts for international learners preparing for the German exam.
 
@@ -1850,7 +1869,7 @@ Rules:
 - Make it feel authentic — like something the learner will actually hear in Germany
 ${qFormat}
 - Every correct_answer MUST exactly match one of that question's options.
-- Questions must be answerable from the audio script alone.
+- Questions must be answerable from the audio script alone.${avoidBlock}
 
 Return valid JSON only:
 {
@@ -1937,8 +1956,8 @@ function hoerenPublic(row) {
   };
 }
 
-async function generateHoerenExercise(type) {
-  const gen = await callClaudeJSON(buildHoerenPrompt(type), 'Generate the exercise now.', 1500);
+async function generateHoerenExercise(type, avoid) {
+  const gen = await callClaudeJSON(buildHoerenPrompt(type, avoid), 'Generate the exercise now.', 1500);
   if (!gen || !gen.audio_script || !Array.isArray(gen.questions) || !gen.questions.length) {
     throw new Error('Could not generate a valid exercise.');
   }
@@ -1978,9 +1997,16 @@ app.post('/api/hoerverstehen/generate', async (req, res) => {
   if (!supabaseAdmin) return res.status(500).json({ error: 'Storage not configured.' });
   if (!process.env.CLAUDE_API_KEY) return res.status(500).json({ error: 'API key not configured.' });
   if (!process.env.ELEVENLABS_API_KEY) return res.status(500).json({ error: 'Audio not configured.' });
-  console.log(`[/api/hoerverstehen/generate] type=${type}`);
+  // Optional — only ever sent by an explicit content-regeneration call (see
+  // hoeren-a1-restructure-plan.md), never by the standalone practice page's
+  // "Generate new" button. Array of short scenario descriptions to avoid
+  // repeating.
+  const avoid = Array.isArray(req.body && req.body.avoid)
+    ? req.body.avoid.filter((a) => typeof a === 'string').slice(0, 30)
+    : undefined;
+  console.log(`[/api/hoerverstehen/generate] type=${type}${avoid ? ', avoid=' + avoid.length + ' items' : ''}`);
   try {
-    const row = await generateHoerenExercise(type);
+    const row = await generateHoerenExercise(type, avoid);
     return res.json({ exercise: hoerenPublic(row), generated: true });
   } catch (err) {
     console.error('[/api/hoerverstehen/generate] error:', err.message);
