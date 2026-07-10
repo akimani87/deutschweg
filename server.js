@@ -2341,29 +2341,64 @@ Return raw JSON only, no markdown, using this exact shape:
   "next_recommendation": "..."
 }`;
 
+// Marks a task's response as blank for the grader rather than silently
+// grading an empty string — used only for timeout-triggered submissions
+// (see isTimeoutSubmit below), where "no response" is a real, expected
+// outcome that must still resolve to a finished, scored result.
+const EXAM_GRADE_BLANK_MARKER = '[KEINE ANTWORT — Zeit abgelaufen, bevor etwas geschrieben wurde]';
+function examGradeBlockOrBlankMarker(block) {
+  return (block && block.length) ? block : EXAM_GRADE_BLANK_MARKER;
+}
+const EXAM_GRADE_BLANK_INSTRUCTION =
+  `\n\nIf any task above shows exactly "${EXAM_GRADE_BLANK_MARKER}" instead of real text, ` +
+  'that task had no response submitted before time expired — award the minimum possible score ' +
+  '(0) for every criterion in that task specifically, with an explanation noting no response was ' +
+  'submitted, and set that task\'s register_check.passed to false. Do NOT let a blank task affect ' +
+  'the scoring of any OTHER task in the same submission.';
+
 app.post('/api/exam-grade', async (req, res) => {
-  const { level, task2, task3, task4 } = req.body || {};
+  const { level, task2, task3, task4, isTimeoutSubmit } = req.body || {};
   const VALID_LEVELS = ['A1', 'A2', 'B1', 'B2'];
   const safeLevel = VALID_LEVELS.indexOf(level) !== -1 ? level : 'A1';
+  const isTimeout  = isTimeoutSubmit === true;
 
-  // task2 is required for every level (A1 message / A2 SMS / B1 informal post / B2 forum post).
-  if (!task2 || typeof task2 !== 'string' || task2.trim().length < 1) {
-    return res.status(400).json({ error: 'Missing task2 response.' });
-  }
-  // task3 (A2 email / B1 opinion post / B2 formal letter) — required for A2/B1/B2.
-  if (safeLevel !== 'A1' && (!task3 || typeof task3 !== 'string' || task3.trim().length < 1)) {
-    return res.status(400).json({ error: 'Missing task3 response.' });
-  }
-  // task4 (B1 formal email) — required only for B1.
-  if (safeLevel === 'B1' && (!task4 || typeof task4 !== 'string' || task4.trim().length < 1)) {
-    return res.status(400).json({ error: 'Missing task4 response (B1 formal email).' });
+  if (!isTimeout) {
+    // Manual submission — completely unaffected by this change. The
+    // Submit button's own word-minimum gate already guarantees these are
+    // non-empty by the time a request gets here; this is the server-side
+    // backstop for that same rule.
+    // task2 is required for every level (A1 message / A2 SMS / B1 informal post / B2 forum post).
+    if (!task2 || typeof task2 !== 'string' || task2.trim().length < 1) {
+      return res.status(400).json({ error: 'Missing task2 response.' });
+    }
+    // task3 (A2 email / B1 opinion post / B2 formal letter) — required for A2/B1/B2.
+    if (safeLevel !== 'A1' && (!task3 || typeof task3 !== 'string' || task3.trim().length < 1)) {
+      return res.status(400).json({ error: 'Missing task3 response.' });
+    }
+    // task4 (B1 formal email) — required only for B1.
+    if (safeLevel === 'B1' && (!task4 || typeof task4 !== 'string' || task4.trim().length < 1)) {
+      return res.status(400).json({ error: 'Missing task4 response (B1 formal email).' });
+    }
+  } else {
+    // Timeout submission — a blank required field is graded as blank, not
+    // rejected (candidate-experience-audit.md Part 2: no grace period, and
+    // no error state either). Only type-check what's present.
+    if (task2 != null && typeof task2 !== 'string') {
+      return res.status(400).json({ error: 'Invalid task2 response.' });
+    }
+    if (task3 != null && typeof task3 !== 'string') {
+      return res.status(400).json({ error: 'Invalid task3 response.' });
+    }
+    if (task4 != null && typeof task4 !== 'string') {
+      return res.status(400).json({ error: 'Invalid task4 response.' });
+    }
   }
   if (!process.env.CLAUDE_API_KEY) {
     console.error('[/api/exam-grade] CLAUDE_API_KEY is not set');
     return res.status(500).json({ error: 'API key not configured.' });
   }
 
-  const task2Block = String(task2).slice(0, 2500).trim();
+  const task2Block = String(task2 || '').slice(0, 2500).trim();
   const task3Block = task3 ? String(task3).slice(0, 2500).trim() : '';
   const task4Block = task4 ? String(task4).slice(0, 2500).trim() : '';
 
@@ -2372,25 +2407,26 @@ app.post('/api/exam-grade', async (req, res) => {
   if (safeLevel === 'B2') {
     systemPrompt = EXAM_GRADE_B2_SYSTEM_PROMPT;
     userMessage  =
-      `Aufgabe 1 (Forum/Meinung, target ~150 words):\n"""\n${task2Block}\n"""\n\n` +
-      `Aufgabe 2 (formelle E-Mail/Brief, target ~100 words):\n"""\n${task3Block}\n"""`;
+      `Aufgabe 1 (Forum/Meinung, target ~150 words):\n"""\n${examGradeBlockOrBlankMarker(task2Block)}\n"""\n\n` +
+      `Aufgabe 2 (formelle E-Mail/Brief, target ~100 words):\n"""\n${examGradeBlockOrBlankMarker(task3Block)}\n"""`;
   } else if (safeLevel === 'B1') {
     systemPrompt = EXAM_GRADE_B1_SYSTEM_PROMPT;
     userMessage  =
-      `Aufgabe 1 (informeller Beitrag, target ~80 words):\n"""\n${task2Block}\n"""\n\n` +
-      `Aufgabe 2 (Forumsbeitrag mit Meinung, target ~80 words):\n"""\n${task3Block}\n"""\n\n` +
-      `Aufgabe 3 (formelle E-Mail, target ~40 words):\n"""\n${task4Block}\n"""`;
+      `Aufgabe 1 (informeller Beitrag, target ~80 words):\n"""\n${examGradeBlockOrBlankMarker(task2Block)}\n"""\n\n` +
+      `Aufgabe 2 (Forumsbeitrag mit Meinung, target ~80 words):\n"""\n${examGradeBlockOrBlankMarker(task3Block)}\n"""\n\n` +
+      `Aufgabe 3 (formelle E-Mail, target ~40 words):\n"""\n${examGradeBlockOrBlankMarker(task4Block)}\n"""`;
   } else if (safeLevel === 'A2') {
     systemPrompt = EXAM_GRADE_A2_SYSTEM_PROMPT;
     userMessage  =
-      `Aufgabe 1 (SMS, target 20–30 words):\n"""\n${task2Block}\n"""\n\n` +
-      `Aufgabe 2 (E-Mail, target 30–40 words):\n"""\n${task3Block}\n"""`;
+      `Aufgabe 1 (SMS, target 20–30 words):\n"""\n${examGradeBlockOrBlankMarker(task2Block)}\n"""\n\n` +
+      `Aufgabe 2 (E-Mail, target 30–40 words):\n"""\n${examGradeBlockOrBlankMarker(task3Block)}\n"""`;
   } else {
     systemPrompt = EXAM_GRADE_A1_SYSTEM_PROMPT;
-    userMessage  = `Student's short message (target ~30 words):\n"""\n${task2Block}\n"""`;
+    userMessage  = `Student's short message (target ~30 words):\n"""\n${examGradeBlockOrBlankMarker(task2Block)}\n"""`;
   }
+  if (isTimeout) userMessage += EXAM_GRADE_BLANK_INSTRUCTION;
 
-  console.log(`[/api/exam-grade] Request — level=${safeLevel}, task2=${task2Block.length}${task3Block ? ', task3=' + task3Block.length : ''}${task4Block ? ', task4=' + task4Block.length : ''} chars, origin: ${req.headers.origin || 'none'}`);
+  console.log(`[/api/exam-grade] Request — level=${safeLevel}, timeout=${isTimeout}, task2=${task2Block.length}${task3Block ? ', task3=' + task3Block.length : ''}${task4Block ? ', task4=' + task4Block.length : ''} chars, origin: ${req.headers.origin || 'none'}`);
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {

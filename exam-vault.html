@@ -234,6 +234,21 @@
   }
   .autosave-status.visible { display: flex; }
 
+  /* ── Per-section countdown timer (Part 2) ────────────────────── */
+  .section-timer {
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; justify-content: space-between;
+    background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 10px 16px; margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  #sectionTimerLabel { font-size: 12px; font-weight: 700; color: var(--mid); }
+  #sectionTimerClock {
+    font-size: 20px; font-weight: 800; color: var(--blue);
+    font-variant-numeric: tabular-nums;
+  }
+  .section-timer.danger #sectionTimerClock { color: var(--red, #DC2626); }
+
   /* ── Task: discussion_post (B1 Schreiben — forum post + opinion) ─ */
   .forum-post {
     background: #fff;
@@ -938,6 +953,13 @@
 
   <!-- Exam content (task cards rendered dynamically) -->
   <div id="examContent" style="display:none;">
+    <!-- Per-section countdown (Part 2). Sticky so it stays visible while
+         scrolling through a long task list, matching the real exam's
+         persistently-visible remaining time. -->
+    <div id="sectionTimer" class="section-timer" style="display:none;">
+      <span id="sectionTimerLabel"></span>
+      <span id="sectionTimerClock">--:--</span>
+    </div>
     <!-- Draft resume banner — shown when a saved in-progress attempt is
          found for this exam (Part 1: autosave/resume, candidate-experience-
          audit.md). Hidden otherwise. -->
@@ -1052,6 +1074,130 @@
   var currentExamMax    = 20;          // sum of task max_scores (set after load)
   var currentTasks      = [];          // ordered tasks from Supabase
   var task1Fields       = [];          // Schreiben Task 1 field labels (form_fill — legacy A1)
+
+  // ── Per-section timer (Part 2 — candidate-experience-audit.md) ──────
+  // Official Goethe-Institut written-module durations, per level, Lesen
+  // and Schreiben only (Hören/Sprechen timers are scoped separately — see
+  // Part 2 report). Source: goethe.de Durchführungsbestimmungen (Terms and
+  // Conditions for Exam Administration) per level, "Stand: 1. September
+  // 2025" — § 1.4 Zeitliche Organisation:
+  //   A1: Lesen 25 Min., Schreiben 20 Min.
+  //   A2: Lesen 30 Min., Schreiben 30 Min.
+  //   B1: Lesen 65 Min., Schreiben 60 Min.
+  //   B2: Lesen 65 Min., Schreiben 75 Min.
+  // (B1/B2 also mandate a >=15 min break between modules in-centre, which
+  // this practice tool has no equivalent of — sections here transition
+  // instantly, timer notwithstanding.)
+  var SECTION_MINUTES = {
+    A1: { lesen: 25, schreiben: 20 },
+    A2: { lesen: 30, schreiben: 30 },
+    B1: { lesen: 65, schreiben: 60 },
+    B2: { lesen: 65, schreiben: 75 }
+  };
+  var sectionTimerInterval = null;
+  var sectionEndsAt        = null; // ms epoch — absolute deadline, not a countdown counter,
+                                    // so a reload recomputes true remaining time from now()
+
+  function clearSectionTimer() {
+    if (sectionTimerInterval) { clearInterval(sectionTimerInterval); sectionTimerInterval = null; }
+    sectionEndsAt = null;
+    hide('sectionTimer');
+  }
+
+  function startSectionTimer(level, section, endsAtMs) {
+    clearSectionTimer();
+    var mins = (SECTION_MINUTES[level] || {})[section];
+    if (!mins) return; // no documented timing for this combo — no timer rather than a guess
+    sectionEndsAt = endsAtMs;
+    el('sectionTimerLabel').textContent = (section === 'lesen' ? 'Lesen' : 'Schreiben') + ' — Zeit übrig';
+    show('sectionTimer');
+    function tick() {
+      var remainingMs = sectionEndsAt - Date.now();
+      if (remainingMs <= 0) {
+        el('sectionTimerClock').textContent = '00:00';
+        autoSubmitOnTimeout();
+        return;
+      }
+      var totalSec = Math.ceil(remainingMs / 1000);
+      var m = Math.floor(totalSec / 60), s = totalSec % 60;
+      el('sectionTimerClock').textContent = (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
+      el('sectionTimer').classList.toggle('danger', totalSec <= 60);
+    }
+    tick();
+    sectionTimerInterval = setInterval(tick, 250); // finer than 1s so auto-submit fires close to exactly zero
+  }
+
+  // Starts a brand-new full-duration timer for the current (level, section)
+  // and immediately persists the deadline — not debounced, since losing the
+  // very first second of a fresh section to an unsaved deadline would let a
+  // reload grant extra time.
+  function beginFreshSectionTimer() {
+    var mins = (SECTION_MINUTES[currentLevel] || {})[currentSection];
+    if (!mins) { clearSectionTimer(); return; }
+    var endsAtMs = Date.now() + mins * 60000;
+    startSectionTimer(currentLevel, currentSection, endsAtMs);
+    persistTimerStart(endsAtMs);
+  }
+
+  function persistTimerStart(endsAtMs) {
+    if (!currentExamId || typeof dwSupabase === 'undefined') return;
+    getUserOrNull().then(function (user) {
+      if (!user) return;
+      var payload = (currentSection === 'schreiben') ? collectSchreibenAnswers() : collectLesenAnswers();
+      dwSupabase.from('exam_attempt_drafts')
+        .upsert({
+          user_id: user.id, exam_id: currentExamId, answers: payload,
+          timer_ends_at: new Date(endsAtMs).toISOString(), updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id,exam_id' })
+        .then(function () {}, function () {});
+    });
+  }
+
+  // No grace period — whatever's in the DOM right now gets graded, via the
+  // exact same submit functions manual submission uses, so a learner who
+  // runs out the clock is scored identically to one who clicked Submit.
+  function autoSubmitOnTimeout() {
+    clearSectionTimer();
+    if (currentSection === 'schreiben') submitSchreiben(true);
+    else                                submitLesen();
+  }
+
+  // ── Section locking (Part 3 — candidate-experience-audit.md) ────────
+  // sessionStorage (not localStorage) on purpose: "within the same
+  // attempt" maps to "within this browser tab/session" — closing the
+  // browser starts a new attempt, same as booking a new real exam sitting.
+  var sectionJustCompleted = false; // graded this page-load, not yet confirmed-and-locked
+
+  function sectionLockKey(level, section) { return 'dwExamVaultLock:' + level + ':' + section; }
+  function isSectionLocked(level, section) {
+    try { return sessionStorage.getItem(sectionLockKey(level, section)) === '1'; }
+    catch (_) { return false; }
+  }
+  function lockSection(level, section) {
+    try { sessionStorage.setItem(sectionLockKey(level, section), '1'); } catch (_) {}
+  }
+
+  // Wired onto the 6 nav pills (4 levels + Schreiben/Lesen). Blocks entry
+  // into an already-locked section outright; for a section just finished
+  // this load, confirms once before locking it and letting the navigation
+  // proceed. Anything else (switching before finishing, or leaving a
+  // section that was already locked on a previous visit) navigates freely.
+  function guardSectionNav(e, targetLevel, targetSection) {
+    if (isSectionLocked(targetLevel, targetSection)) {
+      e.preventDefault();
+      alert('This section is locked for this attempt — you already completed it. Start a new session (new tab or browser restart) to retake it.');
+      return;
+    }
+    var leavingCurrent = targetLevel !== currentLevel || targetSection !== currentSection;
+    if (sectionJustCompleted && leavingCurrent && !isSectionLocked(currentLevel, currentSection)) {
+      e.preventDefault();
+      var ok = confirm('Once you continue, you cannot return to this section — just like the real exam. Continue?');
+      if (ok) {
+        lockSection(currentLevel, currentSection);
+        location.href = e.currentTarget.getAttribute('href');
+      }
+    }
+  }
 
   // ── Autosave / resume (Part 1 — candidate-experience-audit.md) ──────
   // Debounced draft save so a reload/tab-close during a scored attempt
@@ -1198,31 +1344,62 @@
 
   // Checked once per (exam_id) after task cards render. Shows the resume
   // banner if a draft exists and has real content; otherwise stays hidden.
+  // Also owns starting the section timer (Part 2), since whether we're
+  // continuing an old deadline or starting a fresh one depends on exactly
+  // the same draft lookup — the clock runs either way, banner or not,
+  // matching the real exam ("Eine Änderung ... ist so lange möglich, bis
+  // ... die vorgegebene Prüfungszeit abgelaufen ist").
   function checkForDraftAndOfferResume(examId) {
     hide('draftBanner');
     if (draftCheckedForExam === examId) return;
-    if (typeof dwSupabase === 'undefined') return;
+    if (typeof dwSupabase === 'undefined') { beginFreshSectionTimer(); return; }
     getUserOrNull().then(function (user) {
-      if (!user) { draftCheckedForExam = examId; return; }
+      if (!user) { draftCheckedForExam = examId; beginFreshSectionTimer(); return; }
       dwSupabase.from('exam_attempt_drafts')
-        .select('answers, updated_at').eq('user_id', user.id).eq('exam_id', examId)
+        .select('answers, updated_at, timer_ends_at').eq('user_id', user.id).eq('exam_id', examId)
         .maybeSingle()
         .then(function (res) {
           draftCheckedForExam = examId;
-          var draft = res && res.data;
-          if (!draft || answersAreEmpty(draft.answers)) return;
-          show('draftBanner');
-          el('draftResumeBtn').onclick = function () {
-            hide('draftBanner');
-            if (currentSection === 'schreiben') restoreSchreibenAnswers(draft.answers);
-            else                                restoreLesenAnswers(draft.answers);
-          };
-          el('draftDiscardBtn').onclick = function () {
-            hide('draftBanner');
-            dwSupabase.from('exam_attempt_drafts').delete()
-              .eq('user_id', user.id).eq('exam_id', examId).then(function () {}, function () {});
-          };
-        }, function () { draftCheckedForExam = examId; });
+          var draft      = res && res.data;
+          var endsAtMs   = (draft && draft.timer_ends_at) ? new Date(draft.timer_ends_at).getTime() : null;
+          var hasContent = !!draft && !answersAreEmpty(draft.answers);
+
+          // Time already ran out while the tab was away — there's nothing
+          // to "resume", the section is simply over. Restore whatever was
+          // saved (if anything) and finalize it exactly as if the clock
+          // had hit zero while the page stayed open.
+          if (endsAtMs != null && endsAtMs <= Date.now()) {
+            if (hasContent) {
+              if (currentSection === 'schreiben') restoreSchreibenAnswers(draft.answers);
+              else                                restoreLesenAnswers(draft.answers);
+            }
+            autoSubmitOnTimeout();
+            return;
+          }
+
+          if (hasContent) {
+            show('draftBanner');
+            el('draftResumeBtn').onclick = function () {
+              hide('draftBanner');
+              if (currentSection === 'schreiben') restoreSchreibenAnswers(draft.answers);
+              else                                restoreLesenAnswers(draft.answers);
+              if (endsAtMs != null) startSectionTimer(currentLevel, currentSection, endsAtMs);
+              else                  beginFreshSectionTimer();
+            };
+            el('draftDiscardBtn').onclick = function () {
+              hide('draftBanner');
+              dwSupabase.from('exam_attempt_drafts').delete()
+                .eq('user_id', user.id).eq('exam_id', examId).then(function () {}, function () {});
+              beginFreshSectionTimer(); // discarding old answers restarts the clock too
+            };
+          }
+
+          // The countdown itself doesn't wait on a Resume/Discard click —
+          // it keeps running (or starts fresh) immediately, same as a real
+          // invigilator's clock wouldn't pause for a UI decision.
+          if (endsAtMs != null) startSectionTimer(currentLevel, currentSection, endsAtMs);
+          else                  beginFreshSectionTimer();
+        }, function () { draftCheckedForExam = examId; beginFreshSectionTimer(); });
     });
   }
 
@@ -1427,7 +1604,7 @@
       +   '<p class="stimulus-text">' + escapeHtml(stim.message || '') + '</p>'
       +   bulletsHtml
       + '</div>'
-      + '<textarea class="response-area" id="' + idResp + '" rows="6" placeholder="Schreib deine Antwort hier…"></textarea>'
+      + '<textarea class="response-area" id="' + idResp + '" rows="6" spellcheck="false" placeholder="Schreib deine Antwort hier…"></textarea>'
       + '<div class="word-counter"><span id="' + idWC + '">0</span> / ' + wordTarget + ' Wörter</div>';
 
     var ta      = el(idResp);
@@ -1496,7 +1673,7 @@
       +   (prompt ? '<p class="stimulus-text">' + escapeHtml(prompt) + '</p>' : '')
       + '</div>'
       + forumHtml
-      + '<textarea class="response-area" id="' + idResp + '" rows="8" placeholder="Schreib deine Meinung hier…"></textarea>'
+      + '<textarea class="response-area" id="' + idResp + '" rows="8" spellcheck="false" placeholder="Schreib deine Meinung hier…"></textarea>'
       + '<div class="word-counter"><span id="' + idWC + '">0</span> / ' + wordTarget + ' Wörter</div>';
 
     var ta      = el(idResp);
@@ -2044,8 +2221,14 @@
     return out;
   }
 
-  function submitSchreiben() {
+  function submitSchreiben(isTimeoutSubmit) {
+    clearSectionTimer(); // stop counting the instant submission starts, manual or auto-at-zero
     var ans = collectSchreibenAnswers();   // { level, task2, [task3] }
+    // Server relaxes its required-field validation ONLY when this is set —
+    // a blank field is then graded as blank (lowest score for that task)
+    // instead of returning a 400. Manual submission never sets this; the
+    // Submit button's own word-minimum gate is untouched.
+    ans.isTimeoutSubmit = !!isTimeoutSubmit;
 
     hide('resultsArea');
     hide('savedNotice');
@@ -2065,6 +2248,11 @@
           renderSchreibenResults(res.body);
           show('resultsArea');
           el('resultsArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // Marks this section eligible for the leave-confirmation lock
+          // (Part 3) — independent of whether saveAttempt() below actually
+          // persists, since an anonymous learner still "finished" the
+          // section just as much as a signed-in one.
+          sectionJustCompleted = true;
 
           // Per-level scores summary for the exam_attempts.scores
           // jsonb column. Shape differs per level so we can power
@@ -2164,6 +2352,7 @@
 
   // ── Submit: Lesen (client-side scoring) ────────────────────
   function submitLesen() {
+    clearSectionTimer(); // stop counting the instant submission starts, manual or auto-at-zero
     hide('resultsArea');
     hide('savedNotice');
     hide('submitArea');
@@ -2175,6 +2364,7 @@
     renderLesenResults(graded);
     show('resultsArea');
     el('resultsArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    sectionJustCompleted = true; // Part 3 — eligible for the leave-confirmation lock now
 
     saveAttempt(
       answers,
@@ -3235,6 +3425,21 @@
     wireExtraPills(currentLevel);
     el('examEyebrow').textContent = currentLevel + ' · Exam Vault';
 
+    // Direct-URL / back-button / bookmark access to an already-locked
+    // section (Part 3) — the pill-click guard below only covers in-page
+    // navigation, so this is the equivalent block for anyone landing here
+    // by any other route once the section is locked for this session.
+    if (isSectionLocked(currentLevel, currentSection)) {
+      el('loadingState').innerHTML =
+        '<div class="state-text">'
+        + '<strong>This section is locked for this attempt.</strong><br>'
+        + 'You already completed ' + currentLevel + ' ' + (currentSection === 'lesen' ? 'Lesen' : 'Schreiben')
+        + ' this session — start a new session (new tab or browser restart) to retake it.'
+        + '</div>';
+      show('loadingState');
+      return;
+    }
+
     if (typeof dwSupabase === 'undefined') {
       showLoadError('Supabase client not initialised. Check that supabase-config.js is loading.');
       return;
@@ -3243,6 +3448,14 @@
     // Wire submit once. loadExam() may run multiple times if the user
     // switches Übungssatz, but the listener only needs to bind once.
     el('submitBtn').addEventListener('click', submitExam);
+
+    // Section-lock nav guards (Part 3) — wired once on the 6 pills.
+    ['A1', 'A2', 'B1', 'B2'].forEach(function (l) {
+      var p = el('pill' + l);
+      if (p) p.addEventListener('click', function (e) { guardSectionNav(e, l, 'schreiben'); });
+    });
+    el('pillSchreiben').addEventListener('click', function (e) { guardSectionNav(e, currentLevel, 'schreiben'); });
+    el('pillLesen').addEventListener('click',     function (e) { guardSectionNav(e, currentLevel, 'lesen'); });
 
     // Delegated autosave triggers (Part 1) — bound once on the container
     // since #taskCards's *contents* are replaced on every loadExam(), but
@@ -3373,6 +3586,8 @@
     draftDirty = false;
     setAutosaveStatus(null);
     hide('draftBanner');
+    clearSectionTimer(); // checkForDraftAndOfferResume() below restarts it for the new exam
+    sectionJustCompleted = false; // Part 3 — a fresh exam load hasn't been finished yet
 
     var btn  = el('submitBtn');
     btn.disabled = true;
