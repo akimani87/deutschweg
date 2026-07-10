@@ -283,6 +283,27 @@
   .hoeren-opt .letter { display: inline-block; font-weight: 800; color: var(--blue); margin-right: 8px; }
   .hoeren-opt.selected .letter { color: #fff; }
 
+  /* ── Practice-by-Skill / Complete Mock Exam mode toggle ──────────── */
+  .exam-mode-toggle {
+    display: flex; gap: 8px; margin-bottom: 18px; border-bottom: 1px solid var(--border); padding-bottom: 14px;
+  }
+  .mode-btn {
+    flex: 1; border: 1.5px solid var(--border); background: #fff; border-radius: var(--radius-sm);
+    padding: 11px; font-size: 13.5px; font-weight: 700; font-family: inherit; color: var(--mid); cursor: pointer;
+    transition: all .15s;
+  }
+  .mode-btn:hover { border-color: var(--blue); color: var(--blue); }
+  .mode-btn.active { border-color: var(--blue); background: var(--blue); color: #fff; }
+
+  /* ── Complete Mock Exam — between-section transition ─────────────── */
+  .mock-exam-transition { padding: 60px 0; text-align: center; }
+  .met-box { display: inline-flex; flex-direction: column; align-items: center; gap: 14px; }
+  .met-check {
+    width: 56px; height: 56px; border-radius: 50%; background: var(--green); color: #fff;
+    font-size: 28px; display: flex; align-items: center; justify-content: center;
+  }
+  .met-text { font-size: 15px; font-weight: 700; color: #1F2937; }
+
   /* ── Task: discussion_post (B1 Schreiben — forum post + opinion) ─ */
   .forum-post {
     background: #fff;
@@ -942,6 +963,17 @@
   <h1 class="exam-title" id="examTitle">Loading…</h1>
   <p class="exam-sub" id="examSub">Goethe-format A1 practice with auto-grading. Pick an exam and take it like the real thing.</p>
 
+  <!-- Practice by Skill vs. Complete Mock Exam (combined-mock-exam-
+       architecture-review.md, Phase 3). Combined mode hides the level +
+       section pills below (navigation is fully automatic once started —
+       see setExamMode()/startCombinedMockExam()) and drives Hören → Lesen
+       → Schreiben in one continuous flow through the same per-section
+       renderers/timers/locks/autosave used by standalone practice. -->
+  <div class="exam-mode-toggle" id="examModeToggle" role="tablist" aria-label="Choose mode">
+    <button type="button" class="mode-btn active" data-mode="practice">Practice by Skill</button>
+    <button type="button" class="mode-btn" data-mode="combined">Complete Mock Exam</button>
+  </div>
+
   <!-- Level selector — A1 / A2 / B1 / B2 -->
   <div class="exam-selector" role="tablist" aria-label="Choose level" style="margin-bottom:10px;">
     <a class="exam-pill" id="pillA1" role="tab" data-level="A1">A1</a>
@@ -1024,6 +1056,16 @@
     <div class="spinner"></div>
     <div class="grading-text">Grading your exam…</div>
     <div class="grading-sub">Usually 10–20 seconds. Don't refresh the page.</div>
+  </div>
+
+  <!-- Complete Mock Exam — brief transition shown between sections instead
+       of the standalone "continue? you'll lose access" confirm/lock prompt
+       (Phase 3: no need to ask, there's nowhere else to go but onward). -->
+  <div id="mockExamTransition" class="mock-exam-transition" style="display:none;">
+    <div class="met-box">
+      <div class="met-check">✓</div>
+      <div class="met-text" id="metText"></div>
+    </div>
   </div>
 
   <!-- Results (shape varies per exam section, populated dynamically) -->
@@ -1111,6 +1153,145 @@
   var currentExamMax    = 20;          // sum of task max_scores (set after load)
   var currentTasks      = [];          // ordered tasks from Supabase
   var task1Fields       = [];          // Schreiben Task 1 field labels (form_fill — legacy A1)
+
+  // ── Complete Mock Exam — combined-flow state (combined-mock-exam-
+  // architecture-review.md, Phases 2-3). null/false = standalone "Practice
+  // by Skill" mode, completely unaffected by anything below — every
+  // function here is additive, gated on currentMockExamAttemptId being set.
+  var currentMockExamAttemptId = null;
+  var currentMockExamSet       = null; // the mock_exam_sets row (has the 3 exam ids)
+  var MOCK_EXAM_SECTION_ORDER  = ['hoeren', 'lesen', 'schreiben'];
+  var oneTimeWiringDone        = false; // load()'s event-listener block now guards against running twice — see load()
+
+  function nextMockExamSection(section) {
+    var i = MOCK_EXAM_SECTION_ORDER.indexOf(section);
+    return (i >= 0 && i + 1 < MOCK_EXAM_SECTION_ORDER.length) ? MOCK_EXAM_SECTION_ORDER[i + 1] : null;
+  }
+  function examIdForSection(set, section) {
+    if (section === 'hoeren')    return set.hoeren_exam_id;
+    if (section === 'lesen')     return set.lesen_exam_id;
+    if (section === 'schreiben') return set.schreiben_exam_id;
+    return null;
+  }
+  function mockExamAttemptFkColumn(section) {
+    return section === 'hoeren' ? 'hoeren_attempt_id' : section === 'lesen' ? 'lesen_attempt_id' : 'schreiben_attempt_id';
+  }
+
+  // Finds the learner's in-progress mock_exam_attempts row for this set, or
+  // creates one starting at the first section the set actually has an exam
+  // for (skips gaps gracefully — e.g. a set missing Hören content would
+  // start at Lesen instead of erroring).
+  function getOrCreateMockExamAttempt(set) {
+    return getUserOrNull().then(function (user) {
+      if (!user) return null; // combined mode needs an account, same as history/drafts already do
+      return dwSupabase.from('mock_exam_attempts')
+        .select('*').eq('user_id', user.id).eq('set_id', set.id).is('completed_at', null)
+        .maybeSingle()
+        .then(function (res) {
+          if (res.error) { console.error('[mockExam] lookup failed', res.error.message); return null; }
+          if (res.data) return res.data;
+          var firstSection = MOCK_EXAM_SECTION_ORDER.filter(function (s) { return examIdForSection(set, s); })[0];
+          if (!firstSection) return null;
+          return dwSupabase.from('mock_exam_attempts')
+            .insert({ user_id: user.id, set_id: set.id, current_section: firstSection })
+            .select().single()
+            .then(function (ins) {
+              if (ins.error) { console.error('[mockExam] create failed', ins.error.message); return null; }
+              return ins.data;
+            });
+        });
+    });
+  }
+
+  // Called from each of submitHoeren()/submitLesen()/submitSchreiben()'s
+  // existing saveAttempt() success path — additive only, saveAttempt()
+  // itself is untouched. No-ops entirely outside combined mode.
+  function advanceMockExamProgress(savedAttemptRow) {
+    if (!currentMockExamAttemptId || !savedAttemptRow) return;
+    var col  = mockExamAttemptFkColumn(currentSection);
+    var next = nextMockExamSection(currentSection);
+    var patch = {};
+    patch[col] = savedAttemptRow.id;
+    patch.current_section = next; // null once Schreiben (the last section here) finishes
+    if (!next) patch.completed_at = new Date().toISOString();
+
+    dwSupabase.from('mock_exam_attempts').update(patch).eq('id', currentMockExamAttemptId)
+      .then(function (res) {
+        if (res.error) { console.error('[mockExam] progress update failed', res.error.message); return; }
+        // Combined mode: no "are you sure?" — the section is done, lock it
+        // and move on, same lockSection() standalone practice already uses.
+        lockSection(currentLevel, currentSection);
+        if (next) showMockExamTransition(next);
+        else      showMockExamFinished();
+      }, function () {});
+  }
+
+  function showMockExamTransition(nextSection) {
+    hide('resultsArea');
+    hide('examContent');
+    el('metText').textContent = sectionDisplayLabel(currentSection) + ' complete — moving to ' + sectionDisplayLabel(nextSection) + '…';
+    show('mockExamTransition');
+    setTimeout(function () {
+      hide('mockExamTransition');
+      currentSection = nextSection;
+      loadExam(examIdForSection(currentMockExamSet, nextSection), null);
+    }, 1600);
+  }
+
+  // Placeholder pending Phase 4's real side-by-side results screen —
+  // deliberately not attempting a combined score here (architecture
+  // review, Section J: no forced single number).
+  function showMockExamFinished() {
+    hide('resultsArea');
+    hide('examContent');
+    el('metText').textContent = 'Complete Mock Exam finished — Hören, Lesen and Schreiben are all done.';
+    show('mockExamTransition');
+  }
+
+  function startCombinedMockExam() {
+    el('examEyebrow').textContent = currentLevel + ' · Complete Mock Exam';
+    dwSupabase.from('mock_exam_sets')
+      .select('*').eq('level', currentLevel).eq('set_number', 1).eq('is_published', true)
+      .maybeSingle()
+      .then(function (res) {
+        if (res.error || !res.data) {
+          showLoadError('No Complete Mock Exam set published yet for ' + currentLevel + '.');
+          return;
+        }
+        currentMockExamSet = res.data;
+        getOrCreateMockExamAttempt(res.data).then(function (attempt) {
+          if (!attempt) {
+            showLoadError('Sign in to start a Complete Mock Exam attempt.');
+            return;
+          }
+          currentMockExamAttemptId = attempt.id;
+          currentSection = attempt.current_section;
+          wirePills(currentLevel, currentSection);
+          loadExam(examIdForSection(currentMockExamSet, currentSection), null);
+        });
+      });
+  }
+
+  function setExamMode(mode) {
+    document.querySelectorAll('#examModeToggle .mode-btn').forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-mode') === mode);
+    });
+    var isCombined = mode === 'combined';
+    // Pills are meaningless in combined mode — navigation is fully
+    // automatic once started (Phase 3 spec), so hide level/section pills
+    // and the Übungssatz dropdown rather than leave them clickable.
+    document.querySelectorAll('.exam-selector').forEach(function (row) { row.style.display = isCombined ? 'none' : ''; });
+    hide('examSetSelector');
+    hide('mockExamTransition');
+    if (isCombined) {
+      startCombinedMockExam();
+    } else {
+      currentMockExamAttemptId = null;
+      currentMockExamSet = null;
+      el('examEyebrow').textContent = currentLevel + ' · Exam Vault';
+      load();
+    }
+  }
 
   // ── Per-section timer (Part 2 — candidate-experience-audit.md) ──────
   // Official Goethe-Institut written-module durations, per level, Lesen
@@ -1821,6 +2002,7 @@
       if (saved) {
         show('savedNotice'); loadHistory(); loadWeakness();
         deleteDraftForCurrentExam(); // real attempt is saved — the draft's job is done
+        advanceMockExamProgress(saved); // no-op outside Complete Mock Exam mode
       }
     });
   }
@@ -2660,6 +2842,7 @@
             if (saved) {
               show('savedNotice'); loadHistory(); loadWeakness();
               deleteDraftForCurrentExam(); // real attempt is saved — the draft's job is done
+              advanceMockExamProgress(saved); // no-op outside Complete Mock Exam mode
             }
           });
         } else {
@@ -2697,6 +2880,7 @@
       if (saved) {
         show('savedNotice'); loadHistory(); loadWeakness();
         deleteDraftForCurrentExam(); // real attempt is saved — the draft's job is done
+        advanceMockExamProgress(saved); // no-op outside Complete Mock Exam mode
       }
     });
   }
@@ -3767,38 +3951,51 @@
       return;
     }
 
-    // Wire submit once. loadExam() may run multiple times if the user
-    // switches Übungssatz, but the listener only needs to bind once.
-    el('submitBtn').addEventListener('click', submitExam);
+    // Everything in this block binds event listeners once, ever — load()
+    // itself can now run more than once (switching back to "Practice by
+    // Skill" from Complete Mock Exam calls it again via setExamMode()),
+    // so this guard prevents duplicate listeners piling up on repeat runs.
+    if (!oneTimeWiringDone) {
+      oneTimeWiringDone = true;
 
-    // Section-lock nav guards (Part 3) — wired once on the 6 pills.
-    ['A1', 'A2', 'B1', 'B2'].forEach(function (l) {
-      var p = el('pill' + l);
-      if (p) p.addEventListener('click', function (e) { guardSectionNav(e, l, 'schreiben'); });
-    });
-    el('pillSchreiben').addEventListener('click', function (e) { guardSectionNav(e, currentLevel, 'schreiben'); });
-    el('pillLesen').addEventListener('click',     function (e) { guardSectionNav(e, currentLevel, 'lesen'); });
-    el('pillHoeren').addEventListener('click',    function (e) { guardSectionNav(e, currentLevel, 'hoeren'); });
+      // Wire submit once. loadExam() may run multiple times if the user
+      // switches Übungssatz, but the listener only needs to bind once.
+      el('submitBtn').addEventListener('click', submitExam);
 
-    // Delegated autosave triggers (Part 1) — bound once on the container
-    // since #taskCards's *contents* are replaced on every loadExam(), but
-    // the container element itself persists. 'input'/'change' bubble from
-    // every textarea/radio/select; true_false's .tf-btn is a plain button
-    // so it needs an explicit click check.
-    el('taskCards').addEventListener('input',  markDirtyAndScheduleAutosave);
-    el('taskCards').addEventListener('change', markDirtyAndScheduleAutosave);
-    el('taskCards').addEventListener('click', function (e) {
-      if (e.target.closest('.tf-btn')) markDirtyAndScheduleAutosave();
-    });
+      // Section-lock nav guards (Part 3) — wired once on the 6 pills.
+      ['A1', 'A2', 'B1', 'B2'].forEach(function (l) {
+        var p = el('pill' + l);
+        if (p) p.addEventListener('click', function (e) { guardSectionNav(e, l, 'schreiben'); });
+      });
+      el('pillSchreiben').addEventListener('click', function (e) { guardSectionNav(e, currentLevel, 'schreiben'); });
+      el('pillLesen').addEventListener('click',     function (e) { guardSectionNav(e, currentLevel, 'lesen'); });
+      el('pillHoeren').addEventListener('click',    function (e) { guardSectionNav(e, currentLevel, 'hoeren'); });
 
-    // Warn on tab close/reload only while there's an actual unsaved edit
-    // sitting in the debounce window (or a save that failed) — not on
-    // every visit to the page.
-    window.addEventListener('beforeunload', function (e) {
-      if (!draftDirty) return;
-      e.preventDefault();
-      e.returnValue = '';
-    });
+      // Practice by Skill / Complete Mock Exam toggle (Phase 3).
+      document.querySelectorAll('#examModeToggle .mode-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () { setExamMode(btn.getAttribute('data-mode')); });
+      });
+
+      // Delegated autosave triggers (Part 1) — bound once on the container
+      // since #taskCards's *contents* are replaced on every loadExam(), but
+      // the container element itself persists. 'input'/'change' bubble from
+      // every textarea/radio/select; true_false's .tf-btn is a plain button
+      // so it needs an explicit click check.
+      el('taskCards').addEventListener('input',  markDirtyAndScheduleAutosave);
+      el('taskCards').addEventListener('change', markDirtyAndScheduleAutosave);
+      el('taskCards').addEventListener('click', function (e) {
+        if (e.target.closest('.tf-btn')) markDirtyAndScheduleAutosave();
+      });
+
+      // Warn on tab close/reload only while there's an actual unsaved edit
+      // sitting in the debounce window (or a save that failed) — not on
+      // every visit to the page.
+      window.addEventListener('beforeunload', function (e) {
+        if (!draftDirty) return;
+        e.preventDefault();
+        e.returnValue = '';
+      });
+    }
 
     el('examSub').textContent = currentSection === 'schreiben'
       ? 'Goethe-format Schreiben practice. Write the message(s), then submit for instant AI grading.'
