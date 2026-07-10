@@ -21,6 +21,28 @@
  *
  * Loaded via <script src="./taxonomy.js?v=1"> in the frontend (exposes
  * window.dwTaxonomy) and via require('./taxonomy.js') in server.js.
+ *
+ * 11 categories total: the original 6 were narrow, regex-detectable
+ * patterns sized for the AI Pal chat widget's per-message scanner. The
+ * 5 added afterward (register_mismatch onward) are broader, judgment-based
+ * categories an LLM grader can apply to essay/speech-length Schreiben and
+ * Sprechen responses — they are NOT regex-detectable and are only ever
+ * assigned by an AI grading call, not by ai-pal-widget.js's pattern
+ * scanner. See scoring-reconciliation-plan.md and feedback-audit.md for
+ * the audits that led to both rounds.
+ *
+ * register_mismatch vs. text_conventions_structure — kept deliberately
+ * distinct, do not collapse:
+ *   - register_mismatch    = tone/formality CHOICE (Sie vs. du, informal
+ *     phrasing in a formal task or vice versa).
+ *   - text_conventions_structure = structural CONVENTION (is there a
+ *     salutation at all, are there paragraph breaks, does the shape match
+ *     a letter/email) — independent of whether the register itself was
+ *     right or wrong.
+ *
+ * Deliberately NOT included: a pronunciation/Aussprache category.
+ * Sprechen's score_aussprache is a separate acoustic-quality measurement,
+ * not an error-type tag, and stays outside this taxonomy.
  */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) {
@@ -65,6 +87,31 @@
       key: 'preposition_pattern',
       label: 'Preposition patterns',
       description: 'prepositions like in/zu/nach with destinations and places'
+    },
+    {
+      key: 'register_mismatch',
+      label: 'Register mismatch',
+      description: 'Sie/du confusion, wrong formality level for the task, informal tone in a formal task or vice versa'
+    },
+    {
+      key: 'case_and_declension',
+      label: 'Case and declension',
+      description: 'dative/genitive case errors, adjective-ending agreement, article errors beyond the masculine-accusative pattern'
+    },
+    {
+      key: 'vocabulary_range',
+      label: 'Vocabulary range',
+      description: 'repetitive/limited vocabulary, word-for-word translation patterns, imprecise or register-inappropriate word choice'
+    },
+    {
+      key: 'coherence_connectors',
+      label: 'Coherence and connectors',
+      description: 'missing or repetitive connectors, weak logical flow between sentences/paragraphs, absent topic sentences'
+    },
+    {
+      key: 'text_conventions_structure',
+      label: 'Text conventions and structure',
+      description: 'missing/wrong salutation or closing for the register, no paragraph breaks, wrong letter/email structure for the task type'
     }
   ];
 

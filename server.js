@@ -1722,13 +1722,13 @@ and the Goethe A1 exam.
 Generate ALL feedback in ${langName}.
 
 Score each area 1-5:
-- Aussprache (pronunciation)
+- Aussprache (pronunciation) — this is a separate acoustic-quality score, do NOT tag it against the taxonomy below, it stays exactly as-is
 - Kommunikation (did they get the message across?)
 - Grammatik (grammar accuracy)
 - Wortschatz (vocabulary range)
 - Overall score
 
-Feedback structure:
+Feedback structure (unchanged, keep this prose exactly as it already is — the structured tagging below is ADDED alongside it, not a replacement):
 1. OPENING — one warm encouraging sentence acknowledging their effort
 2. WHAT WENT WELL — 2-3 specific things they did well with examples from transcript
 3. AREAS TO IMPROVE — 2-3 specific improvements with examples from transcript
@@ -1742,6 +1742,11 @@ Rules:
 - Keep each section short — maximum 3 sentences
 - Generate everything in ${langName}
 
+${EXAM_GRADE_TAGGING_RULE}
+For Sprechen, also apply this rule to register_mismatch/text_conventions_structure: since there is no fixed written text-type here, only flag register_mismatch if the candidate used the wrong Sie/du form for an examiner context, and text_conventions_structure rarely applies (spoken answers don't have salutations/paragraphs) — leave it out unless something structurally analogous is clearly missing (e.g. no self-introduction at all when asked to introduce themselves).
+
+In ADDITION to the 5 prose fields above (unchanged), also return a "tagged_errors" array: one entry per distinct error you noticed in the transcript (reuse the same specific errors you already reference in "areas_to_improve" — don't invent new ones), each with the taxonomy category key and the exact transcript fragment. Empty array if no clear errors surfaced.
+
 Return valid JSON only:
 {
   "score_overall": ,
@@ -1753,7 +1758,10 @@ Return valid JSON only:
   "what_went_well": "",
   "areas_to_improve": "",
   "exam_tip": "",
-  "encouragement": ""
+  "encouragement": "",
+  "tagged_errors": [
+    { "category": "verb_conjugation", "fragment": "exact words from the transcript", "note": "one short clause explaining the error" }
+  ]
 }`;
 }
 
@@ -1768,6 +1776,16 @@ async function generateSprechenFeedback(transcript, language) {
   if (!fb) return null;
   ['score_overall','score_aussprache','score_kommunikation','score_grammatik','score_wortschatz']
     .forEach(function(k){ fb[k] = clampScore(fb[k]); });
+  // Sanitize tagged_errors: drop anything that isn't a real taxonomy key
+  // (defensive against the model inventing a category) and cap length.
+  fb.tagged_errors = (Array.isArray(fb.tagged_errors) ? fb.tagged_errors : [])
+    .filter(e => e && dwTaxonomy.get(e.category))
+    .slice(0, 6)
+    .map(e => ({
+      category: e.category,
+      fragment: (typeof e.fragment === 'string') ? e.fragment.slice(0, 200) : '',
+      note:     (typeof e.note === 'string')     ? e.note.slice(0, 300)     : ''
+    }));
   return fb;
 }
 
@@ -2006,27 +2024,53 @@ app.post('/api/hoerverstehen/practice', async (req, res) => {
 // all; A1/A2/B2 now say the same thing B1 always did).
 const EXAM_GRADE_PASS_PCT = dwScoring.PASS_THRESHOLD_PCT;
 
+// Taxonomy reference block, generated once from taxonomy.js and reused
+// in all four rubric prompts below (and in the Sprechen feedback prompt)
+// so there's exactly one authored copy of "here are the categories you
+// may tag" instead of four independently-typed copies that could drift.
+// register_mismatch/text_conventions_structure are excluded here — they
+// are restricted to each task's register_check.flags, never a general
+// criterion's tags array (see EXAM_GRADE_TAGGING_RULE below).
+const EXAM_GRADE_TAXONOMY_BLOCK = dwTaxonomy.CATEGORIES
+  .filter(c => c.key !== 'register_mismatch' && c.key !== 'text_conventions_structure')
+  .map(c => `- ${c.key}: ${c.description}`)
+  .join('\n');
+
+const EXAM_GRADE_TAGGING_RULE = `TAXONOMY TAGGING — when a criterion's feedback notes a specific error type, tag it with the matching category key(s) from this list in that criterion's "tags" array (use [] if none clearly apply — do not force a fit):
+${EXAM_GRADE_TAXONOMY_BLOCK}
+IMPORTANT: register_mismatch and text_conventions_structure are NEVER used in a criterion's "tags" — those two categories belong ONLY inside "register_check.flags" (see below).`;
+
+// A1/A2 use 2 criteria (Erfüllung + Kommunikative Gestaltung) per
+// scoring-reconciliation-plan.md / feedback-audit.md Part B step 2 — B1/B2
+// use 4 (adding Wortschatz + Formale Richtigkeit as their own lines,
+// matching what B2's grader already did). Register/text-type is checked
+// as its own diagnostic per task (step 1) — it never changes a score.
 const EXAM_GRADE_A1_SYSTEM_PROMPT = `You are a certified Goethe-Institut A1 exam grader. Grade this student's Schreiben submission using the official Goethe A1 Fit in Deutsch 1 rubric exactly.
 
-The student wrote a short message (~30 words) responding to an email stimulus. Grade using ONLY these two official criteria:
+The student wrote a short message (~30 words) responding to an email stimulus. Grade using these two criteria:
 
-CRITERION 1 — Kommunikative Gestaltung / Inhalt und Umfang (max 3 points):
-- 3 points: Text fully matches the prompt AND reaches approximately 30 words. Has greeting and closing. Gives relevant personal information.
+CRITERION — Erfüllung (task fulfillment / content, max 3 points):
+- 3 points: Text fully matches the prompt AND reaches approximately 30 words. Gives relevant personal information covering the stimulus.
 - 2 points: Text largely matches the prompt. Word count is between 20–30. Most required content is present.
 - 1 point: Text partially matches the prompt OR sentences are copied verbatim from the stimulus. Content is too sparse.
 - 0 points: Text does not match the prompt at all. If 0 — the ENTIRE Schreiben section scores 0.
 
-CRITERION 2 — Formale Richtigkeit (max 3 points):
-- 3 points: No errors or only isolated errors in syntax, morphology, orthography/punctuation.
-- 2 points: Some errors in syntax, morphology, orthography that slightly affect comprehension.
-- 1 point: Errors at multiple points that noticeably affect comprehension.
+CRITERION — Kommunikative Gestaltung (coherence, register, appropriate form, and basic correctness, max 3 points):
+- 3 points: Greeting and closing present and appropriate. Reads coherently. No errors or only isolated errors that don't affect comprehension.
+- 2 points: Greeting/closing present but simple. Some errors in syntax, morphology, orthography that slightly affect comprehension.
+- 1 point: Greeting or closing missing or awkward. Errors at multiple points that noticeably affect comprehension.
 - 0 points: So many errors that the content is no longer comprehensible. If 0 — the ENTIRE Schreiben section scores 0.
+
+REGISTER CHECK — separate diagnostic, does NOT change either score above:
+A1 short messages to a friend/acquaintance are informal (du-form). Check specifically whether the student used "du" throughout (a "Sie" here would be a register_mismatch) and whether SOME greeting and SOME closing exist at all in any form (their total absence is a text_conventions_structure issue, independent of whether the one used was the right formality).
+
+${EXAM_GRADE_TAGGING_RULE}
 
 IMPORTANT RULES:
 - Spelling errors are only penalised if they affect comprehension.
 - Even imperfect sentences can score full marks if they are understandable.
 - If either criterion scores 0, set both scores to 0 and total_score to 0.
-- The raw total (criterion1 + criterion2) is multiplied by 2 to get the final score out of 12.
+- The raw total (Erfüllung + Kommunikative Gestaltung) is multiplied by 2 to get the final score out of 12.
 - Pass mark = ${Math.ceil(12 * EXAM_GRADE_PASS_PCT / 100)}/12 (${EXAM_GRADE_PASS_PCT}%) — official Goethe pass threshold.
 - Word count: count the student's words carefully. Do not count the greeting line as words if it is a single word like "Hallo".
 
@@ -2038,20 +2082,16 @@ Sei freundlich. Benutze 'du'.
 
 Respond as a single raw JSON object — no markdown, no code fences, no text outside the JSON. Use this exact shape:
 {
-  "kommunikative_gestaltung": {
-    "score": <integer 0–3>,
-    "max": 3,
-    "explanation": "One sentence explaining this score.",
-    "tip": "One concrete improvement tip."
+  "tasks": {
+    "task1": {
+      "erfuellung": { "score": <integer 0-3>, "max": 3, "explanation": "...", "tip": "...", "tags": [] },
+      "kommunikative_gestaltung": { "score": <integer 0-3>, "max": 3, "explanation": "...", "tip": "...", "tags": [] },
+      "register_check": { "expected_register": "informal", "passed": true, "flags": [], "explanation": "..." },
+      "task_raw": <erfuellung.score + kommunikative_gestaltung.score>
+    }
   },
-  "formale_richtigkeit": {
-    "score": <integer 0–3>,
-    "max": 3,
-    "explanation": "One sentence explaining this score.",
-    "tip": "One concrete improvement tip."
-  },
-  "raw_total": <kommunikative_gestaltung.score + formale_richtigkeit.score>,
-  "total_score": <raw_total * 2>,
+  "total_raw": <tasks.task1.task_raw>,
+  "total_score": <total_raw * 2>,
   "max_score": 12,
   "word_count": <integer — number of words counted in the student's message>,
   "overall_feedback": "Two encouraging sentences.",
@@ -2062,32 +2102,37 @@ Respond as a single raw JSON object — no markdown, no code fences, no text out
 const EXAM_GRADE_A2_SYSTEM_PROMPT = `You are a certified Goethe-Institut A2 exam grader. Grade this student's Schreiben submission using the official Goethe A2 rubric.
 
 The student wrote TWO texts:
-- Task 1: SMS (target 20–30 words, must cover 3 bullet points)
-- Task 2: Semi-formal email (target 30–40 words, must cover 3 bullet points)
+- Task 1: SMS (target 20–30 words, must cover 3 bullet points, informal register)
+- Task 2: Semi-formal email (target 30–40 words, must cover 3 bullet points, semi-formal/formal register)
 
-Grade each task on TWO criteria using this 5-level scale:
+Grade EACH task independently on TWO criteria using this 5-level scale:
 
-CRITERION: Aufgabenerfüllung (task completion + register):
-A = 5 points: all 3 bullet points covered adequately, appropriate register
+CRITERION — Erfüllung (task completion — content only, NOT register; register is judged separately below):
+A = 5 points: all 3 bullet points covered adequately
 B = 3.5 points: 2 bullet points adequate OR 1 adequate + 2 partial
 C = 2 points: 1 bullet point adequate + 1 partial OR all partial
-D = 0.5 points: 1 bullet point adequate or partial, not register-appropriate
+D = 0.5 points: only 1 bullet point adequate or partial
 E = 0 points: text too short (under 10 words Task1 / under 15 words Task2) OR topic missed entirely — IF E then entire task scores 0
 
-CRITERION: Sprache (language — vocabulary, structures, coherence):
+CRITERION — Kommunikative Gestaltung (language, coherence, and basic correctness — vocabulary/structures/flow, NOT register; register is judged separately below):
 A = 5 points: appropriate and varied, isolated errors don't affect comprehension
 B = 3.5 points: mostly appropriate, several errors don't affect comprehension
 C = 2 points: partly appropriate, several errors partly affect comprehension
 D = 0.5 points: barely appropriate, errors seriously affect comprehension
 E = 0 points: text completely inappropriate throughout
 
+REGISTER CHECK — separate diagnostic per task, does NOT change either score above:
+Task 1 (SMS) is informal (du-form, casual tone). Task 2 (email) is semi-formal/formal (check greeting/closing conventions and Sie-vs-du appropriateness for a semi-formal email). For each task, flag register_mismatch if the tone/formality choice is wrong for that task, and flag text_conventions_structure if expected structural elements (greeting, closing, paragraph shape) are missing or malformed — independent of whether the formality choice itself was right.
+
+${EXAM_GRADE_TAGGING_RULE}
+
 SCORING:
-- Task 1 raw = Aufgabenerfüllung + Sprache (max 10)
-- Task 2 raw = Aufgabenerfüllung + Sprache (max 10)
+- Task 1 raw = Erfüllung + Kommunikative Gestaltung (max 10)
+- Task 2 raw = Erfüllung + Kommunikative Gestaltung (max 10)
 - Total raw = Task1 + Task2 (max 20)
 - Final score = total raw × 1.25 (max 25)
 - Pass mark = ${Math.ceil(25 * EXAM_GRADE_PASS_PCT / 100)}/25 (${EXAM_GRADE_PASS_PCT}%) — official Goethe pass threshold.
-- If Aufgabenerfüllung = E for a task, that entire task = 0
+- If Erfüllung = E for a task, that entire task = 0
 
 Schreib das gesamte Feedback auf Deutsch — auf dem Sprachniveau A2.
 Benutze einfache Wörter und kurze Sätze.
@@ -2096,13 +2141,21 @@ Sei freundlich und ermutigend. Benutze 'du'.
 
 Return raw JSON only, no markdown, using this exact shape:
 {
-  "task2_aufgabe": { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
-  "task2_sprache": { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
-  "task3_aufgabe": { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
-  "task3_sprache": { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
-  "task2_raw":   <task2_aufgabe.score + task2_sprache.score>,
-  "task3_raw":   <task3_aufgabe.score + task3_sprache.score>,
-  "total_raw":   <task2_raw + task3_raw>,
+  "tasks": {
+    "task1": {
+      "erfuellung": { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "...", "tags": [] },
+      "kommunikative_gestaltung": { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "...", "tags": [] },
+      "register_check": { "expected_register": "informal", "passed": true, "flags": [], "explanation": "..." },
+      "task_raw": <erfuellung.score + kommunikative_gestaltung.score>
+    },
+    "task2": {
+      "erfuellung": { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "...", "tags": [] },
+      "kommunikative_gestaltung": { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "...", "tags": [] },
+      "register_check": { "expected_register": "formal", "passed": true, "flags": [], "explanation": "..." },
+      "task_raw": <erfuellung.score + kommunikative_gestaltung.score>
+    }
+  },
+  "total_raw":   <tasks.task1.task_raw + tasks.task2.task_raw>,
   "total_score": <total_raw * 1.25>,
   "max_score":   25,
   "overall_feedback": "...",
@@ -2111,67 +2164,91 @@ Return raw JSON only, no markdown, using this exact shape:
 }`;
 
 // B1 rubric — official Goethe-Zertifikat B1 Modellsatz Schreiben.
-// Three independent tasks, each graded on 2 criteria using the A–E
-// scale (5 / 3.5 / 2 / 0.5 / 0). Per-task max = 10 raw points. Total
-// raw max = 30. Final score = round(total_raw / 30 × 100) so the
-// displayed number is always /100, matching the official conversion.
-// Pass mark = EXAM_GRADE_PASS_PCT (scoring-config.js). If Erfüllung = E
-// for a task, that entire task = 0.
+// Three independent tasks, each now graded on 4 criteria (matching B2's
+// depth per feedback-audit.md Part B step 2) using the A-E scale
+// (5/3.5/2/0.5/0) per criterion. Per-task raw max = 20 (4 x 5). Total
+// raw max = 60 (3 tasks). Final score = round(total_raw / 60 x 100) so
+// the displayed number is still always /100, matching the official
+// conversion and leaving max_score/pass-threshold mechanics untouched.
 const EXAM_GRADE_B1_SYSTEM_PROMPT = `You are a certified Goethe-Institut B1 exam grader. Grade this student's Schreiben submission using the official Goethe-Zertifikat B1 Modellsatz rubric exactly.
 
 The student wrote THREE texts:
-- Aufgabe 1: personal email (target ~80 words, must cover 3 bullet points)
-- Aufgabe 2: opinion / discussion text (target ~80 words, must give a clear opinion + reasons)
+- Aufgabe 1: personal email (target ~80 words, must cover 3 bullet points, informal register)
+- Aufgabe 2: opinion / discussion text (target ~80 words, must give a clear opinion + reasons, neutral/semi-formal register)
 - Aufgabe 3: short formal email (target ~40 words, must cover 3 bullet points, formal register)
 
-Grade EACH task INDEPENDENTLY on TWO criteria using this 5-level A–E scale:
+Grade EACH task INDEPENDENTLY on FOUR criteria using this 5-level A-E scale:
 
-CRITERION: Erfüllung — task completion + content
-A = 5    points: all required content fully addressed, register fits the task
-B = 3.5  points: most content addressed, minor register slips OR one bullet point underdeveloped
+CRITERION — Erfüllung (task completion + content only, NOT register — register is judged separately below):
+A = 5    points: all required content fully addressed
+B = 3.5  points: most content addressed, one bullet point underdeveloped
 C = 2    points: about half the required content addressed
 D = 0.5  points: very little content addressed
 E = 0    points: topic missed entirely OR text far too short — IF E for a task, that whole task scores 0
 
-CRITERION: Sprache — language (Kohärenz + Wortschatz + Strukturen combined)
-A = 5    points: B1-appropriate vocabulary + varied structures + clear coherence; isolated errors don't impede comprehension
-B = 3.5  points: mostly appropriate; several errors don't impede comprehension
-C = 2    points: limited vocabulary, simple structures; errors slightly impede comprehension
-D = 0.5  points: very limited; errors seriously impede comprehension
-E = 0    points: language so poor the text is incomprehensible
+CRITERION — Kommunikative Gestaltung (coherence and flow — how well ideas connect, NOT vocabulary or grammar, which are scored separately below):
+A = 5    points: clear coherence, ideas flow logically, appropriate connectors
+B = 3.5  points: mostly coherent, occasional abrupt transitions
+C = 2    points: some coherence but connectors repetitive or missing
+D = 0.5  points: ideas mostly disconnected
+E = 0    points: incoherent
+
+CRITERION — Wortschatz (vocabulary range and precision):
+A = 5    points: B1-appropriate vocabulary, varied, precise word choice
+B = 3.5  points: mostly appropriate, occasional imprecision or repetition
+C = 2    points: limited vocabulary, frequent repetition
+D = 0.5  points: very limited vocabulary
+E = 0    points: vocabulary completely inadequate
+
+CRITERION — Formale Richtigkeit (grammar accuracy — sentence structure correctness):
+A = 5    points: varied structures, isolated errors don't impede comprehension
+B = 3.5  points: mostly correct, several errors don't impede comprehension
+C = 2    points: simple structures dominate, errors slightly impede comprehension
+D = 0.5  points: very basic structures, errors seriously impede comprehension
+E = 0    points: grammar so poor the text is incomprehensible
+
+REGISTER CHECK — separate diagnostic per task, does NOT change any score above:
+Aufgabe 1 is informal (du-form). Aufgabe 2 is neutral/semi-formal opinion writing. Aufgabe 3 is formal (Sie-form, formal greeting/closing). For each task, flag register_mismatch if the tone/formality choice is wrong for that task, and flag text_conventions_structure if expected structural elements (greeting, closing, paragraph shape) are missing or malformed — independent of whether the formality choice itself was right.
+
+${EXAM_GRADE_TAGGING_RULE}
 
 SCORING (compute exactly as below):
-- aufgabe1.task_raw = aufgabe1.erfuellung.score + aufgabe1.sprache.score   (max 10)
-- aufgabe2.task_raw = aufgabe2.erfuellung.score + aufgabe2.sprache.score   (max 10)
-- aufgabe3.task_raw = aufgabe3.erfuellung.score + aufgabe3.sprache.score   (max 10)
-- total_raw   = aufgabe1.task_raw + aufgabe2.task_raw + aufgabe3.task_raw  (max 30)
-- total_score = round(total_raw / 30 × 100)                                (max 100)
+- aufgabe1.task_raw = sum of aufgabe1's 4 criteria scores   (max 20)
+- aufgabe2.task_raw = sum of aufgabe2's 4 criteria scores   (max 20)
+- aufgabe3.task_raw = sum of aufgabe3's 4 criteria scores   (max 20)
+- total_raw   = aufgabe1.task_raw + aufgabe2.task_raw + aufgabe3.task_raw  (max 60)
+- total_score = round(total_raw / 60 × 100)                                (max 100)
 - max_score   = 100
 - Pass mark   = ${EXAM_GRADE_PASS_PCT} (${EXAM_GRADE_PASS_PCT}%) — official Goethe B1 pass threshold
-- IF Erfüllung = E for a task → set BOTH that task's scores to 0 and task_raw to 0
+- IF Erfüllung = E for a task → set ALL FOUR of that task's criteria scores to 0 and task_raw to 0
 
 Schreib das gesamte Feedback auf Deutsch — auf dem Sprachniveau B1.
 Klare, einfache Sätze. Sei freundlich, konstruktiv. Benutze 'du'.
 
 Return raw JSON only, no markdown, no code fences, no text outside the JSON. Use this exact shape:
 {
-  "aufgabe1": {
-    "erfuellung": { "score": <0|0.5|2|3.5|5>, "label": "A|B|C|D|E", "explanation": "Ein bis zwei Sätze auf Deutsch.", "tip": "Ein konkreter Verbesserungsvorschlag." },
-    "sprache":    { "score": <0|0.5|2|3.5|5>, "label": "A|B|C|D|E", "explanation": "...", "tip": "..." },
-    "task_raw":   <erfuellung.score + sprache.score>
+  "tasks": {
+    "aufgabe1": {
+      "erfuellung": { "score": <0|0.5|2|3.5|5>, "label": "A|B|C|D|E", "explanation": "Ein bis zwei Sätze auf Deutsch.", "tip": "...", "tags": [] },
+      "kommunikative_gestaltung": { "score": <0|0.5|2|3.5|5>, "label": "A|B|C|D|E", "explanation": "...", "tip": "...", "tags": [] },
+      "wortschatz": { "score": <0|0.5|2|3.5|5>, "label": "A|B|C|D|E", "explanation": "...", "tip": "...", "tags": [] },
+      "formale_richtigkeit": { "score": <0|0.5|2|3.5|5>, "label": "A|B|C|D|E", "explanation": "...", "tip": "...", "tags": [] },
+      "register_check": { "expected_register": "informal", "passed": true, "flags": [], "explanation": "..." },
+      "task_raw": <sum of the 4 criteria scores above>
+    },
+    "aufgabe2": {
+      "erfuellung": {...}, "kommunikative_gestaltung": {...}, "wortschatz": {...}, "formale_richtigkeit": {...},
+      "register_check": { "expected_register": "neutral", "passed": true, "flags": [], "explanation": "..." },
+      "task_raw": <n>
+    },
+    "aufgabe3": {
+      "erfuellung": {...}, "kommunikative_gestaltung": {...}, "wortschatz": {...}, "formale_richtigkeit": {...},
+      "register_check": { "expected_register": "formal", "passed": true, "flags": [], "explanation": "..." },
+      "task_raw": <n>
+    }
   },
-  "aufgabe2": {
-    "erfuellung": { "score": <0|0.5|2|3.5|5>, "label": "A|B|C|D|E", "explanation": "...", "tip": "..." },
-    "sprache":    { "score": <0|0.5|2|3.5|5>, "label": "A|B|C|D|E", "explanation": "...", "tip": "..." },
-    "task_raw":   <erfuellung.score + sprache.score>
-  },
-  "aufgabe3": {
-    "erfuellung": { "score": <0|0.5|2|3.5|5>, "label": "A|B|C|D|E", "explanation": "...", "tip": "..." },
-    "sprache":    { "score": <0|0.5|2|3.5|5>, "label": "A|B|C|D|E", "explanation": "...", "tip": "..." },
-    "task_raw":   <erfuellung.score + sprache.score>
-  },
-  "total_raw":   <integer or half = aufgabe1.task_raw + aufgabe2.task_raw + aufgabe3.task_raw>,
-  "total_score": <integer = round(total_raw / 30 * 100)>,
+  "total_raw":   <tasks.aufgabe1.task_raw + tasks.aufgabe2.task_raw + tasks.aufgabe3.task_raw>,
+  "total_score": <integer = round(total_raw / 60 * 100)>,
   "max_score":   100,
   "overall_feedback":    "Zwei ermutigende Sätze auf Deutsch.",
   "top_mistakes":        ["Erste Verbesserung.", "Zweite Verbesserung.", "Dritte Verbesserung."],
@@ -2179,46 +2256,59 @@ Return raw JSON only, no markdown, no code fences, no text outside the JSON. Use
 }`;
 
 // B2 rubric — 2 writing tasks (forum/opinion post + formal letter).
-// Each task scored on 4 criteria, A–E scale, per-task max = 20, total = 40.
+// Each task scored on 4 criteria, A-E scale, per-task max = 20, total = 40.
+// Criterion names below are now Erfüllung/Kommunikative Gestaltung/
+// Wortschatz/Formale Richtigkeit — same 4 concepts B2 already scored
+// (content/Kohärenz/vocabulary/Strukturen), renamed to match the
+// standardized cross-level naming introduced in feedback-audit.md Part B
+// step 2 (Kohärenz -> Kommunikative Gestaltung, Strukturen -> Formale
+// Richtigkeit) so B1 and B2 use identical criterion names. Register,
+// previously folded into Wortschatz's "register fits"/"register slips"
+// tiers, is now its own separate, unscored diagnostic (step 1).
 const EXAM_GRADE_B2_SYSTEM_PROMPT = `You are a certified Goethe-Institut B2 exam grader. Grade this student's Schreiben submission using the official Goethe-Zertifikat B2 rubric.
 
 The student wrote TWO texts:
-- Aufgabe 1: forum / opinion post (target ~150 words, clear position + arguments + examples)
-- Aufgabe 2: formal letter or semi-formal email (target ~100 words, all bullet points + appropriate register)
+- Aufgabe 1: forum / opinion post (target ~150 words, clear position + arguments + examples, neutral/semi-formal register)
+- Aufgabe 2: formal letter or semi-formal email (target ~100 words, all bullet points, formal register)
 
 Grade each task on FOUR criteria using this 5-level scale:
 
-CRITERION: Erfüllung (content — coverage of all bullet points + topic depth)
+CRITERION — Erfüllung (content — coverage of all bullet points + topic depth, NOT register):
 A = 5 points: all bullet points fully addressed, depth appropriate, topic clearly developed
 B = 3.5 points: most bullet points addressed, some depth missing
 C = 2 points: about half addressed OR superficial throughout
 D = 0.5 points: very little content addressed
 E = 0 points: topic missed entirely — IF E then entire task scores 0
 
-CRITERION: Kohärenz (text structure — transitions, paragraphing, opening/closing)
+CRITERION — Kommunikative Gestaltung (text structure — transitions, paragraphing, opening/closing, flow):
 A = 5 points: well-structured, varied connectors, clear opening + closing, smooth flow
 B = 3.5 points: mostly structured, basic connectors, some flow issues
 C = 2 points: partial structure, repetitive transitions
 D = 0.5 points: mostly disconnected
 E = 0 points: incoherent
 
-CRITERION: Wortschatz (vocabulary — range + precision + register)
-A = 5 points: varied B2-appropriate vocabulary, precise word choice, register fits
+CRITERION — Wortschatz (vocabulary — range + precision, NOT register):
+A = 5 points: varied B2-appropriate vocabulary, precise word choice
 B = 3.5 points: adequate vocabulary, occasional imprecision
-C = 2 points: limited vocabulary, frequent imprecision or register slips
-D = 0.5 points: very limited vocabulary, register often wrong
+C = 2 points: limited vocabulary, frequent imprecision
+D = 0.5 points: very limited vocabulary
 E = 0 points: vocabulary completely inadequate
 
-CRITERION: Strukturen (grammar — sentence variety + accuracy)
+CRITERION — Formale Richtigkeit (grammar — sentence variety + accuracy):
 A = 5 points: complex + varied structures, isolated errors don't impede comprehension
 B = 3.5 points: mostly varied, several errors don't impede comprehension
 C = 2 points: simple structures dominate, several errors slightly impede comprehension
 D = 0.5 points: very basic structures, errors seriously impede comprehension
 E = 0 points: grammar so poor the text is incomprehensible
 
+REGISTER CHECK — separate diagnostic per task, does NOT change any score above:
+Aufgabe 1 is a neutral/semi-formal forum post. Aufgabe 2 is a formal letter/email (Sie-form, formal greeting/closing conventions). For each task, flag register_mismatch if the tone/formality choice is wrong for that task, and flag text_conventions_structure if expected structural elements (greeting, closing, paragraph shape) are missing or malformed — independent of whether the formality choice itself was right.
+
+${EXAM_GRADE_TAGGING_RULE}
+
 SCORING:
-- Each task raw = Erfüllung + Kohärenz + Wortschatz + Strukturen (max 20)
-- Total raw = task2_raw + task3_raw (max 40)
+- Each task raw = Erfüllung + Kommunikative Gestaltung + Wortschatz + Formale Richtigkeit (max 20)
+- Total raw = aufgabe1.task_raw + aufgabe2.task_raw (max 40)
 - Final score = total raw (no scaling at B2)
 - Pass mark = ${Math.ceil(40 * EXAM_GRADE_PASS_PCT / 100)}/40 (${EXAM_GRADE_PASS_PCT}%) — official Goethe pass threshold.
 - If Erfüllung = E for a task, that entire task = 0
@@ -2228,17 +2318,22 @@ Präzise, sachlich, freundlich. Benutze 'du'.
 
 Return raw JSON only, no markdown, using this exact shape:
 {
-  "task2_erfuellung":  { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
-  "task2_koherenz":    { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
-  "task2_wortschatz":  { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
-  "task2_strukturen":  { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
-  "task3_erfuellung":  { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
-  "task3_koherenz":    { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
-  "task3_wortschatz":  { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
-  "task3_strukturen":  { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "..." },
-  "task2_raw":   <sum of task2 four criteria>,
-  "task3_raw":   <sum of task3 four criteria>,
-  "total_raw":   <task2_raw + task3_raw>,
+  "tasks": {
+    "aufgabe1": {
+      "erfuellung": { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "...", "tags": [] },
+      "kommunikative_gestaltung": { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "...", "tags": [] },
+      "wortschatz": { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "...", "tags": [] },
+      "formale_richtigkeit": { "score": <0/0.5/2/3.5/5>, "label": "A/B/C/D/E", "explanation": "...", "tip": "...", "tags": [] },
+      "register_check": { "expected_register": "neutral", "passed": true, "flags": [], "explanation": "..." },
+      "task_raw": <sum of the 4 criteria scores above>
+    },
+    "aufgabe2": {
+      "erfuellung": {...}, "kommunikative_gestaltung": {...}, "wortschatz": {...}, "formale_richtigkeit": {...},
+      "register_check": { "expected_register": "formal", "passed": true, "flags": [], "explanation": "..." },
+      "task_raw": <n>
+    }
+  },
+  "total_raw":   <tasks.aufgabe1.task_raw + tasks.aufgabe2.task_raw>,
   "total_score": <total_raw>,
   "max_score":   40,
   "overall_feedback": "...",
@@ -2333,50 +2428,38 @@ app.post('/api/exam-grade', async (req, res) => {
       return res.status(502).json({ error: 'Could not parse grading response. Try again.' });
     }
 
-    // Shape validation per level. All levels end in numeric total_score.
-    let shapeOk;
-    if (safeLevel === 'B2') {
-      shapeOk = (
-        result.task2_erfuellung && typeof result.task2_erfuellung.score === 'number' &&
-        result.task2_koherenz   && typeof result.task2_koherenz.score   === 'number' &&
-        result.task2_wortschatz && typeof result.task2_wortschatz.score === 'number' &&
-        result.task2_strukturen && typeof result.task2_strukturen.score === 'number' &&
-        result.task3_erfuellung && typeof result.task3_erfuellung.score === 'number' &&
-        result.task3_koherenz   && typeof result.task3_koherenz.score   === 'number' &&
-        result.task3_wortschatz && typeof result.task3_wortschatz.score === 'number' &&
-        result.task3_strukturen && typeof result.task3_strukturen.score === 'number' &&
-        typeof result.total_score === 'number'
-      );
-    } else if (safeLevel === 'B1') {
-      // Official Goethe B1 Modellsatz shape — 3 independent tasks
-      // (aufgabe1/2/3), each with two criteria (erfuellung, sprache)
-      // on the A-E scale (5/3.5/2/0.5/0). Total raw /30, scaled to /100.
-      var taskOk = function (t) {
-        return t
-          && t.erfuellung && typeof t.erfuellung.score === 'number'
-          && t.sprache    && typeof t.sprache.score    === 'number';
-      };
-      shapeOk = (
-        taskOk(result.aufgabe1) &&
-        taskOk(result.aufgabe2) &&
-        taskOk(result.aufgabe3) &&
-        typeof result.total_score === 'number'
-      );
-    } else if (safeLevel === 'A2') {
-      shapeOk = (
-        result.task2_aufgabe && typeof result.task2_aufgabe.score === 'number' &&
-        result.task2_sprache && typeof result.task2_sprache.score === 'number' &&
-        result.task3_aufgabe && typeof result.task3_aufgabe.score === 'number' &&
-        result.task3_sprache && typeof result.task3_sprache.score === 'number' &&
-        typeof result.total_score === 'number'
-      );
-    } else {
-      shapeOk = (
-        result.kommunikative_gestaltung && typeof result.kommunikative_gestaltung.score === 'number' &&
-        result.formale_richtigkeit      && typeof result.formale_richtigkeit.score      === 'number' &&
-        typeof result.total_score === 'number'
-      );
+    // Shape validation — unified across all 4 levels since
+    // feedback-audit.md Part B: every level now returns
+    // result.tasks.<taskKey>.<criterion>.score, differing only in which
+    // task keys exist (task1/task2 for A1/A2, aufgabe1/2/3 for B1,
+    // aufgabe1/2 for B2) and which criteria each task carries (A1/A2 =
+    // erfuellung + kommunikative_gestaltung; B1/B2 = those two plus
+    // wortschatz + formale_richtigkeit). A criterion object always has a
+    // numeric .score; register_check always has a boolean .passed.
+    const EXAM_GRADE_TASK_KEYS = {
+      A1: ['task1'],
+      A2: ['task1', 'task2'],
+      B1: ['aufgabe1', 'aufgabe2', 'aufgabe3'],
+      B2: ['aufgabe1', 'aufgabe2'],
+    };
+    const EXAM_GRADE_CRITERIA = {
+      A1: ['erfuellung', 'kommunikative_gestaltung'],
+      A2: ['erfuellung', 'kommunikative_gestaltung'],
+      B1: ['erfuellung', 'kommunikative_gestaltung', 'wortschatz', 'formale_richtigkeit'],
+      B2: ['erfuellung', 'kommunikative_gestaltung', 'wortschatz', 'formale_richtigkeit'],
+    };
+    function taskShapeOk(task, criteriaKeys) {
+      if (!task) return false;
+      for (const key of criteriaKeys) {
+        if (!task[key] || typeof task[key].score !== 'number') return false;
+      }
+      return !!task.register_check && typeof task.register_check.passed === 'boolean';
     }
+    const shapeOk = (
+      !!result.tasks &&
+      EXAM_GRADE_TASK_KEYS[safeLevel].every(k => taskShapeOk(result.tasks[k], EXAM_GRADE_CRITERIA[safeLevel])) &&
+      typeof result.total_score === 'number'
+    );
     if (!shapeOk) {
       console.error('[/api/exam-grade] Unexpected response shape:', result);
       return res.status(502).json({ error: 'Unexpected response format from grader. Try again.' });

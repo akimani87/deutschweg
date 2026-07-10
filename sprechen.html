@@ -89,6 +89,17 @@
   .fb-tip{background:#FEFCE8;color:#713F12;} .fb-tip .t{color:#A16207;}
   .fb-enc{background:#FDF2F8;color:#831843;text-align:center;font-weight:700;}
 
+  /* Tagged errors — structured, alongside the prose above (feedback-audit.md
+     Part B step 4). Same taxonomy chips used in exam-vault.html's Schreiben
+     breakdown, so the same mistake looks the same everywhere. */
+  .tagged-errors{display:flex;flex-wrap:wrap;gap:6px;}
+  .tagged-error-chip{
+    font-size:11px;font-weight:700;color:#1D4ED8;background:#EFF6FF;
+    border:1px solid #DBEAFE;border-radius:50px;padding:4px 11px;
+    display:inline-flex;align-items:center;gap:5px;
+  }
+  .tagged-error-chip .frag{font-weight:500;color:#475569;font-style:italic;}
+
   .notice{background:#fff;border:1px dashed #CBD5E1;border-radius:12px;padding:14px;font-size:14px;color:#475569;text-align:center;line-height:1.6;}
 
   /* Bottom nav */
@@ -192,6 +203,7 @@
         <div class="score-num" id="sprechenVerdict" style="margin-top:2px;"></div>
       </div>
       <div id="bars" style="margin-top:12px;"></div>
+      <div id="taggedErrors" style="margin-top:12px;"></div>
     </div>
     <div id="fbSections"></div>
     <button class="btn btn-primary" id="againBtn">Practice again</button>
@@ -249,6 +261,7 @@
   function t(k){ return (I18N[state.lang] && I18N[state.lang][k]) || I18N.english[k] || k; }
   function $(id){ return document.getElementById(id); }
   function show(id){ ['screen-pre','screen-active','screen-feedback'].forEach(function(s){ $(s).classList.toggle('active', s===id); }); }
+  function escHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
   // ── Apply language to static UI ──────────────────────────────────────────
   function applyLang(){
@@ -611,6 +624,20 @@
       return '<div class="bar-row"><div class="bar-top"><span>'+b[0]+'</span><span>'+v+'/5</span></div>' +
              '<div class="bar"><div class="bar-fill" style="width:'+(v/5*100)+'%"></div></div></div>';
     }).join('');
+
+    // Tagged errors — structured alongside the prose feedback (not a
+    // replacement for it). Same taxonomy as Schreiben's rubric tags.
+    // fragment/category ultimately trace back to transcribed user speech
+    // via the AI response, so escape before innerHTML like everything
+    // else in this file that isn't already using createTextNode.
+    var tagged = Array.isArray(fb.tagged_errors) ? fb.tagged_errors : [];
+    $('taggedErrors').innerHTML = tagged.length ? (
+      '<div class="tagged-errors">' + tagged.map(function(e){
+        var label = escHtml(window.dwTaxonomy ? window.dwTaxonomy.label(e.category) : e.category);
+        var frag = e.fragment ? ' <span class="frag">"' + escHtml(e.fragment) + '"</span>' : '';
+        return '<span class="tagged-error-chip">' + label + frag + '</span>';
+      }).join('') + '</div>'
+    ) : '';
 
     var secs = [
       { cls:'fb-open',    title:'',          text: fb.opening },

@@ -31,6 +31,7 @@
 <script src="./supabase-config.js"></script>
 <script src="./paywall.js?v=3"></script>
 <script src="./scoring-config.js?v=1"></script>
+<script src="./taxonomy.js?v=1"></script>
 <style>
   body { background: var(--bg); }
 
@@ -603,6 +604,24 @@
     background: #fff; border: 1px solid var(--blue-mid);
     border-radius: 8px; padding: 7px 10px;
   }
+  .rubric-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .rubric-tag-chip {
+    font-size: 11px; font-weight: 700; color: var(--blue);
+    background: var(--blue-light); border: 1px solid var(--blue-mid);
+    border-radius: 50px; padding: 3px 10px;
+  }
+  .rubric-tag-chip.warn { color: #92400E; background: #FFFBEB; border-color: #FDE68A; }
+
+  /* ── Register/text-type check — deliberately separate from the scored
+       criteria above (never contributes to a score), surfaced per task. */
+  .register-check {
+    margin-top: 10px; padding: 10px 14px;
+    border-radius: var(--radius-sm); border: 1px solid var(--border);
+  }
+  .register-check.ok   { background: var(--green-light); border-color: var(--green-border); }
+  .register-check.fail { background: #FFFBEB; border-color: #FDE68A; }
+  .register-check-badge { font-size: 13px; font-weight: 700; color: var(--dark); margin-bottom: 4px; }
+  .register-expected { font-weight: 500; color: var(--light); }
 
   /* ── Lesen review (per-question correctness) ─────────────── */
   .lesen-review { display: flex; flex-direction: column; gap: 8px; }
@@ -2229,173 +2248,77 @@
     }).join('');
   }
 
-  // Top-level dispatch keyed off shape:
-  //   B2 → task2_erfuellung   (4 criteria × 2 tasks)
-  //   B1 → aufgabe1           (3 independent tasks × 2 criteria, /30 → /100)
-  //   A2 → task2_aufgabe      (2 criteria × 2 tasks)
-  //   A1 → kommunikative_gestaltung (2 criteria × 1 task)
-  function renderSchreibenResults(g) {
-    if (g && g.task2_erfuellung) return renderSchreibenB2Results(g);
-    if (g && g.aufgabe1)         return renderSchreibenB1Results(g);
-    if (g && g.task2_aufgabe)    return renderSchreibenA2Results(g);
-    return renderSchreibenA1Results(g);
-  }
+  // ── Unified Schreiben results renderer ─────────────────────────────
+  // All 4 levels now return the same shape (feedback-audit.md Part B):
+  // result.tasks.<key>.<criterion>.{score,max,explanation,tip,tags} plus
+  // a per-task register_check that never contributes to any score. This
+  // replaces 4 separate per-level render functions with one generic
+  // renderer driven by two lookup tables below. If server.js's per-level
+  // task keys/criteria ever change, update these two tables to match —
+  // there is no shared module system between server.js and this static
+  // page, so the level-shape mapping necessarily lives in both places.
+  var SCHREIBEN_TASK_LABELS = {
+    A1: [{ key: 'task1',    label: 'Nachricht' }],
+    A2: [{ key: 'task1',    label: 'Aufgabe 1 (SMS)' },       { key: 'task2',    label: 'Aufgabe 2 (E-Mail)' }],
+    B1: [{ key: 'aufgabe1', label: 'Aufgabe 1 — Persönliche E-Mail' },
+         { key: 'aufgabe2', label: 'Aufgabe 2 — Meinung / Diskussion' },
+         { key: 'aufgabe3', label: 'Aufgabe 3 — Formelle E-Mail' }],
+    B2: [{ key: 'aufgabe1', label: 'Aufgabe 1 — Forumsbeitrag / Meinung' },
+         { key: 'aufgabe2', label: 'Aufgabe 2 — Formelle E-Mail / Brief' }]
+  };
+  var SCHREIBEN_CRITERIA_BY_LEVEL = {
+    A1: ['erfuellung', 'kommunikative_gestaltung'],
+    A2: ['erfuellung', 'kommunikative_gestaltung'],
+    B1: ['erfuellung', 'kommunikative_gestaltung', 'wortschatz', 'formale_richtigkeit'],
+    B2: ['erfuellung', 'kommunikative_gestaltung', 'wortschatz', 'formale_richtigkeit']
+  };
+  var SCHREIBEN_CRITERION_LABELS = {
+    erfuellung:               'Erfüllung',
+    kommunikative_gestaltung: 'Kommunikative Gestaltung',
+    wortschatz:               'Wortschatz',
+    formale_richtigkeit:      'Formale Richtigkeit'
+  };
+  var SCHREIBEN_CRITERION_MAX_BY_LEVEL = { A1: 3, A2: 5, B1: 5, B2: 5 };
 
-  // Schreiben A1 grading uses the official Goethe A1 Fit-in-Deutsch-1
-  // rubric: two criteria scored 0–3 each, raw total /6 doubled to /12.
-  function renderSchreibenA1Results(g) {
-    var kg        = g.kommunikative_gestaltung || {};
-    var fr        = g.formale_richtigkeit      || {};
-    var rawTotal  = (typeof g.raw_total   === 'number') ? g.raw_total   : '—';
-    var total     = (typeof g.total_score === 'number') ? g.total_score : '—';
-    var maxTotal  = (typeof g.max_score   === 'number') ? g.max_score   : 12;
-    var wordCount = (typeof g.word_count  === 'number') ? g.word_count  : '—';
-
-    setHero(g.total_score, g.max_score);
-
-    setTaskPills([
-      { label: 'Kommunikative Gestaltung', score: (typeof kg.score === 'number') ? kg.score : '—', max: 3 },
-      { label: 'Formale Richtigkeit',      score: (typeof fr.score === 'number') ? fr.score : '—', max: 3 }
-    ]);
-
-    function rubricCard(label, r) {
-      var sc = (typeof r.score === 'number') ? r.score : '—';
-      var mx = (typeof r.max   === 'number') ? r.max   : 3;
-      return '<div class="rubric-card">'
-        + '<div class="rubric-row">'
-        +   '<span class="rubric-label">' + escapeHtml(label) + '</span>'
-        +   '<span class="rubric-score">' + escapeHtml(sc) + ' / ' + escapeHtml(mx) + '</span>'
-        + '</div>'
-        + '<p class="rubric-explanation">' + escapeHtml(r.explanation || '') + '</p>'
-        + (r.tip ? '<div class="rubric-tip">💡 ' + escapeHtml(r.tip) + '</div>' : '')
-        + '</div>';
-    }
-
-    var mistakes = Array.isArray(g.top_mistakes) ? g.top_mistakes : [];
-    var mistakesHtml = mistakes.length
-      ? mistakes.map(function (m) { return '<li>' + escapeHtml(m) + '</li>'; }).join('')
-      : '<li>None — great work!</li>';
-
-    el('resultsBody').innerHTML =
-        '<div class="results-section">'
-      +   '<h3 class="results-h">Score Calculation</h3>'
-      +   '<p class="results-feedback">'
-      +     'Raw total: <strong>' + escapeHtml(rawTotal) + ' / 6</strong> × 2 = '
-      +     '<strong>' + escapeHtml(total) + ' / ' + escapeHtml(maxTotal) + '</strong>'
-      +     '<br>Word count detected: <strong>' + escapeHtml(wordCount) + ' words</strong>'
-      +   '</p>'
-      + '</div>'
-      + '<div class="results-section">'
-      +   '<h3 class="results-h">Rubric Breakdown</h3>'
-      +   '<div class="rubric-grid">'
-      +     rubricCard('Kommunikative Gestaltung', kg)
-      +     rubricCard('Formale Richtigkeit',       fr)
-      +   '</div>'
-      + '</div>'
-      + '<div class="results-section">'
-      +   '<h3 class="results-h">Overall Feedback</h3>'
-      +   '<p class="results-feedback">' + escapeHtml(g.overall_feedback || '') + '</p>'
-      + '</div>'
-      + '<div class="results-section">'
-      +   '<h3 class="results-h">Top Mistakes</h3>'
-      +   '<ul class="results-list">' + mistakesHtml + '</ul>'
-      + '</div>'
-      + '<div class="results-section">'
-      +   '<h3 class="results-h">Next Recommendation</h3>'
-      +   '<p class="results-next">' + escapeHtml(g.next_recommendation || '') + '</p>'
-      + '</div>';
-  }
-
-  // Schreiben A2 grading uses the official Goethe A2 rubric: two
-  // criteria per task (Aufgabenerfüllung + Sprache), each scored
-  // 0/0.5/2/3.5/5. Raw totals add to /20 then × 1.25 → /25.
-  function renderSchreibenA2Results(g) {
-    var t2a = g.task2_aufgabe || {};
-    var t2s = g.task2_sprache || {};
-    var t3a = g.task3_aufgabe || {};
-    var t3s = g.task3_sprache || {};
-    var rawTotal = (typeof g.total_raw   === 'number') ? g.total_raw   : '—';
-    var total    = (typeof g.total_score === 'number') ? g.total_score : '—';
-    var maxTotal = (typeof g.max_score   === 'number') ? g.max_score   : 25;
-
-    setHero(g.total_score, g.max_score);
-
-    setTaskPills([
-      { label: 'Aufgabe 1 (SMS)',    score: (typeof g.task2_raw === 'number') ? g.task2_raw : '—', max: 10 },
-      { label: 'Aufgabe 2 (E-Mail)', score: (typeof g.task3_raw === 'number') ? g.task3_raw : '—', max: 10 }
-    ]);
-
-    function rubricCard(label, r) {
-      var sc    = (typeof r.score === 'number') ? r.score : '—';
-      var lbl   = r.label ? ' (' + r.label + ')' : '';
-      return '<div class="rubric-card">'
-        + '<div class="rubric-row">'
-        +   '<span class="rubric-label">' + escapeHtml(label) + escapeHtml(lbl) + '</span>'
-        +   '<span class="rubric-score">' + escapeHtml(sc) + ' / 5</span>'
-        + '</div>'
-        + '<p class="rubric-explanation">' + escapeHtml(r.explanation || '') + '</p>'
-        + (r.tip ? '<div class="rubric-tip">💡 ' + escapeHtml(r.tip) + '</div>' : '')
-        + '</div>';
-    }
-
-    var mistakes = Array.isArray(g.top_mistakes) ? g.top_mistakes : [];
-    var mistakesHtml = mistakes.length
-      ? mistakes.map(function (m) { return '<li>' + escapeHtml(m) + '</li>'; }).join('')
-      : '<li>Keine — sehr gut!</li>';
-
-    el('resultsBody').innerHTML =
-        '<div class="results-section">'
-      +   '<h3 class="results-h">Score Calculation</h3>'
-      +   '<p class="results-feedback">'
-      +     'Aufgabe 1: <strong>' + escapeHtml(typeof g.task2_raw === 'number' ? g.task2_raw : '—') + ' / 10</strong> · '
-      +     'Aufgabe 2: <strong>' + escapeHtml(typeof g.task3_raw === 'number' ? g.task3_raw : '—') + ' / 10</strong>'
-      +     '<br>Roh-Summe: <strong>' + escapeHtml(rawTotal) + ' / 20</strong> × 1.25 = '
-      +     '<strong>' + escapeHtml(total) + ' / ' + escapeHtml(maxTotal) + '</strong>'
-      +   '</p>'
-      + '</div>'
-      + '<div class="results-section">'
-      +   '<h3 class="results-h">Aufgabe 1 — SMS</h3>'
-      +   '<div class="rubric-grid">'
-      +     rubricCard('Aufgabenerfüllung', t2a)
-      +     rubricCard('Sprache',           t2s)
-      +   '</div>'
-      + '</div>'
-      + '<div class="results-section">'
-      +   '<h3 class="results-h">Aufgabe 2 — E-Mail</h3>'
-      +   '<div class="rubric-grid">'
-      +     rubricCard('Aufgabenerfüllung', t3a)
-      +     rubricCard('Sprache',           t3s)
-      +   '</div>'
-      + '</div>'
-      + '<div class="results-section">'
-      +   '<h3 class="results-h">Overall Feedback</h3>'
-      +   '<p class="results-feedback">' + escapeHtml(g.overall_feedback || '') + '</p>'
-      + '</div>'
-      + '<div class="results-section">'
-      +   '<h3 class="results-h">Top Mistakes</h3>'
-      +   '<ul class="results-list">' + mistakesHtml + '</ul>'
-      + '</div>'
-      + '<div class="results-section">'
-      +   '<h3 class="results-h">Next Recommendation</h3>'
-      +   '<p class="results-next">' + escapeHtml(g.next_recommendation || '') + '</p>'
-      + '</div>';
-  }
-
-  // Shared helpers for B1/B2 result rendering. The third arg overrides
-  // the criterion's max (B1 uses 40/40/20, while B2 / A2 default to 5).
-  function makeRubricCard(label, r, maxOverride) {
-    var sc  = (typeof r.score === 'number') ? r.score : '—';
-    var mx  = (typeof maxOverride === 'number') ? maxOverride
-            : (typeof r.max === 'number')        ? r.max
-            :                                      5;
-    var lbl = r.label ? ' (' + r.label + ')' : '';
+  function rubricCardWithTags(label, r, mx) {
+    var sc   = (r && typeof r.score === 'number') ? r.score : '—';
+    var lbl  = (r && r.label) ? ' (' + r.label + ')' : '';
+    var tags = (r && Array.isArray(r.tags)) ? r.tags : [];
+    var tagsHtml = tags.length
+      ? '<div class="rubric-tags">' + tags.map(function (t) {
+          return '<span class="rubric-tag-chip">' + escapeHtml(window.dwTaxonomy ? window.dwTaxonomy.label(t) : t) + '</span>';
+        }).join('') + '</div>'
+      : '';
     return '<div class="rubric-card">'
       + '<div class="rubric-row">'
       +   '<span class="rubric-label">' + escapeHtml(label) + escapeHtml(lbl) + '</span>'
       +   '<span class="rubric-score">' + escapeHtml(sc) + ' / ' + escapeHtml(mx) + '</span>'
       + '</div>'
-      + '<p class="rubric-explanation">' + escapeHtml(r.explanation || '') + '</p>'
-      + (r.tip ? '<div class="rubric-tip">💡 ' + escapeHtml(r.tip) + '</div>' : '')
+      + '<p class="rubric-explanation">' + escapeHtml((r && r.explanation) || '') + '</p>'
+      + (r && r.tip ? '<div class="rubric-tip">💡 ' + escapeHtml(r.tip) + '</div>' : '')
+      + tagsHtml
+      + '</div>';
+  }
+
+  // Register/text-type diagnostic — deliberately separate from the
+  // scored criteria (feedback-audit.md Part B step 1). Rendered per task,
+  // directly under that task's rubric grid, so a failure is visible in
+  // context without being folded into any score.
+  function registerCheckHtml(rc) {
+    if (!rc) return '';
+    var passed = rc.passed !== false;
+    var flags  = Array.isArray(rc.flags) ? rc.flags : [];
+    var cls    = passed ? 'register-check ok' : 'register-check fail';
+    var badge  = passed ? '✓ Register/Form passt' : '⚠ Register/Form-Problem';
+    var flagsHtml = flags.length
+      ? '<div class="rubric-tags">' + flags.map(function (f) {
+          return '<span class="rubric-tag-chip warn">' + escapeHtml(window.dwTaxonomy ? window.dwTaxonomy.label(f) : f) + '</span>';
+        }).join('') + '</div>'
+      : '';
+    return '<div class="' + cls + '">'
+      + '<div class="register-check-badge">' + badge + (rc.expected_register ? ' <span class="register-expected">(erwartet: ' + escapeHtml(rc.expected_register) + ')</span>' : '') + '</div>'
+      + '<p class="rubric-explanation">' + escapeHtml(rc.explanation || '') + '</p>'
+      + flagsHtml
       + '</div>';
   }
 
@@ -2419,100 +2342,54 @@
       + '</div>';
   }
 
-  // Schreiben B1 — official Goethe B1 Modellsatz rubric. Three
-  // independent tasks (aufgabe1/2/3), each scored on Erfüllung +
-  // Sprache (A-E, 5/3.5/2/0.5/0). Per-task max 10 raw, total raw /30,
-  // scaled to /100. Pass = 60 (60%).
-  function renderSchreibenB1Results(g) {
-    var a1 = g.aufgabe1 || {};
-    var a2 = g.aufgabe2 || {};
-    var a3 = g.aufgabe3 || {};
-    var rawTotal = (typeof g.total_raw   === 'number') ? g.total_raw   : '—';
+  function renderSchreibenResults(g) {
+    var level        = currentLevel || 'A1';
+    var taskDefs     = SCHREIBEN_TASK_LABELS[level]           || SCHREIBEN_TASK_LABELS.A1;
+    var criteriaKeys = SCHREIBEN_CRITERIA_BY_LEVEL[level]     || SCHREIBEN_CRITERIA_BY_LEVEL.A1;
+    var critMax      = SCHREIBEN_CRITERION_MAX_BY_LEVEL[level] || 3;
+    var tasks        = (g && g.tasks) || {};
+    var taskRawMax   = criteriaKeys.length * critMax;
+
     var total    = (typeof g.total_score === 'number') ? g.total_score : '—';
-    var maxTotal = (typeof g.max_score   === 'number') ? g.max_score   : 100;
+    var maxTotal = (typeof g.max_score   === 'number') ? g.max_score   : '—';
+    var rawTotal = (typeof g.total_raw   === 'number') ? g.total_raw   : (typeof g.raw_total === 'number' ? g.raw_total : '—');
 
     setHero(g.total_score, g.max_score);
 
-    setTaskPills([
-      { label: 'Aufgabe 1 (E-Mail)',  score: (typeof a1.task_raw === 'number') ? a1.task_raw : '—', max: 10 },
-      { label: 'Aufgabe 2 (Meinung)', score: (typeof a2.task_raw === 'number') ? a2.task_raw : '—', max: 10 },
-      { label: 'Aufgabe 3 (formell)', score: (typeof a3.task_raw === 'number') ? a3.task_raw : '—', max: 10 }
-    ]);
+    setTaskPills(taskDefs.map(function (td) {
+      var t = tasks[td.key] || {};
+      return { label: td.label, score: (typeof t.task_raw === 'number') ? t.task_raw : '—', max: taskRawMax };
+    }));
 
-    function taskBlock(heading, t) {
-      var er = t.erfuellung || {};
-      var sp = t.sprache    || {};
+    var scoreCalcLine = taskDefs.map(function (td) {
+      var t = tasks[td.key] || {};
+      var raw = (typeof t.task_raw === 'number') ? t.task_raw : '—';
+      return escapeHtml(td.label) + ': <strong>' + escapeHtml(raw) + ' / ' + taskRawMax + '</strong>';
+    }).join(' · ');
+
+    var taskBlocksHtml = taskDefs.map(function (td) {
+      var t = tasks[td.key] || {};
+      var criteriaHtml = criteriaKeys.map(function (ck) {
+        return rubricCardWithTags(SCHREIBEN_CRITERION_LABELS[ck], t[ck], critMax);
+      }).join('');
       return '<div class="results-section">'
-        +   '<h3 class="results-h">' + escapeHtml(heading) + '</h3>'
-        +   '<div class="rubric-grid">'
-        +     makeRubricCard('Erfüllung', er)
-        +     makeRubricCard('Sprache',    sp)
-        +   '</div>'
+        +   '<h3 class="results-h">' + escapeHtml(td.label) + '</h3>'
+        +   '<div class="rubric-grid">' + criteriaHtml + '</div>'
+        +   registerCheckHtml(t.register_check)
         + '</div>';
-    }
+    }).join('');
 
     el('resultsBody').innerHTML =
         '<div class="results-section">'
       +   '<h3 class="results-h">Score Calculation</h3>'
       +   '<p class="results-feedback">'
-      +     'Aufgabe 1: <strong>' + escapeHtml(typeof a1.task_raw === 'number' ? a1.task_raw : '—') + ' / 10</strong> · '
-      +     'Aufgabe 2: <strong>' + escapeHtml(typeof a2.task_raw === 'number' ? a2.task_raw : '—') + ' / 10</strong> · '
-      +     'Aufgabe 3: <strong>' + escapeHtml(typeof a3.task_raw === 'number' ? a3.task_raw : '—') + ' / 10</strong>'
-      +     '<br>Roh-Summe: <strong>' + escapeHtml(rawTotal) + ' / 30</strong> → '
+      +     scoreCalcLine
+      +     '<br>Roh-Summe: <strong>' + escapeHtml(rawTotal) + '</strong> → '
       +     'Gesamt: <strong>' + escapeHtml(total) + ' / ' + escapeHtml(maxTotal) + '</strong>'
-      +     '<br>Bestanden ab ' + Math.ceil(100 * passRatioFor('B1')) + ' / 100 (' + Math.round(100 * passRatioFor('B1')) + '%).'
+      +     (typeof g.word_count === 'number' ? '<br>Word count detected: <strong>' + escapeHtml(g.word_count) + ' words</strong>' : '')
       +   '</p>'
       + '</div>'
-      + taskBlock('Aufgabe 1 — Persönliche E-Mail', a1)
-      + taskBlock('Aufgabe 2 — Meinung / Diskussion', a2)
-      + taskBlock('Aufgabe 3 — Formelle E-Mail',     a3)
-      + makeMistakesAndNextHtml(g);
-  }
-
-  // Schreiben B2 grading — 2 writing tasks (forum post + formal
-  // letter). Each task scored on 4 criteria × 5 = 20. Two tasks → /40.
-  function renderSchreibenB2Results(g) {
-    var t2e = g.task2_erfuellung || {}, t2k = g.task2_koherenz || {}, t2w = g.task2_wortschatz || {}, t2s = g.task2_strukturen || {};
-    var t3e = g.task3_erfuellung || {}, t3k = g.task3_koherenz || {}, t3w = g.task3_wortschatz || {}, t3s = g.task3_strukturen || {};
-    var rawTotal = (typeof g.total_raw   === 'number') ? g.total_raw   : '—';
-    var total    = (typeof g.total_score === 'number') ? g.total_score : '—';
-    var maxTotal = (typeof g.max_score   === 'number') ? g.max_score   : 40;
-
-    setHero(g.total_score, g.max_score);
-
-    setTaskPills([
-      { label: 'Aufgabe 1 (Forum)',  score: (typeof g.task2_raw === 'number') ? g.task2_raw : '—', max: 20 },
-      { label: 'Aufgabe 2 (Brief)',  score: (typeof g.task3_raw === 'number') ? g.task3_raw : '—', max: 20 }
-    ]);
-
-    el('resultsBody').innerHTML =
-        '<div class="results-section">'
-      +   '<h3 class="results-h">Score Calculation</h3>'
-      +   '<p class="results-feedback">'
-      +     'Aufgabe 1: <strong>' + escapeHtml(typeof g.task2_raw === 'number' ? g.task2_raw : '—') + ' / 20</strong> · '
-      +     'Aufgabe 2: <strong>' + escapeHtml(typeof g.task3_raw === 'number' ? g.task3_raw : '—') + ' / 20</strong>'
-      +     '<br>Gesamt: <strong>' + escapeHtml(total) + ' / ' + escapeHtml(maxTotal) + '</strong>'
-      +     '<br>Roh-Summe: <strong>' + escapeHtml(rawTotal) + ' / 40</strong>'
-      +   '</p>'
-      + '</div>'
-      + '<div class="results-section">'
-      +   '<h3 class="results-h">Aufgabe 1 — Forumsbeitrag / Meinung</h3>'
-      +   '<div class="rubric-grid">'
-      +     makeRubricCard('Erfüllung',  t2e)
-      +     makeRubricCard('Kohärenz',    t2k)
-      +     makeRubricCard('Wortschatz',  t2w)
-      +     makeRubricCard('Strukturen',  t2s)
-      +   '</div>'
-      + '</div>'
-      + '<div class="results-section">'
-      +   '<h3 class="results-h">Aufgabe 2 — Formelle E-Mail / Brief</h3>'
-      +   '<div class="rubric-grid">'
-      +     makeRubricCard('Erfüllung',  t3e)
-      +     makeRubricCard('Kohärenz',    t3k)
-      +     makeRubricCard('Wortschatz',  t3w)
-      +     makeRubricCard('Strukturen',  t3s)
-      +   '</div>'
-      + '</div>'
+      + taskBlocksHtml
       + makeMistakesAndNextHtml(g);
   }
 
