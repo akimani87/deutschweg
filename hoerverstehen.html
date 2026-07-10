@@ -176,10 +176,13 @@
     { key:'voicemail',    emoji:'📱', title:'Voicemail',     mode:'Find the Info',     time:'~3 min',
       desc:'A short voicemail with a name, time, place or phone number. Listen and tap the correct detail.' },
   ];
+  // Teil numbers corrected to match the real Goethe A1 exam structure —
+  // conversation (dialogues, MC) is Teil 1, announcement (Richtig/Falsch)
+  // is Teil 2, voicemail (monologue) is Teil 3, played twice like Teil 1.
   var EXAM_TIPS = {
-    announcement: 'Teil 1 tip: listen for key facts — times, platforms, prices, opening hours. The answer is often in the first sentence; the rest can be a distractor.',
-    conversation: 'Teil 2 tip: focus on what the two speakers decide or agree. Wrong options often repeat a word you heard, so listen for the whole meaning, not single words.',
-    voicemail:    'Teil 3 tip: jot down names, numbers and times the moment you hear them — voicemails are spoken once and the details come fast.',
+    announcement: 'Teil 2 tip: listen for key facts — times, platforms, prices, opening hours. The answer is often in the first sentence; the rest can be a distractor.',
+    conversation: 'Teil 1 tip: focus on what the two speakers decide or agree. Wrong options often repeat a word you heard, so listen for the whole meaning, not single words.',
+    voicemail:    'Teil 3 tip: jot down names, numbers and times the moment you hear them — you get two listens, so use the first to catch the gist and the second to confirm details.',
   };
 
   var state = { user:null, exercise:null, type:null, listensUsed:0, maxListens:3, answers:{}, revealed:false };
