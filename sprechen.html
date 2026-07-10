@@ -9,6 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./supabase-config.js"></script>
 <script src="./scoring-config.js?v=1"></script>
+<script src="./taxonomy.js?v=1"></script>
 <style>
   *{box-sizing:border-box;}
   body{
@@ -99,6 +100,26 @@
     display:inline-flex;align-items:center;gap:5px;
   }
   .tagged-error-chip .frag{font-weight:500;color:#475569;font-style:italic;}
+
+  /* Headline weakness + recommended module (feedback-audit.md Part B
+     step 5) — same visual language as exam-vault.html's version. */
+  .headline-weakness{
+    background:#fff;border:1.5px solid #FDE68A;border-left:5px solid #F59E0B;
+    border-radius:14px;padding:16px 18px;margin-bottom:14px;
+  }
+  .headline-weakness.tier-1{border-color:#FECACA;border-left-color:#EF4444;}
+  .hw-eyebrow{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:#92400E;margin-bottom:6px;}
+  .headline-weakness.tier-1 .hw-eyebrow{color:#B91C1C;}
+  .hw-title{font-size:15px;font-weight:800;color:#1F2937;margin-bottom:4px;}
+  .hw-explanation{font-size:13px;color:#475569;line-height:1.55;margin-bottom:10px;}
+  .hw-module-card{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    background:#EFF6FF;border:1px solid #DBEAFE;border-radius:10px;padding:10px 14px;flex-wrap:wrap;
+  }
+  .hw-module-label{font-size:11px;font-weight:700;color:#1D4ED8;text-transform:uppercase;}
+  .hw-module-title{font-size:13.5px;font-weight:700;color:#1F2937;margin-top:2px;}
+  .hw-module-link{font-size:12.5px;font-weight:700;color:#fff;background:#3B82F6;padding:7px 14px;border-radius:8px;text-decoration:none;white-space:nowrap;}
+  .hw-all-clear{color:#10B981;font-weight:700;font-size:13.5px;}
 
   .notice{background:#fff;border:1px dashed #CBD5E1;border-radius:12px;padding:14px;font-size:14px;color:#475569;text-align:center;line-height:1.6;}
 
@@ -205,6 +226,7 @@
       <div id="bars" style="margin-top:12px;"></div>
       <div id="taggedErrors" style="margin-top:12px;"></div>
     </div>
+    <div id="headlineWeakness" style="display:none;"></div>
     <div id="fbSections"></div>
     <button class="btn btn-primary" id="againBtn">Practice again</button>
     <button class="btn btn-ghost" id="upgradeBtn" style="display:none;">Upgrade for more sessions</button>
@@ -660,6 +682,81 @@
     $('againBtn').style.display    = remainingAfter > 0 ? 'block' : 'none';
     $('upgradeBtn').style.display  = remainingAfter > 0 ? 'none'  : 'block';
     show('screen-feedback');
+
+    renderHeadlineWeakness(tagged);
+  }
+
+  // ── Headline weakness + recommended module (feedback-audit.md Part B
+  // step 5) — simplified 3-tier version of exam-vault.html's logic.
+  // Sprechen has no per-task Erfüllung/register_check like Schreiben, so
+  // tier 2 ("Erfüllung gaps") doesn't apply here; register_mismatch/
+  // text_conventions_structure (tier 1) and coherence_connectors
+  // (lowest tier) still work the same way against tagged_errors.
+  var SPRECHEN_HEADLINE_LEVEL_RANK = { A1: 0, A2: 1, B1: 2, B2: 3 };
+
+  function computeSprechenHeadline(tagged) {
+    if (!tagged || !tagged.length) return null;
+    var tier1 = tagged.find(function(e){ return e.category === 'register_mismatch' || e.category === 'text_conventions_structure'; });
+    if (tier1) return { tier: 1, category: tier1.category, explanation: tier1.note || tier1.fragment };
+    var tier4 = tagged.find(function(e){ return e.category === 'coherence_connectors'; });
+    var others = tagged.filter(function(e){ return e.category !== 'coherence_connectors'; });
+    if (others.length) return { tier: 3, category: others[0].category, explanation: others[0].note || others[0].fragment };
+    if (tier4) return { tier: 4, category: tier4.category, explanation: tier4.note || tier4.fragment };
+    return null;
+  }
+
+  function findSprechenModule(category) {
+    if (!category || typeof dwSupabase === 'undefined') return Promise.resolve(null);
+    return dwSupabase.from('modules')
+      .select('id, level, title')
+      .contains('error_tags', [category])
+      .eq('is_published', true)
+      .then(function(res){
+        if (res.error || !Array.isArray(res.data) || !res.data.length) return null;
+        var targetRank = SPRECHEN_HEADLINE_LEVEL_RANK['A1']; // Sprechen is A1-only today
+        var best = null, bestDist = Infinity;
+        res.data.forEach(function(m){
+          var rank = (SPRECHEN_HEADLINE_LEVEL_RANK[m.level] != null) ? SPRECHEN_HEADLINE_LEVEL_RANK[m.level] : 0;
+          var dist = Math.abs(rank - targetRank) * 10 + rank;
+          if (dist < bestDist) { bestDist = dist; best = m; }
+        });
+        return best;
+      })
+      .catch(function(){ return null; });
+  }
+
+  function renderHeadlineWeakness(tagged) {
+    var box = $('headlineWeakness');
+    if (!box) return;
+    var weakness = computeSprechenHeadline(tagged);
+
+    if (!weakness) {
+      box.style.display = 'block';
+      box.innerHTML = '<div class="headline-weakness"><div class="hw-all-clear">✓ Keine größere Schwäche gefunden — starke Leistung!</div></div>';
+      return;
+    }
+
+    var catLabel = escHtml(window.dwTaxonomy ? window.dwTaxonomy.label(weakness.category) : weakness.category);
+    box.style.display = 'block';
+    box.innerHTML =
+        '<div class="headline-weakness tier-' + weakness.tier + '">'
+      +   '<div class="hw-eyebrow">Wichtigste Schwäche</div>'
+      +   '<div class="hw-title">' + catLabel + '</div>'
+      +   '<p class="hw-explanation">' + escHtml(weakness.explanation || '') + '</p>'
+      +   '<div class="hw-module-card" id="hwModuleCard"><span style="font-size:13px;color:#94A3B8;">Suche passendes Modul…</span></div>'
+      + '</div>';
+
+    findSprechenModule(weakness.category).then(function(mod){
+      var card = document.getElementById('hwModuleCard');
+      if (!card) return;
+      if (!mod) {
+        card.innerHTML = '<span style="font-size:13px;color:#94A3B8;">Kein passendes Modul gefunden — übe weiter mit den Tipps oben.</span>';
+        return;
+      }
+      card.innerHTML =
+          '<div><div class="hw-module-label">Empfohlenes Modul</div><div class="hw-module-title">' + escHtml(mod.title) + ' (' + escHtml(mod.level) + ')</div></div>'
+        + '<a class="hw-module-link" href="module.html?id=' + encodeURIComponent(mod.id) + '">Modul öffnen →</a>';
+    });
   }
 
   boot();

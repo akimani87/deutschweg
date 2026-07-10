@@ -532,6 +532,35 @@
   .results-task-scores {
     display: flex; gap: 10px; margin-left: auto; flex-wrap: wrap;
   }
+
+  /* ── Headline weakness banner (feedback-audit.md Part B step 5) ──
+     Sits above the full breakdown, never replaces it. */
+  .headline-weakness {
+    background: #fff; border: 1.5px solid #FDE68A; border-left: 5px solid #F59E0B;
+    border-radius: var(--radius-lg); padding: 18px 22px; margin-bottom: 18px;
+    box-shadow: var(--shadow-sm);
+  }
+  .headline-weakness.tier-1 { border-color: #FECACA; border-left-color: #EF4444; }
+  .hw-eyebrow {
+    font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
+    color: #92400E; margin-bottom: 8px;
+  }
+  .headline-weakness.tier-1 .hw-eyebrow { color: #B91C1C; }
+  .hw-title { font-size: 16px; font-weight: 800; color: var(--dark); margin-bottom: 6px; }
+  .hw-explanation { font-size: 13.5px; color: var(--mid); line-height: 1.6; margin-bottom: 12px; }
+  .hw-module-card {
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    background: var(--blue-light); border: 1px solid var(--blue-mid);
+    border-radius: var(--radius-md); padding: 12px 16px; flex-wrap: wrap;
+  }
+  .hw-module-label { font-size: 12px; font-weight: 700; color: var(--blue-dark); text-transform: uppercase; letter-spacing: 0.5px; }
+  .hw-module-title { font-size: 14px; font-weight: 700; color: var(--dark); margin-top: 2px; }
+  .hw-module-link {
+    font-size: 13px; font-weight: 700; color: #fff; background: var(--blue);
+    padding: 8px 16px; border-radius: 8px; text-decoration: none; white-space: nowrap;
+  }
+  .hw-module-link:hover { background: var(--blue-dark); }
+  .hw-all-clear { color: var(--green); font-weight: 700; }
   .results-task-pill {
     background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.22);
     color: #fff; padding: 8px 14px; border-radius: 12px;
@@ -913,6 +942,13 @@
       </div>
       <div class="results-task-scores" id="resTaskPills"></div>
     </div>
+
+    <!-- Two-layer results (feedback-audit.md Part B step 5): headline
+         weakness + one recommended module ABOVE the full breakdown,
+         which stays fully visible below (not click-to-expand). Lesen
+         has no taxonomy tags to draw a headline from, so this stays
+         empty/hidden on Lesen results — Schreiben only for now. -->
+    <div id="headlineWeakness" style="display:none;"></div>
 
     <div id="resultsBody"></div>
 
@@ -2391,9 +2427,124 @@
       + '</div>'
       + taskBlocksHtml
       + makeMistakesAndNextHtml(g);
+
+    renderHeadlineWeakness(g, level, criteriaKeys);
+  }
+
+  // ── Headline weakness + recommended module (feedback-audit.md Part B
+  // step 5) ──────────────────────────────────────────────────────────
+  // Priority order, most critical first: register/text-type failures >
+  // Erfüllung (task fulfillment) gaps > vocabulary_range/case_and_
+  // declension/other Formale-Richtigkeit-adjacent issues > coherence_
+  // connectors. Only the first non-empty tier is used — this picks ONE
+  // headline, not a ranked list, by design (step 5 asks for "one
+  // headline weakness").
+  function computeHeadlineWeakness(g) {
+    var tasks = (g && g.tasks) || {};
+    var taskKeys = Object.keys(tasks);
+    if (!taskKeys.length) return null;
+
+    function worstOf(criterionKey, tier, fallbackCategory) {
+      var worst = null;
+      taskKeys.forEach(function (tk) {
+        var c = tasks[tk][criterionKey];
+        if (c && typeof c.score === 'number' && typeof c.max === 'number' && c.score < c.max) {
+          var deficit = (c.max - c.score) / c.max;
+          if (!worst || deficit > worst.deficit) worst = { deficit: deficit, criterion: c, taskKey: tk };
+        }
+      });
+      if (!worst) return null;
+      var tag = (Array.isArray(worst.criterion.tags) && worst.criterion.tags[0]) || fallbackCategory;
+      return { tier: tier, category: tag, explanation: worst.criterion.explanation, taskKey: worst.taskKey };
+    }
+
+    // Tier 1 — register/text-type (never scored, so checked directly,
+    // not via worstOf which only looks at scored criteria).
+    for (var i = 0; i < taskKeys.length; i++) {
+      var rc = tasks[taskKeys[i]].register_check;
+      if (rc && rc.passed === false && Array.isArray(rc.flags) && rc.flags.length) {
+        return { tier: 1, category: rc.flags[0], explanation: rc.explanation, taskKey: taskKeys[i] };
+      }
+    }
+    // Tier 2 — Erfüllung (task fulfillment).
+    var t2 = worstOf('erfuellung', 2, null);
+    if (t2) return t2;
+    // Tier 3 — Wortschatz / Formale Richtigkeit (B1/B2 only; A1/A2 fold
+    // these into Kommunikative Gestaltung, so tier 3 simply won't fire
+    // for those two levels — tier 4 picks up any remaining deficit).
+    var t3 = worstOf('wortschatz', 3, 'vocabulary_range') || worstOf('formale_richtigkeit', 3, 'case_and_declension');
+    if (t3) return t3;
+    // Tier 4 — Kommunikative Gestaltung (coherence).
+    var t4 = worstOf('kommunikative_gestaltung', 4, 'coherence_connectors');
+    if (t4) return t4;
+
+    return null; // every criterion at max — nothing to flag
+  }
+
+  var HEADLINE_LEVEL_RANK = { A1: 0, A2: 1, B1: 2, B2: 3 };
+
+  function findRecommendedModule(category, level) {
+    if (!category || typeof dwSupabase === 'undefined') return Promise.resolve(null);
+    return dwSupabase.from('modules')
+      .select('id, level, title, order_index')
+      .contains('error_tags', [category])
+      .eq('is_published', true)
+      .then(function (res) {
+        if (res.error || !Array.isArray(res.data) || !res.data.length) return null;
+        var targetRank = (HEADLINE_LEVEL_RANK[level] != null) ? HEADLINE_LEVEL_RANK[level] : 0;
+        var best = null, bestDist = Infinity;
+        res.data.forEach(function (m) {
+          var rank = (HEADLINE_LEVEL_RANK[m.level] != null) ? HEADLINE_LEVEL_RANK[m.level] : 0;
+          var dist = Math.abs(rank - targetRank) * 10 + rank; // closest level first, earlier level breaks ties
+          if (dist < bestDist) { bestDist = dist; best = m; }
+        });
+        return best;
+      })
+      .catch(function () { return null; });
+  }
+
+  function renderHeadlineWeakness(g, level, criteriaKeys) {
+    var box = el('headlineWeakness');
+    if (!box) return;
+    var weakness = computeHeadlineWeakness(g);
+
+    if (!weakness) {
+      box.style.display = 'block';
+      box.innerHTML = '<div class="headline-weakness"><div class="hw-all-clear">✓ Keine größere Schwäche gefunden — starke Arbeit über alle Kriterien!</div></div>';
+      return;
+    }
+
+    var catLabel = (weakness.category && window.dwTaxonomy)
+      ? window.dwTaxonomy.label(weakness.category)
+      : (weakness.tier === 2 ? 'Aufgabenerfüllung' : 'Sprachliche Genauigkeit');
+    box.style.display = 'block';
+    box.innerHTML =
+        '<div class="headline-weakness tier-' + weakness.tier + '">'
+      +   '<div class="hw-eyebrow">Wichtigste Schwäche</div>'
+      +   '<div class="hw-title">' + escapeHtml(catLabel) + '</div>'
+      +   '<p class="hw-explanation">' + escapeHtml(weakness.explanation || '') + '</p>'
+      +   '<div class="hw-module-card" id="hwModuleCard"><span style="font-size:13px;color:var(--light);">Suche passendes Modul…</span></div>'
+      + '</div>';
+
+    findRecommendedModule(weakness.category, level).then(function (mod) {
+      var card = document.getElementById('hwModuleCard');
+      if (!card) return;
+      if (!mod) {
+        card.innerHTML = '<span style="font-size:13px;color:var(--light);">Kein passendes Modul gefunden — übe weiter mit den Tipps oben.</span>';
+        return;
+      }
+      card.innerHTML =
+          '<div><div class="hw-module-label">Empfohlenes Modul</div><div class="hw-module-title">' + escapeHtml(mod.title) + ' (' + escapeHtml(mod.level) + ')</div></div>'
+        + '<a class="hw-module-link" href="module.html?id=' + encodeURIComponent(mod.id) + '">Modul öffnen →</a>';
+    });
   }
 
   function renderLesenResults(graded) {
+    // Lesen has no taxonomy tags to draw a headline from (feedback-audit.md
+    // Part B — this is Schreiben/Sprechen-only for now).
+    var hwBox = el('headlineWeakness');
+    if (hwBox) hwBox.style.display = 'none';
+
     setHero(graded.total, graded.max);
 
     setTaskPills(graded.details.map(function (d) {
