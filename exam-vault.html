@@ -211,6 +211,29 @@
   .word-counter.in-range { color: var(--green); }
   .word-counter.over     { color: var(--amber); }
 
+  /* ── Draft resume banner (Part 1 — autosave/resume) ────────── */
+  .draft-banner {
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    background: #FFFBEB; border: 1px solid #FDE68A; border-radius: var(--radius-md);
+    padding: 14px 18px; margin-bottom: 18px; flex-wrap: wrap;
+  }
+  .draft-banner-text { font-size: 13.5px; color: #92400E; line-height: 1.5; }
+  .draft-banner-text strong { display: block; font-size: 14px; margin-bottom: 2px; }
+  .draft-banner-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .draft-banner-btn {
+    border: none; border-radius: 10px; padding: 9px 16px; font-size: 13px; font-weight: 700;
+    font-family: inherit; cursor: pointer;
+  }
+  .draft-banner-btn.primary { background: #D97706; color: #fff; }
+  .draft-banner-btn.ghost   { background: #fff; color: #92400E; border: 1.5px solid #FDE68A; }
+
+  /* ── Autosave status pill (quiet, non-blocking) ──────────────── */
+  .autosave-status {
+    font-size: 12px; font-weight: 600; color: var(--light);
+    margin-bottom: 12px; display: none; align-items: center; gap: 6px;
+  }
+  .autosave-status.visible { display: flex; }
+
   /* ── Task: discussion_post (B1 Schreiben — forum post + opinion) ─ */
   .forum-post {
     background: #fff;
@@ -915,6 +938,20 @@
 
   <!-- Exam content (task cards rendered dynamically) -->
   <div id="examContent" style="display:none;">
+    <!-- Draft resume banner — shown when a saved in-progress attempt is
+         found for this exam (Part 1: autosave/resume, candidate-experience-
+         audit.md). Hidden otherwise. -->
+    <div id="draftBanner" class="draft-banner" style="display:none;">
+      <div class="draft-banner-text">
+        <strong>You have unfinished progress</strong>
+        <span id="draftBannerSub">Saved answers from earlier — resume where you left off?</span>
+      </div>
+      <div class="draft-banner-actions">
+        <button type="button" class="draft-banner-btn ghost" id="draftDiscardBtn">Start Fresh</button>
+        <button type="button" class="draft-banner-btn primary" id="draftResumeBtn">Resume</button>
+      </div>
+    </div>
+    <div class="autosave-status" id="autosaveStatus"><span id="autosaveStatusText">Saving…</span></div>
     <div id="taskCards"></div>
 
     <div class="exam-submit" id="submitArea">
@@ -1015,6 +1052,179 @@
   var currentExamMax    = 20;          // sum of task max_scores (set after load)
   var currentTasks      = [];          // ordered tasks from Supabase
   var task1Fields       = [];          // Schreiben Task 1 field labels (form_fill — legacy A1)
+
+  // ── Autosave / resume (Part 1 — candidate-experience-audit.md) ──────
+  // Debounced draft save so a reload/tab-close during a scored attempt
+  // doesn't lose in-progress answers. Separate from exam_attempts (which
+  // only ever holds completed, graded rows) — drafts live in
+  // exam_attempt_drafts and are deleted once a real attempt is saved.
+  var AUTOSAVE_DEBOUNCE_MS = 2000;
+  var draftDirty        = false;  // true = an edit hasn't been flushed to Supabase yet
+  var draftSaveTimer     = null;
+  var draftCheckedForExam = null; // exam_id we've already offered/declined resume for, so
+                                   // switching Übungssatz and back doesn't re-prompt mid-session
+
+  function getUserOrNull() {
+    if (typeof dwSupabase === 'undefined') return Promise.resolve(null);
+    return dwSupabase.auth.getUser().then(function (r) {
+      return (r && r.data && r.data.user) || null;
+    }).catch(function () { return null; });
+  }
+
+  // True when the collected answers payload has nothing worth saving yet
+  // (blank textareas / no options picked) — avoids writing an empty draft
+  // the instant a fresh exam loads.
+  function answersAreEmpty(payload) {
+    if (!payload) return true;
+    if (currentSection === 'schreiben') {
+      return ['task2', 'task3', 'task4'].every(function (k) {
+        return !payload[k] || !String(payload[k]).trim();
+      });
+    }
+    // lesen
+    return !(payload.tasks || []).some(function (t) {
+      var a = t.answers;
+      if (Array.isArray(a))  return a.some(function (v) { return v !== null && v !== undefined && v !== ''; });
+      if (a && typeof a === 'object') return Object.keys(a).some(function (k) { return a[k]; });
+      return false;
+    });
+  }
+
+  function markDirtyAndScheduleAutosave() {
+    draftDirty = true;
+    if (draftSaveTimer) clearTimeout(draftSaveTimer);
+    draftSaveTimer = setTimeout(flushAutosave, AUTOSAVE_DEBOUNCE_MS);
+  }
+
+  function setAutosaveStatus(text) {
+    var pill = el('autosaveStatus');
+    if (!pill) return;
+    if (!text) { pill.classList.remove('visible'); return; }
+    el('autosaveStatusText').textContent = text;
+    pill.classList.add('visible');
+  }
+
+  function flushAutosave() {
+    draftSaveTimer = null;
+    if (!currentExamId || typeof dwSupabase === 'undefined') return;
+    var payload = (currentSection === 'schreiben') ? collectSchreibenAnswers() : collectLesenAnswers();
+    if (answersAreEmpty(payload)) { draftDirty = false; return; }
+
+    getUserOrNull().then(function (user) {
+      if (!user) { draftDirty = false; return; } // anonymous — no history/drafts, same as saveAttempt()
+      setAutosaveStatus('Saving…');
+      return dwSupabase.from('exam_attempt_drafts')
+        .upsert({
+          user_id: user.id, exam_id: currentExamId,
+          answers: payload, updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id,exam_id' })
+        .then(function (res) {
+          if (res.error) {
+            console.error('[exam] draft autosave failed', res.error.message);
+            setAutosaveStatus(null);
+            return; // leave draftDirty true — beforeunload will still warn
+          }
+          draftDirty = false;
+          setAutosaveStatus('Saved');
+          setTimeout(function () { setAutosaveStatus(null); }, 1600);
+        });
+    });
+  }
+
+  function deleteDraftForCurrentExam() {
+    if (!currentExamId || typeof dwSupabase === 'undefined') return Promise.resolve();
+    draftDirty = false;
+    if (draftSaveTimer) { clearTimeout(draftSaveTimer); draftSaveTimer = null; }
+    return getUserOrNull().then(function (user) {
+      if (!user) return;
+      return dwSupabase.from('exam_attempt_drafts')
+        .delete().eq('user_id', user.id).eq('exam_id', currentExamId)
+        .then(function () {}, function () {});
+    });
+  }
+
+  // Re-selects/re-types a saved draft's answers back into the live DOM.
+  // Mirrors collectSchreibenAnswers()'s shape exactly (slot name → text).
+  function restoreSchreibenAnswers(saved) {
+    ['task2', 'task3', 'task4'].forEach(function (slot) {
+      if (typeof saved[slot] !== 'string') return;
+      var ta = document.querySelector('#taskCards textarea.response-area[data-slot="' + slot + '"]');
+      if (!ta) return;
+      ta.value = saved[slot];
+      ta.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+  }
+
+  // Mirrors collectLesenAnswers()'s shape exactly (per task_type selectors).
+  function restoreLesenAnswers(saved) {
+    (saved.tasks || []).forEach(function (t) {
+      if (t.type === 'multiple_choice') {
+        (t.answers || []).forEach(function (val, qi) {
+          if (val === null || val === undefined) return;
+          var r = document.querySelector('input[name="mc-q-' + qi + '"][value="' + val + '"]');
+          if (r) { r.checked = true; r.dispatchEvent(new Event('change', { bubbles: true })); }
+        });
+      } else if (t.type === 'true_false') {
+        (t.answers || []).forEach(function (val, si) {
+          if (val === null || val === undefined) return;
+          var btn = document.querySelector('.tf-statement[data-s="' + si + '"] .tf-btn[data-value="' + val + '"]');
+          if (btn) btn.click();
+        });
+      } else {
+        // matching / matching_adverts / people_matching / gap_fill /
+        // headline_matching / section_matching — all render a <select>
+        // whose value is keyed the same way in t.answers.
+        var selClass = {
+          matching: 'match-select', matching_adverts: 'adverts-select',
+          people_matching: 'people-select', gap_fill: 'gap-select',
+          headline_matching: 'headline-select', section_matching: 'section-select'
+        }[t.type];
+        var attr = {
+          matching: 'data-person', matching_adverts: 'data-person',
+          people_matching: 'data-stmt-n', gap_fill: 'data-gap-n',
+          headline_matching: 'data-headline-n', section_matching: 'data-paragraph-n'
+        }[t.type];
+        if (!selClass) return;
+        Object.keys(t.answers || {}).forEach(function (key) {
+          var val = t.answers[key];
+          if (!val) return;
+          var sel = document.querySelector('.' + selClass + '[' + attr + '="' + key.replace(/"/g, '&quot;') + '"]');
+          if (sel) { sel.value = val; sel.dispatchEvent(new Event('change', { bubbles: true })); }
+        });
+      }
+    });
+    checkSubmitState();
+  }
+
+  // Checked once per (exam_id) after task cards render. Shows the resume
+  // banner if a draft exists and has real content; otherwise stays hidden.
+  function checkForDraftAndOfferResume(examId) {
+    hide('draftBanner');
+    if (draftCheckedForExam === examId) return;
+    if (typeof dwSupabase === 'undefined') return;
+    getUserOrNull().then(function (user) {
+      if (!user) { draftCheckedForExam = examId; return; }
+      dwSupabase.from('exam_attempt_drafts')
+        .select('answers, updated_at').eq('user_id', user.id).eq('exam_id', examId)
+        .maybeSingle()
+        .then(function (res) {
+          draftCheckedForExam = examId;
+          var draft = res && res.data;
+          if (!draft || answersAreEmpty(draft.answers)) return;
+          show('draftBanner');
+          el('draftResumeBtn').onclick = function () {
+            hide('draftBanner');
+            if (currentSection === 'schreiben') restoreSchreibenAnswers(draft.answers);
+            else                                restoreLesenAnswers(draft.answers);
+          };
+          el('draftDiscardBtn').onclick = function () {
+            hide('draftBanner');
+            dwSupabase.from('exam_attempt_drafts').delete()
+              .eq('user_id', user.id).eq('exam_id', examId).then(function () {}, function () {});
+          };
+        }, function () { draftCheckedForExam = examId; });
+    });
+  }
 
   // ── Utilities ──────────────────────────────────────────────
   function el(id) { return document.getElementById(id); }
@@ -1937,7 +2147,10 @@
           if (typeof ans.task4 === 'string') answers.task4 = ans.task4;
 
           saveAttempt(answers, scores, res.body, totalInt, examMax).then(function (saved) {
-            if (saved) { show('savedNotice'); loadHistory(); loadWeakness(); }
+            if (saved) {
+              show('savedNotice'); loadHistory(); loadWeakness();
+              deleteDraftForCurrentExam(); // real attempt is saved — the draft's job is done
+            }
           });
         } else {
           showGradingError(res.body && res.body.error);
@@ -1969,7 +2182,10 @@
       { details: graded.details }, // full per-question breakdown for replay later
       graded.total
     ).then(function (saved) {
-      if (saved) { show('savedNotice'); loadHistory(); loadWeakness(); }
+      if (saved) {
+        show('savedNotice'); loadHistory(); loadWeakness();
+        deleteDraftForCurrentExam(); // real attempt is saved — the draft's job is done
+      }
     });
   }
 
@@ -3028,6 +3244,26 @@
     // switches Übungssatz, but the listener only needs to bind once.
     el('submitBtn').addEventListener('click', submitExam);
 
+    // Delegated autosave triggers (Part 1) — bound once on the container
+    // since #taskCards's *contents* are replaced on every loadExam(), but
+    // the container element itself persists. 'input'/'change' bubble from
+    // every textarea/radio/select; true_false's .tf-btn is a plain button
+    // so it needs an explicit click check.
+    el('taskCards').addEventListener('input',  markDirtyAndScheduleAutosave);
+    el('taskCards').addEventListener('change', markDirtyAndScheduleAutosave);
+    el('taskCards').addEventListener('click', function (e) {
+      if (e.target.closest('.tf-btn')) markDirtyAndScheduleAutosave();
+    });
+
+    // Warn on tab close/reload only while there's an actual unsaved edit
+    // sitting in the debounce window (or a save that failed) — not on
+    // every visit to the page.
+    window.addEventListener('beforeunload', function (e) {
+      if (!draftDirty) return;
+      e.preventDefault();
+      e.returnValue = '';
+    });
+
     el('examSub').textContent = currentSection === 'schreiben'
       ? 'Goethe-format Schreiben practice. Write the message(s), then submit for instant AI grading.'
       : 'Goethe-format Lesen practice. Answer all questions to enable submit; auto-grading is instant.';
@@ -3131,6 +3367,13 @@
     hide('gradingState');
     show('submitArea');
 
+    // Autosave state resets per exam — a pending debounce for the exam
+    // we're navigating away from should not fire against the new one.
+    if (draftSaveTimer) { clearTimeout(draftSaveTimer); draftSaveTimer = null; }
+    draftDirty = false;
+    setAutosaveStatus(null);
+    hide('draftBanner');
+
     var btn  = el('submitBtn');
     btn.disabled = true;
     var note = el('submitNote');
@@ -3159,6 +3402,10 @@
         // word counter for Schreiben since renderShortMessage's
         // update() runs at render time and writes "0" into #wordCount).
         checkSubmitState();
+
+        // Offer to resume an in-progress draft for this exam, if one
+        // exists (Part 1 — candidate-experience-audit.md).
+        checkForDraftAndOfferResume(examId);
 
         // Refresh history scoped to this exam — so switching the
         // Übungssatz dropdown swaps the history panel too. The

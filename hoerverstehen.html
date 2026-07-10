@@ -23,6 +23,15 @@
   .hd .em{font-size:34px;} .hd h1{font-size:20px;font-weight:800;margin:6px 0 2px;letter-spacing:-0.3px;}
   .hd .sub{font-size:13px;color:rgba(255,255,255,0.9);font-weight:600;}
 
+  /* Draft resume banner (Part 1 — autosave/resume) */
+  .draft-banner{display:flex;align-items:center;justify-content:space-between;gap:14px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:16px;padding:14px 16px;margin-bottom:14px;flex-wrap:wrap;}
+  .draft-banner-text{font-size:13px;color:#92400E;line-height:1.5;}
+  .draft-banner-text strong{display:block;font-size:14px;margin-bottom:2px;}
+  .draft-banner-actions{display:flex;gap:8px;flex-shrink:0;}
+  .draft-banner-btn{border:none;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;}
+  .draft-banner-btn.primary{background:#D97706;color:#fff;}
+  .draft-banner-btn.ghost{background:#fff;color:#92400E;border:1.5px solid #FDE68A;}
+
   /* Exercise cards */
   .ex-card{background:#fff;border:1px solid #E5E7EB;border-radius:16px;padding:16px;margin-bottom:12px;}
   .ex-top{display:flex;align-items:center;gap:12px;margin-bottom:6px;}
@@ -100,6 +109,16 @@
       <h1>Hörverstehen — A1</h1>
       <div class="sub">Train your ear for the Goethe A1 listening exam</div>
     </div>
+    <div id="draftBanner" class="draft-banner" style="display:none;">
+      <div class="draft-banner-text">
+        <strong>You have an unfinished exercise</strong>
+        <span>Saved from earlier — resume where you left off?</span>
+      </div>
+      <div class="draft-banner-actions">
+        <button type="button" class="draft-banner-btn ghost" id="draftDiscardBtn">Discard</button>
+        <button type="button" class="draft-banner-btn primary" id="draftResumeBtn">Resume</button>
+      </div>
+    </div>
     <div id="cards"></div>
   </section>
 
@@ -164,6 +183,67 @@
   };
 
   var state = { user:null, exercise:null, type:null, listensUsed:0, maxListens:3, answers:{}, revealed:false };
+
+  // ── Autosave / resume (Part 1 — candidate-experience-audit.md) ──────
+  // One open exercise per user in hoerverstehen_attempt_drafts. Deleted
+  // as soon as the learner submits (hoerverstehen_results is where the
+  // real, graded record lives — this is scratch state only).
+  var AUTOSAVE_DEBOUNCE_MS = 2000;
+  var draftDirty     = false;
+  var draftSaveTimer = null;
+
+  function scheduleHoerenAutosave(){
+    draftDirty = true;
+    if (draftSaveTimer) clearTimeout(draftSaveTimer);
+    draftSaveTimer = setTimeout(flushHoerenAutosave, AUTOSAVE_DEBOUNCE_MS);
+  }
+
+  function flushHoerenAutosave(){
+    draftSaveTimer = null;
+    if (!sb || !state.user || !state.exercise || !state.exercise.id) return;
+    sb.from('hoerverstehen_attempt_drafts').upsert({
+      user_id: state.user.id, exercise_id: state.exercise.id, exercise_type: state.type,
+      listens_used: state.listensUsed, answers: state.answers, updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id' }).then(function(res){
+      if (res && res.error) { console.error('[hoeren] draft autosave failed', res.error.message); return; }
+      draftDirty = false;
+    });
+  }
+
+  function deleteHoerenDraft(){
+    draftDirty = false;
+    if (draftSaveTimer) { clearTimeout(draftSaveTimer); draftSaveTimer = null; }
+    if (!sb || !state.user) return;
+    sb.from('hoerverstehen_attempt_drafts').delete().eq('user_id', state.user.id).then(function(){}, function(){});
+  }
+
+  window.addEventListener('beforeunload', function(e){
+    if (!draftDirty) return;
+    e.preventDefault();
+    e.returnValue = '';
+  });
+
+  function checkForHoerenDraftAndOfferResume(){
+    if (!sb || !state.user) return;
+    sb.from('hoerverstehen_attempt_drafts').select('*').eq('user_id', state.user.id).maybeSingle()
+      .then(function(res){
+        var draft = res && res.data;
+        if (!draft) return;
+        $('draftBanner').style.display = 'flex';
+        $('draftResumeBtn').onclick = function(){
+          $('draftBanner').style.display = 'none';
+          sb.from('hoerverstehen_exercises').select('*').eq('id', draft.exercise_id).maybeSingle()
+            .then(function(er){
+              if (er.error || !er.data) { alert('Could not load your saved exercise — it may have expired.'); return; }
+              resumeExercise(er.data, draft);
+            });
+        };
+        $('draftDiscardBtn').onclick = function(){
+          $('draftBanner').style.display = 'none';
+          sb.from('hoerverstehen_attempt_drafts').delete().eq('user_id', state.user.id).then(function(){}, function(){});
+        };
+      }, function(){});
+  }
 
   function $(id){ return document.getElementById(id); }
   function show(id){ ['screen-select','screen-listen','screen-results'].forEach(function(s){ $(s).classList.toggle('active', s===id); }); window.scrollTo(0,0); }
@@ -254,6 +334,7 @@
     player.play().catch(function(){});
     updateListens();
     if (!state.revealed){ state.revealed = true; renderQuestions(); }
+    scheduleHoerenAutosave();
   }
 
   $('playBtn').addEventListener('click', function(){
@@ -295,12 +376,42 @@
         this.parentNode.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('selected'); });
         this.classList.add('selected');
         if (Object.keys(state.answers).length === qs.length) $('submitBtn').style.display = 'block';
+        scheduleHoerenAutosave();
       });
     });
   }
 
+  // Reopens a saved-in-progress exercise: same as openExercise() but seeds
+  // listensUsed/answers/revealed from the draft instead of starting blank.
+  function resumeExercise(ex, draft){
+    state.exercise = ex; state.type = draft.exercise_type;
+    state.listensUsed = draft.listens_used || 0;
+    state.answers = draft.answers || {};
+    state.revealed = state.listensUsed > 0;
+    player.src = ex.audio_url;
+    $('scenario').textContent = ex.scenario ? ('Scenario: ' + ex.scenario) : '';
+    $('submitBtn').style.display = 'none';
+    if (state.revealed) {
+      renderQuestions();
+      var qs = (ex.questions || []);
+      Object.keys(state.answers).forEach(function(qi){
+        var val = state.answers[qi];
+        var btn = document.querySelector('.opt[data-q="' + qi + '"][data-val="' + String(val).replace(/"/g,'&quot;') + '"]');
+        if (btn) btn.classList.add('selected');
+      });
+      if (Object.keys(state.answers).length === qs.length && qs.length) $('submitBtn').style.display = 'block';
+    } else {
+      $('questions').innerHTML = '<div class="questions-hidden" id="qHidden">▶ Listen first, then the questions appear.</div>';
+    }
+    updateListens();
+    $('playBtn').disabled = false;
+    $('playBtn').textContent = '▶';
+    show('screen-listen');
+  }
+
   $('submitBtn').addEventListener('click', function(){
     try { player.pause(); } catch(_){}
+    deleteHoerenDraft(); // submitted — nothing left to resume, regardless of how the results save goes
     showResults();
   });
 
@@ -348,7 +459,10 @@
 
   // ── Boot ───────────────────────────────────────────────────────────────────
   if (sb){
-    sb.auth.getUser().then(function(res){ state.user = (res && res.data && res.data.user) || null; }).catch(function(){});
+    sb.auth.getUser().then(function(res){
+      state.user = (res && res.data && res.data.user) || null;
+      checkForHoerenDraftAndOfferResume();
+    }).catch(function(){});
   }
   loadCounts();
 })();
