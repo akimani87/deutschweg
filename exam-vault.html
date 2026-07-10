@@ -249,6 +249,40 @@
   }
   .section-timer.danger #sectionTimerClock { color: var(--red, #DC2626); }
 
+  /* ── Hören audio-task-card (Steps 2-4) ───────────────────────── */
+  .hoeren-player { text-align: center; padding: 10px 0 18px; }
+  .hoeren-play-btn {
+    width: 84px; height: 84px; border-radius: 50%; border: none;
+    background: var(--blue); color: #fff; font-size: 32px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; margin: 0 auto;
+    box-shadow: 0 6px 18px rgba(59,130,246,0.35); transition: transform .15s;
+  }
+  .hoeren-play-btn:disabled { opacity: 0.45; cursor: default; box-shadow: none; }
+  .hoeren-wave { display: flex; gap: 4px; align-items: center; justify-content: center; height: 26px; margin: 12px 0 6px; }
+  .hoeren-wave span { width: 4px; height: 7px; background: var(--border); border-radius: 3px; }
+  .hoeren-wave.playing span { background: var(--blue); animation: hwv .9s ease-in-out infinite; }
+  .hoeren-wave.playing span:nth-child(2) { animation-delay: .1s; }
+  .hoeren-wave.playing span:nth-child(3) { animation-delay: .2s; }
+  .hoeren-wave.playing span:nth-child(4) { animation-delay: .3s; }
+  .hoeren-wave.playing span:nth-child(5) { animation-delay: .4s; }
+  @keyframes hwv { 0%,100% { height: 7px; } 50% { height: 22px; } }
+  .hoeren-listens { font-size: 12.5px; font-weight: 700; color: var(--mid); }
+  .hoeren-questions { margin-top: 6px; }
+  .hoeren-q { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 10px; }
+  .hoeren-q-text { font-size: 14.5px; font-weight: 700; color: #1F2937; margin-bottom: 10px; line-height: 1.4; }
+  .hoeren-opts { display: flex; flex-direction: column; gap: 8px; }
+  .hoeren-opts.tf { flex-direction: row; }
+  .hoeren-opt {
+    flex: 1; background: #fff; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    padding: 11px; font-size: 13.5px; font-weight: 700; font-family: inherit; color: #1F2937;
+    cursor: pointer; text-align: left; transition: all .15s;
+  }
+  .hoeren-opts.tf .hoeren-opt { text-align: center; }
+  .hoeren-opt:hover { border-color: var(--blue); background: #EFF6FF; }
+  .hoeren-opt.selected { border-color: var(--blue); background: var(--blue); color: #fff; }
+  .hoeren-opt .letter { display: inline-block; font-weight: 800; color: var(--blue); margin-right: 8px; }
+  .hoeren-opt.selected .letter { color: #fff; }
+
   /* ── Task: discussion_post (B1 Schreiben — forum post + opinion) ─ */
   .forum-post {
     background: #fff;
@@ -916,18 +950,21 @@
     <a class="exam-pill" id="pillB2" role="tab" data-level="B2">B2</a>
   </div>
 
-  <!-- Section selector (Schreiben / Lesen) — filters within the chosen level -->
+  <!-- Section selector (Schreiben / Lesen / Hören) — filters within the
+       chosen level. Hören folded in here (candidate-experience-audit.md
+       Steps 2-4) now that it has real exam_tasks content of its own;
+       wirePills() shows it as A1-only, "coming soon" elsewhere. -->
   <div class="exam-selector" role="tablist" aria-label="Choose section">
     <a class="exam-pill" id="pillSchreiben" role="tab">📝 Schreiben</a>
     <a class="exam-pill" id="pillLesen"     role="tab">📖 Lesen</a>
+    <a class="exam-pill" id="pillHoeren"    role="tab">🎧 Hören</a>
   </div>
 
-  <!-- Hören / Sprechen — separate standalone pages (own UI + grading),
-       not part of this page's in-page Schreiben/Lesen task engine. Both
-       are A1-only today; wireExtraPills() shows them as live links on A1
-       and as an inert "coming soon" pill on A2/B1/B2. -->
-  <div class="exam-selector" role="tablist" aria-label="Choose section (audio/voice)" style="margin-bottom:26px;">
-    <a class="exam-pill" id="pillHoeren"    role="tab">🎧 Hören</a>
+  <!-- Sprechen — separate standalone page (own UI + grading), not part of
+       this page's in-page task engine. A1-only today; wireExtraPills()
+       shows it as a live link on A1 and an inert "coming soon" pill
+       elsewhere. -->
+  <div class="exam-selector" role="tablist" aria-label="Choose section (voice)" style="margin-bottom:26px;">
     <a class="exam-pill" id="pillSprechen"  role="tab">🎤 Sprechen</a>
   </div>
 
@@ -1143,7 +1180,7 @@
     if (!currentExamId || typeof dwSupabase === 'undefined') return;
     getUserOrNull().then(function (user) {
       if (!user) return;
-      var payload = (currentSection === 'schreiben') ? collectSchreibenAnswers() : collectLesenAnswers();
+      var payload = collectCurrentSectionAnswers();
       dwSupabase.from('exam_attempt_drafts')
         .upsert({
           user_id: user.id, exam_id: currentExamId, answers: payload,
@@ -1227,6 +1264,10 @@
         return !payload[k] || !String(payload[k]).trim();
       });
     }
+    if (currentSection === 'hoeren') {
+      return (payload.stepIdx || 0) === 0 && (payload.playsUsed || 0) === 0
+        && Object.keys(payload.answers || {}).length === 0;
+    }
     // lesen
     return !(payload.tasks || []).some(function (t) {
       var a = t.answers;
@@ -1250,10 +1291,22 @@
     pill.classList.add('visible');
   }
 
+  function collectCurrentSectionAnswers() {
+    if (currentSection === 'schreiben') return collectSchreibenAnswers();
+    if (currentSection === 'hoeren')    return collectHoerenAnswers();
+    return collectLesenAnswers();
+  }
+
+  function restoreCurrentSectionAnswers(saved) {
+    if (currentSection === 'schreiben') return restoreSchreibenAnswers(saved);
+    if (currentSection === 'hoeren')    return restoreHoerenAnswers(saved);
+    return restoreLesenAnswers(saved);
+  }
+
   function flushAutosave() {
     draftSaveTimer = null;
     if (!currentExamId || typeof dwSupabase === 'undefined') return;
-    var payload = (currentSection === 'schreiben') ? collectSchreibenAnswers() : collectLesenAnswers();
+    var payload = collectCurrentSectionAnswers();
     if (answersAreEmpty(payload)) { draftDirty = false; return; }
 
     getUserOrNull().then(function (user) {
@@ -1342,6 +1395,17 @@
     checkSubmitState();
   }
 
+  // Mirrors collectHoerenAnswers()'s shape ({stepIdx, playsUsed, answers}).
+  // Jumps straight to the saved step/play-count and re-renders it, rather
+  // than replaying from Teil 1 — matching "no going back" once a Teil's
+  // plays are used, same as the real exam.
+  function restoreHoerenAnswers(saved) {
+    hoerenStepIdx  = saved.stepIdx  || 0;
+    hoerenPlaysUsed = saved.playsUsed || 0;
+    hoerenAnswers  = saved.answers  || {};
+    renderHoerenStep();
+  }
+
   // Checked once per (exam_id) after task cards render. Shows the resume
   // banner if a draft exists and has real content; otherwise stays hidden.
   // Also owns starting the section timer (Part 2), since whether we're
@@ -1369,10 +1433,7 @@
           // saved (if anything) and finalize it exactly as if the clock
           // had hit zero while the page stayed open.
           if (endsAtMs != null && endsAtMs <= Date.now()) {
-            if (hasContent) {
-              if (currentSection === 'schreiben') restoreSchreibenAnswers(draft.answers);
-              else                                restoreLesenAnswers(draft.answers);
-            }
+            if (hasContent) restoreCurrentSectionAnswers(draft.answers);
             autoSubmitOnTimeout();
             return;
           }
@@ -1381,8 +1442,7 @@
             show('draftBanner');
             el('draftResumeBtn').onclick = function () {
               hide('draftBanner');
-              if (currentSection === 'schreiben') restoreSchreibenAnswers(draft.answers);
-              else                                restoreLesenAnswers(draft.answers);
+              restoreCurrentSectionAnswers(draft.answers);
               if (endsAtMs != null) startSectionTimer(currentLevel, currentSection, endsAtMs);
               else                  beginFreshSectionTimer();
             };
@@ -1423,16 +1483,23 @@
   }
   function getActiveSection() {
     var p = new URLSearchParams(location.search).get('section');
-    return (p === 'lesen' || p === 'schreiben') ? p : 'schreiben';
+    return (p === 'lesen' || p === 'schreiben' || p === 'hoeren') ? p : 'schreiben';
+  }
+  function sectionDisplayLabel(section) {
+    return section === 'lesen' ? 'Lesen' : section === 'hoeren' ? 'Hören' : 'Schreiben';
   }
   function getActiveLevel() {
     var p = new URLSearchParams(location.search).get('level');
     return ['A1', 'A2', 'B1', 'B2'].indexOf(p) !== -1 ? p : 'A1';
   }
 
-  // Wire all 4 level pills + 2 section pills with hrefs that preserve
-  // the other axis. Changing level always resets section to schreiben
-  // (per spec) — so the new exam set is loaded fresh.
+  // Wire all 4 level pills + 3 section pills (Schreiben/Lesen/Hören) with
+  // hrefs that preserve the other axis. Changing level always resets
+  // section to schreiben (per spec) — so the new exam set is loaded fresh.
+  // Hören is folded in here (candidate-experience-audit.md Steps 2-4) now
+  // that real exam_tasks content exists for it — but only for A1, the only
+  // level with a seeded Hören Übungssatz; other levels get the same inert
+  // "coming soon" treatment Sprechen already used before this restructure.
   function wirePills(level, section) {
     ['A1', 'A2', 'B1', 'B2'].forEach(function (l) {
       var p = el('pill' + l);
@@ -1444,16 +1511,33 @@
     el('pillLesen').href     = '?level=' + level + '&section=lesen';
     el('pillSchreiben').classList.toggle('active', section === 'schreiben');
     el('pillLesen').classList.toggle('active',     section === 'lesen');
+
+    var hp = el('pillHoeren');
+    if (level === 'A1') {
+      hp.href = '?level=' + level + '&section=hoeren';
+      hp.textContent = '🎧 Hören';
+      hp.classList.remove('coming-soon');
+      hp.classList.toggle('active', section === 'hoeren');
+      hp.removeAttribute('aria-disabled');
+      hp.title = '';
+    } else {
+      hp.removeAttribute('href');
+      hp.textContent = '🎧 Hören · Coming soon';
+      hp.classList.add('coming-soon');
+      hp.classList.remove('active');
+      hp.setAttribute('aria-disabled', 'true');
+      hp.title = 'Hören for ' + level + ' isn’t available yet.';
+    }
   }
 
-  // Hören/Sprechen — real navigation to their own standalone pages, not
-  // in-page section switches (no exam_tasks data exists for them, and
-  // they don't go through the schreiben/lesen task engine at all). Both
-  // are A1-only today, so non-A1 levels get an inert "coming soon" pill
-  // instead of a link into a page with nothing to show.
+  // Sprechen — real navigation to its own standalone page, not an in-page
+  // section switch (no exam_tasks data exists for it, and it doesn't go
+  // through the schreiben/lesen/hoeren task engine at all). A1-only, so
+  // non-A1 levels get an inert "coming soon" pill instead of a link into a
+  // page with nothing to show. Hören used to be here too, but moved into
+  // wirePills() above once it had real exam_tasks content to show.
   var EXTRA_PILLS = [
-    { id: 'pillHoeren',   href: 'hoerverstehen.html', label: '🎧 Hören' },
-    { id: 'pillSprechen', href: 'sprechen.html',      label: '🎤 Sprechen' },
+    { id: 'pillSprechen', href: 'sprechen.html', label: '🎤 Sprechen' },
   ];
   function wireExtraPills(level) {
     var isA1 = level === 'A1';
@@ -1501,6 +1585,244 @@
       }
     });
     return out.join('\n');
+  }
+
+  // ── Hören (Steps 2-4 — candidate-experience-audit.md) ───────────────
+  // Audio-paced, not self-paced like Lesen/Schreiben: no countdown timer
+  // (see Section 5 of hoeren-a1-restructure-plan.md — SECTION_MINUTES has
+  // no 'hoeren' entries anywhere, so startSectionTimer()/beginFreshSection
+  // Timer() naturally no-op for this section instead of needing a special
+  // case), and no manual Submit button — grading happens automatically.
+  //
+  // A "step" is one audio clip. A Teil can hold more than one clip (see
+  // exam_tasks.stimulus.clips) — flattened here into one linear sequence
+  // across all 3 Teile so advancing doesn't need nested Teil/clip indices.
+  // Each step plays exactly stimulus.play_count times; once exhausted AND
+  // every question in that step is answered (whichever finishes later),
+  // it auto-advances — no manual "next", no replay once plays run out.
+  var hoerenSteps     = [];
+  var hoerenStepIdx   = 0;
+  var hoerenPlaysUsed = 0;
+  var hoerenAnswers   = {}; // key "<stepIdx>-<qIdx>" -> selected option text
+  var hoerenAudioEl   = null;
+
+  function flattenHoerenSteps(tasks) {
+    var steps = [];
+    tasks.forEach(function (task) {
+      var stim = task.stimulus || {};
+      (stim.clips || []).forEach(function (clip, ci) {
+        steps.push({
+          task_number: task.task_number, task_type: task.task_type,
+          play_count: stim.play_count || 1, clip_index: ci,
+          audio_url: clip.audio_url, scenario: clip.scenario || '',
+          questions: clip.questions || []
+        });
+      });
+    });
+    return steps;
+  }
+
+  function renderHoerenSection(tasks) {
+    hoerenSteps     = flattenHoerenSteps(tasks);
+    hoerenStepIdx   = 0;
+    hoerenPlaysUsed = 0;
+    hoerenAnswers   = {};
+    hide('submitArea'); // no manual submit for Hören — it finishes itself
+    renderHoerenStep();
+  }
+
+  function hoerenAnsweredCount(stepIdx, step) {
+    var n = 0;
+    (step.questions || []).forEach(function (_, qi) {
+      if (hoerenAnswers[stepIdx + '-' + qi] != null) n++;
+    });
+    return n;
+  }
+
+  function renderHoerenStep() {
+    var container = el('taskCards');
+    var step = hoerenSteps[hoerenStepIdx];
+    if (!step) return;
+    var remaining = Math.max(0, step.play_count - hoerenPlaysUsed);
+    var letters = ['A', 'B', 'C', 'D'];
+
+    var qHtml = step.questions.map(function (q, qi) {
+      var isTf = q.type === 'true_false';
+      var savedVal = hoerenAnswers[hoerenStepIdx + '-' + qi];
+      var optsHtml = (q.options || []).map(function (o, oi) {
+        var letter = isTf ? '' : '<span class="letter">' + letters[oi] + '</span>';
+        var sel = (savedVal === o) ? ' selected' : '';
+        return '<button type="button" class="hoeren-opt' + sel + '" data-qi="' + qi + '" data-val="'
+          + escapeHtml(o).replace(/"/g, '&quot;') + '">' + letter + escapeHtml(o) + '</button>';
+      }).join('');
+      return '<div class="hoeren-q">'
+        + '<div class="hoeren-q-text">' + (qi + 1) + '. ' + escapeHtml(q.question_text) + '</div>'
+        + '<div class="hoeren-opts' + (isTf ? ' tf' : '') + '">' + optsHtml + '</div>'
+        + '</div>';
+    }).join('');
+
+    container.innerHTML =
+      '<section class="task-card hoeren-card">'
+      +   '<header class="task-header">'
+      +     '<span class="task-num">Teil ' + step.task_number + ' von 3</span>'
+      +   '</header>'
+      +   '<div class="hoeren-player">'
+      +     '<button type="button" class="hoeren-play-btn" id="hoerenPlayBtn" aria-label="Play audio">▶</button>'
+      +     '<div class="hoeren-wave" id="hoerenWave"><span></span><span></span><span></span><span></span><span></span></div>'
+      +     '<div class="hoeren-listens" id="hoerenListens"></div>'
+      +   '</div>'
+      +   '<audio id="hoerenAudio" preload="auto" src="' + escapeHtml(step.audio_url) + '"></audio>'
+      +   '<div class="hoeren-questions">' + qHtml + '</div>'
+      + '</section>';
+
+    hoerenAudioEl = el('hoerenAudio');
+    var playBtn = el('hoerenPlayBtn');
+
+    hoerenAudioEl.addEventListener('play',  function () { el('hoerenWave').classList.add('playing');    playBtn.textContent = '⏸'; });
+    hoerenAudioEl.addEventListener('pause', function () { el('hoerenWave').classList.remove('playing'); playBtn.textContent = '▶'; });
+    hoerenAudioEl.addEventListener('ended', function () { el('hoerenWave').classList.remove('playing'); playBtn.textContent = '▶'; checkHoerenAdvance(); });
+
+    playBtn.addEventListener('click', function () {
+      if (!hoerenAudioEl.paused) { hoerenAudioEl.pause(); return; }
+      if (hoerenPlaysUsed >= step.play_count) return; // belt-and-braces — button is disabled at this point anyway
+      hoerenPlaysUsed++;
+      try { hoerenAudioEl.currentTime = 0; } catch (_) {}
+      hoerenAudioEl.play().catch(function () {});
+      markDirtyAndScheduleAutosave();
+      updateHoerenListens();
+    });
+
+    container.querySelectorAll('.hoeren-opt').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var qi  = this.getAttribute('data-qi');
+        var val = this.getAttribute('data-val');
+        hoerenAnswers[hoerenStepIdx + '-' + qi] = val;
+        this.parentNode.querySelectorAll('.hoeren-opt').forEach(function (o) { o.classList.remove('selected'); });
+        this.classList.add('selected');
+        markDirtyAndScheduleAutosave();
+        checkHoerenAdvance();
+      });
+    });
+
+    updateHoerenListens();
+  }
+
+  function updateHoerenListens() {
+    var step = hoerenSteps[hoerenStepIdx];
+    if (!step) return;
+    var remaining = Math.max(0, step.play_count - hoerenPlaysUsed);
+    var listensEl = el('hoerenListens');
+    if (listensEl) listensEl.textContent = remaining + ' of ' + step.play_count + ' listens remaining';
+    var playBtn = el('hoerenPlayBtn');
+    if (playBtn) playBtn.disabled = remaining <= 0 && hoerenAudioEl && hoerenAudioEl.paused;
+  }
+
+  // Advances once the current step's plays are exhausted AND every
+  // question in it is answered — whichever finishes later. Fully
+  // audio-paced would advance the instant plays run out regardless of
+  // answers (matching the real exam exactly), but that would silently
+  // strand unanswered questions with no way back; waiting for answers
+  // too is the deliberate compromise from the Step 3 spec.
+  function checkHoerenAdvance() {
+    var step = hoerenSteps[hoerenStepIdx];
+    if (!step) return;
+    var playsExhausted = hoerenPlaysUsed >= step.play_count;
+    var allAnswered = hoerenAnsweredCount(hoerenStepIdx, step) === (step.questions || []).length;
+    if (!playsExhausted || !allAnswered) return;
+    setTimeout(function () {
+      if (hoerenStepIdx + 1 < hoerenSteps.length) {
+        hoerenStepIdx++;
+        renderHoerenStep();
+      } else {
+        submitHoeren();
+      }
+    }, 900);
+  }
+
+  function collectHoerenAnswers() {
+    return { level: currentLevel, stepIdx: hoerenStepIdx, playsUsed: hoerenPlaysUsed, answers: hoerenAnswers };
+  }
+
+  function scoreHoeren() {
+    var scoresByTask = { total_score: 0 };
+    var taskMax = {};
+    var details = hoerenSteps.map(function (step, si) {
+      var key = 'task_' + step.task_number;
+      if (scoresByTask[key] == null) scoresByTask[key] = 0;
+      if (taskMax[key] == null) taskMax[key] = 0;
+      var items = (step.questions || []).map(function (q, qi) {
+        var your = hoerenAnswers[si + '-' + qi];
+        var ok = your === q.correct_answer;
+        if (ok) scoresByTask[key]++;
+        return { q: q.question_text, your: your || null, correct: q.correct_answer, ok: ok, explanation: q.explanation };
+      });
+      taskMax[key] += (step.questions || []).length;
+      return { task_number: step.task_number, clip_index: step.clip_index, scenario: step.scenario, items: items };
+    });
+    Object.keys(taskMax).forEach(function (key) { scoresByTask[key + '_max'] = taskMax[key]; });
+    var total = 0;
+    Object.keys(scoresByTask).forEach(function (k) {
+      if (/^task_\d+$/.test(k)) total += scoresByTask[k];
+    });
+    scoresByTask.total_score = total;
+    return { details: details, scoresByTask: scoresByTask, total: total };
+  }
+
+  function renderHoerenResults(graded) {
+    var hwBox = el('headlineWeakness'); // no taxonomy tags for Hören, same as Lesen
+    if (hwBox) hwBox.style.display = 'none';
+
+    setHero(graded.total, graded.max);
+    setTaskPills(graded.details.map(function (d) {
+      var max = d.items.length;
+      var score = d.items.filter(function (it) { return it.ok; }).length;
+      return { label: 'Teil ' + d.task_number, score: score, max: max };
+    }));
+
+    var bodyHtml = graded.details.map(function (d) {
+      var rowsHtml = d.items.map(function (item) {
+        var ok = !!item.ok;
+        var yourLine = '<div class="lr-yours">Deine Antwort: <strong>' + escapeHtml(item.your || '—') + '</strong></div>';
+        var correctLine = ok ? '' : '<div class="lr-correct">Richtige Antwort: <strong>' + escapeHtml(item.correct || '—') + '</strong></div>';
+        return '<div class="lr-row ' + (ok ? 'correct' : 'wrong') + '">'
+          + '<span class="lr-icon">' + (ok ? '✓' : '✗') + '</span>'
+          + '<div class="lr-body">'
+          +   '<div class="lr-q">' + escapeHtml(item.q) + '</div>'
+          +   yourLine + correctLine
+          + '</div>'
+          + '</div>';
+      }).join('');
+      var max = d.items.length;
+      var score = d.items.filter(function (it) { return it.ok; }).length;
+      return '<div class="results-section">'
+        + '<h3 class="results-h">Teil ' + d.task_number + ' (' + score + ' / ' + max + ')</h3>'
+        + '<div class="lesen-review">' + rowsHtml + '</div>'
+        + '</div>';
+    }).join('');
+
+    el('resultsBody').innerHTML = bodyHtml;
+  }
+
+  function submitHoeren() {
+    clearSectionTimer(); // no-op here (no timer ever starts for Hören) — kept for symmetry with submitLesen/submitSchreiben
+    hide('resultsArea');
+    hide('savedNotice');
+
+    var graded  = scoreHoeren();
+    var answers = collectHoerenAnswers();
+    graded.max = currentExamMax;
+
+    renderHoerenResults(graded);
+    show('resultsArea');
+    el('resultsArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    sectionJustCompleted = true; // Part 3 — eligible for the leave-confirmation lock now
+
+    saveAttempt(answers, graded.scoresByTask, { details: graded.details }, graded.total).then(function (saved) {
+      if (saved) {
+        show('savedNotice'); loadHistory(); loadWeakness();
+        deleteDraftForCurrentExam(); // real attempt is saved — the draft's job is done
+      }
+    });
   }
 
   // ── Renderers (per task_type) ──────────────────────────────
@@ -3174,7 +3496,7 @@
     listEl.innerHTML = rows.map(function (r) {
       var examTitle = (r.exams && r.exams.title)   || 'Exam';
       var section   = (r.exams && r.exams.section) || '';
-      var icon      = section === 'lesen' ? '📖' : '📝';
+      var icon      = section === 'lesen' ? '📖' : section === 'hoeren' ? '🎧' : '📝';
 
       var max = (typeof r.max_score === 'number' && r.max_score > 0) ? r.max_score : 20;
       var sc  = (typeof r.total_score === 'number') ? r.total_score : 0;
@@ -3289,7 +3611,7 @@
 
     // Section title carries the scope — clear at a glance which exam
     // these numbers apply to.
-    var sectionLabel = currentSection === 'lesen' ? 'Lesen' : 'Schreiben';
+    var sectionLabel = sectionDisplayLabel(currentSection);
     el('weaknessTitle').textContent = 'Your Weakness Areas — ' + currentLevel + ' ' + sectionLabel;
 
     // Aggregate totals to drive the summary cards.
@@ -3433,7 +3755,7 @@
       el('loadingState').innerHTML =
         '<div class="state-text">'
         + '<strong>This section is locked for this attempt.</strong><br>'
-        + 'You already completed ' + currentLevel + ' ' + (currentSection === 'lesen' ? 'Lesen' : 'Schreiben')
+        + 'You already completed ' + currentLevel + ' ' + sectionDisplayLabel(currentSection)
         + ' this session — start a new session (new tab or browser restart) to retake it.'
         + '</div>';
       show('loadingState');
@@ -3456,6 +3778,7 @@
     });
     el('pillSchreiben').addEventListener('click', function (e) { guardSectionNav(e, currentLevel, 'schreiben'); });
     el('pillLesen').addEventListener('click',     function (e) { guardSectionNav(e, currentLevel, 'lesen'); });
+    el('pillHoeren').addEventListener('click',    function (e) { guardSectionNav(e, currentLevel, 'hoeren'); });
 
     // Delegated autosave triggers (Part 1) — bound once on the container
     // since #taskCards's *contents* are replaced on every loadExam(), but
@@ -3479,6 +3802,8 @@
 
     el('examSub').textContent = currentSection === 'schreiben'
       ? 'Goethe-format Schreiben practice. Write the message(s), then submit for instant AI grading.'
+      : currentSection === 'hoeren'
+      ? 'Goethe-format Hören practice. Each Teil plays a fixed number of times, then moves on automatically — no replays, no clock.'
       : 'Goethe-format Lesen practice. Answer all questions to enable submit; auto-grading is instant.';
 
     // ── Paywall gate (A2/B1/B2) ──────────────────────────────────
@@ -3608,7 +3933,8 @@
         }
         currentExamMax = currentTasks.reduce(function (acc, t) { return acc + (t.max_score || 0); }, 0);
 
-        renderTaskCards(currentTasks);
+        if (currentSection === 'hoeren') renderHoerenSection(currentTasks);
+        else                             renderTaskCards(currentTasks);
 
         hide('loadingState');
         show('examContent');
