@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Vor deiner ersten Sprechen-Session — DeutschWeg</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="./deutschweg-theme.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
+<style>
+  body{
+    min-height:100vh;
+    background:var(--bg);
+    color:var(--dark);
+    opacity:0;
+    transition:opacity .25s ease;
+    display:flex;flex-direction:column;
+  }
+  body.ready{opacity:1;}
+
+  /* ── HEADER ── */
+  .ob-header{
+    padding:18px 24px;
+    background:#fff;
+    border-bottom:1px solid var(--border);
+    display:flex;align-items:center;justify-content:space-between;
+    flex-shrink:0;
+  }
+  .ob-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+  .ob-logo-icon{
+    width:32px;height:32px;background:var(--blue);
+    border-radius:9px;display:flex;align-items:center;justify-content:center;
+    color:#fff;font-size:16px;font-weight:800;
+  }
+  .ob-logo-text{font-size:17px;font-weight:800;color:var(--dark);letter-spacing:-0.3px;}
+  .ob-logo-text span{color:var(--blue);}
+  .ob-step-pill{
+    font-size:11px;font-weight:700;letter-spacing:1.2px;
+    color:var(--blue);text-transform:uppercase;
+    background:var(--blue-light);border:1px solid var(--blue-mid);
+    padding:5px 12px;border-radius:20px;
+  }
+
+  .ob-progress{height:3px;background:var(--border);position:relative;flex-shrink:0;}
+  .ob-progress-fill{height:100%;background:var(--blue);transition:width .4s ease;width:50%;}
+
+  .ob-main{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:40px 20px 120px;}
+  .card{
+    width:100%;max-width:560px;
+    background:#fff;border:1px solid var(--border);
+    border-radius:var(--radius-lg);box-shadow:var(--shadow-md);
+    padding:36px 28px;
+  }
+  .ob-eyebrow{font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .ob-h1{font-size:24px;font-weight:800;color:var(--dark);line-height:1.3;letter-spacing:-0.4px;margin-bottom:20px;}
+  .ob-lead{font-size:15px;color:var(--mid);line-height:1.65;margin-bottom:24px;}
+
+  .lang-toggle{
+    font-size:12px;font-weight:700;color:var(--mid);
+    background:var(--bg);border:1px solid var(--border);border-radius:20px;
+    padding:4px 10px;cursor:pointer;flex-shrink:0;
+  }
+  .lang-toggle:hover{border-color:var(--blue);color:var(--blue);}
+
+  .btn{
+    font-family:'Plus Jakarta Sans',sans-serif;
+    padding:14px 22px;border-radius:var(--radius-sm);
+    font-size:15px;font-weight:700;
+    border:none;cursor:pointer;text-decoration:none;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    transition:all .18s ease;width:100%;
+  }
+  .btn-primary{background:var(--blue);color:#fff;box-shadow:0 4px 14px rgba(59,130,246,0.3);}
+  .btn-primary:hover{background:var(--blue-dark);transform:translateY(-1px);}
+  .btn-primary:disabled{opacity:0.45;cursor:default;box-shadow:none;transform:none;}
+  .btn-ghost{background:transparent;color:var(--mid);border:1.5px solid var(--border);}
+  .btn-ghost:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light);}
+
+  /* ── RULE LIST (Screen 1) ── */
+  .rule-list{display:flex;flex-direction:column;gap:14px;margin-bottom:28px;}
+  .rule{
+    display:flex;gap:14px;
+    padding:16px;background:var(--bg);border:1px solid var(--border);
+    border-radius:var(--radius-md);
+  }
+  .rule-num{
+    width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:800;flex-shrink:0;
+  }
+  .rule-body{font-size:14.5px;color:var(--dark);line-height:1.55;}
+  .rule-body strong{color:var(--blue-dark);}
+  .rule-en{font-size:12.5px;color:var(--light);margin-top:5px;display:none;line-height:1.5;}
+  body.show-en .rule-en{display:block;}
+
+  /* ── SCREEN 2 — INTRO DRILL ── */
+  .field-grid{display:flex;flex-direction:column;gap:12px;margin-bottom:22px;}
+  .field label{font-size:12px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:5px;}
+  .field input{
+    width:100%;padding:12px 14px;background:#fff;
+    border:1.5px solid var(--border);border-radius:var(--radius-sm);
+    font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;color:var(--dark);
+    outline:none;transition:border-color .15s, box-shadow .15s;
+  }
+  .field input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,0.15);}
+
+  .sentence-preview{
+    background:var(--blue-light);border:1px solid var(--blue-mid);
+    border-radius:var(--radius-md);padding:18px;margin-bottom:22px;
+  }
+  .sentence-preview-label{font-size:11px;font-weight:800;color:var(--blue-dark);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
+  .sentence-line{font-size:15.5px;color:var(--dark);line-height:1.75;font-weight:600;}
+  .sentence-line .blank{color:var(--light);font-style:italic;font-weight:500;}
+
+  .rehearsal-box{
+    background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);
+    padding:18px;margin-bottom:22px;text-align:center;
+  }
+  .rehearsal-label{font-size:13px;color:var(--mid);margin-bottom:12px;}
+  .rehearsal-dots{display:flex;justify-content:center;gap:8px;margin-bottom:14px;}
+  .rehearsal-dot{width:12px;height:12px;border-radius:50%;background:var(--border);transition:background .2s;}
+  .rehearsal-dot.done{background:var(--green);}
+  .rehearsal-btn{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:10px 20px;border-radius:20px;border:1.5px solid var(--blue-mid);
+    background:#fff;color:var(--blue-dark);font-weight:700;font-size:14px;
+    font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;
+  }
+  .rehearsal-btn:hover{background:var(--blue-light);}
+  .rehearsal-btn:disabled{opacity:0.4;cursor:default;}
+
+  .record-row{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap;}
+  .record-btn{
+    display:inline-flex;align-items:center;gap:7px;
+    padding:9px 16px;border-radius:20px;border:1.5px solid var(--border);
+    background:#fff;color:var(--mid);font-weight:700;font-size:13px;
+    font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;
+  }
+  .record-btn.recording{border-color:#EF4444;color:#EF4444;background:#FEF2F2;}
+  .record-btn:hover{border-color:var(--blue);color:var(--blue);}
+  audio.replay{height:32px;max-width:200px;}
+
+  .ob-status{font-size:12px;color:var(--light);text-align:center;margin-top:14px;min-height:1.2em;}
+
+  .screen{display:none;animation:fadeUp .4s ease both;}
+  .screen.active{display:block;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+  @media(max-width:480px){
+    .ob-header{padding:14px 18px;}
+    .ob-main{padding:24px 14px 100px;}
+    .card{padding:26px 18px;border-radius:var(--radius-md);}
+    .ob-h1{font-size:20px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="ob-header">
+  <a href="dashboard.html" class="ob-logo">
+    <div class="ob-logo-icon">D</div>
+    <span class="ob-logo-text">Deutsch<span>Weg</span></span>
+  </a>
+  <span class="ob-step-pill" id="stepPill">Schritt 1 von 2</span>
+</header>
+
+<div class="ob-progress"><div class="ob-progress-fill" id="progressFill"></div></div>
+
+<main class="ob-main">
+  <div class="card">
+
+    <!-- ── SCREEN 1 — THE RULE ── -->
+    <section class="screen active" id="screen-1">
+      <div class="ob-eyebrow">
+        <span>Vor deiner ersten Sprechen-Session</span>
+        <button type="button" class="lang-toggle" id="langToggle" onclick="toggleEnglish()">🇬🇧 English</button>
+      </div>
+      <h1 class="ob-h1">Bevor du startest: 3 Dinge, die du wissen musst</h1>
+
+      <div class="rule-list">
+        <div class="rule">
+          <div class="rule-num">1</div>
+          <div class="rule-body">
+            <strong>Bleib im Deutschen.</strong> Auch wenn du nicht weiterweißt — versuch es auf Deutsch. Englisch, Französisch, Arabisch usw. werden nicht bewertet.
+            <div class="rule-en">Stay in German. Even if you get stuck — try it in German. English, French, Arabic etc. are not scored.</div>
+          </div>
+        </div>
+        <div class="rule">
+          <div class="rule-num">2</div>
+          <div class="rule-body">
+            <strong>Stille kostet mehr Punkte als Fehler.</strong> Eine unvollständige, holprige Antwort auf Deutsch ist immer besser als keine Antwort.
+            <div class="rule-en">Silence costs more points than mistakes. An incomplete, clumsy answer in German is always better than no answer at all.</div>
+          </div>
+        </div>
+        <div class="rule">
+          <div class="rule-num">3</div>
+          <div class="rule-body">
+            <strong>Du brauchst eine vorbereitete Eröffnung.</strong> Die Prüfung beginnt fast immer mit "Stellen Sie sich vor." Wer das vorher geübt hat, punktet deutlich besser.
+            <div class="rule-en">You need a prepared opening. The exam almost always starts with "Introduce yourself." Whoever has practised that beforehand scores noticeably better.</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="goToScreen(2)">Weiter zur Übung →</button>
+    </section>
+
+    <!-- ── SCREEN 2 — 4-SENTENCE SELF-INTRO DRILL ── -->
+    <section class="screen" id="screen-2">
+      <div class="ob-eyebrow"><span>Deine Eröffnung</span></div>
+      <h1 class="ob-h1">Deine Eröffnung — übe sie, bis sie automatisch kommt</h1>
+
+      <div class="field-grid">
+        <div class="field">
+          <label for="fName">Wie heißt du?</label>
+          <input type="text" id="fName" placeholder="Prince" oninput="renderPreview()">
+        </div>
+        <div class="field">
+          <label for="fCountry">Woher kommst du?</label>
+          <input type="text" id="fCountry" placeholder="Ghana" oninput="renderPreview()">
+        </div>
+        <div class="field">
+          <label for="fAge">Wie alt bist du?</label>
+          <input type="text" id="fAge" inputmode="numeric" placeholder="24" oninput="renderPreview()">
+        </div>
+        <div class="field">
+          <label for="fLanguage">Welche Sprache sprichst du?</label>
+          <input type="text" id="fLanguage" placeholder="Englisch" oninput="renderPreview()">
+        </div>
+        <div class="field">
+          <label for="fHobby">Beruf oder Hobby?</label>
+          <input type="text" id="fHobby" placeholder="Student / Fußball" oninput="renderPreview()">
+        </div>
+      </div>
+
+      <div class="sentence-preview">
+        <div class="sentence-preview-label">Deine 4 Sätze</div>
+        <div class="sentence-line" id="pv1">Ich heiße <span class="blank">___</span>.</div>
+        <div class="sentence-line" id="pv2">Ich komme aus <span class="blank">___</span> und ich bin <span class="blank">___</span> Jahre alt.</div>
+        <div class="sentence-line" id="pv3">Ich spreche <span class="blank">___</span> und ich lerne Deutsch.</div>
+        <div class="sentence-line" id="pv4">Ich bin <span class="blank">___</span>.</div>
+      </div>
+
+      <div class="rehearsal-box">
+        <div class="rehearsal-label">Sag die 4 Sätze laut — mindestens 2 Durchgänge</div>
+        <div class="rehearsal-dots" id="rehearsalDots">
+          <div class="rehearsal-dot"></div>
+          <div class="rehearsal-dot"></div>
+          <div class="rehearsal-dot"></div>
+        </div>
+        <button type="button" class="rehearsal-btn" id="rehearsalBtn" onclick="markRehearsalPass()">Ich habe es gesagt ✓</button>
+
+        <div class="record-row" id="recordRow">
+          <button type="button" class="record-btn" id="recordBtn" onclick="toggleRecording()">🎙️ Aufnehmen (optional)</button>
+          <audio class="replay" id="replayAudio" controls style="display:none;"></audio>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="finishBtn" onclick="finishOrientation()" disabled>Ich bin bereit — zur Sprechen-Prüfung →</button>
+      <div class="ob-status" id="status-2"></div>
+    </section>
+
+  </div>
+</main>
+
+<script>
+(function() {
+  'use strict';
+
+  var sb = (typeof dwSupabase !== 'undefined') ? dwSupabase : null;
+  var TOTAL_SCREENS = 2;
+  var rehearsalCount = 0;
+  var REHEARSAL_MIN = 2;
+  var currentUser = null;
+
+  function ensureSignedIn(then) {
+    if (!sb) { then(null); return; }
+    sb.auth.getUser().then(function(res) {
+      var user = res && res.data && res.data.user;
+      if (!user) { window.location.href = 'signup.html'; return; }
+      then(user);
+    }).catch(function() { then(null); });
+  }
+
+  window.toggleEnglish = function() {
+    document.body.classList.toggle('show-en');
+  };
+
+  window.goToScreen = function(n) {
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    document.getElementById('screen-' + n).classList.add('active');
+    document.getElementById('progressFill').style.width = Math.round((n / TOTAL_SCREENS) * 100) + '%';
+    document.getElementById('stepPill').textContent = 'Schritt ' + n + ' von ' + TOTAL_SCREENS;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // ── Screen 2: live sentence preview ─────────────────────────────────────
+  function val(id) {
+    var v = document.getElementById(id).value.trim();
+    return v || null;
+  }
+  window.renderPreview = function() {
+    var name = val('fName'), country = val('fCountry'), age = val('fAge'),
+        lang = val('fLanguage'), hobby = val('fHobby');
+
+    document.getElementById('pv1').innerHTML =
+      'Ich heiße ' + (name ? esc(name) : '<span class="blank">___</span>') + '.';
+    document.getElementById('pv2').innerHTML =
+      'Ich komme aus ' + (country ? esc(country) : '<span class="blank">___</span>') +
+      ' und ich bin ' + (age ? esc(age) : '<span class="blank">___</span>') + ' Jahre alt.';
+    document.getElementById('pv3').innerHTML =
+      'Ich spreche ' + (lang ? esc(lang) : '<span class="blank">___</span>') + ' und ich lerne Deutsch.';
+    document.getElementById('pv4').innerHTML =
+      'Ich bin ' + (hobby ? esc(hobby) : '<span class="blank">___</span>') + '.';
+
+    updateFinishState();
+  };
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function allFieldsFilled() {
+    return !!(val('fName') && val('fCountry') && val('fAge') && val('fLanguage') && val('fHobby'));
+  }
+
+  function updateFinishState() {
+    document.getElementById('finishBtn').disabled =
+      !(allFieldsFilled() && rehearsalCount >= REHEARSAL_MIN);
+  }
+
+  // ── Rehearsal passes ─────────────────────────────────────────────────────
+  window.markRehearsalPass = function() {
+    if (rehearsalCount >= 3) return;
+    rehearsalCount++;
+    var dots = document.querySelectorAll('#rehearsalDots .rehearsal-dot');
+    for (var i = 0; i < rehearsalCount && i < dots.length; i++) dots[i].classList.add('done');
+    if (rehearsalCount >= 3) document.getElementById('rehearsalBtn').disabled = true;
+    updateFinishState();
+  };
+
+  // ── Optional record & replay (no scoring, nothing uploaded) ─────────────
+  var mediaRecorder = null, chunks = [], recStream = null;
+
+  function recordingSupported() {
+    return !!(navigator.mediaDevices && window.MediaRecorder);
+  }
+
+  window.toggleRecording = function() {
+    if (!recordingSupported()) return;
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+      return;
+    }
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
+      recStream = stream;
+      chunks = [];
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
+      mediaRecorder.onstop = function() {
+        var blob = new Blob(chunks, { type: 'audio/webm' });
+        var url = URL.createObjectURL(blob);
+        var audioEl = document.getElementById('replayAudio');
+        audioEl.src = url;
+        audioEl.style.display = 'inline-block';
+        document.getElementById('recordBtn').classList.remove('recording');
+        document.getElementById('recordBtn').textContent = '🎙️ Nochmal aufnehmen';
+        if (recStream) { recStream.getTracks().forEach(function(t){ t.stop(); }); recStream = null; }
+      };
+      mediaRecorder.start();
+      document.getElementById('recordBtn').classList.add('recording');
+      document.getElementById('recordBtn').textContent = '⏹ Stoppen';
+    }).catch(function() {
+      // Mic denied or unavailable — this control is optional, fail silently.
+      document.getElementById('recordRow').style.display = 'none';
+    });
+  };
+
+  if (!recordingSupported()) {
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('recordRow').style.display = 'none';
+    });
+  }
+
+  // ── Finish: persist intro + flag, then go to the real session ───────────
+  window.finishOrientation = function() {
+    var btn = document.getElementById('finishBtn');
+    var status = document.getElementById('status-2');
+    btn.disabled = true;
+    status.textContent = 'Speichern …';
+
+    var intro = {
+      name: val('fName'), country: val('fCountry'), age: val('fAge'),
+      language: val('fLanguage'), hobby: val('fHobby')
+    };
+
+    function go() { window.location.href = 'sprechen.html'; }
+
+    if (!sb || !currentUser) { go(); return; }
+
+    sb.from('profiles')
+      .update({ sprechen_orientation_completed: true, sprechen_intro: intro })
+      .eq('id', currentUser.id)
+      .then(function(res) {
+        if (res.error) console.warn('[sprechen-orientation] save failed:', res.error.message);
+        go();
+      })
+      .catch(go);
+  };
+
+  // ── Boot: skip straight through if already done; pre-fill if we have data ──
+  document.addEventListener('DOMContentLoaded', function() {
+    document.body.classList.add('ready');
+
+    ensureSignedIn(function(user) {
+      currentUser = user;
+      if (!user || !sb) return;
+
+      sb.from('profiles')
+        .select('sprechen_orientation_completed, sprechen_intro')
+        .eq('id', user.id)
+        .maybeSingle()
+        .then(function(res) {
+          var data = res && res.data;
+          if (data && data.sprechen_orientation_completed === true) {
+            window.location.href = 'sprechen.html';
+            return;
+          }
+          var intro = data && data.sprechen_intro;
+          if (intro) {
+            if (intro.name)     document.getElementById('fName').value = intro.name;
+            if (intro.country)  document.getElementById('fCountry').value = intro.country;
+            if (intro.age)      document.getElementById('fAge').value = intro.age;
+            if (intro.language) document.getElementById('fLanguage').value = intro.language;
+            if (intro.hobby)    document.getElementById('fHobby').value = intro.hobby;
+            renderPreview();
+          }
+        })
+        .catch(function(){});
+    });
+  });
+})();
+</script>
+<script src="./cookie-banner.js"></script>
+</body>
+</html>

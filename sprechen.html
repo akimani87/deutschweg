@@ -309,6 +309,25 @@
     });
   }
 
+  // ── Orientation gate: before a signed-in user's first ever session, send
+  // them through sprechen-orientation.html (3-rule primer + rehearsed
+  // self-intro). Anonymous visitors fall through untouched — they'll hit the
+  // sign-in wall further down the existing flow same as before this gate.
+  function checkOrientationGate(){
+    if (!state.user) return Promise.resolve();
+    return sb.from('profiles')
+      .select('sprechen_orientation_completed')
+      .eq('id', state.user.id)
+      .maybeSingle()
+      .then(function(res){
+        var done = res && res.data && res.data.sprechen_orientation_completed === true;
+        if (!done) {
+          window.location.href = 'sprechen-orientation.html';
+          return Promise.reject('orientation_redirect');
+        }
+      });
+  }
+
   // ── Boot: auth, cap, topics ──────────────────────────────────────────────
   function boot(){
     if (COMING_SOON) return;   // Coming Soon screen is active by default; stay dormant.
@@ -319,6 +338,8 @@
     if (!sb){ $('startBtn').disabled = true; return; }
     sb.auth.getUser().then(function(res){
       state.user = (res && res.data && res.data.user) || null;
+      return checkOrientationGate();
+    }).then(function(){
       return loadCap();
     }).then(function(){ return loadDailyUsage(); }).then(function(){
       if (state.dailyRemainingSeconds <= 0){
