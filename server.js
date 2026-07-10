@@ -12,6 +12,7 @@ const crypto  = require('crypto');
 const { WebSocketServer, WebSocket } = require('ws');
 const { createClient } = require('@supabase/supabase-js');
 const dwScoring = require('./scoring-config.js');
+const dwTaxonomy = require('./taxonomy.js');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -671,23 +672,12 @@ Remember: short, warm, practical-Germany-context, one German example at the end.
 // ── POST /api/aipal ──────────────────────────────────────────────────────────
 const AIPAL_VALID_LEVELS = ['A1', 'A2', 'B1', 'B2'];
 
-// Friendly labels for error categories the client tracks. Used to build
-// the "weak spots" context block from the userTopErrors payload.
-const AIPAL_ERROR_LABELS = {
-  article_masculine_accusative:  'Masculine accusative articles (der/den, ein/einen confusion)',
-  verb_position:                 'Verb position (verb must be 2nd in main clauses)',
-  verb_conjugation:              'Verb conjugation (matching verb ending to subject)',
-  perfekt_auxiliary:             'Perfekt auxiliary (haben vs sein selection)',
-  subordinate_clause_word_order: 'Subordinate clause word order (verb at end after weil/dass/wenn)',
-  preposition_pattern:           'Preposition patterns (in/zu/nach with destinations)'
-};
-
 function buildAipalWeakSpotsBlock(userTopErrors) {
   if (!Array.isArray(userTopErrors) || userTopErrors.length === 0) return '';
   const lines = userTopErrors
-    .filter(e => e && AIPAL_ERROR_LABELS[e.category] && Number(e.count) > 0)
+    .filter(e => e && dwTaxonomy.get(e.category) && Number(e.count) > 0)
     .slice(0, 3)
-    .map((e, i) => `${i + 1}. ${AIPAL_ERROR_LABELS[e.category]} — ${e.count}x`);
+    .map((e, i) => `${i + 1}. ${dwTaxonomy.longLabel(e.category)} — ${e.count}x`);
   if (lines.length === 0) return '';
   return `
 

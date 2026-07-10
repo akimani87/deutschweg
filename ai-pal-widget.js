@@ -395,14 +395,10 @@
   var lastPalMessage   = '';   // most recent AI Pal reply (set in appendPal)
   var palStruggleActive = false;
 
-  var PAL_TOPIC_LABELS = {
-    article_masculine_accusative: 'masculine accusative articles (der/den)',
-    verb_position:                'verb position in the sentence',
-    verb_conjugation:             'verb conjugation',
-    perfekt_auxiliary:            'the Perfekt tense (haben vs sein)',
-    subordinate_clause_word_order:'word order after weil/dass/wenn',
-    preposition_pattern:          'prepositions with places'
-  };
+  // Label text for the handoff "topic" string now comes from taxonomy.js
+  // (window.dwTaxonomy) — this used to be a second, independently-worded
+  // copy of the same 6 categories defined in server.js (AIPAL_ERROR_LABELS),
+  // and the two had already drifted apart before taxonomy.js existed.
 
   function writeHandoff(){
     var sb = getSupabase();
@@ -411,8 +407,8 @@
       var user = res && res.data && res.data.user;
       if (!user) return null;
       var topic = getModuleName();
-      if (palWeakCategory && PAL_TOPIC_LABELS[palWeakCategory]) {
-        topic = topic + ' — ' + PAL_TOPIC_LABELS[palWeakCategory];
+      if (palWeakCategory && window.dwTaxonomy && window.dwTaxonomy.get(palWeakCategory)) {
+        topic = topic + ' — ' + window.dwTaxonomy.label(palWeakCategory);
       }
       var payload = {
         user_id:          user.id,
