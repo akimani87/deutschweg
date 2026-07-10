@@ -2402,7 +2402,11 @@ app.post('/api/exam-grade', async (req, res) => {
       },
       body: JSON.stringify({
         model:      'claude-sonnet-4-6',
-        max_tokens: 2500,
+        // Bumped from 2500: B1/B2 responses now carry up to 3 tasks x 4
+        // criteria (each with a tags array) plus a register_check per
+        // task, which is noticeably larger than the old 2-criteria shape
+        // and was hitting truncated/unparseable JSON at the old limit.
+        max_tokens: 4000,
         system:     systemPrompt,
         messages:   [{ role: 'user', content: userMessage }],
       }),
