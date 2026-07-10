@@ -1980,6 +1980,13 @@
     var allAnswered = hoerenAnsweredCount(hoerenStepIdx, step) === (step.questions || []).length;
     if (!playsExhausted || !allAnswered) return;
     setTimeout(function () {
+      // Each clip/Teil has its own play_count — without this reset,
+      // hoerenPlaysUsed kept accumulating across the whole section, so by
+      // the 2nd clip onward "plays remaining" was already <= 0 and the
+      // play button rendered permanently disabled (bug: audio unreachable
+      // past the first clip, in both standalone practice and Complete
+      // Mock Exam, since they share this exact renderer).
+      hoerenPlaysUsed = 0;
       if (hoerenStepIdx + 1 < hoerenSteps.length) {
         hoerenStepIdx++;
         renderHoerenStep();
