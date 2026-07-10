@@ -30,6 +30,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./supabase-config.js"></script>
 <script src="./paywall.js?v=3"></script>
+<script src="./scoring-config.js?v=1"></script>
 <style>
   body { background: var(--bg); }
 
@@ -943,9 +944,12 @@
   var WORD_MIN_DEFAULT    = 20;
   var API_BASE            = 'https://deutschweg.onrender.com';
 
-  // Pass thresholds per CEFR level (Goethe-aligned).
+  // Pass threshold — reads the single canonical value from
+  // scoring-config.js (60% for every level; A1 previously used 50% here,
+  // an undocumented outlier removed per scoring-reconciliation-plan.md).
+  // `level` param kept for call-site compatibility; no longer branches.
   function passRatioFor(level) {
-    return level === 'A1' ? 0.5 : 0.6;
+    return (window.dwScoring ? window.dwScoring.PASS_THRESHOLD_PCT : 60) / 100;
   }
 
   // ── Module state ───────────────────────────────────────────
@@ -2197,6 +2201,14 @@
   }
 
   // ── Results renderers ───────────────────────────────────────
+  // FOLLOW-UP (not resolved here — flagged per user request): this shows
+  // a per-skill "bestanden"/"weiter üben" verdict for Lesen and Schreiben
+  // independently. Some real Goethe exam formats combine Lesen+Hören+
+  // Schreiben into one written total rather than gating each skill on
+  // its own. Revisit whether per-skill verdicts read as harsher than the
+  // real A1/A2 exam once feedback-copy work happens — see
+  // scoring-reconciliation-plan.md §3b ("Sprechen stays separate always;
+  // combined written total is out of scope for now").
   function setHero(total, max) {
     el('resTotal').textContent = total != null ? total : '—';
     el('resTotalMax').textContent = max != null ? max : '—';
@@ -2448,7 +2460,7 @@
       +     'Aufgabe 3: <strong>' + escapeHtml(typeof a3.task_raw === 'number' ? a3.task_raw : '—') + ' / 10</strong>'
       +     '<br>Roh-Summe: <strong>' + escapeHtml(rawTotal) + ' / 30</strong> → '
       +     'Gesamt: <strong>' + escapeHtml(total) + ' / ' + escapeHtml(maxTotal) + '</strong>'
-      +     '<br>Bestanden ab 60 / 100 (60%).'
+      +     '<br>Bestanden ab ' + Math.ceil(100 * passRatioFor('B1')) + ' / 100 (' + Math.round(100 * passRatioFor('B1')) + '%).'
       +   '</p>'
       + '</div>'
       + taskBlock('Aufgabe 1 — Persönliche E-Mail', a1)

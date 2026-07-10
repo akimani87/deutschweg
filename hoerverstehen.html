@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="./deutschweg-theme.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./supabase-config.js"></script>
+<script src="./scoring-config.js?v=1"></script>
 <style>
   *{box-sizing:border-box;}
   body{
@@ -323,7 +324,14 @@
       rev.appendChild(d);
     });
     $('scoreBig').textContent = correct + '/' + qs.length;
-    $('scoreSub').textContent = correct === qs.length ? 'Perfect — sehr gut!' : (correct >= qs.length/2 ? 'Good work — keep practising!' : 'Keep going — you’ll get there.');
+    // Pass/fail line added per scoring-reconciliation-plan.md — this is a
+    // NEW addition (Hören previously had no numeric threshold at all),
+    // using the same canonical 60% as every other skill. The qualitative
+    // encouragement message stays regardless of pass/fail since these are
+    // short practice drills, not a full mock exam.
+    var didPass = window.dwScoring ? window.dwScoring.passed(correct, qs.length) : null;
+    var encouragement = correct === qs.length ? 'Perfect — sehr gut!' : (correct >= qs.length/2 ? 'Good work — keep practising!' : 'Keep going — you’ll get there.');
+    $('scoreSub').textContent = (didPass === null ? encouragement : (didPass ? '✓ bestanden — ' : '') + encouragement);
     $('examTip').textContent = EXAM_TIPS[state.type] || '';
     show('screen-results');
 

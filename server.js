@@ -11,6 +11,7 @@ const fetch   = require('node-fetch');
 const crypto  = require('crypto');
 const { WebSocketServer, WebSocket } = require('ws');
 const { createClient } = require('@supabase/supabase-js');
+const dwScoring = require('./scoring-config.js');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -248,9 +249,16 @@ app.post('/api/score', async (req, res) => {
   }
 
   // --- Build the examiner prompt ---
+  // Pass score is derived from scoring-config.js's canonical 60% threshold
+  // (previously hardcoded here as 30/40 = 75%, which silently disagreed
+  // with this same page's frontend, which displayed pass at 60% — see
+  // scoring-reconciliation-plan.md). Never hardcode a second copy of this
+  // number — read it from dwScoring so the two can't drift apart again.
+  const WHISPERER_MAX = 40;
+  const WHISPERER_PASS_SCORE = Math.ceil(WHISPERER_MAX * dwScoring.PASS_THRESHOLD_PCT / 100);
   const prompt = `You are a strict official Goethe Institut examiner scoring a ${level} Schreiben submission. Apply the official rubric exactly as a real examiner would — do not be lenient.
 
-OFFICIAL RUBRIC (40 points total, passing = 30/40):
+OFFICIAL RUBRIC (${WHISPERER_MAX} points total, passing = ${WHISPERER_PASS_SCORE}/${WHISPERER_MAX}):
 - Task Fulfilment:    0–10 pts  (did they address ALL bullet points in the task?)
 - Grammar & Accuracy: 0–10 pts  (verb conjugation, cases, word order, articles, modal verb + infinitive)
 - Vocabulary Range:   0–10 pts  (variety, precision, not repeating the same 3 words)
@@ -279,8 +287,8 @@ Use places like: Nairobi, Lagos, Mumbai, Colombo, Accra — NEVER use Hans, Mül
 Keep every "fix" explanation under 20 words. Explain WHY points were lost, not just what was wrong.
 
 Also compute:
-- points_to_pass: how many more points the student needs to reach 30 (0 if they already passed)
-- passed: true if total >= 30, false otherwise
+- points_to_pass: how many more points the student needs to reach ${WHISPERER_PASS_SCORE} (0 if they already passed)
+- passed: true if total >= ${WHISPERER_PASS_SCORE}, false otherwise
 
 Format your ENTIRE response as a single raw JSON object — no markdown, no code fences, no text outside the JSON:
 {
@@ -378,11 +386,13 @@ ${text.trim()}
     }
 
     // --- Ensure derived fields exist (backfill if older prompt version) ---
+    // Backfill reads the same canonical threshold as the prompt above and
+    // as exam-whisperer.html's frontend — never a hardcoded second copy.
     if (typeof result.passed !== 'boolean') {
-      result.passed = result.total >= 30;
+      result.passed = dwScoring.passed(result.total, WHISPERER_MAX);
     }
     if (typeof result.points_to_pass !== 'number') {
-      result.points_to_pass = result.passed ? 0 : Math.max(0, 30 - result.total);
+      result.points_to_pass = dwScoring.pointsToPass(result.total, WHISPERER_MAX);
     }
 
     return res.json(result);
@@ -2000,6 +2010,12 @@ app.post('/api/hoerverstehen/practice', async (req, res) => {
 // and a next-step recommendation. The client renders this verbatim — no
 // post-processing beyond shape validation here.
 
+// Pass mark for all four exam-grade rubrics below — single canonical
+// value from scoring-config.js, interpolated into each prompt instead of
+// being retyped as a bare number per level (only B1 used to state one at
+// all; A1/A2/B2 now say the same thing B1 always did).
+const EXAM_GRADE_PASS_PCT = dwScoring.PASS_THRESHOLD_PCT;
+
 const EXAM_GRADE_A1_SYSTEM_PROMPT = `You are a certified Goethe-Institut A1 exam grader. Grade this student's Schreiben submission using the official Goethe A1 Fit in Deutsch 1 rubric exactly.
 
 The student wrote a short message (~30 words) responding to an email stimulus. Grade using ONLY these two official criteria:
@@ -2021,6 +2037,7 @@ IMPORTANT RULES:
 - Even imperfect sentences can score full marks if they are understandable.
 - If either criterion scores 0, set both scores to 0 and total_score to 0.
 - The raw total (criterion1 + criterion2) is multiplied by 2 to get the final score out of 12.
+- Pass mark = ${Math.ceil(12 * EXAM_GRADE_PASS_PCT / 100)}/12 (${EXAM_GRADE_PASS_PCT}%) — official Goethe pass threshold.
 - Word count: count the student's words carefully. Do not count the greeting line as words if it is a single word like "Hallo".
 
 Schreib das gesamte Feedback auf Deutsch — auf dem Sprachniveau A1.
@@ -2079,6 +2096,7 @@ SCORING:
 - Task 2 raw = Aufgabenerfüllung + Sprache (max 10)
 - Total raw = Task1 + Task2 (max 20)
 - Final score = total raw × 1.25 (max 25)
+- Pass mark = ${Math.ceil(25 * EXAM_GRADE_PASS_PCT / 100)}/25 (${EXAM_GRADE_PASS_PCT}%) — official Goethe pass threshold.
 - If Aufgabenerfüllung = E for a task, that entire task = 0
 
 Schreib das gesamte Feedback auf Deutsch — auf dem Sprachniveau A2.
@@ -2107,7 +2125,8 @@ Return raw JSON only, no markdown, using this exact shape:
 // scale (5 / 3.5 / 2 / 0.5 / 0). Per-task max = 10 raw points. Total
 // raw max = 30. Final score = round(total_raw / 30 × 100) so the
 // displayed number is always /100, matching the official conversion.
-// Pass = 60 (60%). If Erfüllung = E for a task, that entire task = 0.
+// Pass mark = EXAM_GRADE_PASS_PCT (scoring-config.js). If Erfüllung = E
+// for a task, that entire task = 0.
 const EXAM_GRADE_B1_SYSTEM_PROMPT = `You are a certified Goethe-Institut B1 exam grader. Grade this student's Schreiben submission using the official Goethe-Zertifikat B1 Modellsatz rubric exactly.
 
 The student wrote THREE texts:
@@ -2138,7 +2157,7 @@ SCORING (compute exactly as below):
 - total_raw   = aufgabe1.task_raw + aufgabe2.task_raw + aufgabe3.task_raw  (max 30)
 - total_score = round(total_raw / 30 × 100)                                (max 100)
 - max_score   = 100
-- Pass mark   = 60 (60%) — official Goethe B1 pass threshold
+- Pass mark   = ${EXAM_GRADE_PASS_PCT} (${EXAM_GRADE_PASS_PCT}%) — official Goethe B1 pass threshold
 - IF Erfüllung = E for a task → set BOTH that task's scores to 0 and task_raw to 0
 
 Schreib das gesamte Feedback auf Deutsch — auf dem Sprachniveau B1.
@@ -2211,6 +2230,7 @@ SCORING:
 - Each task raw = Erfüllung + Kohärenz + Wortschatz + Strukturen (max 20)
 - Total raw = task2_raw + task3_raw (max 40)
 - Final score = total raw (no scaling at B2)
+- Pass mark = ${Math.ceil(40 * EXAM_GRADE_PASS_PCT / 100)}/40 (${EXAM_GRADE_PASS_PCT}%) — official Goethe pass threshold.
 - If Erfüllung = E for a task, that entire task = 0
 
 Schreib das gesamte Feedback auf Deutsch — auf dem Sprachniveau B2.

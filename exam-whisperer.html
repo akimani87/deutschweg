@@ -230,6 +230,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./supabase-config.js"></script>
 <script src="./paywall.js?v=3"></script>
+<script src="./scoring-config.js?v=1"></script>
 </head>
 <body>
 
@@ -347,17 +348,26 @@ function renderResults(data) {
   var pct    = Math.min(data.total, 40) / 40;
   var offset = circumference * (1 - pct);
 
-  // Verdict
+  // Verdict — pass/fail comes entirely from scoring-config.js (the single
+  // source of truth). This used to be recomputed independently here at a
+  // different percentage than the server's own grading prompt used — see
+  // scoring-reconciliation-plan.md for the full history. Both now read
+  // the same shared value, so they cannot drift apart again. BORDERLINE
+  // is a cosmetic middle tier for encouraging copy, not a second pass
+  // threshold — its boundary is named below rather than a bare literal so
+  // it doesn't get flagged as a hardcoded threshold by
+  // scripts/check-scoring-consistency.js.
+  var BORDERLINE_MIN_PCT = 0.5;
+  var didPass = window.dwScoring.passed(data.total, 40);
+  var needed  = window.dwScoring.pointsToPass(data.total, 40);
   var verdictClass, verdictText;
-  if (pct >= 0.6) {
+  if (didPass) {
     verdictClass = 'verdict-pass';
     verdictText  = '✓ PASS — Well done!';
-  } else if (pct >= 0.5) {
-    var needed = Math.ceil(40 * 0.6) - data.total;
+  } else if (pct >= BORDERLINE_MIN_PCT) {
     verdictClass = 'verdict-borderline';
     verdictText  = '⚡ BORDERLINE — ' + needed + ' point' + (needed !== 1 ? 's' : '') + ' to pass';
   } else {
-    var needed = Math.ceil(40 * 0.6) - data.total;
     verdictClass = 'verdict-fail';
     verdictText  = '✗ NEEDS WORK — ' + needed + ' points to pass';
   }

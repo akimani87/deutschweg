@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="./deutschweg-theme.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./supabase-config.js"></script>
+<script src="./scoring-config.js?v=1"></script>
 <style>
   *{box-sizing:border-box;}
   body{
@@ -188,6 +189,7 @@
       <div class="score-hero">
         <div class="stars" id="stars">☆☆☆☆☆</div>
         <div class="score-num" id="scoreNum"></div>
+        <div class="score-num" id="sprechenVerdict" style="margin-top:2px;"></div>
       </div>
       <div id="bars" style="margin-top:12px;"></div>
     </div>
@@ -587,6 +589,16 @@
     var ov = Math.max(1, Math.min(5, Math.round(fb.score_overall || 0)));
     $('stars').textContent = '★★★★★☆☆☆☆☆'.slice(5-ov, 10-ov);
     $('scoreNum').textContent = ov + ' / 5';
+    // Pass/fail line added per scoring-reconciliation-plan.md — NEW
+    // addition (Sprechen previously had no numeric pass/fail concept).
+    // Uses the same canonical 60% as Lesen/Hören/Schreiben via
+    // sprechenPassed(), but is computed and shown entirely independently —
+    // never combined into any other skill's score, matching how the real
+    // oral exam is assessed separately from the written sections.
+    if (window.dwScoring) {
+      var sprechenOk = window.dwScoring.sprechenPassed(fb.score_overall);
+      $('sprechenVerdict').textContent = sprechenOk === null ? '' : (sprechenOk ? '✓ bestanden' : 'weiter üben');
+    }
 
     var bars = [
       ['Aussprache', fb.score_aussprache],
