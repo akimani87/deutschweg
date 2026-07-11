@@ -1505,6 +1505,7 @@
     currentMockExamAttemptId = attempt.id;
     currentSection = attempt.current_section;
     el('examEyebrow').textContent = set.title + ' · Complete Mock Exam';
+    show('examTitle'); show('examSub'); // re-shown here — loadExam() below sets their text but never their visibility
     setMockExamChromeActive(true);
     hide('mockExamOverview');
     document.querySelectorAll('.exam-selector').forEach(function (row) { row.style.display = 'none'; });
@@ -1522,6 +1523,11 @@
   function showMockExamOverview() {
     hide('examContent'); hide('resultsArea'); hide('mockExamTransition');
     hide('loadingState'); hide('errorState'); hide('mockExamModuleProgress');
+    // Hides the page-level title/subtitle from whatever Practice-mode exam
+    // was last loaded (e.g. "A1 Schreiben — Prüfungsvorbereitung") — the
+    // overview has its own title (mockExamOverviewTitle); leaving the old
+    // ones visible showed stale, unrelated text above the overview card.
+    hide('examTitle'); hide('examSub');
     el('examEyebrow').textContent = currentLevel + ' · Complete Mock Exam';
     setMockExamChromeActive(true);
     document.querySelectorAll('.exam-selector').forEach(function (row) { row.style.display = 'none'; });
@@ -1542,6 +1548,7 @@
         if (res.error || !res.data) {
           hide('mockExamOverview');
           setMockExamChromeActive(false);
+          show('examTitle'); show('examSub');
           showLoadError('No Complete Mock Exam set published yet for ' + currentLevel + '.');
           return;
         }
@@ -1622,6 +1629,7 @@
     hide('mockExamOverview');
     hide('mockExamTransition');
     hide('mockExamModuleProgress');
+    show('examTitle'); show('examSub'); // in case exit happens while still on the overview screen
     setMockExamChromeActive(false);
     document.querySelectorAll('#examModeToggle .mode-btn').forEach(function (b) {
       b.classList.toggle('active', b.getAttribute('data-mode') === 'practice');
@@ -1651,6 +1659,7 @@
       clearCombinedMockExamMarker(); // explicit choice — never restore Mock Exam on a future refresh after this
       setMockExamChromeActive(false);
       hide('mockExamOverview');
+      show('examTitle'); show('examSub'); // in case this fires while still on the overview screen
       el('examEyebrow').textContent = currentLevel + ' · Exam Vault';
       load();
     }
