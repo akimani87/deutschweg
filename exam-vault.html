@@ -1175,6 +1175,39 @@
     return Boolean(currentMockExamAttemptId);
   }
 
+  // ── Refresh-survival marker (sessionStorage, not localStorage — a new
+  // tab or a returning-days-later session must never auto-resume an old
+  // attempt just because one exists in the DB; tab-session scope is what
+  // makes that distinction, same rationale as the section-lock keys). The
+  // marker never carries the attempt id itself — only enough to re-look it
+  // up — so restoration always re-derives current state fresh from
+  // Supabase rather than trusting a cached id that could be stale (e.g.
+  // completed from another tab since the last page load).
+  var MOCK_EXAM_MODE_KEY = 'dwCombinedMockExamContext';
+
+  function setCombinedMockExamMarker(userId, setId, level) {
+    try {
+      sessionStorage.setItem(MOCK_EXAM_MODE_KEY, JSON.stringify({ userId: userId, setId: setId, level: level }));
+    } catch (_) {}
+  }
+  function clearCombinedMockExamMarker() {
+    try { sessionStorage.removeItem(MOCK_EXAM_MODE_KEY); } catch (_) {}
+  }
+  // Malformed markers are cleared here, not just ignored, so a corrupted
+  // value doesn't keep tripping the same dead-end check on every load.
+  function readCombinedMockExamMarker() {
+    var raw;
+    try { raw = sessionStorage.getItem(MOCK_EXAM_MODE_KEY); } catch (_) { return null; }
+    if (!raw) return null;
+    var parsed;
+    try { parsed = JSON.parse(raw); } catch (_) { clearCombinedMockExamMarker(); return null; }
+    if (!parsed || typeof parsed !== 'object' || !parsed.userId || !parsed.setId || !parsed.level) {
+      clearCombinedMockExamMarker();
+      return null;
+    }
+    return parsed;
+  }
+
   function nextMockExamSection(section) {
     var i = MOCK_EXAM_SECTION_ORDER.indexOf(section);
     return (i >= 0 && i + 1 < MOCK_EXAM_SECTION_ORDER.length) ? MOCK_EXAM_SECTION_ORDER[i + 1] : null;
@@ -1238,8 +1271,12 @@
         // and move on, same lockSection() standalone practice already uses.
         // Mode-scoped so this never bleeds into Practice by Skill (Bug 1).
         lockSection('combined', currentLevel, currentSection);
-        if (next) showMockExamTransition(next);
-        else      showMockExamFinished();
+        if (next) {
+          showMockExamTransition(next);
+        } else {
+          clearCombinedMockExamMarker(); // completed — nothing left to restore on refresh
+          showMockExamFinished();
+        }
       }, function (err) {
         console.error('[mockExam] progress update rejected', err);
         showMockExamAdvanceError(savedAttemptRow);
@@ -1353,6 +1390,25 @@
       + floorNote;
   }
 
+  // Shared by both entry paths — a fresh click on "Complete Mock Exam"
+  // (below) and an automatic refresh-restore (bootstrapExamVault below) —
+  // so the UI/state setup can never drift between the two.
+  function establishCombinedMockExamState(level, set, attempt) {
+    currentLevel = level;
+    currentMockExamSet = set;
+    currentMockExamAttemptId = attempt.id;
+    currentSection = attempt.current_section;
+    el('examEyebrow').textContent = set.title + ' · Complete Mock Exam';
+    document.querySelectorAll('#examModeToggle .mode-btn').forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-mode') === 'combined');
+    });
+    document.querySelectorAll('.exam-selector').forEach(function (row) { row.style.display = 'none'; });
+    hide('examSetSelector');
+    hide('mockExamTransition');
+    wirePills(currentLevel, currentSection);
+    loadExam(examIdForSection(currentMockExamSet, currentSection), null);
+  }
+
   function startCombinedMockExam() {
     el('examEyebrow').textContent = currentLevel + ' · Complete Mock Exam';
     // Placeholder selection, not real set-picking: only one set per level
@@ -1368,20 +1424,18 @@
           showLoadError('No Complete Mock Exam set published yet for ' + currentLevel + '.');
           return;
         }
-        currentMockExamSet = res.data;
-        // Show the learner which Übungssatz they're about to take (was
-        // previously silent — just "A1 · Complete Mock Exam" with no set
-        // identifier) before any task content loads.
-        el('examEyebrow').textContent = res.data.title + ' · Complete Mock Exam';
-        getOrCreateMockExamAttempt(res.data).then(function (attempt) {
+        var set = res.data;
+        getOrCreateMockExamAttempt(set).then(function (attempt) {
           if (!attempt) {
             showLoadError('Sign in to start a Complete Mock Exam attempt.');
             return;
           }
-          currentMockExamAttemptId = attempt.id;
-          currentSection = attempt.current_section;
-          wirePills(currentLevel, currentSection);
-          loadExam(examIdForSection(currentMockExamSet, currentSection), null);
+          // Marker set only once a real attempt is confirmed — never on a
+          // bare click of the toggle.
+          getUserOrNull().then(function (user) {
+            if (user) setCombinedMockExamMarker(user.id, set.id, currentLevel);
+          });
+          establishCombinedMockExamState(currentLevel, set, attempt);
         });
       });
   }
@@ -1402,6 +1456,7 @@
     } else {
       currentMockExamAttemptId = null;
       currentMockExamSet = null;
+      clearCombinedMockExamMarker(); // explicit choice — never restore Mock Exam on a future refresh after this
       el('examEyebrow').textContent = currentLevel + ' · Exam Vault';
       load();
     }
@@ -4175,6 +4230,119 @@
     }).filter(function (s) { return s; }).join('');
   }
 
+  // Binds every event listener that only ever needs binding once per page
+  // load, regardless of which mode ends up active — extracted out of
+  // load() so bootstrapExamVault()'s Complete-Mock-Exam-restore path can
+  // wire the page correctly too without running load()'s own (Practice-
+  // mode-specific) body. oneTimeWiringDone still guards it, so calling
+  // this from both paths on the same page load is safe.
+  function ensureOneTimeWiring() {
+    if (oneTimeWiringDone) return;
+    oneTimeWiringDone = true;
+
+    // Wire submit once. loadExam() may run multiple times if the user
+    // switches Übungssatz, but the listener only needs to bind once.
+    el('submitBtn').addEventListener('click', submitExam);
+
+    // Section-lock nav guards (Part 3) — wired once on the 6 pills.
+    ['A1', 'A2', 'B1', 'B2'].forEach(function (l) {
+      var p = el('pill' + l);
+      if (p) p.addEventListener('click', function (e) { guardSectionNav(e, l, 'schreiben'); });
+    });
+    el('pillSchreiben').addEventListener('click', function (e) { guardSectionNav(e, currentLevel, 'schreiben'); });
+    el('pillLesen').addEventListener('click',     function (e) { guardSectionNav(e, currentLevel, 'lesen'); });
+    el('pillHoeren').addEventListener('click',    function (e) { guardSectionNav(e, currentLevel, 'hoeren'); });
+
+    // Practice by Skill / Complete Mock Exam toggle (Phase 3).
+    document.querySelectorAll('#examModeToggle .mode-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () { setExamMode(btn.getAttribute('data-mode')); });
+    });
+
+    // Delegated autosave triggers (Part 1) — bound once on the container
+    // since #taskCards's *contents* are replaced on every loadExam(), but
+    // the container element itself persists. 'input'/'change' bubble from
+    // every textarea/radio/select; true_false's .tf-btn is a plain button
+    // so it needs an explicit click check.
+    el('taskCards').addEventListener('input',  markDirtyAndScheduleAutosave);
+    el('taskCards').addEventListener('change', markDirtyAndScheduleAutosave);
+    el('taskCards').addEventListener('click', function (e) {
+      if (e.target.closest('.tf-btn')) markDirtyAndScheduleAutosave();
+    });
+
+    // Warn on tab close/reload only while there's an actual unsaved edit
+    // sitting in the debounce window (or a save that failed) — not on
+    // every visit to the page.
+    window.addEventListener('beforeunload', function (e) {
+      if (!draftDirty) return;
+      e.preventDefault();
+      e.returnValue = '';
+    });
+  }
+
+  // Bootstrap-time restore: if this tab session was mid-Complete-Mock-Exam
+  // when it was last loaded, re-establish that mode + the same umbrella
+  // attempt + section before falling into the normal Practice-mode
+  // bootstrap. Strictly read-only against mock_exam_attempts (never the
+  // select-or-insert getOrCreateMockExamAttempt()) — a refresh must never
+  // create a new attempt merely because a stale marker exists. Any
+  // outcome other than "found a genuinely valid, still-incomplete attempt
+  // for the authenticated user" falls back to the normal load().
+  function restoreCombinedMockExamIfMarked() {
+    var marker = readCombinedMockExamMarker();
+    if (!marker) { load(); return; }
+
+    getUserOrNull().then(function (user) {
+      if (!user || user.id !== marker.userId) {
+        clearCombinedMockExamMarker(); // different/no authenticated user — not this learner's context
+        load();
+        return;
+      }
+      dwSupabase.from('mock_exam_sets')
+        .select('*').eq('id', marker.setId).eq('is_published', true)
+        .maybeSingle()
+        .then(function (setRes) {
+          if (setRes.error) {
+            // Transient/network failure — don't discard the marker over a
+            // blip, just don't restore on *this* load either.
+            console.error('[mockExam] restore: set lookup failed', setRes.error.message);
+            load();
+            return;
+          }
+          if (!setRes.data) {
+            clearCombinedMockExamMarker(); // set no longer valid/published
+            load();
+            return;
+          }
+          var set = setRes.data;
+          dwSupabase.from('mock_exam_attempts')
+            .select('*').eq('user_id', user.id).eq('set_id', set.id).is('completed_at', null)
+            .maybeSingle()
+            .then(function (attRes) {
+              if (attRes.error) {
+                console.error('[mockExam] restore: attempt lookup failed', attRes.error.message);
+                load();
+                return;
+              }
+              if (!attRes.data) {
+                clearCombinedMockExamMarker(); // no incomplete attempt — completed elsewhere, or never really existed
+                load();
+                return;
+              }
+              ensureOneTimeWiring();
+              establishCombinedMockExamState(marker.level, set, attRes.data);
+            }, function () { load(); }); // network-level rejection — fall back, keep the marker
+        }, function () { load(); });
+    });
+  }
+
+  function bootstrapExamVault() {
+    if (typeof dwSupabase === 'undefined') {
+      showLoadError('Supabase client not initialised. Check that supabase-config.js is loading.');
+      return;
+    }
+    restoreCombinedMockExamIfMarked();
+  }
+
   // ── Loader ─────────────────────────────────────────────────
   // Top-level load: figures out which level + section the user picked
   // (from the URL), fetches the full list of published exams for that
@@ -4207,51 +4375,7 @@
       return;
     }
 
-    // Everything in this block binds event listeners once, ever — load()
-    // itself can now run more than once (switching back to "Practice by
-    // Skill" from Complete Mock Exam calls it again via setExamMode()),
-    // so this guard prevents duplicate listeners piling up on repeat runs.
-    if (!oneTimeWiringDone) {
-      oneTimeWiringDone = true;
-
-      // Wire submit once. loadExam() may run multiple times if the user
-      // switches Übungssatz, but the listener only needs to bind once.
-      el('submitBtn').addEventListener('click', submitExam);
-
-      // Section-lock nav guards (Part 3) — wired once on the 6 pills.
-      ['A1', 'A2', 'B1', 'B2'].forEach(function (l) {
-        var p = el('pill' + l);
-        if (p) p.addEventListener('click', function (e) { guardSectionNav(e, l, 'schreiben'); });
-      });
-      el('pillSchreiben').addEventListener('click', function (e) { guardSectionNav(e, currentLevel, 'schreiben'); });
-      el('pillLesen').addEventListener('click',     function (e) { guardSectionNav(e, currentLevel, 'lesen'); });
-      el('pillHoeren').addEventListener('click',    function (e) { guardSectionNav(e, currentLevel, 'hoeren'); });
-
-      // Practice by Skill / Complete Mock Exam toggle (Phase 3).
-      document.querySelectorAll('#examModeToggle .mode-btn').forEach(function (btn) {
-        btn.addEventListener('click', function () { setExamMode(btn.getAttribute('data-mode')); });
-      });
-
-      // Delegated autosave triggers (Part 1) — bound once on the container
-      // since #taskCards's *contents* are replaced on every loadExam(), but
-      // the container element itself persists. 'input'/'change' bubble from
-      // every textarea/radio/select; true_false's .tf-btn is a plain button
-      // so it needs an explicit click check.
-      el('taskCards').addEventListener('input',  markDirtyAndScheduleAutosave);
-      el('taskCards').addEventListener('change', markDirtyAndScheduleAutosave);
-      el('taskCards').addEventListener('click', function (e) {
-        if (e.target.closest('.tf-btn')) markDirtyAndScheduleAutosave();
-      });
-
-      // Warn on tab close/reload only while there's an actual unsaved edit
-      // sitting in the debounce window (or a save that failed) — not on
-      // every visit to the page.
-      window.addEventListener('beforeunload', function (e) {
-        if (!draftDirty) return;
-        e.preventDefault();
-        e.returnValue = '';
-      });
-    }
+    ensureOneTimeWiring();
 
     el('examSub').textContent = currentSection === 'schreiben'
       ? 'Goethe-format Schreiben practice. Write the message(s), then submit for instant AI grading.'
@@ -4412,9 +4536,9 @@
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', load);
+    document.addEventListener('DOMContentLoaded', bootstrapExamVault);
   } else {
-    load();
+    bootstrapExamVault();
   }
 })();
 </script>
