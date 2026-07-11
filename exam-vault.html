@@ -975,6 +975,36 @@
     <button type="button" class="mode-btn" data-mode="combined">Complete Mock Exam</button>
   </div>
 
+  <!-- Replaces examModeToggle once a Complete Mock Exam attempt is active
+       (overview screen through the finished screen) — the big toggle is
+       meaningless mid-attempt, and switching away needs a confirmation,
+       not a silent single click. -->
+  <div id="mockExamExitBar" style="display:none; align-items:center; justify-content:space-between; background:#EFF6FF; border:1px solid #DBEAFE; border-radius:12px; padding:10px 14px; margin-bottom:16px;">
+    <span style="font-size:13px; font-weight:700; color:#1D4ED8;">Complete Mock Exam</span>
+    <button type="button" id="mockExamExitBtn" style="font-size:12.5px; font-weight:700; color:#64748B; background:none; border:1px solid #E5E7EB; border-radius:8px; padding:6px 12px; cursor:pointer;">Exit mock exam</button>
+  </div>
+
+  <!-- "Modul N von M · {Section}" — set by updateMockExamModuleProgress(),
+       shown only while a combined-mode section is actually loaded (not on
+       the overview or transition screens, which say this in their own
+       copy already). -->
+  <div id="mockExamModuleProgress" style="display:none; font-size:12.5px; font-weight:700; color:var(--mid); margin-bottom:10px;"></div>
+
+  <!-- Pre-exam overview (product requirement: never load Hören directly on
+       clicking "Complete Mock Exam" — show what's included, rules, and an
+       explicit Start CTA first). Module list/order/duration are rendered
+       dynamically from the actual mock_exam_sets row + MOCK_EXAM_SECTION_
+       ORDER, not hardcoded, so this stays correct if a module is added or
+       a set is missing one. -->
+  <div id="mockExamOverview" style="display:none;">
+    <div class="card" style="background:#fff; border:1px solid var(--border); border-radius:16px; padding:20px; margin-bottom:16px;">
+      <h2 id="mockExamOverviewTitle" style="font-size:18px; font-weight:800; margin:0 0 4px;">Complete Mock Exam</h2>
+      <p id="mockExamOverviewSub" style="font-size:13.5px; color:var(--mid); margin:0 0 16px;"></p>
+      <div id="mockExamOverviewBody"><div class="spinner"></div></div>
+      <button type="button" class="submit-btn" id="mockExamStartBtn" style="margin-top:8px;" disabled>Start Mock Exam</button>
+    </div>
+  </div>
+
   <!-- Level selector — A1 / A2 / B1 / B2 -->
   <div class="exam-selector" role="tablist" aria-label="Choose level" style="margin-bottom:10px;">
     <a class="exam-pill" id="pillA1" role="tab" data-level="A1">A1</a>
@@ -1052,20 +1082,27 @@
     </div>
   </div>
 
-  <!-- Grading state (Schreiben → Claude API) -->
+  <!-- Grading state (Schreiben → Claude API; also reused in combined mode
+       for Hören/Lesen's brief save-and-advance window so no correctness is
+       ever shown mid-attempt — see showMockExamProcessing()). -->
   <div id="gradingState" class="grading-card" style="display:none;">
     <div class="spinner"></div>
-    <div class="grading-text">Grading your exam…</div>
-    <div class="grading-sub">Usually 10–20 seconds. Don't refresh the page.</div>
+    <div class="grading-text" id="gradingText">Grading your exam…</div>
+    <div class="grading-sub" id="gradingSub">Usually 10–20 seconds. Don't refresh the page.</div>
   </div>
 
   <!-- Complete Mock Exam — brief transition shown between sections instead
        of the standalone "continue? you'll lose access" confirm/lock prompt
-       (Phase 3: no need to ask, there's nowhere else to go but onward). -->
+       (Phase 3: no need to ask, there's nowhere else to go but onward).
+       Requires an explicit "Continue" click (not an auto-timeout) so a
+       learner isn't swept into the next module before reading "your
+       answers have been saved" — and the result itself is deliberately
+       never shown here (product requirement: no per-module reveal). -->
   <div id="mockExamTransition" class="mock-exam-transition" style="display:none;">
     <div class="met-box">
       <div class="met-check" id="metIcon">✓</div>
       <div class="met-text" id="metText"></div>
+      <button type="button" class="draft-banner-btn primary" id="metContinueBtn" style="display:none;">Continue</button>
       <button type="button" class="draft-banner-btn primary" id="metRetryBtn" style="display:none;">Tap to retry</button>
     </div>
   </div>
@@ -1163,6 +1200,12 @@
   var currentMockExamAttemptId = null;
   var currentMockExamSet       = null; // the mock_exam_sets row (has the 3 exam ids)
   var MOCK_EXAM_SECTION_ORDER  = ['hoeren', 'lesen', 'schreiben'];
+  // The subset of MOCK_EXAM_SECTION_ORDER the CURRENT set actually has exam
+  // ids for (see activeMockExamSections() below) — this is what "Module N
+  // of M" is computed from, never a hardcoded 3. Adding Sprechen to
+  // MOCK_EXAM_SECTION_ORDER later (Phase B) makes this "of 4" automatically
+  // for any set that also has sprechen content wired in.
+  var currentMockExamActiveSections = [];
   var oneTimeWiringDone        = false; // load()'s event-listener block now guards against running twice — see load()
 
   // Single named mode check, used to gate the section timer (Practice by
@@ -1218,6 +1261,14 @@
     if (section === 'schreiben') return set.schreiben_exam_id;
     return null;
   }
+  // The real, dynamic module list for a given set — skips any section the
+  // set doesn't actually have content for (mirrors the same filter
+  // getOrCreateMockExamAttempt() already uses to pick a starting section).
+  // Drives the overview screen's module list AND "Module N of M" labels,
+  // so both always agree with what the learner actually gets.
+  function activeMockExamSections(set) {
+    return MOCK_EXAM_SECTION_ORDER.filter(function (s) { return examIdForSection(set, s); });
+  }
   function mockExamAttemptFkColumn(section) {
     return section === 'hoeren' ? 'hoeren_attempt_id' : section === 'lesen' ? 'lesen_attempt_id' : 'schreiben_attempt_id';
   }
@@ -1235,7 +1286,7 @@
         .then(function (res) {
           if (res.error) { console.error('[mockExam] lookup failed', res.error.message); return null; }
           if (res.data) return res.data;
-          var firstSection = MOCK_EXAM_SECTION_ORDER.filter(function (s) { return examIdForSection(set, s); })[0];
+          var firstSection = activeMockExamSections(set)[0];
           if (!firstSection) return null;
           return dwSupabase.from('mock_exam_attempts')
             .insert({ user_id: user.id, set_id: set.id, current_section: firstSection })
@@ -1283,6 +1334,22 @@
       });
   }
 
+  // Brief "saving, not showing you anything yet" state for Hören/Lesen's
+  // submit-to-advance window in combined mode (product requirement: no
+  // correctness/explanations/teaching feedback during the active mock
+  // exam — the per-module results screen must never render at all here).
+  // Reuses gradingState, which Schreiben already shows for its ~10-20s
+  // Claude call — for Hören/Lesen the window is much shorter (just the
+  // save + advance network round-trips) but the same "don't worry, it's
+  // saved" framing applies regardless of how long it actually takes.
+  function showMockExamProcessing(text) {
+    hide('examContent');
+    hide('resultsArea');
+    el('gradingText').textContent = text;
+    el('gradingSub').textContent = '';
+    show('gradingState');
+  }
+
   // Shown when the mock_exam_attempts progress update fails or rejects —
   // the learner's answers are already graded/saved (saveAttempt() ran
   // first), only the umbrella-attempt cursor failed to move. Previously
@@ -1293,6 +1360,8 @@
   function showMockExamAdvanceError(savedAttemptRow) {
     hide('resultsArea');
     hide('examContent');
+    hide('gradingState');
+    hide('metContinueBtn');
     el('metIcon').textContent = '⚠';
     el('metIcon').classList.add('error');
     el('metText').textContent = "Couldn't advance to the next section — your answers are saved. Tap to retry.";
@@ -1308,16 +1377,33 @@
     };
   }
 
+  // Requires an explicit click (product requirement) — no auto-timeout —
+  // so a learner reads "your answers have been saved" rather than being
+  // swept into the next module. The result itself is deliberately never
+  // shown here.
   function showMockExamTransition(nextSection) {
     hide('resultsArea');
     hide('examContent');
-    el('metText').textContent = sectionDisplayLabel(currentSection) + ' complete — moving to ' + sectionDisplayLabel(nextSection) + '…';
-    show('mockExamTransition');
-    setTimeout(function () {
+    hide('gradingState');
+    hide('mockExamModuleProgress');
+    el('metIcon').textContent = '✓';
+    el('metIcon').classList.remove('error');
+    el('metText').innerHTML =
+        '<strong>' + sectionDisplayLabel(currentSection) + ' completed</strong><br>'
+      + 'Your answers have been saved.<br>'
+      + '<span style="font-weight:400;">Next: ' + sectionDisplayLabel(nextSection) + '</span>';
+    hide('metRetryBtn');
+    var btn = el('metContinueBtn');
+    btn.textContent = 'Continue to ' + sectionDisplayLabel(nextSection);
+    btn.style.display = '';
+    btn.onclick = function () {
+      btn.style.display = 'none';
       hide('mockExamTransition');
       currentSection = nextSection;
+      updateMockExamModuleProgress();
       loadExam(examIdForSection(currentMockExamSet, nextSection), null);
-    }, 1600);
+    };
+    show('mockExamTransition');
   }
 
   // Combined-score model, additive to Complete Mock Exam only — does NOT
@@ -1336,10 +1422,13 @@
   function showMockExamFinished() {
     hide('resultsArea');
     hide('examContent');
+    hide('gradingState');
+    hide('mockExamModuleProgress');
     el('metIcon').textContent = '✓';
     el('metIcon').classList.remove('error');
     hide('metRetryBtn');
-    el('metText').textContent = 'Complete Mock Exam finished — berechne Ergebnis…';
+    hide('metContinueBtn');
+    el('metText').textContent = 'Complete Mock Exam finished — calculating your result…';
     show('mockExamTransition');
     computeAndShowMockExamCombinedScore();
   }
@@ -1381,63 +1470,164 @@
     // Below 35/75 written, no possible Sprechen score reaches 60/100 —
     // a real, useful floor, not a per-skill pass/fail claim.
     var floorNote = combinedRounded < 35
-      ? '<br><span style="font-size:12.5px; font-weight:400; color:#B91C1C;">Selbst mit einer perfekten Sprechen-Note wäre die Gesamtprüfung (60/100 nötig) damit nicht mehr zu bestehen.</span>'
+      ? '<br><span style="font-size:12.5px; font-weight:400; color:#B91C1C;">Even a perfect Sprechen score could not reach the 60/100 needed to pass the full exam from here.</span>'
       : '';
     el('metText').innerHTML =
-        'Complete Mock Exam fertig!<br>'
-      + '<strong>' + combinedRounded.toFixed(1) + ' / 75</strong> (Hören + Lesen + Schreiben, skaliert)<br>'
-      + '<span style="font-size:12.5px; font-weight:400;">Die offizielle Bestehensgrenze ist 60/100 über Hören + Lesen + Schreiben + Sprechen zusammen. Sprechen ist noch nicht Teil des Complete Mock Exam — das hier ist dein Schreib-/Hör-/Lese-Ergebnis allein.</span>'
+        'Complete Mock Exam finished!<br>'
+      + '<strong>' + combinedRounded.toFixed(1) + ' / 75</strong> (Hören + Lesen + Schreiben, scaled)<br>'
+      + '<span style="font-size:12.5px; font-weight:400;">The official pass line is 60/100 across Hören + Lesen + Schreiben + Sprechen together. Sprechen is not yet part of Complete Mock Exam — this is your written-skills result alone.</span>'
       + floorNote;
   }
 
-  // Shared by both entry paths — a fresh click on "Complete Mock Exam"
-  // (below) and an automatic refresh-restore (bootstrapExamVault below) —
-  // so the UI/state setup can never drift between the two.
+  // Swaps the big Practice/Mock-Exam toggle for the small "Exit mock exam"
+  // bar, or back — the toggle is meaningless once an attempt is actually
+  // active (overview screen through the finished screen).
+  function setMockExamChromeActive(active) {
+    el('examModeToggle').style.display  = active ? 'none' : '';
+    el('mockExamExitBar').style.display = active ? 'flex' : 'none';
+  }
+
+  function updateMockExamModuleProgress() {
+    var box = el('mockExamModuleProgress');
+    var idx = currentMockExamActiveSections.indexOf(currentSection);
+    if (idx === -1 || !currentMockExamActiveSections.length) { hide('mockExamModuleProgress'); return; }
+    box.textContent = 'Module ' + (idx + 1) + ' of ' + currentMockExamActiveSections.length + ' · ' + sectionDisplayLabel(currentSection);
+    show('mockExamModuleProgress');
+  }
+
+  // Shared by both entry paths — a fresh "Start Mock Exam" click (below)
+  // and an automatic refresh-restore (bootstrapExamVault below) — so the
+  // UI/state setup can never drift between the two.
   function establishCombinedMockExamState(level, set, attempt) {
     currentLevel = level;
     currentMockExamSet = set;
+    currentMockExamActiveSections = activeMockExamSections(set);
     currentMockExamAttemptId = attempt.id;
     currentSection = attempt.current_section;
     el('examEyebrow').textContent = set.title + ' · Complete Mock Exam';
-    document.querySelectorAll('#examModeToggle .mode-btn').forEach(function (b) {
-      b.classList.toggle('active', b.getAttribute('data-mode') === 'combined');
-    });
+    setMockExamChromeActive(true);
+    hide('mockExamOverview');
     document.querySelectorAll('.exam-selector').forEach(function (row) { row.style.display = 'none'; });
     hide('examSetSelector');
     hide('mockExamTransition');
     wirePills(currentLevel, currentSection);
+    updateMockExamModuleProgress();
     loadExam(examIdForSection(currentMockExamSet, currentSection), null);
   }
 
-  function startCombinedMockExam() {
+  // Fetches the set and shows the pre-exam overview — does NOT create or
+  // resume an attempt yet (that only happens once "Start Mock Exam" is
+  // actually clicked, per startCombinedMockExam() below). Clicking the
+  // "Complete Mock Exam" toggle must never load Hören directly.
+  function showMockExamOverview() {
+    hide('examContent'); hide('resultsArea'); hide('mockExamTransition');
+    hide('loadingState'); hide('errorState'); hide('mockExamModuleProgress');
     el('examEyebrow').textContent = currentLevel + ' · Complete Mock Exam';
-    // Placeholder selection, not real set-picking: only one set per level
-    // is ever published today, so "lowest set_number" == "the only one".
-    // Once a 2nd Übungssatz exists this stops being a no-op choice — real
-    // set-picking UI for combined mode is separate future work.
+    setMockExamChromeActive(true);
+    document.querySelectorAll('.exam-selector').forEach(function (row) { row.style.display = 'none'; });
+    hide('examSetSelector');
+    el('mockExamOverviewBody').innerHTML = '<div class="spinner"></div>';
+    el('mockExamStartBtn').disabled = true;
+    show('mockExamOverview');
+
     dwSupabase.from('mock_exam_sets')
       .select('*').eq('level', currentLevel).eq('is_published', true)
+      // Placeholder selection, not real set-picking: only one set per
+      // level is ever published today, so "lowest set_number" == "the
+      // only one". Once a 2nd Übungssatz exists this stops being a no-op
+      // choice — real set-picking UI is separate future work.
       .order('set_number', { ascending: true }).limit(1)
       .maybeSingle()
       .then(function (res) {
         if (res.error || !res.data) {
+          hide('mockExamOverview');
+          setMockExamChromeActive(false);
           showLoadError('No Complete Mock Exam set published yet for ' + currentLevel + '.');
           return;
         }
-        var set = res.data;
-        getOrCreateMockExamAttempt(set).then(function (attempt) {
-          if (!attempt) {
-            showLoadError('Sign in to start a Complete Mock Exam attempt.');
-            return;
-          }
-          // Marker set only once a real attempt is confirmed — never on a
-          // bare click of the toggle.
-          getUserOrNull().then(function (user) {
-            if (user) setCombinedMockExamMarker(user.id, set.id, currentLevel);
-          });
-          establishCombinedMockExamState(currentLevel, set, attempt);
-        });
+        renderMockExamOverview(res.data);
       });
+  }
+
+  function overviewRow(label, text) {
+    return '<div style="margin-bottom:12px;">'
+      +   '<div style="font-size:12.5px; font-weight:700; color:var(--dark); margin-bottom:2px;">' + label + '</div>'
+      +   '<div style="font-size:13px; color:var(--mid); line-height:1.6;">' + text + '</div>'
+      + '</div>';
+  }
+
+  // All numbers here are pulled live from SECTION_MINUTES/the set's actual
+  // module list — nothing about count, order, or timing is a hardcoded
+  // literal, so this stays correct as Phase B adds Sprechen.
+  function renderMockExamOverview(set) {
+    // Always derived fresh from the just-fetched set — never trusts
+    // currentMockExamActiveSections here, since that could still hold a
+    // stale value from an earlier attempt in the same page session.
+    var sections = activeMockExamSections(set);
+    var sectionIcon = { hoeren: '🎧', lesen: '📖', schreiben: '📝' };
+    var sectionMinutes = function (s) {
+      return s === 'hoeren' ? HOEREN_APPROX_MINUTES : (SECTION_MINUTES[currentLevel] || {})[s];
+    };
+    var totalMinutes = sections.reduce(function (sum, s) { return sum + (sectionMinutes(s) || 0); }, 0);
+
+    el('mockExamOverviewTitle').textContent = set.title;
+    el('mockExamOverviewSub').textContent = currentLevel + ' · ' + sections.length + ' modules · ~' + totalMinutes + ' minutes total';
+
+    var moduleListHtml = '<ol style="margin:0 0 16px; padding-left:20px; font-size:14px; color:var(--dark); line-height:2;">'
+      + sections.map(function (s) {
+          return '<li>' + (sectionIcon[s] || '') + ' ' + sectionDisplayLabel(s) + ' <span style="color:var(--mid); font-weight:400; font-size:12.5px;">(~' + sectionMinutes(s) + ' min)</span></li>';
+        }).join('')
+      + '</ol>';
+
+    var rulesHtml =
+        overviewRow('⏳ Timer', 'Lesen and Schreiben are each timed individually and submit automatically when time runs out. Hören has no clock — it paces itself from the audio.')
+      + overviewRow('🎧 Hören playback', 'Each Teil plays a fixed number of times (shown on screen) — no replays once used, and no going back to a previous Teil.')
+      + overviewRow('✍️ Schreiben submission', 'Fill in every required field and word count to enable submit. You submit once — there is no revising after grading starts.')
+      + overviewRow('💾 Saved progress', 'Your answers and timer save automatically as you go. If you refresh the page, you return to the same exam, module, and section — nothing is lost.')
+      + overviewRow('📊 Results', "Nothing is scored or shown between modules. You'll see your full result, module by module, only once every module is complete.");
+
+    el('mockExamOverviewBody').innerHTML = moduleListHtml + rulesHtml;
+    el('mockExamStartBtn').disabled = false;
+    el('mockExamStartBtn').onclick = function () {
+      el('mockExamStartBtn').disabled = true;
+      startCombinedMockExam(set);
+    };
+  }
+
+  // Only ever called once "Start Mock Exam" is clicked — creates/resumes
+  // the umbrella attempt and enters the first module. set is the row
+  // showMockExamOverview() already fetched; not re-fetched here.
+  function startCombinedMockExam(set) {
+    getOrCreateMockExamAttempt(set).then(function (attempt) {
+      if (!attempt) {
+        showLoadError('Sign in to start a Complete Mock Exam attempt.');
+        return;
+      }
+      // Marker set only once a real attempt is confirmed — never on a
+      // bare click of the toggle or the overview screen alone.
+      getUserOrNull().then(function (user) {
+        if (user) setCombinedMockExamMarker(user.id, set.id, currentLevel);
+      });
+      establishCombinedMockExamState(currentLevel, set, attempt);
+    });
+  }
+
+  function exitMockExam() {
+    var ok = confirm('Exit Complete Mock Exam? Your progress is saved — you can continue this attempt later from where you left off.');
+    if (!ok) return;
+    currentMockExamAttemptId = null;
+    currentMockExamSet = null;
+    currentMockExamActiveSections = [];
+    clearCombinedMockExamMarker(); // explicit choice — never restore Mock Exam on a future refresh after this
+    hide('mockExamOverview');
+    hide('mockExamTransition');
+    hide('mockExamModuleProgress');
+    setMockExamChromeActive(false);
+    document.querySelectorAll('#examModeToggle .mode-btn').forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-mode') === 'practice');
+    });
+    el('examEyebrow').textContent = currentLevel + ' · Exam Vault';
+    load();
   }
 
   function setExamMode(mode) {
@@ -1451,12 +1641,16 @@
     document.querySelectorAll('.exam-selector').forEach(function (row) { row.style.display = isCombined ? 'none' : ''; });
     hide('examSetSelector');
     hide('mockExamTransition');
+    hide('mockExamModuleProgress');
     if (isCombined) {
-      startCombinedMockExam();
+      showMockExamOverview();
     } else {
       currentMockExamAttemptId = null;
       currentMockExamSet = null;
+      currentMockExamActiveSections = [];
       clearCombinedMockExamMarker(); // explicit choice — never restore Mock Exam on a future refresh after this
+      setMockExamChromeActive(false);
+      hide('mockExamOverview');
       el('examEyebrow').textContent = currentLevel + ' · Exam Vault';
       load();
     }
@@ -1481,6 +1675,12 @@
     B1: { lesen: 65, schreiben: 60 },
     B2: { lesen: 65, schreiben: 75 }
   };
+  // Hören has no clock (see above — it paces itself from the audio), so it
+  // has no entry in SECTION_MINUTES. This is the one duration figure used
+  // for the Complete Mock Exam overview's "estimated total" only — same
+  // ~20-minute figure already sourced from the Durchführungsbestimmungen
+  // in hoeren-a1-restructure-plan.md ("HÖREN ca. 20 Minuten").
+  var HOEREN_APPROX_MINUTES = 20;
   var sectionTimerInterval = null;
   var sectionEndsAt        = null; // ms epoch — absolute deadline, not a countdown counter,
                                     // so a reload recomputes true remaining time from now()
@@ -2060,7 +2260,7 @@
     container.innerHTML =
       '<section class="task-card hoeren-card">'
       +   '<header class="task-header">'
-      +     '<span class="task-num">Teil ' + step.task_number + ' von 3</span>'
+      +     '<span class="task-num">' + (isCombinedMockExamMode() ? sectionDisplayLabel(currentSection) + ' · ' : '') + 'Teil ' + step.task_number + ' von 3</span>'
       +   '</header>'
       +   '<div class="hoeren-player">'
       +     '<button type="button" class="hoeren-play-btn" id="hoerenPlayBtn" aria-label="Play audio">▶</button>'
@@ -2215,14 +2415,21 @@
     var answers = collectHoerenAnswers();
     graded.max = currentExamMax;
 
-    renderHoerenResults(graded);
-    show('resultsArea');
-    el('resultsArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Combined mode: never reveal correctness/results mid-attempt — go
+    // straight to a neutral "saving" state instead of the results screen.
+    if (isCombinedMockExamMode()) {
+      showMockExamProcessing('Saving your answers…');
+    } else {
+      renderHoerenResults(graded);
+      show('resultsArea');
+      el('resultsArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
     sectionJustCompleted = true; // Part 3 — eligible for the leave-confirmation lock now
 
     saveAttempt(answers, graded.scoresByTask, { details: graded.details }, graded.total).then(function (saved) {
       if (saved) {
-        show('savedNotice'); loadHistory(); loadWeakness();
+        if (!isCombinedMockExamMode()) show('savedNotice');
+        loadHistory(); loadWeakness();
         deleteDraftForCurrentExam(); // real attempt is saved — the draft's job is done
         advanceMockExamProgress(saved); // no-op outside Complete Mock Exam mode
       }
@@ -2246,7 +2453,7 @@
       var insHtml = formatInstructions(task.instructions, currentExamLevel);
       card.innerHTML =
         '<header class="task-header">'
-      +   '<span class="task-num">Aufgabe ' + tNum + '</span>'
+      +   '<span class="task-num">' + (isCombinedMockExamMode() ? sectionDisplayLabel(currentSection) + ' · ' : '') + 'Aufgabe ' + tNum + '</span>'
       +   '<span class="task-points">' + pts + '</span>'
       + '</header>'
       + '<p class="task-instructions">' + insHtml + '</p>'
@@ -3037,9 +3244,14 @@
       .then(function (res) {
         hide('gradingState');
         if (res.ok && res.body && typeof res.body.total_score === 'number') {
-          renderSchreibenResults(res.body);
-          show('resultsArea');
-          el('resultsArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // Combined mode: never reveal the writing evaluation mid-attempt.
+          if (isCombinedMockExamMode()) {
+            showMockExamProcessing('Saving your answers…');
+          } else {
+            renderSchreibenResults(res.body);
+            show('resultsArea');
+            el('resultsArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
           // Marks this section eligible for the leave-confirmation lock
           // (Part 3) — independent of whether saveAttempt() below actually
           // persists, since an anonymous learner still "finished" the
@@ -3128,7 +3340,8 @@
 
           saveAttempt(answers, scores, res.body, totalInt, examMax).then(function (saved) {
             if (saved) {
-              show('savedNotice'); loadHistory(); loadWeakness();
+              if (!isCombinedMockExamMode()) show('savedNotice');
+              loadHistory(); loadWeakness();
               deleteDraftForCurrentExam(); // real attempt is saved — the draft's job is done
               advanceMockExamProgress(saved); // no-op outside Complete Mock Exam mode
             }
@@ -3154,9 +3367,15 @@
     var graded  = scoreLesen();
     var answers = collectLesenAnswers();
 
-    renderLesenResults(graded);
-    show('resultsArea');
-    el('resultsArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Combined mode: never reveal correctness/results mid-attempt — go
+    // straight to a neutral "saving" state instead of the results screen.
+    if (isCombinedMockExamMode()) {
+      showMockExamProcessing('Saving your answers…');
+    } else {
+      renderLesenResults(graded);
+      show('resultsArea');
+      el('resultsArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
     sectionJustCompleted = true; // Part 3 — eligible for the leave-confirmation lock now
 
     saveAttempt(
@@ -3166,7 +3385,8 @@
       graded.total
     ).then(function (saved) {
       if (saved) {
-        show('savedNotice'); loadHistory(); loadWeakness();
+        if (!isCombinedMockExamMode()) show('savedNotice');
+        loadHistory(); loadWeakness();
         deleteDraftForCurrentExam(); // real attempt is saved — the draft's job is done
         advanceMockExamProgress(saved); // no-op outside Complete Mock Exam mode
       }
@@ -4257,6 +4477,10 @@
     document.querySelectorAll('#examModeToggle .mode-btn').forEach(function (btn) {
       btn.addEventListener('click', function () { setExamMode(btn.getAttribute('data-mode')); });
     });
+
+    // Small "Exit mock exam" control that replaces the toggle once an
+    // attempt is active — confirmation required, progress is saved either way.
+    el('mockExamExitBtn').addEventListener('click', exitMockExam);
 
     // Delegated autosave triggers (Part 1) — bound once on the container
     // since #taskCards's *contents* are replaced on every loadExam(), but
