@@ -18,36 +18,109 @@ history and don't want to guess at a requirement that hasn't been stated.
 
 ## 1. Structure matches the official Goethe Teil/task structure and timing
 
-- **Timing** (Lesen/Schreiben, all levels): sourced from the Goethe-Institut's
-  own Durchführungsbestimmungen ("Terms and Conditions for Exam
-  Administration"), "Stand: 1. September 2025," § 1.4 Zeitliche Organisation
-  — cited in `exam-vault.html:1343-1347` (`SECTION_MINUTES`). This is a
-  primary-source citation and can be checked directly against it.
-- **Hören structure** (A1 only, today's only Hören content): sourced in
-  `hoeren-a1-restructure-plan.md` — Teil 1 (6 items, dialogues, MC, played
-  **twice**), Teil 2 (4 items, announcements, true/false, played **once**),
-  Teil 3 (5 items, monologues, MC, played **twice**), totaling 15 raw
-  points. That document itself flags a caveat worth repeating here: the
-  per-Teil item/play-count breakdown came from a secondary source
-  (a Goethe-affiliated practice site) cross-checked against independent
-  search results that agreed, **not** the primary Modellsatz PDF directly
-  (it's image-based and didn't extract as text). The ~20-minute total
-  duration *is* confirmed from the primary Durchführungsbestimmungen text.
-  **[UNCERTAIN]** whether "two independent secondary sources agreeing" is
-  a high enough bar for certification-grade evidence, or whether the
-  primary Modellsatz PDF should be manually reviewed (e.g. via OCR or a
-  manual read-through) before any Hören exam can be certified. Flagging
-  rather than deciding this myself.
-- **Lesen/Schreiben per-Teil item counts**: **[UNCERTAIN]** — I could not
-  find a primary-source citation anywhere in this project for the official
-  number of Teile or items-per-Teil for Lesen/Schreiben at any level (only
-  timing is confirmed). This checklist item can't be fully evaluated for
-  Lesen/Schreiben content until that's sourced. Flagging as a gap rather
-  than inventing numbers.
-- The `exam_tasks.task_type` shape (`form_fill`, `short_message`, etc.) is
-  a DeutschWeg-internal representation, not itself an official structure —
-  what needs verifying is that the *count and nature* of tasks under an
-  `exams` row matches the real exam's Teile for that level/section.
+### 1.0 Which A1 variant — must state this explicitly
+
+Goethe publishes **two structurally different A1 exams**: **Start Deutsch 1**
+(general adult exam) and **Fit in Deutsch 1** (youth-oriented) — they are
+not interchangeable and must not be mixed within one Übungssatz. Fit in
+Deutsch 1's Hören is 2 Teile / 12 items, all played twice — a different
+shape from Start Deutsch 1's 3 Teile / 15 items / mixed play counts (below).
+
+**DeutschWeg's Mock Exam content is Start Deutsch 1.** Our existing Hören
+content (3 Teile, Teil 1 & 3 played twice, Teil 2 once) already matches
+Start Deutsch 1's pattern, not Fit in Deutsch 1's — confirming this
+explicitly here so no future content generation accidentally mixes in the
+other variant's structure.
+
+Primary sources:
+- **Prüfungsziele/Testbeschreibung A1 Start Deutsch 1** (Goethe-Institut):
+  https://www.goethe.de/pro/relaunch/prf/de/Pruefungsziele_Testbeschreibung_A1_SD1.pdf
+  — read directly this session via `pdftotext` (the PDF has a real text
+  layer on its descriptive pages, unlike the Modellsatz's scanned sample
+  sheets). Exact structure below is quoted/paraphrased from this document.
+- **Official complete sample exam ("Übungssatz 01")**, with candidate
+  sheets, examiner sheets, model answers, and full transcripts:
+  https://www.goethe.de/pro/relaunch/prf/materialien/A1_sd1/sd_1_uebungssatz01.pdf
+  — reference for structure and quality bar (task phrasing style,
+  answer-key rigor, item difficulty) only. **Must not be copied or closely
+  paraphrased** — copyright.
+
+### 1.1 Hören (Start Deutsch 1) — confirmed structure
+
+Quoted/paraphrased directly from the Prüfungsziele/Testbeschreibung PDF
+(§4 Prüfungsformen → Hören):
+
+> "Die Prüfung besteht aus drei Teilen mit insgesamt 15 Aufgaben... Die
+> Hörtexte in Teil 1 und 3 werden zweimal vorgespielt, in Teil 2 hört man
+> jeden Text nur einmal."
+
+| Teil | Content | Task format | Plays |
+|---|---|---|---|
+| 1 | Kurze Alltagsgespräche (short everyday dialogues, 2 people) | 3-option (dreigliedrig), picture-supported multiple choice | Twice |
+| 2 | Öffentliche Lautsprecherdurchsagen (public PA announcements) | Richtig/Falsch | Once |
+| 3 | Telefonansagen (voicemail/answering-machine messages) | 3-option multiple choice | Twice |
+
+Total 15 Aufgaben, max 15 points (1 per correct answer), ~20 minutes to
+play + ~3 minutes to transfer answers to the answer sheet.
+
+**The per-Teil numeric split (how the 15 divide across Teil 1/2/3) is NOT
+stated anywhere in this document's extractable text** — the sample-item
+pages (28–31, where the actual numbered items would appear) are
+image-only, same limitation as the Modellsatz PDF hit previously.
+`hoeren-a1-restructure-plan.md`'s 6/4/5 split remains **secondary-sourced,
+not primary-confirmed** — see §1.5 for what this does and doesn't resolve.
+
+### 1.2 Lesen (Start Deutsch 1) — confirmed structure
+
+Quoted/paraphrased from the same document (§4 → Lesen):
+
+| Teil | Content | Task format | Items |
+|---|---|---|---|
+| 1 | Kurznotizen — **two** short texts (Notizzettel/E-Mails: Mitteilungen, Handlungsanweisungen, Einladungen) | Richtig/Falsch | 5 |
+| 2 | Kleinanzeigen — 10 classified ads, paired against 5 situations | Matching/Zuordnung (pick which of a pair fits the situation) | 5 |
+| 3 | Hinweisschilder/Aushänge — 5 very short sign/notice texts | Richtig/Falsch | 5 |
+
+Total 15 Aufgaben, max 15 points, ~25 minutes. Teil 2's item range is
+stated explicitly in the document's own sample-task header ("Teil 2 Lesen
+Sie die Texte und die Aufgaben 6 bis 10"), confirming Teil 1 = items 1–5;
+Teil 3's "5" is stated explicitly ("Zu fünf sehr kurzen Texten"); Teil 1's
+5 follows by subtraction (15 − 5 − 5 = 5). This is now a **confirmed,
+primary-sourced structure**, not an estimate.
+
+**Note:** no Teil in official A1 Start Deutsch 1 Lesen uses plain
+multiple-choice (a/b/c on a single text) — every Teil is either
+Richtig/Falsch or matching. This directly informs the Step 3 audit below.
+
+### 1.3 Schreiben (Start Deutsch 1) — confirmed structure
+
+Quoted/paraphrased from the same document (§4 → Schreiben):
+
+| Teil | Content | Scoring |
+|---|---|---|
+| 1 | Fill in a form (Anmeldung/Bestellung etc.) — 5 blanks, using info from an intro text | 1 point per correctly filled field, max **5** |
+| 2 | Write a short message (Kurzmitteilung — e.g. an apology note/email) covering 3 given Leitpunkte, ~30 words, with appropriate greeting/closing for the text type | 3 points per content point (×3) + 1 for text-type fit, max **10** |
+
+Total 15 points, ~20 minutes. Two independent examiners score and reconcile.
+
+### 1.4 Timing (all sections, all levels)
+
+Sourced from the Goethe-Institut's Durchführungsbestimmungen ("Terms and
+Conditions for Exam Administration"), "Stand: 1. September 2025," § 1.4
+Zeitliche Organisation — cited in `exam-vault.html:1343-1347`
+(`SECTION_MINUTES`). Independent primary-source citation, consistent with
+the ~20/~25/~20-minute figures above.
+
+### 1.5 What's still not primary-sourced
+
+**[UNCERTAIN]** whether "the 6/4/5 Hören split is secondary-sourced only"
+is an acceptable basis for certification, given the primary document
+doesn't state it and its own sample pages aren't machine-readable here.
+Options I see, not deciding between them: (a) treat the confirmed total
+(15) as the hard gate and accept 6/4/5 as the best-available per-Teil
+guess, (b) get the Übungssatz 01 reference PDF's sample pages read by a
+human to confirm the split directly, (c) require this specific number
+be reconfirmed before certifying any Hören content. Flagging for you to
+decide, not deciding myself.
 
 ## 2. Hören-specific: play_count and end-to-end verification
 
