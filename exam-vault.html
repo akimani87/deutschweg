@@ -1273,14 +1273,74 @@
     }, 1600);
   }
 
-  // Placeholder pending Phase 4's real side-by-side results screen —
-  // deliberately not attempting a combined score here (architecture
-  // review, Section J: no forced single number).
+  // Combined-score model, additive to Complete Mock Exam only — does NOT
+  // touch scoring-config.js's shared PASS_THRESHOLD_PCT/passed(), which
+  // Practice Pool's per-skill "bestanden"/"weiter üben" badge keeps using
+  // exactly as before. Official conversion: each written skill's raw
+  // points scale to a /25 equivalent (15 raw ≈ ×1.66 → 25) so Hören +
+  // Lesen + Schreiben + Sprechen sum to /100, pass at 60. Implemented as
+  // (raw/max)*25 rather than a hardcoded ×1.66, so it stays mathematically
+  // correct even when a section's actual stored max isn't exactly 15 (the
+  // known Schreiben A1 rubric-vs-DB-max mismatch is still open) — this is
+  // equivalent to ×1.66 exactly when max=15, and still proportionally
+  // correct otherwise. Sprechen isn't part of Complete Mock Exam yet, so
+  // this only ever shows a written total out of 75, never a real 100-point
+  // pass/fail verdict — showing one without Sprechen would be a false claim.
   function showMockExamFinished() {
     hide('resultsArea');
     hide('examContent');
-    el('metText').textContent = 'Complete Mock Exam finished — Hören, Lesen and Schreiben are all done.';
+    el('metIcon').textContent = '✓';
+    el('metIcon').classList.remove('error');
+    hide('metRetryBtn');
+    el('metText').textContent = 'Complete Mock Exam finished — berechne Ergebnis…';
     show('mockExamTransition');
+    computeAndShowMockExamCombinedScore();
+  }
+
+  function showMockExamFinishedFallback() {
+    el('metText').textContent = 'Complete Mock Exam finished — Hören, Lesen and Schreiben are all done.';
+  }
+
+  function computeAndShowMockExamCombinedScore() {
+    if (!currentMockExamAttemptId) { showMockExamFinishedFallback(); return; }
+    dwSupabase.from('mock_exam_attempts')
+      .select('hoeren_attempt_id, lesen_attempt_id, schreiben_attempt_id')
+      .eq('id', currentMockExamAttemptId).single()
+      .then(function (res) {
+        var mea = res && res.data;
+        if (res.error || !mea || !mea.hoeren_attempt_id || !mea.lesen_attempt_id || !mea.schreiben_attempt_id) {
+          showMockExamFinishedFallback();
+          return;
+        }
+        Promise.all([
+          dwSupabase.from('exam_attempts').select('total_score, max_score').eq('id', mea.hoeren_attempt_id).single(),
+          dwSupabase.from('exam_attempts').select('total_score, max_score').eq('id', mea.lesen_attempt_id).single(),
+          dwSupabase.from('exam_attempts').select('total_score, max_score').eq('id', mea.schreiben_attempt_id).single()
+        ]).then(function (results) {
+          var scaled = results.map(function (r) {
+            var d = r && r.data;
+            if (r.error || !d || typeof d.total_score !== 'number' || typeof d.max_score !== 'number' || d.max_score <= 0) return null;
+            return (d.total_score / d.max_score) * 25;
+          });
+          if (scaled.indexOf(null) !== -1) { showMockExamFinishedFallback(); return; }
+          renderMockExamCombinedScore(scaled);
+        }, function () { showMockExamFinishedFallback(); });
+      }, function () { showMockExamFinishedFallback(); });
+  }
+
+  function renderMockExamCombinedScore(scaled) {
+    var combined = scaled.reduce(function (a, b) { return a + b; }, 0);
+    var combinedRounded = Math.round(combined * 10) / 10;
+    // Below 35/75 written, no possible Sprechen score reaches 60/100 —
+    // a real, useful floor, not a per-skill pass/fail claim.
+    var floorNote = combinedRounded < 35
+      ? '<br><span style="font-size:12.5px; font-weight:400; color:#B91C1C;">Selbst mit einer perfekten Sprechen-Note wäre die Gesamtprüfung (60/100 nötig) damit nicht mehr zu bestehen.</span>'
+      : '';
+    el('metText').innerHTML =
+        'Complete Mock Exam fertig!<br>'
+      + '<strong>' + combinedRounded.toFixed(1) + ' / 75</strong> (Hören + Lesen + Schreiben, skaliert)<br>'
+      + '<span style="font-size:12.5px; font-weight:400;">Die offizielle Bestehensgrenze ist 60/100 über Hören + Lesen + Schreiben + Sprechen zusammen. Sprechen ist noch nicht Teil des Complete Mock Exam — das hier ist dein Schreib-/Hör-/Lese-Ergebnis allein.</span>'
+      + floorNote;
   }
 
   function startCombinedMockExam() {

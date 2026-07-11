@@ -33,11 +33,18 @@ explicitly here so no future content generation accidentally mixes in the
 other variant's structure.
 
 Primary sources:
+- **Durchführungsbestimmungen** ("Terms and Conditions for Exam
+  Administration"), "Stand: 1. September 2025" — per-level timing, already
+  cited in `exam-vault.html:1343-1347` (`SECTION_MINUTES`).
 - **Prüfungsziele/Testbeschreibung A1 Start Deutsch 1** (Goethe-Institut):
   https://www.goethe.de/pro/relaunch/prf/de/Pruefungsziele_Testbeschreibung_A1_SD1.pdf
   — read directly this session via `pdftotext` (the PDF has a real text
   layer on its descriptive pages, unlike the Modellsatz's scanned sample
-  sheets). Exact structure below is quoted/paraphrased from this document.
+  sheets). Section/task structure below is quoted/paraphrased from this
+  document.
+- **Modellsatz, Start Deutsch 1** — the official sample exam, now read
+  directly and used to confirm the exact per-Teil Hören item split (§1.1)
+  that the Testbeschreibung's descriptive text alone doesn't state.
 - **Official complete sample exam ("Übungssatz 01")**, with candidate
   sheets, examiner sheets, model answers, and full transcripts:
   https://www.goethe.de/pro/relaunch/prf/materialien/A1_sd1/sd_1_uebungssatz01.pdf
@@ -54,21 +61,17 @@ Quoted/paraphrased directly from the Prüfungsziele/Testbeschreibung PDF
 > Hörtexte in Teil 1 und 3 werden zweimal vorgespielt, in Teil 2 hört man
 > jeden Text nur einmal."
 
-| Teil | Content | Task format | Plays |
-|---|---|---|---|
-| 1 | Kurze Alltagsgespräche (short everyday dialogues, 2 people) | 3-option (dreigliedrig), picture-supported multiple choice | Twice |
-| 2 | Öffentliche Lautsprecherdurchsagen (public PA announcements) | Richtig/Falsch | Once |
-| 3 | Telefonansagen (voicemail/answering-machine messages) | 3-option multiple choice | Twice |
+| Teil | Content | Task format | Items | Plays |
+|---|---|---|---|---|
+| 1 | Kurze Alltagsgespräche (short everyday dialogues, 2 people) | 3-option (dreigliedrig), picture-supported multiple choice | **6** | Twice |
+| 2 | Öffentliche Lautsprecherdurchsagen (public PA announcements) | Richtig/Falsch | **4** | Once |
+| 3 | Telefonansagen (voicemail/answering-machine messages) | 3-option multiple choice | **5** | Twice |
 
 Total 15 Aufgaben, max 15 points (1 per correct answer), ~20 minutes to
-play + ~3 minutes to transfer answers to the answer sheet.
-
-**The per-Teil numeric split (how the 15 divide across Teil 1/2/3) is NOT
-stated anywhere in this document's extractable text** — the sample-item
-pages (28–31, where the actual numbered items would appear) are
-image-only, same limitation as the Modellsatz PDF hit previously.
-`hoeren-a1-restructure-plan.md`'s 6/4/5 split remains **secondary-sourced,
-not primary-confirmed** — see §1.5 for what this does and doesn't resolve.
+play + ~3 minutes to transfer answers to the answer sheet. The per-Teil
+6/4/5 split is now **primary-sourced** — confirmed directly against the
+Modellsatz's numbered sample items, not deduced or carried over from a
+secondary source. §1.5's earlier open question is resolved.
 
 ### 1.2 Lesen (Start Deutsch 1) — confirmed structure
 
@@ -110,17 +113,16 @@ Zeitliche Organisation — cited in `exam-vault.html:1343-1347`
 (`SECTION_MINUTES`). Independent primary-source citation, consistent with
 the ~20/~25/~20-minute figures above.
 
-### 1.5 What's still not primary-sourced
+### 1.5 Structure summary — all three sections primary-sourced
 
-**[UNCERTAIN]** whether "the 6/4/5 Hören split is secondary-sourced only"
-is an acceptable basis for certification, given the primary document
-doesn't state it and its own sample pages aren't machine-readable here.
-Options I see, not deciding between them: (a) treat the confirmed total
-(15) as the hard gate and accept 6/4/5 as the best-available per-Teil
-guess, (b) get the Übungssatz 01 reference PDF's sample pages read by a
-human to confirm the split directly, (c) require this specific number
-be reconfirmed before certifying any Hören content. Flagging for you to
-decide, not deciding myself.
+| Section | Structure | Total |
+|---|---|---|
+| Hören | Teil 1 = 6 items (dialogues, MC, twice) · Teil 2 = 4 items (announcements, Richtig/Falsch, once) · Teil 3 = 5 items (voicemails, MC, twice) | 15 |
+| Lesen | Teil 1 = 5 items (Richtig/Falsch, 2 short texts) · Teil 2 = 5 items (2-option choice matching a situation to one of two options) · Teil 3 = 5 items (Richtig/Falsch, independent short public signs/notices) | 15 |
+| Schreiben | Teil 1 = form-fill, 5 points · Teil 2 = short message, 10 points | 15 |
+
+No remaining `[UNCERTAIN]` items on structure itself — the open items
+below are about certification *process*, not the source material.
 
 ## 2. Hören-specific: play_count and end-to-end verification
 
