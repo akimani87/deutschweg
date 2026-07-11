@@ -1510,9 +1510,13 @@
   function answersAreEmpty(payload) {
     if (!payload) return true;
     if (currentSection === 'schreiben') {
-      return ['task2', 'task3', 'task4'].every(function (k) {
+      var textsEmpty = ['task2', 'task3', 'task4'].every(function (k) {
         return !payload[k] || !String(payload[k]).trim();
       });
+      var formEmpty = !Array.isArray(payload.task1) || payload.task1.every(function (v) {
+        return !v || !String(v).trim();
+      });
+      return textsEmpty && formEmpty;
     }
     if (currentSection === 'hoeren') {
       return (payload.stepIdx || 0) === 0 && (payload.playsUsed || 0) === 0
@@ -1602,6 +1606,15 @@
       ta.value = saved[slot];
       ta.dispatchEvent(new Event('input', { bubbles: true }));
     });
+    if (Array.isArray(saved.task1)) {
+      var formInputs = document.querySelectorAll('#taskCards input.form-input');
+      saved.task1.forEach(function (val, i) {
+        var inp = formInputs[i];
+        if (!inp || typeof val !== 'string') return;
+        inp.value = val;
+        inp.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+    }
   }
 
   // Mirrors collectLesenAnswers()'s shape exactly (per task_type selectors).
@@ -2124,9 +2137,18 @@
   }
 
   function renderFormFill(task, body) {
-    var fields = (task.stimulus && Array.isArray(task.stimulus.fields)) ? task.stimulus.fields : [];
+    var stim   = task.stimulus || {};
+    var fields = Array.isArray(stim.fields) ? stim.fields : [];
     task1Fields = fields.slice();
-    body.innerHTML = '<div class="form-grid">' + fields.map(function (field, i) {
+    // The intro/situation text is where the field answers actually come
+    // from (official structure: "Im Einleitungstext... finden die
+    // Prüfungsteilnehmenden die dafür notwendigen Informationen") — this
+    // was previously never rendered at all, leaving bare unlabeled inputs
+    // with no context to fill them in from.
+    var introHtml = stim.text
+      ? '<div class="notice-box">' + escapeHtml(stim.text) + '</div>'
+      : '';
+    body.innerHTML = introHtml + '<div class="form-grid">' + fields.map(function (field, i) {
       var id = 't1f' + i;
       var fullRow = /\?$/.test(field);
       return '<div class="form-row' + (fullRow ? ' full' : '') + '">'
@@ -2314,25 +2336,58 @@
     });
   }
 
-  function renderTrueFalse(task, body) {
-    var stim = task.stimulus || {};
-    var statements = stim.statements || [];
-    body.innerHTML =
-        '<div class="chat-bubble">'
-      +   '<div class="chat-meta">📱 WhatsApp · Amina</div>'
-      +   '<p class="chat-text">' + escapeHtml(stim.text || '') + '</p>'
+  // A single statement's markup — data-s is a flat index into the top-
+  // level stimulus.statements array regardless of which text it's shown
+  // grouped under, so checkSubmitState()/collectLesenAnswers()/scoring/
+  // review (all of which read stimulus.statements as one flat array by
+  // that same index) need no changes for the multi-text case below.
+  function tfStatementHtml(st, si) {
+    return '<li class="tf-statement" data-s="' + si + '">'
+      + '<p class="tf-text">' + escapeHtml(st.s || '') + '</p>'
+      + '<div class="tf-buttons">'
+      +   '<button type="button" class="tf-btn tf-true"  data-value="true">✓ Richtig</button>'
+      +   '<button type="button" class="tf-btn tf-false" data-value="false">✗ Falsch</button>'
       + '</div>'
-      + '<ol class="tf-statements">'
-      + statements.map(function (st, si) {
-          return '<li class="tf-statement" data-s="' + si + '">'
-            + '<p class="tf-text">' + escapeHtml(st.s || '') + '</p>'
-            + '<div class="tf-buttons">'
-            +   '<button type="button" class="tf-btn tf-true"  data-value="true">✓ Richtig</button>'
-            +   '<button type="button" class="tf-btn tf-false" data-value="false">✗ Falsch</button>'
-            + '</div>'
-            + '</li>';
-        }).join('')
-      + '</ol>';
+      + '</li>';
+  }
+
+  // Two stimulus shapes:
+  //   Legacy: { text, statements } — one message, rendered exactly as
+  //     before (phone chat-bubble). Untouched for backward compatibility
+  //     with the existing WhatsApp task.
+  //   Multi-text: { texts: [{ label, text }, ...], statements } — each
+  //     text renders in its own neutrally-labeled card (a notice looks
+  //     like a notice, an invitation looks like an invitation — no
+  //     hardcoded chat framing), with its own statements grouped beneath
+  //     it via each statement's text_index. statements itself stays one
+  //     flat array either way — see tfStatementHtml's comment.
+  function renderTrueFalse(task, body) {
+    var stim       = task.stimulus || {};
+    var statements = stim.statements || [];
+
+    if (Array.isArray(stim.texts) && stim.texts.length) {
+      body.innerHTML = stim.texts.map(function (txt, ti) {
+        var ownStatements = statements
+          .map(function (st, si) { return { st: st, si: si }; })
+          .filter(function (o) { return (o.st.text_index || 0) === ti; })
+          .map(function (o) { return tfStatementHtml(o.st, o.si); })
+          .join('');
+        return '<div class="notice-box">'
+          +   '<div class="stimulus-label">' + escapeHtml(txt.label || '') + '</div>'
+          +   escapeHtml(txt.text || '')
+          + '</div>'
+          + '<ol class="tf-statements">' + ownStatements + '</ol>';
+      }).join('');
+    } else {
+      body.innerHTML =
+          '<div class="chat-bubble">'
+        +   '<div class="chat-meta">📱 WhatsApp · Amina</div>'
+        +   '<p class="chat-text">' + escapeHtml(stim.text || '') + '</p>'
+        + '</div>'
+        + '<ol class="tf-statements">'
+        + statements.map(function (st, si) { return tfStatementHtml(st, si); }).join('')
+        + '</ol>';
+    }
 
     body.querySelectorAll('.tf-btn').forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -2649,8 +2704,9 @@
   // currentTasks here. Submit enables when ALL textareas meet their
   // per-task word_min.
   function validateSchreiben() {
-    var tas = document.querySelectorAll('#taskCards textarea.response-area');
-    if (!tas.length) {
+    var tas        = document.querySelectorAll('#taskCards textarea.response-area');
+    var formInputs = document.querySelectorAll('#taskCards input.form-input');
+    if (!tas.length && !formInputs.length) {
       el('submitBtn').disabled = true;
       el('submitNote').textContent = 'Lade Aufgaben…';
       return;
@@ -2665,6 +2721,15 @@
       if (n < min) allOk = false;
     });
 
+    // form_fill (e.g. A1 Übungssatz Task 1) — every field must be filled,
+    // not just the word-count-gated textareas, before submit enables.
+    var formFilled = formInputs.length;
+    Array.prototype.forEach.call(formInputs, function (inp) {
+      if (!inp.value || !inp.value.trim()) formFilled--;
+    });
+    var formOk = formFilled === formInputs.length;
+    if (!formOk) allOk = false;
+
     var btn  = el('submitBtn');
     var note = el('submitNote');
     btn.disabled = !allOk;
@@ -2672,6 +2737,8 @@
 
     if (allOk) {
       note.textContent = 'Bereit! Das Ergebnis kommt in 10–20 Sekunden.';
+    } else if (!formOk) {
+      note.textContent = 'Füll alle Felder in Aufgabe 1 aus (' + formFilled + '/' + formInputs.length + ') und schreib genug Wörter für die Nachricht.';
     } else if (counts.length === 1) {
       var c = counts[0];
       note.textContent = 'Schreib mindestens ' + c.min + ' Wörter um die Prüfung abzugeben (' + c.n + ' bisher).';
@@ -2798,6 +2865,18 @@
       var slot = ta.dataset.slot || 'task2';
       out[slot] = (ta.value || '').trim();
     });
+    // form_fill (e.g. A1 Übungssatz Task 1) — array of field values in the
+    // same order as stimulus.fields, so the server can compare index-for-
+    // index against stimulus.answers. Only set when a form_fill task
+    // actually rendered — omitted entirely for every other Schreiben exam,
+    // so this is additive and backward compatible.
+    var formInputs = document.querySelectorAll('#taskCards input.form-input');
+    if (formInputs.length) {
+      out.task1  = Array.prototype.map.call(formInputs, function (inp) { return (inp.value || '').trim(); });
+      // The server looks up the authoritative answer key by examId — it
+      // never trusts a client-supplied "correct" value.
+      out.examId = currentExamId;
+    }
     return out;
   }
 
@@ -3373,6 +3452,7 @@
     var critMax      = SCHREIBEN_CRITERION_MAX_BY_LEVEL[level] || 3;
     var tasks        = (g && g.tasks) || {};
     var taskRawMax   = criteriaKeys.length * critMax;
+    var formFill     = g.form_fill || null; // present only for exams with a form_fill task (Mock Exam Teil 1)
 
     var total    = (typeof g.total_score === 'number') ? g.total_score : '—';
     var maxTotal = (typeof g.max_score   === 'number') ? g.max_score   : '—';
@@ -3380,10 +3460,31 @@
 
     setHero(g.total_score, g.max_score);
 
-    setTaskPills(taskDefs.map(function (td) {
+    var pills = taskDefs.map(function (td) {
       var t = tasks[td.key] || {};
       return { label: td.label, score: (typeof t.task_raw === 'number') ? t.task_raw : '—', max: taskRawMax };
-    }));
+    });
+    if (formFill) pills.unshift({ label: 'Formular', score: formFill.score, max: formFill.max });
+    setTaskPills(pills);
+
+    var formFillHtml = '';
+    if (formFill) {
+      var fieldsHtml = (formFill.items || []).map(function (it) {
+        var ok = !!it.ok;
+        return '<div class="lr-row ' + (ok ? 'correct' : 'wrong') + '">'
+          + '<span class="lr-icon">' + (ok ? '✓' : '✗') + '</span>'
+          + '<div class="lr-body">'
+          +   '<div class="lr-q">' + escapeHtml(it.field) + '</div>'
+          +   '<div class="lr-yours">Deine Antwort: <strong>' + escapeHtml(it.your || '—') + '</strong></div>'
+          +   (ok ? '' : '<div class="lr-correct">Richtige Antwort: <strong>' + escapeHtml(it.correct || '—') + '</strong></div>')
+          + '</div>'
+          + '</div>';
+      }).join('');
+      formFillHtml = '<div class="results-section">'
+        + '<h3 class="results-h">Formular (' + formFill.score + ' / ' + formFill.max + ')</h3>'
+        + '<div class="lesen-review">' + fieldsHtml + '</div>'
+        + '</div>';
+    }
 
     var scoreCalcLine = taskDefs.map(function (td) {
       var t = tasks[td.key] || {};
@@ -3413,6 +3514,7 @@
       +     (typeof g.word_count === 'number' ? '<br>Word count detected: <strong>' + escapeHtml(g.word_count) + ' words</strong>' : '')
       +   '</p>'
       + '</div>'
+      + formFillHtml
       + taskBlocksHtml
       + makeMistakesAndNextHtml(g);
 

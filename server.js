@@ -2382,8 +2382,41 @@ const EXAM_GRADE_BLANK_INSTRUCTION =
   'submitted, and set that task\'s register_check.passed to false. Do NOT let a blank task affect ' +
   'the scoring of any OTHER task in the same submission.';
 
+// Deterministic form_fill scoring (Mock Exam A1 Schreiben Teil 1 — official
+// Start Deutsch 1 structure: 5 blanks, 1 point each, exact/case-insensitive
+// match). Separate from the Claude-graded task2/task3/task4 short-message
+// rubrics below on purpose — a fill-in-the-form field has one correct
+// answer, so this doesn't need (and shouldn't get) AI judgment. Looks up
+// the authoritative answer key server-side via examId + task_number=1,
+// never trusts a client-supplied "correct" value.
+async function scoreFormFill(examId, submittedValues) {
+  if (!Array.isArray(submittedValues) || !submittedValues.length) return null;
+  if (!examId || !supabaseAdmin) return null;
+  const { data: task, error } = await supabaseAdmin
+    .from('exam_tasks')
+    .select('stimulus, max_score')
+    .eq('exam_id', examId)
+    .eq('task_number', 1)
+    .eq('task_type', 'form_fill')
+    .maybeSingle();
+  if (error || !task) return null;
+  const fields  = (task.stimulus && task.stimulus.fields)  || [];
+  const answers = (task.stimulus && task.stimulus.answers) || [];
+  const items = fields.map((field, i) => {
+    const your    = String(submittedValues[i] || '').trim();
+    const correct = String(answers[i] || '').trim();
+    const ok = your.length > 0 && your.toLowerCase() === correct.toLowerCase();
+    return { field, your, correct, ok };
+  });
+  return {
+    score: items.filter(it => it.ok).length,
+    max:   (typeof task.max_score === 'number') ? task.max_score : fields.length,
+    items,
+  };
+}
+
 app.post('/api/exam-grade', async (req, res) => {
-  const { level, task2, task3, task4, isTimeoutSubmit } = req.body || {};
+  const { level, task1, examId, task2, task3, task4, isTimeoutSubmit } = req.body || {};
   const VALID_LEVELS = ['A1', 'A2', 'B1', 'B2'];
   const safeLevel = VALID_LEVELS.indexOf(level) !== -1 ? level : 'A1';
   const isTimeout  = isTimeoutSubmit === true;
@@ -2532,7 +2565,22 @@ app.post('/api/exam-grade', async (req, res) => {
     }
 
     const fallbackMax = { A1: 12, A2: 25, B1: 100, B2: 40 }[safeLevel];
-    console.log(`[/api/exam-grade] Success — level=${safeLevel}, total=${result.total_score}/${result.max_score || fallbackMax}`);
+
+    // Additive, separate from the Claude-graded task2 rubric above — only
+    // present when the submission actually included a form_fill task
+    // (Mock Exam A1 Übungssatz Teil 1). Absent for every Practice Pool A1
+    // exam, which has no form_fill task, so this never touches those.
+    const formFill = await scoreFormFill(examId, task1).catch(err => {
+      console.error('[/api/exam-grade] form_fill scoring failed:', err.message);
+      return null;
+    });
+    if (formFill) {
+      result.form_fill  = formFill;
+      result.total_score = (result.total_score || 0) + formFill.score;
+      result.max_score   = (typeof result.max_score === 'number' ? result.max_score : fallbackMax) + formFill.max;
+    }
+
+    console.log(`[/api/exam-grade] Success — level=${safeLevel}, total=${result.total_score}/${result.max_score || fallbackMax}${formFill ? ` (incl. form_fill ${formFill.score}/${formFill.max})` : ''}`);
     return res.json(result);
 
   } catch (err) {
