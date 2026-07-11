@@ -1165,6 +1165,16 @@
   var MOCK_EXAM_SECTION_ORDER  = ['hoeren', 'lesen', 'schreiben'];
   var oneTimeWiringDone        = false; // load()'s event-listener block now guards against running twice — see load()
 
+  // Single named mode check, used to gate the section timer (Practice by
+  // Skill must never show/resume a countdown; Complete Mock Exam always
+  // does) — see timer functions below. Not a general mode refactor: every
+  // other combined-mode function still reads currentMockExamAttemptId
+  // directly, this helper exists only where "which mode am I in" needs to
+  // read cleanly rather than as a bare truthiness check.
+  function isCombinedMockExamMode() {
+    return Boolean(currentMockExamAttemptId);
+  }
+
   function nextMockExamSection(section) {
     var i = MOCK_EXAM_SECTION_ORDER.indexOf(section);
     return (i >= 0 && i + 1 < MOCK_EXAM_SECTION_ORDER.length) ? MOCK_EXAM_SECTION_ORDER[i + 1] : null;
@@ -1428,6 +1438,7 @@
 
   function startSectionTimer(level, section, endsAtMs) {
     clearSectionTimer();
+    if (!isCombinedMockExamMode()) return; // Practice by Skill never shows/resumes a countdown
     var mins = (SECTION_MINUTES[level] || {})[section];
     if (!mins) return; // no documented timing for this combo — no timer rather than a guess
     sectionEndsAt = endsAtMs;
@@ -1454,6 +1465,7 @@
   // very first second of a fresh section to an unsaved deadline would let a
   // reload grant extra time.
   function beginFreshSectionTimer() {
+    if (!isCombinedMockExamMode()) { clearSectionTimer(); return; } // Practice by Skill: no countdown, nothing persisted
     var mins = (SECTION_MINUTES[currentLevel] || {})[currentSection];
     if (!mins) { clearSectionTimer(); return; }
     var endsAtMs = Date.now() + mins * 60000;
@@ -1749,6 +1761,12 @@
           draftCheckedForExam = examId;
           var draft      = res && res.data;
           var endsAtMs   = (draft && draft.timer_ends_at) ? new Date(draft.timer_ends_at).getTime() : null;
+          // A draft's timer_ends_at may have been written by a Complete Mock
+          // Exam attempt on this same exam_id (drafts are keyed only by
+          // user_id+exam_id, no mode dimension) — ignore it entirely in
+          // Practice by Skill so a stale exam-mode deadline can never
+          // resume, or worse, auto-submit, in the untimed environment.
+          if (!isCombinedMockExamMode()) endsAtMs = null;
           var hasContent = !!draft && !answersAreEmpty(draft.answers);
 
           // Time already ran out while the tab was away — there's nothing
