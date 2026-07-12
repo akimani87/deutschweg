@@ -51,7 +51,7 @@ app.use(cors({
     return callback(new Error('Not allowed by CORS'));
   },
   methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 // Capture raw body for webhook signature verification (Lemon Squeezy needs
 // the original bytes before JSON parsing, not the parsed object).
@@ -1523,6 +1523,164 @@ app.get('/api/dictionary/:word', async (req, res) => {
 // 10 min/day, resets at UTC midnight).
 // ═══════════════════════════════════════════════════════════════════════════
 
+// ── Identity verification (WS + HTTP, standalone + Complete Mock Exam) ─────
+// The server never trusts a client-supplied user_id as proof of identity —
+// every entry point below verifies a real Supabase access token and derives
+// the caller's id from it instead. Never logs the token itself.
+async function verifySupabaseToken(accessToken) {
+  if (!supabaseAdmin || !accessToken || typeof accessToken !== 'string') {
+    return { userId: null, error: 'missing_token' };
+  }
+  try {
+    const { data, error } = await supabaseAdmin.auth.getUser(accessToken);
+    if (error || !data || !data.user) return { userId: null, error: 'invalid_token' };
+    return { userId: data.user.id, error: null };
+  } catch (err) {
+    console.error('[auth] token verification failed:', err.message);
+    return { userId: null, error: 'invalid_token' };
+  }
+}
+
+// Express middleware for the HTTP Sprechen endpoints — verifies
+// `Authorization: Bearer <token>`, sets req.verifiedUserId, 401s otherwise.
+// Request-body user_id is never consulted for identity.
+async function requireSprechenAuth(req, res, next) {
+  const header = req.headers['authorization'] || '';
+  const token = header.indexOf('Bearer ') === 0 ? header.slice(7).trim() : null;
+  const result = await verifySupabaseToken(token);
+  if (!result.userId) return res.status(401).json({ error: 'Please sign in again.' });
+  req.verifiedUserId = result.userId;
+  next();
+}
+
+// ── Sprechen conversation-validity model ────────────────────────────────────
+// A single canonical definition of "did a real, gradable conversation
+// happen," used both live (finalize() has the in-memory {role,text} array
+// already) and retrospectively against a stored session row (by
+// reconstructing role-tagged entries from the flattened transcript string —
+// no separate structured-transcript column needed).
+const SPRECHEN_END_REASONS = ['client_end', 'timeout', 'upstream_closed', 'ws_error', 'ws_closed'];
+const SPRECHEN_TECHNICAL_END_REASONS = ['upstream_closed', 'ws_error'];
+
+function parseStoredSprechenTranscript(stored) {
+  if (!stored) return [];
+  const exPrefix = 'Examiner (Prüfer): ';
+  const caPrefix = 'Candidate (Kandidat): ';
+  return String(stored).split('\n').filter(Boolean).map(function (line) {
+    if (line.indexOf(exPrefix) === 0) return { role: 'examiner', text: line.slice(exPrefix.length) };
+    if (line.indexOf(caPrefix) === 0) return { role: 'candidate', text: line.slice(caPrefix.length) };
+    return null;
+  }).filter(Boolean);
+}
+
+// Five named dimensions (reviewed): (1) learner turn count, (2) learner
+// speech amount, (3) progressed beyond startup — a candidate turn occurring
+// after the examiner's 2nd turn, not just an answer to the opener before
+// the connection died, (4) eligible end reason, (5) duration floor, paired
+// with the caller having already confirmed persistence succeeded.
+function isValidSprechenConversation(entries, durationSeconds, endReason) {
+  if (SPRECHEN_END_REASONS.indexOf(endReason) === -1) return false;
+  const candidateEntries = entries.filter(function (e) { return e.role === 'candidate'; });
+  const candidateWords = candidateEntries.map(function (e) { return e.text; }).join(' ').trim()
+    .split(/\s+/).filter(Boolean).length;
+  let examinerSeen = 0, progressedBeyondStartup = false;
+  for (let i = 0; i < entries.length; i++) {
+    const e = entries[i];
+    if (e.role === 'examiner') examinerSeen++;
+    else if (e.role === 'candidate' && examinerSeen >= 2) { progressedBeyondStartup = true; break; }
+  }
+  return candidateEntries.length >= 4
+    && candidateWords >= 20
+    && progressedBeyondStartup
+    && typeof durationSeconds === 'number' && durationSeconds >= 60;
+}
+
+// State derivation for a STORED sprechen_sessions row — used to decide
+// restart eligibility before a new live session is allowed to start.
+// Never relies on completed=false alone (feedback_attempts distinguishes
+// "not yet tried" from "tried and failed").
+function deriveSprechenSessionState(session) {
+  if (session.completed) return 'completed';
+  if (!session.end_reason) return 'live';
+  const entries = parseStoredSprechenTranscript(session.transcript);
+  const valid = isValidSprechenConversation(entries, session.duration_seconds, session.end_reason);
+  if (!valid) {
+    return SPRECHEN_TECHNICAL_END_REASONS.indexOf(session.end_reason) !== -1 ? 'technical_failure' : 'abandoned';
+  }
+  return (session.feedback_attempts || 0) > 0 ? 'feedback_failed' : 'submitted_feedback_pending';
+}
+
+// Shared feedback-generation + persistence — used by both the live WS
+// finalize() path and the HTTP retry endpoint below, so a failed evaluation
+// can be retried without opening another live voice session.
+async function attemptSprechenFeedbackGeneration(sessionId, transcript, language) {
+  if (supabaseAdmin && sessionId) {
+    const { data: cur } = await supabaseAdmin.from('sprechen_sessions')
+      .select('feedback_attempts').eq('id', sessionId).maybeSingle();
+    const attempts = (cur && cur.feedback_attempts) || 0;
+    await supabaseAdmin.from('sprechen_sessions').update({ feedback_attempts: attempts + 1 }).eq('id', sessionId);
+  }
+  try {
+    const fb = await generateSprechenFeedback(transcript, language);
+    if (fb && supabaseAdmin && sessionId) {
+      await supabaseAdmin.from('sprechen_sessions').update({
+        feedback: fb, feedback_language: language,
+        score_overall: fb.score_overall, score_aussprache: fb.score_aussprache,
+        score_kommunikation: fb.score_kommunikation, score_grammatik: fb.score_grammatik,
+        score_wortschatz: fb.score_wortschatz, completed: true,
+      }).eq('id', sessionId);
+    }
+    return { ok: Boolean(fb), feedback: fb };
+  } catch (err) {
+    console.error('[sprechen] feedback generation failed:', err.message);
+    return { ok: false, feedback: null };
+  }
+}
+
+// Server-side gate for starting (or restarting) a Complete Mock Exam
+// Sprechen session — never trusts the client's claim that an attempt id is
+// theirs or that a restart is warranted. verifiedUserId always comes from
+// verifySupabaseToken(), never from client-supplied input.
+async function validateMockExamSprechenAccess(verifiedUserId, mockExamAttemptId) {
+  if (!supabaseAdmin) return { allowed: false, reason: 'server_not_configured' };
+
+  const { data: attempt, error: attemptErr } = await supabaseAdmin
+    .from('mock_exam_attempts').select('*').eq('id', mockExamAttemptId).maybeSingle();
+  if (attemptErr || !attempt) return { allowed: false, reason: 'invalid_attempt' };
+  if (attempt.user_id !== verifiedUserId) return { allowed: false, reason: 'not_owner' };
+  if (attempt.completed_at) return { allowed: false, reason: 'attempt_already_complete' };
+  if (attempt.current_section !== 'sprechen') return { allowed: false, reason: 'wrong_section' };
+  if (attempt.sprechen_session_id) return { allowed: false, reason: 'already_accepted' };
+
+  const { data: sessions, error: sessErr } = await supabaseAdmin
+    .from('sprechen_sessions').select('*').eq('mock_exam_attempt_id', mockExamAttemptId)
+    .order('session_date', { ascending: false });
+  if (sessErr) return { allowed: false, reason: 'lookup_failed' };
+
+  const latest = sessions && sessions[0];
+  if (!latest) return { allowed: true, isRestart: false };
+
+  const state = deriveSprechenSessionState(latest);
+  if (state === 'live') return { allowed: false, reason: 'session_already_active' };
+  if (state === 'technical_failure') {
+    if (attempt.sprechen_restart_used) return { allowed: false, reason: 'restart_already_used' };
+    // Atomic compare-and-set — closes the race between two concurrent
+    // restart attempts both reading sprechen_restart_used=false.
+    const { data: claimed } = await supabaseAdmin.from('mock_exam_attempts')
+      .update({ sprechen_restart_used: true })
+      .eq('id', mockExamAttemptId).eq('sprechen_restart_used', false)
+      .select('id').maybeSingle();
+    if (!claimed) return { allowed: false, reason: 'restart_already_used' };
+    return { allowed: true, isRestart: true };
+  }
+  if (state === 'abandoned') return { allowed: false, reason: 'abandoned_no_restart' };
+  // submitted_feedback_pending / feedback_failed / completed: a valid
+  // conversation already exists for this attempt — never open a new live
+  // session for these; the client should be using the feedback-retry
+  // endpoint instead, not starting another voice session.
+  return { allowed: false, reason: 'valid_session_exists' };
+}
+
 const SPRECHEN_LANGS = { english: 'English', arabic: 'Arabic', french: 'French', portuguese: 'Portuguese' };
 function sprechenLang(v) { return SPRECHEN_LANGS[String(v || '').toLowerCase()] ? String(v).toLowerCase() : 'english'; }
 
@@ -1789,29 +1947,71 @@ async function generateSprechenFeedback(transcript, language) {
   return fb;
 }
 
-app.post('/api/sprechen/feedback', async (req, res) => {
-  const { transcript, user_id, session_id, preferred_language } = req.body || {};
+// Requires Authorization: Bearer <token> — identity is never taken from the
+// request body. If a session_id is supplied, ownership is verified against
+// the stored row before anything is generated or written.
+app.post('/api/sprechen/feedback', requireSprechenAuth, async (req, res) => {
+  const { transcript, session_id, preferred_language } = req.body || {};
   const language = sprechenLang(preferred_language);
   if (!transcript || String(transcript).trim().length < 10) {
     return res.status(400).json({ error: 'Transcript too short for feedback.' });
   }
   if (!process.env.CLAUDE_API_KEY) return res.status(500).json({ error: 'API key not configured.' });
+
+  if (session_id) {
+    if (!supabaseAdmin) return res.status(500).json({ error: 'Server not configured.' });
+    const { data: session, error: lookupErr } = await supabaseAdmin
+      .from('sprechen_sessions').select('user_id').eq('id', session_id).maybeSingle();
+    if (lookupErr || !session || session.user_id !== req.verifiedUserId) {
+      return res.status(403).json({ error: 'Not your session.' });
+    }
+  }
+
   try {
     const fb = await generateSprechenFeedback(transcript, language);
     if (!fb) return res.status(502).json({ error: 'Could not generate feedback.' });
     if (supabaseAdmin && session_id) {
-      supabaseAdmin.from('sprechen_sessions').update({
+      await supabaseAdmin.from('sprechen_sessions').update({
         feedback: fb, feedback_language: language,
         score_overall: fb.score_overall, score_aussprache: fb.score_aussprache,
         score_kommunikation: fb.score_kommunikation, score_grammatik: fb.score_grammatik,
         score_wortschatz: fb.score_wortschatz, completed: true,
-      }).eq('id', session_id).then(function(){}, function(){});
+      }).eq('id', session_id);
     }
     return res.json(fb);
   } catch (err) {
     console.error('[/api/sprechen/feedback] error:', err.message);
     return res.status(502).json({ error: err.message });
   }
+});
+
+// Retries feedback generation for an already-ended, already-valid session
+// without opening a new live voice session. Transcript is loaded server-side
+// from the stored row — never trusted from the request body. Idempotent:
+// if feedback already succeeded, returns it rather than re-grading.
+app.post('/api/sprechen/feedback/retry', requireSprechenAuth, async (req, res) => {
+  const { session_id } = req.body || {};
+  if (!session_id) return res.status(400).json({ error: 'session_id required.' });
+  if (!supabaseAdmin) return res.status(500).json({ error: 'Server not configured.' });
+  if (!process.env.CLAUDE_API_KEY) return res.status(500).json({ error: 'API key not configured.' });
+
+  const { data: session, error: lookupErr } = await supabaseAdmin
+    .from('sprechen_sessions')
+    .select('id, user_id, transcript, feedback_language, completed, feedback')
+    .eq('id', session_id).maybeSingle();
+  if (lookupErr || !session || session.user_id !== req.verifiedUserId) {
+    return res.status(403).json({ error: 'Not your session.' });
+  }
+  if (session.completed && session.feedback) {
+    return res.json(session.feedback); // already succeeded — idempotent, no re-grade
+  }
+  if (!session.transcript || String(session.transcript).trim().length < 20) {
+    return res.status(400).json({ error: 'Nothing to grade for this session.' });
+  }
+
+  const result = await attemptSprechenFeedbackGeneration(session.id, session.transcript, session.feedback_language || 'english');
+  if (result.ok) return res.json(result.feedback);
+  return res.status(202).json({ status: 'feedback_pending', message: 'Feedback generation failed again — you can retry.' });
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2755,6 +2955,8 @@ function attachSprechenWebSocket(server) {
     let finalized = false;
     let sessionId = null;
     let userId = null, level = 'A1', language = 'english';
+    let mockExamAttemptId = null;   // set only when this session belongs to a Complete Mock Exam attempt
+    let isRestartSession = false;   // true only for a server-authorized technical-failure restart
     let startedAt = Date.now();
     let timeout = null;
     let warnTimeout = null;
@@ -2783,38 +2985,103 @@ function attachSprechenWebSocket(server) {
       const duration = Math.round((Date.now() - startedAt) / 1000);
       const fullTranscript = transcriptString();
 
-      // Persist transcript + duration on the session row.
+      // Persist transcript + duration + end_reason — awaited and checked,
+      // not fire-and-forget, because the mock-exam completion decision
+      // below must never be made against a row that failed to save.
+      let persistOk = true;
       if (supabaseAdmin && sessionId) {
-        supabaseAdmin.from('sprechen_sessions')
-          .update({ transcript: fullTranscript, duration_seconds: duration })
-          .eq('id', sessionId).then(function(){}, function(){});
-      }
-
-      // Feedback (only if there was a real conversation) — unchanged Claude path.
-      if (fullTranscript.trim().length > 20 && process.env.CLAUDE_API_KEY) {
-        try {
-          const fb = await generateSprechenFeedback(fullTranscript, language);
-          if (fb && supabaseAdmin && sessionId) {
-            await supabaseAdmin.from('sprechen_sessions').update({
-              feedback: fb, feedback_language: language,
-              score_overall: fb.score_overall, score_aussprache: fb.score_aussprache,
-              score_kommunikation: fb.score_kommunikation, score_grammatik: fb.score_grammatik,
-              score_wortschatz: fb.score_wortschatz, completed: true, duration_seconds: duration,
-            }).eq('id', sessionId);
-          }
-          send({ type: 'feedback', feedback: fb, session_id: sessionId, duration_seconds: duration });
-        } catch (e) {
-          send({ type: 'error', message: 'Feedback generation failed: ' + e.message });
+        const persistResult = await supabaseAdmin.from('sprechen_sessions')
+          .update({ transcript: fullTranscript, duration_seconds: duration, end_reason: reason })
+          .eq('id', sessionId);
+        if (persistResult.error) {
+          persistOk = false;
+          console.error('[sprechen-ws] finalize persist failed', sessionId, persistResult.error.message);
         }
-      } else {
-        send({ type: 'done', session_id: sessionId, duration_seconds: duration });
       }
 
-      // Count the session against the lifetime cap + (A1 only) today's minute cap.
-      if (userId) {
-        try { await sprechenIncrementCap(userId, level); } catch (_) {}
-        if (level === 'A1') { try { await sprechenAddDailyUsage(userId, duration); } catch (_) {} }
+      if (!mockExamAttemptId) {
+        // ── Standalone practice: byte-identical to the pre-existing wire
+        // protocol — sprechen.html isn't being touched this round, so its
+        // ws.onmessage contract (feedback / error / done) must not change.
+        if (!persistOk) {
+          send({ type: 'error', message: 'Could not save your session. Please refresh.' });
+        } else if (fullTranscript.trim().length > 20 && process.env.CLAUDE_API_KEY) {
+          try {
+            const fb = await generateSprechenFeedback(fullTranscript, language);
+            if (fb && supabaseAdmin && sessionId) {
+              await supabaseAdmin.from('sprechen_sessions').update({
+                feedback: fb, feedback_language: language,
+                score_overall: fb.score_overall, score_aussprache: fb.score_aussprache,
+                score_kommunikation: fb.score_kommunikation, score_grammatik: fb.score_grammatik,
+                score_wortschatz: fb.score_wortschatz, completed: true, duration_seconds: duration,
+              }).eq('id', sessionId);
+            }
+            send({ type: 'feedback', feedback: fb, session_id: sessionId, duration_seconds: duration });
+          } catch (e) {
+            send({ type: 'error', message: 'Feedback generation failed: ' + e.message });
+          }
+        } else {
+          send({ type: 'done', session_id: sessionId, duration_seconds: duration });
+        }
+        if (userId) {
+          try { await sprechenIncrementCap(userId, level); } catch (_) {}
+          if (level === 'A1') { try { await sprechenAddDailyUsage(userId, duration); } catch (_) {} }
+        }
+        try { ws.close(); } catch (_) {}
+        return;
       }
+
+      // ── Complete Mock Exam: new lifecycle. Exam-mode sessions never
+      // touch the standalone caps (sprechenIncrementCap/sprechenAddDailyUsage
+      // are simply never called in this branch).
+      if (!persistOk) {
+        send({ type: 'error', message: 'Could not save your session. Please refresh.' });
+        try { ws.close(); } catch (_) {}
+        return;
+      }
+
+      const valid = isValidSprechenConversation(transcript, duration, reason);
+      const isTechnical = SPRECHEN_TECHNICAL_END_REASONS.indexOf(reason) !== -1;
+
+      if (!valid) {
+        if (isTechnical && !isRestartSession) {
+          // isRestartSession only affects this message's wording — the
+          // actual one-restart authority is mock_exam_attempts.sprechen_restart_used,
+          // enforced server-side in validateMockExamSprechenAccess(), not here.
+          send({ type: 'technical_failure', message: 'Connection lost before the session really started. You can restart once.' });
+        } else {
+          send({ type: 'session_ended', message: 'This session ended without enough conversation to count.' });
+        }
+        try { ws.close(); } catch (_) {} // umbrella attempt is never touched — no link, no completion
+        return;
+      }
+
+      // Valid conversation — idempotent by SQL condition (safe if finalize()
+      // somehow runs more than once for this session across reconnects).
+      try {
+        const { data: linked } = await supabaseAdmin.from('mock_exam_attempts')
+          .update({ sprechen_session_id: sessionId })
+          .eq('id', mockExamAttemptId).eq('user_id', userId).is('sprechen_session_id', null)
+          .select('id').maybeSingle();
+        if (linked) {
+          await supabaseAdmin.from('mock_exam_attempts')
+            .update({ current_section: null, completed_at: new Date().toISOString() })
+            .eq('id', mockExamAttemptId).eq('sprechen_session_id', sessionId).is('completed_at', null)
+            .not('hoeren_attempt_id', 'is', null).not('lesen_attempt_id', 'is', null).not('schreiben_attempt_id', 'is', null);
+        }
+      } catch (e) {
+        console.error('[sprechen-ws] mock-exam linking/completion failed:', e.message);
+      }
+      send({ type: 'submitted', session_id: sessionId, duration_seconds: duration });
+
+      // Feedback is decoupled from completion — the umbrella attempt is
+      // already done above regardless of how this resolves, matching "the
+      // learner can safely leave the page while feedback is still pending."
+      attemptSprechenFeedbackGeneration(sessionId, fullTranscript, language).then(function (result) {
+        if (result.ok) send({ type: 'feedback', feedback: result.feedback, session_id: sessionId, duration_seconds: duration });
+        else send({ type: 'feedback_pending', session_id: sessionId, message: 'Saved — feedback will be available shortly, or you can retry.' });
+      });
+
       try { ws.close(); } catch (_) {}
     }
 
@@ -2861,24 +3128,54 @@ function attachSprechenWebSocket(server) {
     }
 
     async function startSession(init) {
-      userId   = init.user_id || null;
+      // Identity is never taken from the client — init.user_id is not read
+      // at all. A missing/invalid/expired token rejects before any cap
+      // check, any DB write, or the upstream OpenAI connection ever opens.
+      const authResult = await verifySupabaseToken(init.access_token);
+      if (!authResult.userId) {
+        send({ type: 'error', message: 'Please sign in again.' });
+        return ws.close();
+      }
+      userId   = authResult.userId;
       level    = init.level || 'A1';
       language = sprechenLang(init.preferred_language);
+      mockExamAttemptId = init.mock_exam_attempt_id || null;
+
+      // Ownership/cap gates run BEFORE the OpenAI-availability check —
+      // a security-relevant rejection (wrong owner, wrong section, cap
+      // exceeded) should never depend on unrelated infra config, and this
+      // ordering means a legitimately-denied request never has any chance
+      // of opening the upstream connection.
+      if (mockExamAttemptId) {
+        // Complete Mock Exam: server-verified ownership/state gate, exempt
+        // from the standalone caps entirely (sprechenGetCap/sprechenGetDailyUsage
+        // are simply never consulted in this branch).
+        const access = await validateMockExamSprechenAccess(userId, mockExamAttemptId);
+        if (!access.allowed) {
+          send({ type: 'error', message: 'Could not start this Sprechen session (' + access.reason + ').' });
+          return ws.close();
+        }
+        isRestartSession = Boolean(access.isRestart);
+      } else {
+        // Standalone — unchanged.
+        try {
+          const cap = await sprechenGetCap(userId, level);
+          if (!cap.allowed) { send({ type: 'cap_exceeded', message: cap.message }); return ws.close(); }
+        } catch (_) {}
+      }
 
       if (!process.env.OPENAI_API_KEY) {
         send({ type: 'error', message: 'Live speaking is temporarily unavailable. Please try again later.' });
         return ws.close();
       }
-      // Cap gate.
-      try {
-        const cap = await sprechenGetCap(userId, level);
-        if (!cap.allowed) { send({ type: 'cap_exceeded', message: cap.message }); return ws.close(); }
-      } catch (_) {}
 
       // Daily minute cap gate (free A1 tier — 10 cumulative minutes/day,
-      // resets at UTC midnight). Block the session before it ever opens the
-      // upstream OpenAI Realtime connection.
-      const isFreeA1 = level === 'A1';
+      // resets at UTC midnight; standalone only — exam mode is exempt).
+      // Block the session before it ever opens the upstream OpenAI Realtime
+      // connection. The 15-minute hard per-session cap below still applies
+      // to exam-mode sessions regardless — that's a technical ceiling of
+      // the live engine, not one of the standalone usage caps.
+      const isFreeA1 = level === 'A1' && !mockExamAttemptId;
       let dailyRemainingSeconds = SPRECHEN_DAILY_CAP_SECONDS;
       if (isFreeA1) {
         try {
@@ -2891,11 +3188,22 @@ function attachSprechenWebSocket(server) {
         } catch (_) {}
       }
 
-      // Create the session row up front.
-      if (supabaseAdmin && userId) {
-        const { data } = await supabaseAdmin.from('sprechen_sessions')
-          .insert({ user_id: userId, level, feedback_language: language, completed: false })
+      // Create the session row up front. mock_exam_attempt_id is set at
+      // INSERT time (not patched on later) so ownership/state is knowable
+      // from the row itself immediately. A unique-constraint failure here
+      // means another connection for this attempt is already live
+      // (sprechen_sessions_one_live_per_attempt) — the SELECT-based check
+      // in validateMockExamSprechenAccess() can't fully close that race on
+      // its own; this is the actual guarantee.
+      if (supabaseAdmin) {
+        const { data, error: insErr } = await supabaseAdmin.from('sprechen_sessions')
+          .insert({ user_id: userId, level, feedback_language: language, completed: false, mock_exam_attempt_id: mockExamAttemptId })
           .select('id').maybeSingle();
+        if (insErr) {
+          console.error('[sprechen-ws] session insert failed:', insErr.message);
+          send({ type: 'error', message: mockExamAttemptId ? 'A session is already active for this attempt.' : 'Could not start session.' });
+          return ws.close();
+        }
         sessionId = data && data.id;
       }
       startedAt = Date.now();
