@@ -1523,6 +1523,7 @@
   function showMockExamOverview() {
     hide('examContent'); hide('resultsArea'); hide('mockExamTransition');
     hide('loadingState'); hide('errorState'); hide('mockExamModuleProgress');
+    hide('historyArea'); hide('weaknessArea'); // clear any leftover Practice-mode panels
     // Hides the page-level title/subtitle from whatever Practice-mode exam
     // was last loaded (e.g. "A1 Schreiben — Prüfungsvorbereitung") — the
     // overview has its own title (mockExamOverviewTitle); leaving the old
@@ -2438,7 +2439,12 @@
     saveAttempt(answers, graded.scoresByTask, { details: graded.details }, graded.total).then(function (saved) {
       if (saved) {
         if (!isCombinedMockExamMode()) show('savedNotice');
-        loadHistory(); loadWeakness();
+        // History/weakness panels show per-skill pass/fail and past
+        // attempts — leaving them visible during combined mode contradicts
+        // "nothing shown until every module is complete" (found via live
+        // QA: they were showing through underneath the transition/finished
+        // screens).
+        if (!isCombinedMockExamMode()) { loadHistory(); loadWeakness(); }
         deleteDraftForCurrentExam(); // real attempt is saved — the draft's job is done
         advanceMockExamProgress(saved); // no-op outside Complete Mock Exam mode
       }
@@ -3350,7 +3356,7 @@
           saveAttempt(answers, scores, res.body, totalInt, examMax).then(function (saved) {
             if (saved) {
               if (!isCombinedMockExamMode()) show('savedNotice');
-              loadHistory(); loadWeakness();
+              if (!isCombinedMockExamMode()) { loadHistory(); loadWeakness(); }
               deleteDraftForCurrentExam(); // real attempt is saved — the draft's job is done
               advanceMockExamProgress(saved); // no-op outside Complete Mock Exam mode
             }
@@ -3395,7 +3401,7 @@
     ).then(function (saved) {
       if (saved) {
         if (!isCombinedMockExamMode()) show('savedNotice');
-        loadHistory(); loadWeakness();
+        if (!isCombinedMockExamMode()) { loadHistory(); loadWeakness(); }
         deleteDraftForCurrentExam(); // real attempt is saved — the draft's job is done
         advanceMockExamProgress(saved); // no-op outside Complete Mock Exam mode
       }
@@ -4763,8 +4769,18 @@
         // weakness panel is scoped to (level, section) not exam_id,
         // so it doesn't need to refresh on Übungssatz switch — but
         // calling it on initial load is necessary to populate it.
-        loadHistory();
-        loadWeakness();
+        // Skipped entirely in combined mode — these panels show past
+        // attempts and a per-skill pass/fail badge, which showed through
+        // underneath every module and the transition/finished screens
+        // (found via live QA), directly contradicting "nothing shown
+        // until every module is complete."
+        if (!isCombinedMockExamMode()) {
+          loadHistory();
+          loadWeakness();
+        } else {
+          hide('historyArea');
+          hide('weaknessArea');
+        }
       });
   }
 
