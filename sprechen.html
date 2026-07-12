@@ -398,28 +398,41 @@
     }).catch(function(){});
   }
 
+  // :userId stays in the URL for backward-compatible route shape (the
+  // server ignores it entirely — see server.js) — identity for both of
+  // these calls comes only from the bearer token below.
   function loadCap(){
     if (!state.user) return Promise.resolve();
-    return fetch(API_BASE + '/api/sprechen/cap/' + state.user.id + '/A1')
-      .then(function(r){ return r.json(); })
-      .then(function(c){
-        if (typeof c.remaining === 'number'){ state.capRemaining = c.remaining; }
-        if (c.allowed === false){ state.capUsed = state.capMax; }
-        else { state.capUsed = state.capMax - state.capRemaining; }
-      }).catch(function(){});
+    return getFreshAccessToken().then(function(token){
+      if (!token) return;
+      return fetch(API_BASE + '/api/sprechen/cap/' + state.user.id + '/A1', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      })
+        .then(function(r){ return r.json(); })
+        .then(function(c){
+          if (typeof c.remaining === 'number'){ state.capRemaining = c.remaining; }
+          if (c.allowed === false){ state.capUsed = state.capMax; }
+          else { state.capUsed = state.capMax - state.capRemaining; }
+        });
+    }).catch(function(){});
   }
 
   function loadDailyUsage(){
     if (!state.user) return Promise.resolve();
-    return fetch(API_BASE + '/api/sprechen/daily-usage/' + state.user.id)
-      .then(function(r){ return r.json(); })
-      .then(function(d){
-        if (typeof d.used_seconds === 'number'){ state.dailyUsedSeconds = d.used_seconds; }
-        if (typeof d.remaining_seconds === 'number'){ state.dailyRemainingSeconds = d.remaining_seconds; }
-        if (typeof d.cap_seconds === 'number'){ state.dailyCapSeconds = d.cap_seconds; }
-        renderCounter();
-        renderDailyCounter();
-      }).catch(function(){});
+    return getFreshAccessToken().then(function(token){
+      if (!token) return;
+      return fetch(API_BASE + '/api/sprechen/daily-usage/' + state.user.id, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      })
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          if (typeof d.used_seconds === 'number'){ state.dailyUsedSeconds = d.used_seconds; }
+          if (typeof d.remaining_seconds === 'number'){ state.dailyRemainingSeconds = d.remaining_seconds; }
+          if (typeof d.cap_seconds === 'number'){ state.dailyCapSeconds = d.cap_seconds; }
+          renderCounter();
+          renderDailyCounter();
+        });
+    }).catch(function(){});
   }
 
   function loadTopics(){

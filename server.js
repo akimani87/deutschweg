@@ -1796,9 +1796,12 @@ async function sprechenGetCap(userId, level) {
   return { allowed: true, remaining: max - used };
 }
 
-app.get('/api/sprechen/cap/:userId/:level', async (req, res) => {
+// :userId in the URL is kept only for backward-compatible route shape — it
+// carries zero authorization value and is never read. Identity comes
+// exclusively from the verified bearer token (requireSprechenAuth).
+app.get('/api/sprechen/cap/:userId/:level', requireSprechenAuth, async (req, res) => {
   try {
-    const out = await sprechenGetCap(req.params.userId, req.params.level || 'A1');
+    const out = await sprechenGetCap(req.verifiedUserId, req.params.level || 'A1');
     return res.json(out);
   } catch (err) {
     console.error('[/api/sprechen/cap] error:', err.message);
@@ -1853,9 +1856,12 @@ async function sprechenAddDailyUsage(userId, addSeconds) {
   }, { onConflict: 'user_id,usage_date' });
 }
 
-app.get('/api/sprechen/daily-usage/:userId', async (req, res) => {
+// :userId in the URL is kept only for backward-compatible route shape — it
+// carries zero authorization value and is never read. Identity comes
+// exclusively from the verified bearer token (requireSprechenAuth).
+app.get('/api/sprechen/daily-usage/:userId', requireSprechenAuth, async (req, res) => {
   try {
-    const out = await sprechenGetDailyUsage(req.params.userId);
+    const out = await sprechenGetDailyUsage(req.verifiedUserId);
     return res.json({
       used_seconds: out.usedSeconds, remaining_seconds: out.remainingSeconds,
       cap_seconds: SPRECHEN_DAILY_CAP_SECONDS, allowed: out.remainingSeconds > 0,
