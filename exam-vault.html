@@ -4191,6 +4191,12 @@
             hide('historyArea');
             return;
           }
+          // Re-checked here, not just at the call site — this is an async
+          // callback, so mode can have changed (Practice bootstrap -> click
+          // Complete Mock Exam -> overview hides the panel -> THIS resolves
+          // and re-shows it) between when loadHistory() was called and when
+          // its query actually comes back. Found via live QA.
+          if (isCombinedMockExamMode()) { hide('historyArea'); return; }
           renderHistory(res.data || []);
           show('historyArea');
         });
@@ -4327,6 +4333,10 @@
             hide('weaknessArea');
             return;
           }
+          // Re-checked here for the same reason as loadHistory() above —
+          // an async callback can resolve after the mode has already
+          // changed to combined.
+          if (isCombinedMockExamMode()) { hide('weaknessArea'); return; }
           renderWeakness(rows);
           show('weaknessArea');
         });
