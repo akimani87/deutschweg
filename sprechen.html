@@ -134,6 +134,16 @@
 <body>
 <div class="wrap">
 
+  <!-- Complete Mock Exam, Module 4 — shown only when ?mode=mock&attempt=
+       is present and verified (applyMockExamChrome()). Persists across
+       every screen (pre/active/feedback never actually reached in mock
+       mode — see openSocket()'s 'submitted' handler), so it lives outside
+       the .screen show/hide switching. -->
+  <div id="module4Banner" style="display:none; background:#EFF6FF; border:1px solid #DBEAFE; border-radius:12px; padding:10px 14px; margin-bottom:14px; align-items:center; justify-content:space-between;">
+    <span style="font-size:13px; font-weight:700; color:#1D4ED8;">Module 4 of 4 · Sprechen</span>
+    <a id="mockExamExitLink" href="exam-vault.html" style="display:none; font-size:12.5px; font-weight:700; color:#64748B; text-decoration:none; border:1px solid #E5E7EB; border-radius:8px; padding:6px 12px;">← Exit to Exam Vault</a>
+  </div>
+
   <!-- ── SCREEN 0: COMING SOON (shown while live voice is being enabled) ── -->
   <section class="screen active" id="screen-coming">
     <div class="hd">
@@ -158,6 +168,12 @@
       <div class="counter" id="sessionCounter">…</div>
       <div class="counter" id="dailyCounter" style="margin-top:6px;display:none;"></div>
     </div>
+
+    <!-- Mock-mode recovery copy — shown only when a prior (failed/
+         abandoned) Sprechen attempt exists for this mock exam attempt.
+         The actual restart-or-not decision is always the server's, made
+         when Start is actually clicked — this is explanatory only. -->
+    <div id="mockExamRecoveryNote" class="notice" style="display:none; margin-bottom:14px;"></div>
 
     <div class="card">
       <div class="card-lab" id="t-langlabel">Feedback language</div>
@@ -255,6 +271,21 @@
   var WS_URL   = isLocal ? ('ws://' + location.hostname + ':3000/sprechen-session')
                          : 'wss://deutschweg.onrender.com/sprechen-session';
   var sb = (typeof dwSupabase !== 'undefined') ? dwSupabase : null;
+
+  // ── Complete Mock Exam, Module 4 (Phase B) ──────────────────────────────
+  // Mode is entirely URL-driven (?mode=mock&attempt=<uuid>) — no
+  // sessionStorage marker like exam-vault.html uses, because a live
+  // Sprechen session can't be resumed across a refresh anyway; the URL
+  // param surviving a refresh is exactly the right amount of state, and no
+  // standalone entry point (bottom nav, bookmarks, direct visits) ever
+  // sends it, so standalone behavior can't be affected by this at all.
+  // A malformed/incomplete mock context (mode=mock without a well-formed
+  // attempt id) fails safely by simply not activating mock mode — the page
+  // just renders as ordinary standalone Sprechen, never a broken state.
+  var UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  var qs = new URLSearchParams(location.search);
+  var mockAttemptId = qs.get('attempt');
+  var isMockExamMode = qs.get('mode') === 'mock' && Boolean(mockAttemptId) && UUID_RE.test(mockAttemptId);
 
   // Live voice runs on the OpenAI Realtime API (server proxy). Set true to fall
   // back to the Coming Soon screen and keep the simulator dormant.
@@ -374,6 +405,61 @@
   }
 
   // ── Boot: auth, cap, topics ──────────────────────────────────────────────
+  // ── Mock-mode chrome: hides standalone-only UI, shows Module 4 framing.
+  // Called once, before auth even resolves, so there's no flash of
+  // standalone chrome before it's hidden.
+  function applyMockExamChrome(){
+    var nav = document.querySelector('.bottom-nav'); if (nav) nav.style.display = 'none';
+    $('sessionCounter').style.display = 'none';
+    $('dailyCounter').style.display = 'none';
+    var banner = $('module4Banner'); if (banner) banner.style.display = 'flex';
+    var exitLink = $('mockExamExitLink'); if (exitLink) exitLink.style.display = '';
+  }
+
+  // Server-side ownership/state is the only real authority (validateMock
+  // ExamSprechenAccess() at Start-click time) — this is a light, read-only,
+  // RLS-scoped pre-check purely for UX: never show a readiness/live screen
+  // for an attempt that plainly isn't reachable, redirect immediately
+  // instead. Also checks for a prior sprechen_sessions row on this attempt
+  // so the pre-session screen can show recovery copy ("your previous
+  // session ended…") rather than first-time copy, without ever
+  // replicating the server's own restart-eligibility classification.
+  function verifyMockExamAccess(){
+    return sb.from('mock_exam_attempts')
+      .select('user_id, current_section, completed_at')
+      .eq('id', mockAttemptId).maybeSingle()
+      .then(function(res){
+        var row = res && res.data;
+        var ok = row && !res.error && row.user_id === state.user.id && row.current_section === 'sprechen' && !row.completed_at;
+        if (!ok){
+          window.location.href = 'exam-vault.html';
+          return Promise.reject('mock_exam_invalid');
+        }
+        return sb.from('sprechen_sessions')
+          .select('id').eq('mock_exam_attempt_id', mockAttemptId)
+          .order('session_date', { ascending: false }).limit(1)
+          .then(function(sessRes){
+            state.mockExamHasPriorSession = Boolean(sessRes && sessRes.data && sessRes.data.length);
+            renderMockExamPreSessionCopy();
+          }, function(){ /* best-effort — first-time copy if this fails */ });
+      });
+  }
+
+  // Adapts the existing pre-session screen's framing based on whether a
+  // prior (failed/abandoned) Sprechen attempt exists for this mock exam
+  // attempt — the actual restart-or-not decision is always made by the
+  // server when Start is actually clicked, this is only ever explanatory copy.
+  function renderMockExamPreSessionCopy(){
+    var note = $('mockExamRecoveryNote');
+    if (!note) return;
+    if (state.mockExamHasPriorSession){
+      note.style.display = '';
+      note.textContent = 'Your previous Sprechen session ended before it was completed — refreshing or losing connection ends the live conversation and it can\'t be resumed mid-sentence. Tap Start to try again.';
+    } else {
+      note.style.display = 'none';
+    }
+  }
+
   function boot(){
     if (COMING_SOON) return;   // Coming Soon screen is active by default; stay dormant.
     // Live: leave the Coming Soon screen and show the pre-session screen.
@@ -381,6 +467,19 @@
     $('screen-pre').classList.add('active');
     applyLang();
     if (!sb){ $('startBtn').disabled = true; return; }
+
+    if (isMockExamMode){
+      applyMockExamChrome();
+      sb.auth.getUser().then(function(res){
+        state.user = (res && res.data && res.data.user) || null;
+        if (!state.user){ window.location.href = 'exam-vault.html'; return Promise.reject('no_user'); }
+        return verifyMockExamAccess();
+      }).then(function(){
+        return loadTopics();
+      }).catch(function(){});
+      return;
+    }
+
     sb.auth.getUser().then(function(res){
       state.user = (res && res.data && res.data.user) || null;
       return checkOrientationGate();
@@ -581,6 +680,9 @@
       ws.send(JSON.stringify({
         type:'init', access_token: state.accessToken, level:'A1',
         preferred_language: state.lang, topics: state.topics,
+        // undefined is dropped by JSON.stringify — standalone connections
+        // never send this key at all, only ever a real attempt id in mock mode.
+        mock_exam_attempt_id: isMockExamMode ? mockAttemptId : undefined,
       }));
     };
     ws.onmessage = function(ev){
@@ -604,6 +706,27 @@
         var isAuthError = msg.message && msg.message.indexOf('sign in') !== -1;
         failToPre(isAuthError ? t('signinagain') : (msg.message || t('error')));
       }
+      // Mock-exam-only message types (server only ever sends these when the
+      // connection carried a mock_exam_attempt_id — never reachable from
+      // standalone). 'submitted' is the ONLY valid-completion redirect
+      // trigger — technical_failure/session_ended stay on this page's own
+      // pre-session screen so a restart-eligible retry doesn't need an
+      // extra round trip through exam-vault.html.
+      else if (msg.type === 'submitted'){
+        teardownAudio();
+        $('stageStatus').textContent = '✓ Saved — returning to your exam…';
+        setTimeout(function(){ window.location.href = 'exam-vault.html'; }, 1500);
+      }
+      else if (msg.type === 'technical_failure'){
+        failToPre(msg.message || 'Connection lost before the session really started. You can restart once.');
+      }
+      else if (msg.type === 'session_ended'){
+        failToPre(msg.message || 'This session ended without enough conversation to count.');
+      }
+      else if (msg.type === 'feedback_pending'){
+        // Mock mode already redirects on 'submitted', which arrives first —
+        // harmless no-op if this still arrives before the redirect fires.
+      }
       else if (msg.type === 'feedback'){ feedbackShown = true; teardownAudio(); renderFeedback(msg.feedback); }
       else if (msg.type === 'done'){ if (!feedbackShown) failToPre(t('error')); }
     };
@@ -622,6 +745,11 @@
     show('screen-pre');
     $('startBtn').disabled = false;
     $('endBtn').disabled = false;
+    // A session row now definitely exists for this mock-exam attempt (the
+    // one that just failed) — update the recovery copy without a re-query,
+    // so a second attempt correctly reads "your previous session ended"
+    // rather than first-time copy.
+    if (isMockExamMode){ state.mockExamHasPriorSession = true; renderMockExamPreSessionCopy(); }
     if (message) setTimeout(function(){ alert(message); }, 60);
   }
 

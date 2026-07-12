@@ -1105,6 +1105,48 @@
       <button type="button" class="draft-banner-btn primary" id="metContinueBtn" style="display:none;">Continue</button>
       <button type="button" class="draft-banner-btn primary" id="metRetryBtn" style="display:none;">Tap to retry</button>
     </div>
+    <!-- Populated by renderSprechenResultBlock() once the final result is
+         shown — deliberately a separate block from metText, never summed
+         into the written /75 above. Empty for a set with no Sprechen
+         module (non-A1 today). -->
+    <div id="sprechenResultBlock"></div>
+  </div>
+
+  <!-- Module 4 readiness screen — shown once at the Schreiben→Sprechen
+       transition, and again on any refresh while current_section is
+       'sprechen' and the attempt is still incomplete. No speaking session
+       is created here; "Start Sprechen" below navigates to sprechen.html,
+       which does the actual launch. -->
+  <div id="sprechenReadiness" style="display:none;">
+    <div class="card" style="background:#fff; border:1px solid var(--border); border-radius:16px; padding:20px; margin-bottom:16px;">
+      <h2 style="font-size:18px; font-weight:800; margin:0 0 4px;">Module 4 of 4 — Sprechen</h2>
+      <p style="font-size:13.5px; color:var(--mid); margin:0 0 16px;">The Goethe A1 speaking exam — a live conversation with an AI examiner.</p>
+
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12.5px; font-weight:700; color:var(--dark); margin-bottom:2px;">✓ Progress saved</div>
+        <div style="font-size:13px; color:var(--mid); line-height:1.6;">Hören, Lesen and Schreiben are already saved — nothing from those modules is at risk here.</div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12.5px; font-weight:700; color:var(--dark); margin-bottom:2px;">🗣️ What to expect</div>
+        <div style="font-size:13px; color:var(--mid); line-height:1.6;">Three parts: introduce yourself, describe a picture, and plan something together with the examiner — about 10–15 minutes, up to a 15-minute maximum.</div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12.5px; font-weight:700; color:var(--dark); margin-bottom:2px;">🎙️ Microphone</div>
+        <div style="font-size:13px; color:var(--mid); line-height:1.6; margin-bottom:8px;">Your browser will ask for microphone access when the live conversation starts. You can test it now.</div>
+        <button type="button" class="draft-banner-btn ghost" id="sprechenMicTestBtn">Test microphone</button>
+        <div id="sprechenMicTestResult" style="font-size:12.5px; color:var(--mid); margin-top:6px;"></div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12.5px; font-weight:700; color:var(--dark); margin-bottom:2px;">⚠️ Refreshing ends the conversation</div>
+        <div style="font-size:13px; color:var(--mid); line-height:1.6;">If you refresh or lose connection during the live conversation, it ends immediately and cannot be resumed mid-sentence.</div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div style="font-size:12.5px; font-weight:700; color:var(--dark); margin-bottom:2px;">🔁 One restart, technical failures only</div>
+        <div style="font-size:13px; color:var(--mid); line-height:1.6;">If a genuine technical failure ends your session before it really begins, you may restart once. Voluntarily ending the session does not qualify for a restart.</div>
+      </div>
+
+      <button type="button" class="submit-btn" id="sprechenStartBtn">Start Sprechen</button>
+    </div>
   </div>
 
   <!-- Results (shape varies per exam section, populated dynamically) -->
@@ -1199,12 +1241,16 @@
   // function here is additive, gated on currentMockExamAttemptId being set.
   var currentMockExamAttemptId = null;
   var currentMockExamSet       = null; // the mock_exam_sets row (has the 3 exam ids)
-  var MOCK_EXAM_SECTION_ORDER  = ['hoeren', 'lesen', 'schreiben'];
-  // The subset of MOCK_EXAM_SECTION_ORDER the CURRENT set actually has exam
-  // ids for (see activeMockExamSections() below) — this is what "Module N
-  // of M" is computed from, never a hardcoded 3. Adding Sprechen to
-  // MOCK_EXAM_SECTION_ORDER later (Phase B) makes this "of 4" automatically
-  // for any set that also has sprechen content wired in.
+  // Phase B: Sprechen added as the 4th module. A1-only (see
+  // sprechenActiveForSet below), so A2/B1/B2 sets still end at Schreiben —
+  // "last section" is never hardcoded anywhere below; it's always derived
+  // from currentMockExamActiveSections (see isFinalMockExamSection,
+  // nextMockExamSection).
+  var MOCK_EXAM_SECTION_ORDER  = ['hoeren', 'lesen', 'schreiben', 'sprechen'];
+  // The subset of MOCK_EXAM_SECTION_ORDER the CURRENT set actually has
+  // content for (see activeMockExamSections() below) — this is what
+  // "Module N of M", "is this the last section", and "what comes next" are
+  // all computed from, never a hardcoded count or section name.
   var currentMockExamActiveSections = [];
   var oneTimeWiringDone        = false; // load()'s event-listener block now guards against running twice — see load()
 
@@ -1251,15 +1297,34 @@
     return parsed;
   }
 
+  // Both derived from currentMockExamActiveSections (the set's ACTUAL
+  // active module list), never the full static MOCK_EXAM_SECTION_ORDER —
+  // that distinction matters: for a non-A1 set (Sprechen not active),
+  // Schreiben genuinely is last, and walking the full order would have
+  // incorrectly sent a B1/A2/B2 learner toward a "Sprechen" section their
+  // set never activated.
   function nextMockExamSection(section) {
-    var i = MOCK_EXAM_SECTION_ORDER.indexOf(section);
-    return (i >= 0 && i + 1 < MOCK_EXAM_SECTION_ORDER.length) ? MOCK_EXAM_SECTION_ORDER[i + 1] : null;
+    var sections = currentMockExamActiveSections;
+    var i = sections.indexOf(section);
+    return (i >= 0 && i + 1 < sections.length) ? sections[i + 1] : null;
+  }
+  function isFinalMockExamSection(section) {
+    var sections = currentMockExamActiveSections;
+    return sections.length > 0 && sections[sections.length - 1] === section;
   }
   function examIdForSection(set, section) {
     if (section === 'hoeren')    return set.hoeren_exam_id;
     if (section === 'lesen')     return set.lesen_exam_id;
     if (section === 'schreiben') return set.schreiben_exam_id;
-    return null;
+    return null; // sprechen has no loadExam()-compatible exam id — it launches sprechen.html instead
+  }
+  // Sprechen (Goethe A1 speaking simulator) is an A1-only engine — this is
+  // a real constraint of the underlying live-voice product, not a per-set
+  // content flag, so it's derived from the set's own level rather than
+  // mock_exam_sets.sprechen_topic_ids (present in the schema but never
+  // populated — wiring it up is separate future work, not a blocker here).
+  function sprechenActiveForSet(set) {
+    return set.level === 'A1';
   }
   // The real, dynamic module list for a given set — skips any section the
   // set doesn't actually have content for (mirrors the same filter
@@ -1267,10 +1332,15 @@
   // Drives the overview screen's module list AND "Module N of M" labels,
   // so both always agree with what the learner actually gets.
   function activeMockExamSections(set) {
-    return MOCK_EXAM_SECTION_ORDER.filter(function (s) { return examIdForSection(set, s); });
+    return MOCK_EXAM_SECTION_ORDER.filter(function (s) {
+      return s === 'sprechen' ? sprechenActiveForSet(set) : examIdForSection(set, s);
+    });
   }
   function mockExamAttemptFkColumn(section) {
-    return section === 'hoeren' ? 'hoeren_attempt_id' : section === 'lesen' ? 'lesen_attempt_id' : 'schreiben_attempt_id';
+    if (section === 'hoeren')    return 'hoeren_attempt_id';
+    if (section === 'lesen')     return 'lesen_attempt_id';
+    if (section === 'sprechen')  return 'sprechen_session_id';
+    return 'schreiben_attempt_id';
   }
 
   // Finds the learner's in-progress mock_exam_attempts row for this set, or
@@ -1304,12 +1374,18 @@
   // itself is untouched. No-ops entirely outside combined mode.
   function advanceMockExamProgress(savedAttemptRow) {
     if (!currentMockExamAttemptId || !savedAttemptRow) return;
-    var col  = mockExamAttemptFkColumn(currentSection);
-    var next = nextMockExamSection(currentSection);
+    var col    = mockExamAttemptFkColumn(currentSection);
+    var isLast = isFinalMockExamSection(currentSection);
+    var next   = isLast ? null : nextMockExamSection(currentSection);
     var patch = {};
     patch[col] = savedAttemptRow.id;
-    patch.current_section = next; // null once Schreiben (the last section here) finishes
-    if (!next) patch.completed_at = new Date().toISOString();
+    patch.current_section = next; // null once the set's final active section finishes
+    // Written-only sections (Hören/Lesen/Schreiben) call this; Sprechen never
+    // does — its completion is server-driven (server.js finalize()), so
+    // isLast is only ever true here for a set with no Sprechen active (A2/
+    // B1/B2 today) or, in principle, any set whose final active section is
+    // one of these three.
+    if (isLast) patch.completed_at = new Date().toISOString();
 
     dwSupabase.from('mock_exam_attempts').update(patch).eq('id', currentMockExamAttemptId)
       .then(function (res) {
@@ -1401,7 +1477,8 @@
       hide('mockExamTransition');
       currentSection = nextSection;
       updateMockExamModuleProgress();
-      loadExam(examIdForSection(currentMockExamSet, nextSection), null);
+      if (nextSection === 'sprechen') { showSprechenReadinessScreen(); }
+      else { loadExam(examIdForSection(currentMockExamSet, nextSection), null); }
     };
     show('mockExamTransition');
   }
@@ -1409,16 +1486,16 @@
   // Combined-score model, additive to Complete Mock Exam only — does NOT
   // touch scoring-config.js's shared PASS_THRESHOLD_PCT/passed(), which
   // Practice Pool's per-skill "bestanden"/"weiter üben" badge keeps using
-  // exactly as before. Official conversion: each written skill's raw
-  // points scale to a /25 equivalent (15 raw ≈ ×1.66 → 25) so Hören +
-  // Lesen + Schreiben + Sprechen sum to /100, pass at 60. Implemented as
-  // (raw/max)*25 rather than a hardcoded ×1.66, so it stays mathematically
-  // correct even when a section's actual stored max isn't exactly 15 (the
-  // known Schreiben A1 rubric-vs-DB-max mismatch is still open) — this is
-  // equivalent to ×1.66 exactly when max=15, and still proportionally
-  // correct otherwise. Sprechen isn't part of Complete Mock Exam yet, so
-  // this only ever shows a written total out of 75, never a real 100-point
-  // pass/fail verdict — showing one without Sprechen would be a false claim.
+  // exactly as before. Written skills (Hören/Lesen/Schreiben) scale to a
+  // /25 equivalent each (15 raw ≈ ×1.66 → 25) so they sum to a /75 written
+  // total — implemented as (raw/max)*25 rather than a hardcoded ×1.66, so
+  // it stays correct even when a section's stored max isn't exactly 15 (the
+  // known Schreiben A1 rubric-vs-DB-max mismatch is still open).
+  // Sprechen (Module 4) is deliberately NEVER folded into this number —
+  // reviewed decision, not an oversight: it's shown as its own separate
+  // "Deutschweg Sprechen readiness" block (renderSprechenResultBlock below)
+  // with its own percentage/criteria, never summed into a /100, never
+  // framed as an official Goethe pass/fail verdict.
   function showMockExamFinished() {
     hide('resultsArea');
     hide('examContent');
@@ -1440,7 +1517,7 @@
   function computeAndShowMockExamCombinedScore() {
     if (!currentMockExamAttemptId) { showMockExamFinishedFallback(); return; }
     dwSupabase.from('mock_exam_attempts')
-      .select('hoeren_attempt_id, lesen_attempt_id, schreiben_attempt_id')
+      .select('hoeren_attempt_id, lesen_attempt_id, schreiben_attempt_id, sprechen_session_id')
       .eq('id', currentMockExamAttemptId).single()
       .then(function (res) {
         var mea = res && res.data;
@@ -1451,15 +1528,23 @@
         Promise.all([
           dwSupabase.from('exam_attempts').select('total_score, max_score').eq('id', mea.hoeren_attempt_id).single(),
           dwSupabase.from('exam_attempts').select('total_score, max_score').eq('id', mea.lesen_attempt_id).single(),
-          dwSupabase.from('exam_attempts').select('total_score, max_score').eq('id', mea.schreiben_attempt_id).single()
+          dwSupabase.from('exam_attempts').select('total_score, max_score').eq('id', mea.schreiben_attempt_id).single(),
+          // Absent for a set with no Sprechen active (A2/B1/B2 today) —
+          // resolves to null rather than erroring, so the written result
+          // still renders normally with no Sprechen block below it.
+          mea.sprechen_session_id
+            ? dwSupabase.from('sprechen_sessions').select('*').eq('id', mea.sprechen_session_id).single()
+            : Promise.resolve(null)
         ]).then(function (results) {
-          var scaled = results.map(function (r) {
+          var scaled = results.slice(0, 3).map(function (r) {
             var d = r && r.data;
             if (r.error || !d || typeof d.total_score !== 'number' || typeof d.max_score !== 'number' || d.max_score <= 0) return null;
             return (d.total_score / d.max_score) * 25;
           });
           if (scaled.indexOf(null) !== -1) { showMockExamFinishedFallback(); return; }
           renderMockExamCombinedScore(scaled);
+          var sprechenRes = results[3];
+          renderSprechenResultBlock(sprechenRes && sprechenRes.data ? sprechenRes.data : null);
         }, function () { showMockExamFinishedFallback(); });
       }, function () { showMockExamFinishedFallback(); });
   }
@@ -1467,16 +1552,105 @@
   function renderMockExamCombinedScore(scaled) {
     var combined = scaled.reduce(function (a, b) { return a + b; }, 0);
     var combinedRounded = Math.round(combined * 10) / 10;
-    // Below 35/75 written, no possible Sprechen score reaches 60/100 —
-    // a real, useful floor, not a per-skill pass/fail claim.
-    var floorNote = combinedRounded < 35
-      ? '<br><span style="font-size:12.5px; font-weight:400; color:#B91C1C;">Even a perfect Sprechen score could not reach the 60/100 needed to pass the full exam from here.</span>'
-      : '';
     el('metText').innerHTML =
         'Complete Mock Exam finished!<br>'
       + '<strong>' + combinedRounded.toFixed(1) + ' / 75</strong> (Hören + Lesen + Schreiben, scaled)<br>'
-      + '<span style="font-size:12.5px; font-weight:400;">The official pass line is 60/100 across Hören + Lesen + Schreiben + Sprechen together. Sprechen is not yet part of Complete Mock Exam — this is your written-skills result alone.</span>'
-      + floorNote;
+      + '<span style="font-size:12.5px; font-weight:400;">This is your written-skills practice result. Your Sprechen readiness feedback is shown separately below — the two are never combined into a single score.</span>';
+  }
+
+  // Feedback ready / pending / unavailable — all read directly off the
+  // already-linked sprechen_sessions row (mock_exam_attempts.sprechen_
+  // session_id), no new server endpoint needed. Deliberately never
+  // computes a /25 or folds into the written /75 — see the comment above
+  // showMockExamFinished(). session is null when this set has no Sprechen
+  // module (non-A1 today) — nothing renders in that case.
+  function renderSprechenResultBlock(session) {
+    var box = el('sprechenResultBlock');
+    if (!box) return;
+    if (!session) { box.innerHTML = ''; return; }
+
+    if (session.completed && session.feedback) {
+      var fb = session.feedback;
+      var pct = window.dwScoring ? window.dwScoring.sprechenPct(session.score_overall) : null;
+      var onTrack = window.dwScoring ? window.dwScoring.sprechenPassed(session.score_overall) : null;
+      var criteria = [
+        ['Aussprache', session.score_aussprache],
+        ['Kommunikation', session.score_kommunikation],
+        ['Grammatik', session.score_grammatik],
+        ['Wortschatz', session.score_wortschatz]
+      ];
+      var scored = criteria.filter(function (c) { return typeof c[1] === 'number'; });
+      var strongest = scored.length ? scored.reduce(function (a, b) { return b[1] > a[1] ? b : a; }) : null;
+      var weakest   = scored.length ? scored.reduce(function (a, b) { return b[1] < a[1] ? b : a; }) : null;
+      var barsHtml = criteria.map(function (c) {
+        var v = Math.max(0, Math.min(5, Math.round(c[1] || 0)));
+        return '<div style="margin-bottom:8px;"><div style="display:flex; justify-content:space-between; font-size:12.5px; font-weight:700; margin-bottom:3px;"><span>' + c[0] + '</span><span>' + v + '/5</span></div>'
+          + '<div style="height:8px; background:#E5E7EB; border-radius:5px; overflow:hidden;"><div style="height:100%; width:' + (v / 5 * 100) + '%; background:linear-gradient(90deg,#3B82F6,#2563EB);"></div></div></div>';
+      }).join('');
+      box.innerHTML =
+          '<div class="card" style="margin-top:14px; background:#fff; border:1px solid var(--border); border-radius:16px; padding:20px;">'
+        +   '<div style="font-size:12.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; color:#3B82F6; margin-bottom:10px;">Deutschweg Sprechen readiness</div>'
+        +   (pct !== null
+              ? '<div style="font-size:24px; font-weight:800; color:var(--dark);">' + pct + '%</div>'
+                + '<div style="font-size:13px; color:var(--mid); margin-bottom:14px;">' + (onTrack ? 'On track — keep practicing to stay sharp.' : 'Keep practicing before your exam.') + '</div>'
+              : '')
+        +   barsHtml
+        +   (strongest ? '<div style="margin-top:12px; font-size:13px;"><strong>Strongest area:</strong> ' + strongest[0] + '</div>' : '')
+        +   (weakest   ? '<div style="font-size:13px; margin-top:2px;"><strong>Area to improve:</strong> ' + weakest[0] + '</div>' : '')
+        +   (fb.areas_to_improve ? '<div style="margin-top:10px; font-size:13px; color:var(--mid); line-height:1.6;">' + escapeHtml(fb.areas_to_improve) + '</div>' : '')
+        +   '<div style="margin-top:12px; font-size:11.5px; color:var(--mid);">Deutschweg practice feedback — not an official Goethe exam result.</div>'
+        + '</div>';
+      return;
+    }
+
+    if (!session.completed && (session.feedback_attempts || 0) === 0) {
+      box.innerHTML =
+          '<div class="card" style="margin-top:14px; background:#fff; border:1px solid var(--border); border-radius:16px; padding:20px;">'
+        +   '<div style="font-weight:700; font-size:14px;">Sprechen completed — feedback is being prepared.</div>'
+        +   '<button type="button" class="draft-banner-btn ghost" id="sprechenCheckAgainBtn" style="margin-top:10px;">Check again</button>'
+        + '</div>';
+      el('sprechenCheckAgainBtn').onclick = function () { refreshSprechenResultBlock(session.id); };
+      return;
+    }
+
+    // Not completed, but at least one feedback attempt has already been
+    // made and didn't produce usable feedback — matches the server's own
+    // feedback_attempts>0-without-completed classification, without
+    // re-implementing it: this is purely "has a retry already happened."
+    box.innerHTML =
+        '<div class="card" style="margin-top:14px; background:#fff; border:1px solid var(--border); border-radius:16px; padding:20px;">'
+      +   '<div style="font-weight:700; font-size:14px;">Your Sprechen session was saved, but feedback is temporarily unavailable.</div>'
+      +   '<button type="button" class="draft-banner-btn primary" id="sprechenRetryFeedbackBtn" style="margin-top:10px;">Retry feedback</button>'
+      + '</div>';
+    el('sprechenRetryFeedbackBtn').onclick = function () { retrySprechenFeedback(session.id); };
+  }
+
+  function refreshSprechenResultBlock(sessionId) {
+    dwSupabase.from('sprechen_sessions').select('*').eq('id', sessionId).maybeSingle()
+      .then(function (res) { if (res.data) renderSprechenResultBlock(res.data); });
+  }
+
+  // exam-vault.html has no existing bearer-token helper (every other call
+  // here goes through dwSupabase's own RLS-scoped session) — mirrors
+  // sprechen.html's getFreshAccessToken() for this one new authenticated
+  // HTTP call.
+  function dwFreshAccessToken() {
+    return dwSupabase.auth.getSession().then(function (res) {
+      return (res && res.data && res.data.session && res.data.session.access_token) || null;
+    }).catch(function () { return null; });
+  }
+
+  // Reuses the already-shipped, already-authenticated retry endpoint — never
+  // opens a new live Sprechen session merely because feedback failed.
+  function retrySprechenFeedback(sessionId) {
+    dwFreshAccessToken().then(function (token) {
+      if (!token) return;
+      return fetch(API_BASE + '/api/sprechen/feedback/retry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ session_id: sessionId })
+      });
+    }).then(function () { return refreshSprechenResultBlock(sessionId); }).catch(function () {});
   }
 
   // Swaps the big Practice/Mock-Exam toggle for the small "Exit mock exam"
@@ -1508,12 +1682,72 @@
     show('examTitle'); show('examSub'); // re-shown here — loadExam() below sets their text but never their visibility
     setMockExamChromeActive(true);
     hide('mockExamOverview');
+    hide('sprechenReadiness');
     document.querySelectorAll('.exam-selector').forEach(function (row) { row.style.display = 'none'; });
     hide('examSetSelector');
     hide('mockExamTransition');
     wirePills(currentLevel, currentSection);
     updateMockExamModuleProgress();
+
+    // Restore path landed on an attempt that's already complete (e.g. the
+    // learner just redirected back from a valid Sprechen session) — show
+    // the final result directly rather than trying to load a section that
+    // no longer applies. startCombinedMockExam()'s fresh-start path never
+    // reaches here with a completed attempt (getOrCreateMockExamAttempt()
+    // only ever selects/creates an incomplete one).
+    if (attempt.completed_at) {
+      clearCombinedMockExamMarker(); // one-time view, same precedent as the live finish path below
+      showMockExamFinished();
+      return;
+    }
+    if (currentSection === 'sprechen') {
+      showSprechenReadinessScreen();
+      return;
+    }
     loadExam(examIdForSection(currentMockExamSet, currentSection), null);
+  }
+
+  // Module 4 readiness screen — shown before the live Sprechen session ever
+  // starts. No speaking session exists yet at this point; one is only ever
+  // created once the learner actually clicks "Start Sprechen" below, which
+  // navigates to sprechen.html — the real launch (see REQUIRED FLOW §3).
+  // Reused unmodified as the refresh-restore target for this same moment
+  // (establishCombinedMockExamState() above), so a refresh here always
+  // lands back on this exact screen and never creates anything.
+  function showSprechenReadinessScreen() {
+    hide('resultsArea'); hide('examContent'); hide('gradingState'); hide('mockExamTransition');
+    hide('historyArea'); hide('weaknessArea');
+    hide('examTitle'); hide('examSub');
+    document.querySelectorAll('.exam-selector').forEach(function (row) { row.style.display = 'none'; });
+    hide('examSetSelector');
+    el('sprechenMicTestResult').textContent = '';
+    el('sprechenStartBtn').disabled = false;
+    el('sprechenStartBtn').onclick = function () {
+      el('sprechenStartBtn').disabled = true;
+      window.location.href = 'sprechen.html?mode=mock&attempt=' + encodeURIComponent(currentMockExamAttemptId);
+    };
+    show('sprechenReadiness');
+  }
+
+  // Purely informational — requests+immediately releases the mic to confirm
+  // it works, independent of the real session's own mic request (which
+  // happens again, normally, once sprechen.html actually starts the live
+  // conversation). Never gates the Start button: a flaky first mic-test
+  // attempt shouldn't strand the learner on this screen.
+  function testSprechenMicrophone() {
+    var btn = el('sprechenMicTestBtn');
+    var result = el('sprechenMicTestResult');
+    btn.disabled = true;
+    result.textContent = 'Requesting microphone…';
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+      stream.getTracks().forEach(function (tk) { tk.stop(); });
+      result.textContent = '✓ Microphone detected and working.';
+      btn.disabled = false;
+      btn.textContent = 'Test again';
+    }).catch(function () {
+      result.textContent = 'Could not access your microphone. Check your browser permissions and try again.';
+      btn.disabled = false;
+    });
   }
 
   // Fetches the set and shows the pre-exam overview — does NOT create or
@@ -1524,6 +1758,7 @@
     hide('examContent'); hide('resultsArea'); hide('mockExamTransition');
     hide('loadingState'); hide('errorState'); hide('mockExamModuleProgress');
     hide('historyArea'); hide('weaknessArea'); // clear any leftover Practice-mode panels
+    hide('sprechenReadiness');
     // Hides the page-level title/subtitle from whatever Practice-mode exam
     // was last loaded (e.g. "A1 Schreiben — Prüfungsvorbereitung") — the
     // overview has its own title (mockExamOverviewTitle); leaving the old
@@ -1572,9 +1807,11 @@
     // currentMockExamActiveSections here, since that could still hold a
     // stale value from an earlier attempt in the same page session.
     var sections = activeMockExamSections(set);
-    var sectionIcon = { hoeren: '🎧', lesen: '📖', schreiben: '📝' };
+    var sectionIcon = { hoeren: '🎧', lesen: '📖', schreiben: '📝', sprechen: '🎤' };
     var sectionMinutes = function (s) {
-      return s === 'hoeren' ? HOEREN_APPROX_MINUTES : (SECTION_MINUTES[currentLevel] || {})[s];
+      if (s === 'hoeren') return HOEREN_APPROX_MINUTES;
+      if (s === 'sprechen') return SPRECHEN_APPROX_MINUTES;
+      return (SECTION_MINUTES[currentLevel] || {})[s];
     };
     var totalMinutes = sections.reduce(function (sum, s) { return sum + (sectionMinutes(s) || 0); }, 0);
 
@@ -1630,6 +1867,7 @@
     hide('mockExamOverview');
     hide('mockExamTransition');
     hide('mockExamModuleProgress');
+    hide('sprechenReadiness');
     show('examTitle'); show('examSub'); // in case exit happens while still on the overview screen
     setMockExamChromeActive(false);
     document.querySelectorAll('#examModeToggle .mode-btn').forEach(function (b) {
@@ -1651,6 +1889,7 @@
     hide('examSetSelector');
     hide('mockExamTransition');
     hide('mockExamModuleProgress');
+    hide('sprechenReadiness');
     if (isCombined) {
       showMockExamOverview();
     } else {
@@ -1691,6 +1930,10 @@
   // ~20-minute figure already sourced from the Durchführungsbestimmungen
   // in hoeren-a1-restructure-plan.md ("HÖREN ca. 20 Minuten").
   var HOEREN_APPROX_MINUTES = 20;
+  // Matches the live engine's own 15-min hard cap (server.js SPRECHEN_MAX_MS)
+  // — a real, useful, up-to-15 figure for the overview's time estimate, not
+  // a rounded guess.
+  var SPRECHEN_APPROX_MINUTES = 15;
   var sectionTimerInterval = null;
   var sectionEndsAt        = null; // ms epoch — absolute deadline, not a countdown counter,
                                     // so a reload recomputes true remaining time from now()
@@ -2092,7 +2335,10 @@
     return (p === 'lesen' || p === 'schreiben' || p === 'hoeren') ? p : 'schreiben';
   }
   function sectionDisplayLabel(section) {
-    return section === 'lesen' ? 'Lesen' : section === 'hoeren' ? 'Hören' : 'Schreiben';
+    if (section === 'lesen')    return 'Lesen';
+    if (section === 'hoeren')   return 'Hören';
+    if (section === 'sprechen') return 'Sprechen';
+    return 'Schreiben';
   }
   function getActiveLevel() {
     var p = new URLSearchParams(location.search).get('level');
@@ -4507,6 +4753,10 @@
     // attempt is active — confirmation required, progress is saved either way.
     el('mockExamExitBtn').addEventListener('click', exitMockExam);
 
+    // Sprechen readiness screen's mic test — bound once, the button/result
+    // element persist across every show/hide of #sprechenReadiness.
+    el('sprechenMicTestBtn').addEventListener('click', testSprechenMicrophone);
+
     // Delegated autosave triggers (Part 1) — bound once on the container
     // since #taskCards's *contents* are replaced on every loadExam(), but
     // the container element itself persists. 'input'/'change' bubble from
@@ -4563,9 +4813,16 @@
             return;
           }
           var set = setRes.data;
+          // Deliberately NOT filtered to .is('completed_at', null) — a
+          // just-completed attempt (e.g. redirecting back from a valid
+          // Sprechen session) must still be found here so its final result
+          // can be shown, not silently dropped in favor of Practice mode.
+          // Ordered by started_at so the most recent attempt for this set
+          // wins if more than one exists (a finished older run plus a
+          // freshly-started new one, for example).
           dwSupabase.from('mock_exam_attempts')
-            .select('*').eq('user_id', user.id).eq('set_id', set.id).is('completed_at', null)
-            .maybeSingle()
+            .select('*').eq('user_id', user.id).eq('set_id', set.id)
+            .order('started_at', { ascending: false }).limit(1).maybeSingle()
             .then(function (attRes) {
               if (attRes.error) {
                 console.error('[mockExam] restore: attempt lookup failed', attRes.error.message);
@@ -4573,7 +4830,7 @@
                 return;
               }
               if (!attRes.data) {
-                clearCombinedMockExamMarker(); // no incomplete attempt — completed elsewhere, or never really existed
+                clearCombinedMockExamMarker(); // no attempt at all for this marker — never really existed
                 load();
                 return;
               }
