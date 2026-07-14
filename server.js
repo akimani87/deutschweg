@@ -1756,18 +1756,95 @@ async function callClaudeJSON(systemPrompt, userMsg, maxTokens) {
   return parseJsonLoose(data?.content?.[0]?.text?.trim() ?? '');
 }
 
+// ── Reviewed A1 Sprechen topic fallback ─────────────────────────────────
+// Root cause of the intermittent 502s (confirmed by direct reproduction,
+// 2026-07-14): at max_tokens:1600, the 4-language x 3-part JSON output
+// regularly hits the token ceiling mid-string (stop_reason: "max_tokens"),
+// producing truncated/unparseable JSON — successful generations already
+// use 1249-1373 tokens, leaving almost no margin. Not a timeout, not a
+// markdown-fence issue, not a network problem — parseJsonLoose() and the
+// shape check were correctly rejecting genuinely broken output the whole
+// time. Fix: retry once with a larger budget + an explicit brevity
+// instruction, then fall back to this hand-reviewed, genuinely A1-level
+// topic set so a learner is never blocked by a generation hiccup.
+const SPRECHEN_TOPIC_FALLBACK = {
+  part1: {
+    topic: 'Stellen Sie sich vor — sagen Sie Ihren Namen, wie alt Sie sind, woher Sie kommen, wo Sie wohnen, was Sie arbeiten oder lernen, und was Ihre Hobbys sind.',
+    instructions_english: 'Introduce yourself. Talk about your name, age, where you come from, where you live, your job or studies, and your hobbies.',
+    instructions_arabic: 'قدّم نفسك. تحدث عن اسمك، عمرك، من أين أنت، أين تسكن، عملك أو دراستك، وهواياتك.',
+    instructions_french: "Présentez-vous. Parlez de votre nom, âge, d'où vous venez, où vous habitez, votre travail ou vos études, et vos loisirs.",
+    instructions_portuguese: 'Apresente-se. Fale sobre seu nome, idade, de onde você vem, onde mora, seu trabalho ou estudos, e seus hobbies.',
+  },
+  part2: {
+    topic: 'Beschreiben Sie das Bild — Sie sehen eine Szene in einem Supermarkt. Was sehen Sie? Wer ist da? Was passiert?',
+    image_description: 'A busy supermarket scene: a woman pushing a shopping cart, a man checking items on a shelf, a cashier at the checkout counter, and price signs on the shelves.',
+    instructions_english: 'Look at the picture and describe what you see. Where are the people? What are they doing?',
+    instructions_arabic: 'انظر إلى الصورة وصف ما تراه. أين الناس؟ ماذا يفعلون؟',
+    instructions_french: "Regardez l'image et décrivez ce que vous voyez. Où sont les personnes ? Que font-elles ?",
+    instructions_portuguese: 'Olhe para a imagem e descreva o que você vê. Onde estão as pessoas? O que elas estão fazendo?',
+  },
+  part3: {
+    topic: 'Sie möchten zusammen ein Geburtstagsessen planen. Wo möchten Sie essen — zu Hause oder im Restaurant? Was gibt es zu essen und zu trinken? Um wie viel Uhr treffen Sie sich?',
+    instructions_english: 'Plan a birthday dinner together with the examiner. Decide where to eat, what food and drinks to have, and what time to meet.',
+    instructions_arabic: 'خطط لعشاء عيد ميلاد مع الممتحن. قرّرا أين ستأكلان، وما هو الطعام والشراب، وفي أي وقت ستلتقيان.',
+    instructions_french: "Planifiez ensemble un dîner d'anniversaire avec l'examinateur. Décidez où manger, quels plats et boissons choisir, et à quelle heure vous retrouver.",
+    instructions_portuguese: 'Planeje um jantar de aniversário junto com o examinador. Decidam onde comer, quais comidas e bebidas ter, e que horas se encontrar.',
+  },
+};
+
+function sprechenTopicsValid(topics) {
+  if (!topics || typeof topics !== 'object') return false;
+  return ['part1', 'part2', 'part3'].every((key) => {
+    const p = topics[key];
+    return p && typeof p === 'object' && typeof p.topic === 'string' && p.topic.trim().length > 0;
+  });
+}
+
+// Sanitized classification only — never logs the raw model text or the
+// upstream error body, so logs stay useful without leaking provider
+// response content.
+function classifySprechenTopicFailure(err, topics) {
+  if (err) return 'request_error';
+  if (!topics) return 'unparseable_or_missing';
+  if (!sprechenTopicsValid(topics)) return 'incomplete_shape';
+  return 'unknown';
+}
+
+async function generateSprechenTopicsWithFallback() {
+  let topics = null, failure1 = null;
+  try {
+    topics = await callClaudeJSON(SPRECHEN_TOPIC_SYSTEM_PROMPT, 'Generate the 3 A1 Sprechen topics now.', 1600);
+  } catch (err) { failure1 = classifySprechenTopicFailure(err, null); }
+  if (sprechenTopicsValid(topics)) return { topics, source: 'generated' };
+  if (!failure1) failure1 = classifySprechenTopicFailure(null, topics);
+
+  console.log(`[/api/sprechen/topics] attempt 1 failed (${failure1}) — retrying once with a larger budget`);
+  let failure2 = null;
+  try {
+    topics = await callClaudeJSON(
+      SPRECHEN_TOPIC_SYSTEM_PROMPT,
+      'Generate the 3 A1 Sprechen topics now. Return ONLY the JSON object — no markdown fences, no commentary before or after. Keep every field concise so the full response fits comfortably within the token budget.',
+      2400
+    );
+  } catch (err) { failure2 = classifySprechenTopicFailure(err, null); }
+  if (sprechenTopicsValid(topics)) return { topics, source: 'generated_retry' };
+  if (!failure2) failure2 = classifySprechenTopicFailure(null, topics);
+
+  console.error(`[/api/sprechen/topics] both attempts failed (attempt1=${failure1}, attempt2=${failure2}) — serving reviewed fallback topic`);
+  return { topics: SPRECHEN_TOPIC_FALLBACK, source: 'fallback' };
+}
+
 // ── Part 2: POST /api/sprechen/topics/generate ─────────────────────────────
 app.post('/api/sprechen/topics/generate', async (req, res) => {
   const level = (req.body && req.body.level) || 'A1';
   if (!process.env.CLAUDE_API_KEY) return res.status(500).json({ error: 'API key not configured.' });
   console.log(`[/api/sprechen/topics] generate level=${level}`);
   try {
-    const topics = await callClaudeJSON(SPRECHEN_TOPIC_SYSTEM_PROMPT, 'Generate the 3 A1 Sprechen topics now.', 1600);
-    if (!topics || !topics.part1 || !topics.part2 || !topics.part3) {
-      return res.status(502).json({ error: 'Could not generate topics.' });
-    }
-    // Persist (best-effort) — one row per part.
-    if (supabaseAdmin) {
+    const { topics, source } = await generateSprechenTopicsWithFallback();
+    // Persist (best-effort) — one row per part. Skipped for the fallback,
+    // since it's static reviewed content, not a new generation worth
+    // logging into the topics pool.
+    if (supabaseAdmin && source !== 'fallback') {
       const rows = [
         { level, part: 1, topic_text: topics.part1.topic || '', instructions: topics.part1 },
         { level, part: 2, topic_text: topics.part2.topic || '', example_image_url: null, instructions: topics.part2 },
@@ -1775,10 +1852,14 @@ app.post('/api/sprechen/topics/generate', async (req, res) => {
       ];
       supabaseAdmin.from('sprechen_topics').insert(rows).then(function(){}, function(){});
     }
-    return res.json({ level, topics });
+    // `source` is diagnostic only (generated / generated_retry / fallback)
+    // — the client already ignores unknown fields, never used to gate
+    // anything learner-facing.
+    return res.json({ level, topics, source });
   } catch (err) {
-    console.error('[/api/sprechen/topics] error:', err.message);
-    return res.status(502).json({ error: err.message });
+    // Never leak raw provider/internal error text to the client.
+    console.error('[/api/sprechen/topics] unexpected error:', err.message);
+    return res.status(502).json({ error: 'Could not generate topics.' });
   }
 });
 
