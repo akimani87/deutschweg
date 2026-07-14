@@ -100,10 +100,15 @@ Quoted/paraphrased from the same document (§4 → Schreiben):
 
 | Teil | Content | Scoring |
 |---|---|---|
-| 1 | Fill in a form (Anmeldung/Bestellung etc.) — 5 blanks, using info from an intro text | 1 point per correctly filled field, max **5** |
-| 2 | Write a short message (Kurzmitteilung — e.g. an apology note/email) covering 3 given Leitpunkte, ~30 words, with appropriate greeting/closing for the text type | 3 points per content point (×3) + 1 for text-type fit, max **10** |
+| 1 | Fill in a form (Anmeldung/Bestellung etc.) — 5 blanks, using info from an intro text | 1 point per correctly filled field, max **5** (official) |
+| 2 | Write a short message (Kurzmitteilung — e.g. an apology note/email) covering 3 given Leitpunkte, ~30 words, with appropriate greeting/closing for the text type | 3 points per content point (×3) + 1 for text-type fit, max **10** (official) |
 
-Total 15 points, ~20 minutes. Two independent examiners score and reconcile.
+Official total 15 points, ~20 minutes, two independent examiners score and reconcile — this is the *Goethe* model.
+
+**DeutschWeg's actual runtime model differs from the official 5+10 split, confirmed by reading `server.js`'s `/api/exam-grade` handler directly (not the DB-declared `exam_tasks.max_score`, which is display-only for this task type):**
+- Teil 1 (form_fill) is scored deterministically server-side via `scoreFormFill()` against the exam's own `exam_tasks.max_score` for that task (real max, actually used) — currently **5** for both Übungssatz 1 and Übungssatz 2.
+- Teil 2 (short_message) is scored by Claude against a hardcoded A1 rubric (Erfüllung max 3 + Kommunikative Gestaltung max 3, raw total ×2) — this always produces a **max of 12**, regardless of whatever value is stored in that task's `exam_tasks.max_score` column (10, in both Übungssatz 1 and 2 today — that stored value is only ever used for the pre-submission UI's points badge, never read by the scoring/saving code path).
+- **Real runtime total: 5 + 12 = 17, not 15.** This is not a defect — the written-skills `/25` scaling in `exam-vault.html` (`(total_score / max_score) * 25`) reads the real `max_score` the grading response returns, so the learner-facing scaled result is mathematically correct. Only this document's "15 points" framing was wrong. Confirmed both Übungssatz 1 and Übungssatz 2 go through the identical `/api/exam-grade` code path with the identical hardcoded rubric — same model, same discrepancy, same correctness of the actual learner-facing result.
 
 ### 1.4 Timing (all sections, all levels)
 
@@ -119,10 +124,12 @@ the ~20/~25/~20-minute figures above.
 |---|---|---|
 | Hören | Teil 1 = 6 items (dialogues, MC, twice) · Teil 2 = 4 items (announcements, Richtig/Falsch, once) · Teil 3 = 5 items (voicemails, MC, twice) | 15 |
 | Lesen | Teil 1 = 5 items (Richtig/Falsch, 2 short texts) · Teil 2 = 5 items (2-option choice matching a situation to one of two options) · Teil 3 = 5 items (Richtig/Falsch, independent short public signs/notices) | 15 |
-| Schreiben | Teil 1 = form-fill, 5 points · Teil 2 = short message, 10 points | 15 |
+| Schreiben | Teil 1 = form-fill, 5 points (official + actual) · Teil 2 = short message, 10 points official / **12 points actual runtime max** (see §1.3) | 15 official / **17 actual runtime** |
 
 No remaining `[UNCERTAIN]` items on structure itself — the open items
-below are about certification *process*, not the source material.
+below are about certification *process*, not the source material. The
+Schreiben runtime-vs-official total gap (§1.3) is a confirmed, understood
+model difference, not an open question.
 
 ## 2. Hören-specific: play_count and end-to-end verification
 

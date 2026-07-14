@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>A1 Übungssatz 2 — Hören Human Review</title>
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans', system-ui, sans-serif; min-height:100vh; opacity:0; transition:opacity .25s; }
+  body.ready { opacity:1; }
+
+  /* Lock screen — same pattern as admin.html */
+  .lock-screen { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:24px; }
+  .lock-card { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:44px 40px; width:100%; max-width:380px; text-align:center; }
+  .lock-logo { font-family:Georgia,serif; font-size:24px; font-weight:900; margin-bottom:6px; }
+  .lock-logo span { color:var(--gold); }
+  .lock-sub { font-size:13px; color:var(--gray); margin-bottom:28px; }
+  .lock-input { width:100%; background:var(--card2-bg); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:13px 16px; font-family:monospace; font-size:15px; color:var(--white); outline:none; text-align:center; letter-spacing:3px; margin-bottom:14px; }
+  .lock-input:focus { border-color:rgba(201,168,76,0.5); }
+  .lock-btn { width:100%; padding:13px; border-radius:50px; background:var(--gold); color:var(--black); font-size:14px; font-weight:700; border:none; cursor:pointer; }
+  .lock-btn:hover { background:var(--gold-light); }
+  .lock-err { font-size:13px; color:var(--red); margin-top:10px; display:none; }
+  .lock-err.show { display:block; }
+
+  /* Review page */
+  .wrap { display:none; max-width:920px; margin:0 auto; padding:28px 20px 80px; }
+  .wrap.show { display:block; }
+  .page-header { margin-bottom:8px; }
+  .eyebrow { font-family:monospace; font-size:11px; letter-spacing:3px; color:var(--gold); margin-bottom:6px; }
+  h1 { font-family:Georgia,serif; font-size:26px; font-weight:900; margin-bottom:4px; }
+  h1 span { color:var(--gold); }
+  .subtitle { font-size:13px; color:var(--gray); margin-bottom:20px; }
+
+  .progress-bar-wrap { background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:16px 20px; margin-bottom:28px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  .progress-label { font-size:14px; font-weight:700; }
+  .progress-track { flex:1; min-width:160px; height:8px; background:var(--card2-bg); border-radius:6px; overflow:hidden; }
+  .progress-fill { height:100%; background:var(--green); border-radius:6px; transition:width .2s; width:0%; }
+
+  .clip-card { background:var(--card-bg); border:1px solid var(--border); border-radius:16px; padding:22px 24px; margin-bottom:22px; }
+  .clip-card.approved { border-color:rgba(39,174,96,0.5); }
+  .clip-card.needs-correction { border-color:rgba(192,57,43,0.5); }
+  .clip-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; flex-wrap:wrap; gap:8px; }
+  .clip-title { font-size:16px; font-weight:800; }
+  .clip-teil-badge { font-family:monospace; font-size:10.5px; letter-spacing:1.5px; color:var(--gold); background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); border-radius:20px; padding:3px 10px; }
+  .status-badge { font-family:monospace; font-size:10.5px; letter-spacing:1px; border-radius:20px; padding:3px 10px; }
+  .status-badge.pending { color:var(--gray); background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); }
+  .status-badge.approved { color:var(--green); background:rgba(39,174,96,0.1); border:1px solid rgba(39,174,96,0.3); }
+  .status-badge.needs-correction { color:var(--red); background:rgba(192,57,43,0.1); border:1px solid rgba(192,57,43,0.3); }
+
+  .clip-meta { font-size:12.5px; color:var(--gray); margin-bottom:14px; }
+  audio { width:100%; margin-bottom:14px; }
+  .audio-ref { font-family:monospace; font-size:11px; color:var(--gray); word-break:break-all; margin-bottom:16px; padding:8px 10px; background:var(--card2-bg); border-radius:8px; }
+
+  .block-label { font-family:monospace; font-size:10.5px; letter-spacing:2px; color:var(--gold); margin:16px 0 8px; }
+  .transcript-box { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:14px 16px; font-size:13.5px; line-height:1.7; white-space:pre-line; margin-bottom:6px; }
+
+  .q-block { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:14px 16px; margin-bottom:10px; }
+  .q-num { font-weight:700; font-size:13.5px; margin-bottom:6px; }
+  .q-options { font-size:13px; color:var(--cream); margin:4px 0 8px; padding-left:4px; }
+  .q-options div { margin-bottom:2px; }
+  .q-options .correct { color:var(--green); font-weight:700; }
+  .q-explanation { font-size:12.5px; color:var(--gray); }
+
+  .checklist { display:grid; grid-template-columns:1fr 1fr; gap:8px 18px; margin-top:16px; }
+  .checklist label { display:flex; align-items:flex-start; gap:8px; font-size:13px; cursor:pointer; }
+  .checklist input[type=checkbox] { margin-top:3px; accent-color:var(--gold); width:16px; height:16px; flex-shrink:0; }
+  .checklist .status-row { grid-column:1 / -1; display:flex; gap:18px; margin-top:8px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.06); }
+  .checklist .status-row label { font-weight:700; }
+  .checklist .status-row input[type=checkbox].approved-box { accent-color:var(--green); }
+  .checklist .status-row input[type=checkbox].correction-box { accent-color:var(--red); }
+  .checklist .not-applicable { opacity:0.4; }
+
+  .notes-label { font-size:12.5px; font-weight:700; margin:16px 0 6px; }
+  textarea.notes { width:100%; min-height:70px; background:var(--card2-bg); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:10px 12px; color:var(--white); font-family:inherit; font-size:13px; resize:vertical; }
+  textarea.notes:focus { outline:none; border-color:rgba(201,168,76,0.5); }
+
+  .summary-card { background:var(--card-bg); border:1px solid var(--gold); border-radius:16px; padding:24px 26px; margin-top:32px; }
+  .summary-card h2 { font-family:Georgia,serif; font-size:18px; margin-bottom:14px; }
+  .summary-section { margin-bottom:14px; }
+  .summary-section h3 { font-size:12px; letter-spacing:1px; color:var(--gold); font-family:monospace; margin-bottom:6px; }
+  .summary-list { font-size:13.5px; line-height:1.8; }
+  .summary-list .empty { color:var(--gray); font-style:italic; }
+  .summary-note-item { margin-bottom:6px; }
+  .summary-note-item b { color:var(--gold); }
+
+  .reset-btn { background:none; border:1px solid rgba(255,255,255,0.15); color:var(--gray); padding:8px 16px; border-radius:8px; font-size:12px; cursor:pointer; margin-top:20px; }
+  .reset-btn:hover { border-color:var(--red); color:var(--red); }
+
+  .not-published-note { font-size:12px; color:var(--gray); background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:10px 14px; margin-bottom:24px; }
+</style>
+</head>
+<body class="ready">
+
+<div class="wrap show" id="wrap">
+  <div class="page-header">
+    <div class="eyebrow">INTERNAL · NOT LEARNER-FACING · NOT PUBLISHED</div>
+    <h1>A1 Übungssatz 2 — <span>Hören</span> Human Review</h1>
+    <div class="subtitle">Listen to every clip and check it off before this content can be certified. Nothing here writes to the database — your progress is saved locally in this browser only.</div>
+  </div>
+
+  <div class="not-published-note">
+    Reference: <code>mock_exam_sets.id = 9c78bc87-9c38-4472-ac55-f54c9ca3dcfd</code> · <code>is_published = false</code> everywhere. This page reviews audio only — it cannot certify or publish anything itself.
+  </div>
+
+  <div class="progress-bar-wrap">
+    <div class="progress-label" id="progressLabel">Approved clips: 0 / 5</div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <div id="clipsContainer"></div>
+
+  <div class="summary-card">
+    <h2>Review Summary</h2>
+    <div class="summary-section">
+      <h3>APPROVED CLIPS</h3>
+      <div class="summary-list" id="summaryApproved"></div>
+    </div>
+    <div class="summary-section">
+      <h3>CLIPS NEEDING CORRECTION</h3>
+      <div class="summary-list" id="summaryCorrection"></div>
+    </div>
+    <div class="summary-section">
+      <h3>REVIEWER NOTES</h3>
+      <div class="summary-list" id="summaryNotes"></div>
+    </div>
+  </div>
+
+  <button class="reset-btn" onclick="resetAllReviews()">Clear all review progress on this device</button>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () { renderClips(); });
+
+// ── Clip data — hardcoded from the finalized Übungssatz 2 draft ──────────
+// (mock_exam_sets 9c78bc87-9c38-4472-ac55-f54c9ca3dcfd). This page never
+// queries Supabase and never writes exam content — it's a read-only,
+// local-review-state-only tool.
+var CLIPS = [
+  {
+    id: 'teil1-clip1',
+    teil: 1,
+    clipLabel: 'Teil 1 · Clip 1 of 2 — coffee meetup',
+    speakers: 'Sprecher 1 (Lukas, male voice) · Sprecher 2 (Sofia, female voice) — ⚠ REGENERATED AGAIN: Q3 asked for the caller\'s name, but "Lukas" was never actually spoken (only a transcript label). Sofia now greets him back by name so it\'s genuinely audible. Please re-review.',
+    twoSpeakers: true,
+    audioUrl: 'https://udmunxzzuqoynlftapwh.supabase.co/storage/v1/object/public/hoerverstehen-audio/conversation/1784015931339-ohw5i9.mp3',
+    transcript:
+      'Lukas: Hallo Sofia! Hast du morgen Zeit für einen Kaffee?\n' +
+      'Sofia: Hallo Lukas! Ja klar, ich habe Zeit. Wo treffen wir uns?\n' +
+      'Lukas: Wie wäre es im Café Sonne? Das ist in der Bahnhofstraße.\n' +
+      'Sofia: Gute Idee! Um wie viel Uhr denn?\n' +
+      'Lukas: Passt dir zehn Uhr?\n' +
+      'Sofia: Zehn Uhr ist perfekt. Bis morgen!\n' +
+      'Lukas: Bis morgen, Sofia!',
+    questions: [
+      { num: 1, text: 'Wo treffen sich die zwei Freunde?', options: [['a', 'Im Café Sonne', true], ['b', 'Am Bahnhof', false], ['c', 'In der Schule', false]], explanation: 'Lukas sagt: "Wie wäre es im Café Sonne?" — die Bahnhofstraße ist nur der Straßenname, nicht der Treffpunkt selbst.' },
+      { num: 2, text: 'Um wie viel Uhr treffen sie sich?', options: [['a', 'Um neun Uhr', false], ['b', 'Um zehn Uhr', true], ['c', 'Um elf Uhr', false]], explanation: 'Lukas fragt "Passt dir zehn Uhr?" und Sofia bestätigt: "Zehn Uhr ist perfekt."' },
+      { num: 3, text: 'Wer schlägt vor, ins Café Sonne zu gehen?', options: [['a', 'Sofia', false], ['b', 'Lukas', true], ['c', 'Beide zusammen', false]], explanation: 'Sofia begrüßt ihn direkt mit "Hallo Lukas!" — er ist der Sprecher, der danach vorschlägt: "Wie wäre es im Café Sonne?"; Sofia stimmt zu ("Gute Idee!").' },
+    ],
+  },
+  {
+    id: 'teil1-clip2',
+    teil: 1,
+    clipLabel: 'Teil 1 · Clip 2 of 2 — washing machine repair call',
+    speakers: 'Sprecher 1 (Herr Neumann, male voice) · Sprecher 2 (Mitarbeiterin, female voice) — ⚠ REGENERATED: Herr Neumann was previously voiced female, now corrected to a male voice. Please re-review.',
+    twoSpeakers: true,
+    audioUrl: 'https://udmunxzzuqoynlftapwh.supabase.co/storage/v1/object/public/hoerverstehen-audio/conversation/1784015497877-if7kva.mp3',
+    transcript:
+      'Sprecher 1 (Herr Neumann): Guten Tag, hier ist Neumann. Meine Waschmaschine ist kaputt. Können Sie einen Techniker schicken?\n' +
+      'Sprecher 2 (Mitarbeiterin): Guten Tag, Herr Neumann. Kein Problem. Sind Sie am Donnerstag zu Hause?\n' +
+      'Sprecher 1 (Herr Neumann): Donnerstag geht leider nicht, ich arbeite. Geht es auch Freitag?\n' +
+      'Sprecher 2 (Mitarbeiterin): Freitag ist möglich. Der Techniker kommt zwischen 14 und 16 Uhr.\n' +
+      'Sprecher 1 (Herr Neumann): Perfekt, danke schön.\n' +
+      'Sprecher 2 (Mitarbeiterin): Gern geschehen. Bis Freitag!',
+    questions: [
+      { num: 4, text: 'Was ist kaputt?', options: [['a', 'Der Fernseher', false], ['b', 'Die Waschmaschine', true], ['c', 'Der Kühlschrank', false]], explanation: 'Herr Neumann sagt: "Meine Waschmaschine ist kaputt."' },
+      { num: 5, text: 'An welchem Tag kommt der Techniker?', options: [['a', 'Am Donnerstag', false], ['b', 'Am Freitag', true], ['c', 'Am Samstag', false]], explanation: 'Donnerstag geht nicht ("Donnerstag geht leider nicht"), sie einigen sich auf Freitag ("Freitag ist möglich").' },
+      { num: 6, text: 'Wann genau kommt der Techniker?', options: [['a', 'Zwischen 10 und 12 Uhr', false], ['b', 'Zwischen 12 und 14 Uhr', false], ['c', 'Zwischen 14 und 16 Uhr', true]], explanation: 'Die Mitarbeiterin sagt: "Der Techniker kommt zwischen 14 und 16 Uhr."' },
+    ],
+  },
+  {
+    id: 'teil2-clip1',
+    teil: 2,
+    clipLabel: 'Teil 2 · train platform-change announcement',
+    speakers: '1 speaker (station announcer)',
+    twoSpeakers: false,
+    audioUrl: 'https://udmunxzzuqoynlftapwh.supabase.co/storage/v1/object/public/hoerverstehen-audio/announcement/1784012443850-rh41xu.mp3',
+    transcript:
+      'Ihre Aufmerksamkeit bitte! Der Regionalzug nach München, Abfahrt 15:20 Uhr, fährt heute nicht von Gleis 3, sondern von Gleis 7. ' +
+      'Wir bitten um Entschuldigung für die Verspätung von zehn Minuten. Der nächste Zug nach München fährt um 16:00 Uhr von Gleis 3. ' +
+      'Reisende mit Fahrrädern nutzen bitte den hinteren Wagen. Vielen Dank für Ihr Verständnis.',
+    questions: [
+      { num: 1, text: 'Der Zug nach München fährt heute von Gleis 3. (Richtig/Falsch)', options: [['Richtig', 'Richtig', false], ['Falsch', 'Falsch', true]], explanation: 'Der Ansager sagt: "fährt heute nicht von Gleis 3, sondern von Gleis 7."' },
+      { num: 2, text: 'Der Zug hat zehn Minuten Verspätung. (Richtig/Falsch)', options: [['Richtig', 'Richtig', true], ['Falsch', 'Falsch', false]], explanation: '"Wir bitten um Entschuldigung für die Verspätung von zehn Minuten."' },
+      { num: 3, text: 'Der nächste Zug nach München fährt um 16 Uhr. (Richtig/Falsch)', options: [['Richtig', 'Richtig', true], ['Falsch', 'Falsch', false]], explanation: '"Der nächste Zug nach München fährt um 16:00 Uhr von Gleis 3."' },
+      { num: 4, text: 'Fahrräder sind in diesem Zug nicht erlaubt. (Richtig/Falsch)', options: [['Richtig', 'Richtig', false], ['Falsch', 'Falsch', true]], explanation: '"Reisende mit Fahrrädern nutzen bitte den hinteren Wagen" — Fahrräder sind erlaubt, im hinteren Wagen.' },
+    ],
+  },
+  {
+    id: 'teil3-clip1',
+    teil: 3,
+    clipLabel: 'Teil 3 · Clip 1 of 2 — dentist appointment reminder voicemail',
+    speakers: '1 speaker (practice staff)',
+    twoSpeakers: false,
+    audioUrl: 'https://udmunxzzuqoynlftapwh.supabase.co/storage/v1/object/public/hoerverstehen-audio/voicemail/1784012444604-1l8u5h.mp3',
+    transcript:
+      'Hallo, hier ist die Zahnarztpraxis Dr. Wagner. Wir rufen an, um Sie an Ihren Termin morgen um 9 Uhr 30 zu erinnern. ' +
+      'Bitte bringen Sie Ihre Versichertenkarte mit. Wenn Sie den Termin nicht wahrnehmen können, rufen Sie uns bitte unter 030 44 55 66 an. Bis morgen!',
+    questions: [
+      { num: 1, text: 'Warum ruft die Praxis an?', options: [['a', 'Um einen neuen Termin zu vereinbaren', false], ['b', 'Um an einen Termin zu erinnern', true], ['c', 'Um eine Rechnung zu schicken', false]], explanation: '"Wir rufen an, um Sie an Ihren Termin morgen ... zu erinnern."' },
+      { num: 2, text: 'Um wie viel Uhr ist der Termin?', options: [['a', '9:30 Uhr', true], ['b', '10:30 Uhr', false], ['c', '9:00 Uhr', false]], explanation: '"an Ihren Termin morgen um 9 Uhr 30."' },
+      { num: 3, text: 'Was soll man mitbringen?', options: [['a', 'Den Personalausweis', false], ['b', 'Die Versichertenkarte', true], ['c', 'Bargeld', false]], explanation: '"Bitte bringen Sie Ihre Versichertenkarte mit."' },
+    ],
+  },
+  {
+    id: 'teil3-clip2',
+    teil: 3,
+    clipLabel: 'Teil 3 · Clip 2 of 2 — spare key voicemail',
+    speakers: '1 speaker (Maria)',
+    twoSpeakers: false,
+    audioUrl: 'https://udmunxzzuqoynlftapwh.supabase.co/storage/v1/object/public/hoerverstehen-audio/voicemail/1784012447289-tbyryd.mp3',
+    transcript:
+      'Hi, hier ist Maria. Ich bin heute Nachmittag nicht zu Hause. Der Schlüssel für die Wohnung liegt bei meiner Nachbarin, Frau Kaya, in der zweiten Etage. ' +
+      'Sie ist meistens ab 16 Uhr da. Ruf mich an, wenn es Probleme gibt. Danke!',
+    questions: [
+      { num: 4, text: 'Wo liegt der Schlüssel?', options: [['a', 'Bei Maria', false], ['b', 'Bei der Nachbarin, Frau Kaya', true], ['c', 'Im Briefkasten', false]], explanation: '"Der Schlüssel für die Wohnung liegt bei meiner Nachbarin, Frau Kaya."' },
+      { num: 5, text: 'Ab wann ist Frau Kaya normalerweise zu Hause?', options: [['a', '14 Uhr', false], ['b', '16 Uhr', true], ['c', '18 Uhr', false]], explanation: '"Sie ist meistens ab 16 Uhr da."' },
+    ],
+  },
+];
+
+var CHECKLIST_ITEMS = [
+  { key: 'transcriptMatches', label: 'Transcript matches audio exactly' },
+  { key: 'pronunciation', label: 'Pronunciation is natural' },
+  { key: 'namesNumbersTimes', label: 'Names, numbers and times are correct' },
+  { key: 'speechSpeed', label: 'Speech speed is appropriate for A1' },
+  { key: 'volume', label: 'Volume is consistent' },
+  { key: 'speakerDifference', label: 'Speaker differences are clear', needsTwoSpeakers: true },
+  { key: 'questionAlignment', label: 'Question and answer match the audio' },
+];
+
+var STORAGE_KEY = 'dw_uebungssatz2_hoeren_review_v1';
+
+function loadState() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch (e) { return {}; }
+}
+function saveState(state) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+function getClipState(state, id) {
+  if (!state[id]) state[id] = { checks: {}, approved: false, needsCorrection: false, notes: '' };
+  return state[id];
+}
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function renderClips() {
+  var state = loadState();
+  var container = document.getElementById('clipsContainer');
+  container.innerHTML = CLIPS.map(function (clip) {
+    var cs = getClipState(state, clip.id);
+    var statusClass = cs.approved ? 'approved' : (cs.needsCorrection ? 'needs-correction' : '');
+    var statusLabel = cs.approved ? 'Approved' : (cs.needsCorrection ? 'Needs correction' : 'Pending review');
+    var statusBadgeClass = cs.approved ? 'approved' : (cs.needsCorrection ? 'needs-correction' : 'pending');
+
+    var questionsHtml = clip.questions.map(function (q) {
+      var optsHtml = q.options.map(function (o) {
+        var letter = o[0], text = o[1], correct = o[2];
+        return '<div class="' + (correct ? 'correct' : '') + '">' + esc(letter) + (letter.length <= 2 ? ') ' : ': ') + esc(text) + (correct ? '  ✓ correct answer' : '') + '</div>';
+      }).join('');
+      return '<div class="q-block">' +
+        '<div class="q-num">Q' + q.num + '. ' + esc(q.text) + '</div>' +
+        '<div class="q-options">' + optsHtml + '</div>' +
+        '<div class="q-explanation"><b>Explanation:</b> ' + esc(q.explanation) + '</div>' +
+        '</div>';
+    }).join('');
+
+    var checklistHtml = CHECKLIST_ITEMS.map(function (item) {
+      if (item.needsTwoSpeakers && !clip.twoSpeakers) {
+        return '<label class="not-applicable"><input type="checkbox" disabled> ' + esc(item.label) + ' (n/a — single speaker)</label>';
+      }
+      var checked = cs.checks[item.key] ? 'checked' : '';
+      return '<label><input type="checkbox" data-clip="' + clip.id + '" data-check="' + item.key + '" ' + checked + ' onchange="onCheckChange(this)"> ' + esc(item.label) + '</label>';
+    }).join('');
+
+    return '<div class="clip-card ' + statusClass + '" id="card-' + clip.id + '">' +
+      '<div class="clip-head">' +
+        '<div><span class="clip-teil-badge">TEIL ' + clip.teil + '</span> <span class="clip-title">' + esc(clip.clipLabel) + '</span></div>' +
+        '<span class="status-badge ' + statusBadgeClass + '" id="badge-' + clip.id + '">' + statusLabel + '</span>' +
+      '</div>' +
+      '<div class="clip-meta">' + esc(clip.speakers) + '</div>' +
+      '<audio controls preload="none" src="' + esc(clip.audioUrl) + '"></audio>' +
+      '<div class="audio-ref">' + esc(clip.audioUrl) + '</div>' +
+      '<div class="block-label">TRANSCRIPT</div>' +
+      '<div class="transcript-box">' + esc(clip.transcript) + '</div>' +
+      '<div class="block-label">QUESTIONS &amp; ANSWERS</div>' +
+      questionsHtml +
+      '<div class="block-label">REVIEW CHECKLIST</div>' +
+      '<div class="checklist">' +
+        checklistHtml +
+        '<div class="status-row">' +
+          '<label><input type="checkbox" class="approved-box" data-clip="' + clip.id + '" data-status="approved" ' + (cs.approved ? 'checked' : '') + ' onchange="onStatusChange(this)"> Approved</label>' +
+          '<label><input type="checkbox" class="correction-box" data-clip="' + clip.id + '" data-status="needsCorrection" ' + (cs.needsCorrection ? 'checked' : '') + ' onchange="onStatusChange(this)"> Needs correction</label>' +
+        '</div>' +
+      '</div>' +
+      '<div class="notes-label">Notes</div>' +
+      '<textarea class="notes" data-clip="' + clip.id + '" placeholder="Anything to flag about this clip…" oninput="onNotesChange(this)">' + esc(cs.notes) + '</textarea>' +
+    '</div>';
+  }).join('');
+
+  updateProgressAndSummary();
+}
+
+function onCheckChange(el) {
+  var state = loadState();
+  var cs = getClipState(state, el.dataset.clip);
+  cs.checks[el.dataset.check] = el.checked;
+  saveState(state);
+}
+
+function onStatusChange(el) {
+  var state = loadState();
+  var cs = getClipState(state, el.dataset.clip);
+  if (el.dataset.status === 'approved' && el.checked) cs.needsCorrection = false;
+  if (el.dataset.status === 'needsCorrection' && el.checked) cs.approved = false;
+  cs[el.dataset.status] = el.checked;
+  saveState(state);
+  renderClips(); // re-render so the mutually-exclusive checkbox + badge + card border stay in sync
+}
+
+function onNotesChange(el) {
+  var state = loadState();
+  var cs = getClipState(state, el.dataset.clip);
+  cs.notes = el.value;
+  saveState(state);
+  updateProgressAndSummary();
+}
+
+function updateProgressAndSummary() {
+  var state = loadState();
+  var total = CLIPS.length;
+  var approvedClips = [];
+  var correctionClips = [];
+  var notedClips = [];
+
+  CLIPS.forEach(function (clip) {
+    var cs = getClipState(state, clip.id);
+    if (cs.approved) approvedClips.push(clip);
+    if (cs.needsCorrection) correctionClips.push(clip);
+    if (cs.notes && cs.notes.trim()) notedClips.push({ clip: clip, notes: cs.notes.trim() });
+  });
+
+  document.getElementById('progressLabel').textContent = 'Approved clips: ' + approvedClips.length + ' / ' + total;
+  document.getElementById('progressFill').style.width = Math.round((approvedClips.length / total) * 100) + '%';
+
+  document.getElementById('summaryApproved').innerHTML = approvedClips.length
+    ? approvedClips.map(function (c) { return '<div>✓ ' + esc(c.clipLabel) + '</div>'; }).join('')
+    : '<div class="empty">None yet.</div>';
+
+  document.getElementById('summaryCorrection').innerHTML = correctionClips.length
+    ? correctionClips.map(function (c) { return '<div>⚠ ' + esc(c.clipLabel) + '</div>'; }).join('')
+    : '<div class="empty">None flagged.</div>';
+
+  document.getElementById('summaryNotes').innerHTML = notedClips.length
+    ? notedClips.map(function (n) { return '<div class="summary-note-item"><b>' + esc(n.clip.clipLabel) + ':</b> ' + esc(n.notes) + '</div>'; }).join('')
+    : '<div class="empty">No notes yet.</div>';
+}
+
+function resetAllReviews() {
+  if (!confirm('Clear all review checkmarks and notes on this device? This cannot be undone.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  renderClips();
+}
+</script>
+</body>
+</html>

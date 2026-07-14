@@ -990,6 +990,18 @@
        copy already). -->
   <div id="mockExamModuleProgress" style="display:none; font-size:12.5px; font-weight:700; color:var(--mid); margin-bottom:10px;"></div>
 
+  <!-- Übungssatz picker — only shown when 2+ published sets exist for the
+       level (content-expansion phase). With exactly one set published,
+       showMockExamOverview() skips straight to the overview below, same as
+       before this existed. -->
+  <div id="mockExamSetPicker" style="display:none;">
+    <div class="card" style="background:#fff; border:1px solid var(--border); border-radius:16px; padding:20px; margin-bottom:16px;">
+      <h2 style="font-size:18px; font-weight:800; margin:0 0 4px;">Choose an Übungssatz</h2>
+      <p style="font-size:13.5px; color:var(--mid); margin:0 0 16px;">Pick which Complete Mock Exam set to take.</p>
+      <div id="mockExamSetPickerBody"><div class="spinner"></div></div>
+    </div>
+  </div>
+
   <!-- Pre-exam overview (product requirement: never load Hören directly on
        clicking "Complete Mock Exam" — show what's included, rules, and an
        explicit Start CTA first). Module list/order/duration are rendered
@@ -1768,28 +1780,100 @@
     setMockExamChromeActive(true);
     document.querySelectorAll('.exam-selector').forEach(function (row) { row.style.display = 'none'; });
     hide('examSetSelector');
+    hide('mockExamSetPicker');
     el('mockExamOverviewBody').innerHTML = '<div class="spinner"></div>';
     el('mockExamStartBtn').disabled = true;
     show('mockExamOverview');
 
     dwSupabase.from('mock_exam_sets')
       .select('*').eq('level', currentLevel).eq('is_published', true)
-      // Placeholder selection, not real set-picking: only one set per
-      // level is ever published today, so "lowest set_number" == "the
-      // only one". Once a 2nd Übungssatz exists this stops being a no-op
-      // choice — real set-picking UI is separate future work.
-      .order('set_number', { ascending: true }).limit(1)
-      .maybeSingle()
+      .order('set_number', { ascending: true })
       .then(function (res) {
-        if (res.error || !res.data) {
+        if (res.error || !res.data || !res.data.length) {
           hide('mockExamOverview');
           setMockExamChromeActive(false);
           show('examTitle'); show('examSub');
           showLoadError('No Complete Mock Exam set published yet for ' + currentLevel + '.');
           return;
         }
-        renderMockExamOverview(res.data);
+        if (res.data.length === 1) {
+          // Only one set published — same no-op behavior as before the
+          // picker existed, opening its overview directly.
+          renderMockExamOverview(res.data[0]);
+        } else {
+          hide('mockExamOverview');
+          showMockExamSetPicker(res.data);
+        }
       });
+  }
+
+  // Shown only when 2+ published sets exist for the level. Selecting a
+  // card leads into that exact set's existing, unchanged overview screen
+  // (renderMockExamOverview) — nothing about Start/Continue, timers,
+  // resume, or attempt-creation changes; getOrCreateMockExamAttempt()
+  // already scopes every query by set_id, so picking here can't attach to
+  // or surface the wrong set's attempt.
+  function showMockExamSetPicker(sets) {
+    el('mockExamSetPickerBody').innerHTML = '<div class="spinner"></div>';
+    show('mockExamSetPicker');
+
+    getUserOrNull().then(function (user) {
+      if (!user) { renderMockExamSetPickerCards(sets, {}); return; }
+      dwSupabase.from('mock_exam_attempts')
+        .select('set_id, completed_at')
+        .eq('user_id', user.id)
+        .in('set_id', sets.map(function (s) { return s.id; }))
+        .then(function (res) {
+          var stateBySetId = {};
+          (res.data || []).forEach(function (row) {
+            // An incomplete attempt always wins over a completed one for
+            // this card's label — if both exist, the incomplete one is the
+            // one Start/Continue would actually resume into.
+            if (!row.completed_at) stateBySetId[row.set_id] = 'incomplete';
+            else if (!stateBySetId[row.set_id]) stateBySetId[row.set_id] = 'completed';
+          });
+          renderMockExamSetPickerCards(sets, stateBySetId);
+        }, function () { renderMockExamSetPickerCards(sets, {}); });
+    });
+  }
+
+  function renderMockExamSetPickerCards(sets, stateBySetId) {
+    el('mockExamSetPickerBody').innerHTML = sets.map(function (set) {
+      var sections = activeMockExamSections(set);
+      var minutes = estimateSetMinutes(set);
+      var state = stateBySetId[set.id];
+      var actionLabel = state === 'incomplete' ? 'Continue' : (state === 'completed' ? 'View result' : 'Start');
+      return '<div class="draft-banner" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;" data-set-id="' + escapeHtml(set.id) + '">'
+        +   '<div>'
+        +     '<div style="font-weight:700; font-size:14.5px;">' + escapeHtml(set.title) + '</div>'
+        +     '<div style="font-size:12.5px; color:var(--mid); margin-top:2px;">'
+        +       sections.map(sectionDisplayLabel).join(' · ') + ' · ~' + minutes + ' min total'
+        +     '</div>'
+        +   '</div>'
+        +   '<button type="button" class="draft-banner-btn primary mock-exam-set-picker-btn" data-set-id="' + escapeHtml(set.id) + '">' + actionLabel + '</button>'
+        + '</div>';
+    }).join('');
+
+    el('mockExamSetPickerBody').querySelectorAll('.mock-exam-set-picker-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var set = sets.find(function (s) { return s.id === btn.getAttribute('data-set-id'); });
+        if (!set) return;
+        hide('mockExamSetPicker');
+        show('mockExamOverview');
+        renderMockExamOverview(set);
+      });
+    });
+  }
+
+  // Shared by the overview screen and the set-picker cards so the duration
+  // shown never drifts between the two — same computation, same result.
+  function estimateSetMinutes(set) {
+    var sections = activeMockExamSections(set);
+    return sections.reduce(function (sum, s) {
+      if (s === 'hoeren') return sum + HOEREN_APPROX_MINUTES;
+      if (s === 'sprechen') return sum + SPRECHEN_APPROX_MINUTES;
+      return sum + ((SECTION_MINUTES[currentLevel] || {})[s] || 0);
+    }, 0);
   }
 
   function overviewRow(label, text) {
@@ -1813,7 +1897,7 @@
       if (s === 'sprechen') return SPRECHEN_APPROX_MINUTES;
       return (SECTION_MINUTES[currentLevel] || {})[s];
     };
-    var totalMinutes = sections.reduce(function (sum, s) { return sum + (sectionMinutes(s) || 0); }, 0);
+    var totalMinutes = estimateSetMinutes(set); // shared with the set-picker cards — same computation, never drifts
 
     el('mockExamOverviewTitle').textContent = set.title;
     el('mockExamOverviewSub').textContent = currentLevel + ' · ' + sections.length + ' modules · ~' + totalMinutes + ' minutes total';
