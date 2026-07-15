@@ -229,14 +229,32 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
 
 /* MODULE 4 LESSON CONTENT — presentation only */
 .lesson-shell { max-width:680px; margin:0 auto; width:100%; padding:24px; }
-.lesson-content-card { padding:32px; }
-.lesson-content-card .lesson-h { max-width:19ch; margin-bottom:14px; }
-.lesson-content-card > .body-text { max-width:62ch; }
+.lesson-content-card { padding:32px; font-family:'Plus Jakarta Sans',sans-serif; }
+.lesson-content-card .lesson-h,
+.lesson-content-card .concept-tag,
+.lesson-content-card .sec-label,
+.lesson-content-card .rule-ex,
+.lesson-content-card .de,
+.lesson-content-card .de-der,
+.lesson-content-card .de-die,
+.lesson-content-card .de-das,
+.lesson-content-card .nc-art,
+.lesson-content-card .nc-word,
+.lesson-content-card .gc-art,
+.lesson-content-card .gc-label { font-family:'Plus Jakarta Sans',sans-serif !important; }
+.lesson-content-card .lesson-h { max-width:19ch; margin-bottom:14px; font-weight:800; letter-spacing:-0.025em; }
+.lesson-content-card > .body-text { max-width:58ch; }
+.lesson-intro { font-size:15px; line-height:1.7; color:#475569; }
 .lesson-content-card .sec-label { margin:28px 0 12px; line-height:1.5; }
 .lesson-content-card .info-box,
 .lesson-content-card .warn-box,
 .lesson-content-card .danger-box,
-.lesson-content-card .success-box { padding:16px 18px; margin:20px 0; }
+.lesson-content-card .success-box { padding:16px 18px; margin:20px 0; border-radius:12px; }
+.lesson-content-card .info-box { background:#EFF6FF; border:1px solid #BFDBFE; border-left:4px solid #3B82F6; }
+.lesson-content-card .rule-card { background:#FFFBEB; border:1px solid #FDE68A; border-left:4px solid #F59E0B; }
+.lesson-content-card .warn-box,
+.lesson-content-card .danger-box { background:#FEF2F2; border:1px solid #FECACA; border-left:4px solid #EF4444; color:#991B1B; }
+.lesson-content-card .success-box { background:#ECFDF5; border:1px solid #A7F3D0; border-left:4px solid #10B981; color:#065F46; }
 .common-mistake::before,
 .lesson-recap::before { display:block; margin-bottom:6px; font-family:'DM Mono',monospace; font-size:10px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; }
 .common-mistake::before { content:'Common mistake'; color:var(--red); }
@@ -244,7 +262,7 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
 .lesson-recap::before { content:'Quick recap'; color:#2563EB; }
 #lesson-0 .danger-box::before,
 #lesson-3 .warn-box::before { content:'Common mistake'; display:block; margin-bottom:6px; color:var(--red); font-family:'DM Mono',monospace; font-size:10px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; }
-.lesson-content-card::after { display:block; background:#EFF6FF; border:1px solid #BFDBFE; border-radius:14px; padding:16px 18px; margin-top:24px; color:#1E3A8A; font-size:14px; line-height:1.7; }
+.lesson-content-card::after { display:block; background:#F5F3FF; border:1px solid #DDD6FE; border-left:4px solid #8B5CF6; border-radius:14px; padding:16px 18px; margin-top:24px; color:#5B21B6; font-size:14px; font-weight:600; line-height:1.7; }
 #lesson-0 .lesson-content-card::after { content:'QUICK RECAP  ·  Learn the noun and article as one unit: der for masculine, die for feminine, das for neuter. Use ein with masculine and neuter nouns, and eine with feminine nouns.'; }
 #lesson-1 .lesson-content-card::after { content:'QUICK RECAP  ·  Start with the strongest patterns: male people and time words are often der; -ung, -heit, and -keit signal die; -chen and -lein signal das.'; }
 #lesson-2 .lesson-content-card::after { content:'QUICK RECAP  ·  Say each article with the noun, then picture its colour: blue for der, red for die, and green for das.'; }
@@ -257,6 +275,11 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
 #lesson-5 .lesson-content-card > div[style*="flex-direction:column"] > div { border-color:var(--border) !important; }
 .lesson-content-card .dtable { display:block; width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; border:1px solid var(--border); border-radius:12px; }
 .lesson-content-card .dtable tbody { display:table; min-width:560px; width:100%; }
+#lesson-5 .success-box::before { content:'Exam tip'; display:block; margin-bottom:6px; color:#047857; font-size:10px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase; }
+#lesson-4 .lesson-content-card > div[style*="flex-direction:column"] > div,
+#lesson-5 .lesson-content-card > div[style*="flex-direction:column"] > div { background:#F8FAFC !important; border:1px solid #CBD5E1 !important; box-shadow:0 1px 2px rgba(15,23,42,0.04); }
+#screen-lesson { padding-bottom:240px; }
+.lesson-shell { padding-bottom:180px; }
 
 @media(max-width:600px){
   .lesson-shell { padding:16px 14px; }
@@ -279,6 +302,24 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
   .example-block[style*="justify-content:space-between"] .speak-btn { justify-content:center; min-height:42px; margin:4px 0 0; }
   #lesson-4 .lesson-content-card > div[style*="flex-direction:column"] > div[style*="justify-content:space-between"] { align-items:stretch !important; flex-direction:column; }
   #lesson-4 .lesson-content-card > div[style*="flex-direction:column"] > div[style*="justify-content:space-between"] .speak-btn { justify-content:center; min-height:42px; margin:4px 0 0; }
+  .lesson-content-card .dtable { overflow:visible; border:none; background:transparent; }
+  .lesson-content-card .dtable tbody { display:grid; min-width:0; gap:10px; }
+  .lesson-content-card .dtable tr { display:grid; gap:8px; padding:14px; border:1px solid #E2E8F0; border-radius:12px; background:#F8FAFC; }
+  .lesson-content-card .dtable tr:first-child { display:none; }
+  .lesson-content-card .dtable td { display:grid; grid-template-columns:104px minmax(0,1fr); gap:10px; padding:0; border:0; font-size:13px !important; line-height:1.5; overflow-wrap:anywhere; }
+  .lesson-content-card .dtable td::before { color:#64748B; font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+  #lesson-3 .dtable td:nth-child(1)::before { content:'Masculine'; }
+  #lesson-3 .dtable td:nth-child(2)::before { content:'Feminine'; }
+  #lesson-3 .dtable td:nth-child(3)::before { content:'English'; }
+  #lesson-4 .dtable td:nth-child(1)::before { content:'Pattern'; }
+  #lesson-4 .dtable td:nth-child(2)::before { content:'Singular'; }
+  #lesson-4 .dtable td:nth-child(3)::before { content:'Plural'; }
+  #lesson-4 .dtable td:nth-child(4)::before { content:'Change'; }
+  #lesson-5 .dtable td:nth-child(1)::before { content:'Field'; }
+  #lesson-5 .dtable td:nth-child(2)::before { content:'Article'; }
+  #lesson-5 .dtable td:nth-child(3)::before { content:'Why'; }
+  #screen-lesson { padding-bottom:300px; }
+  .lesson-shell { padding-bottom:240px; }
   .nav-row { margin-top:16px; }
 }
 </style>
@@ -333,7 +374,6 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
         <div class="card lesson-content-card">
           <div class="concept-tag">Module 4 · Lesson 1 of 6</div>
           <h2 class="lesson-h">The three genders — masculine, feminine, neuter</h2>
-          <p class="body-text">In German, every noun is one of three genders. The gender is shown by the definite article before the noun. Unlike biological gender, grammatical gender in German is not always logical — a girl (das Mädchen) is neuter, a key (der Schlüssel) is masculine. You must learn the article with every noun.</p>
 
           <div class="gender-trio">
             <div class="gender-card gc-der">
@@ -352,6 +392,9 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
               <div class="gc-examples">das Kind<br>das Haus<br>das Buch<br>das Auto</div>
             </div>
           </div>
+
+          <p class="body-text lesson-intro">In German, every noun is one of three genders. The gender is shown by the definite article before the noun.</p>
+          <p class="body-text lesson-intro">Unlike biological gender, grammatical gender in German is not always logical — a girl (das Mädchen) is neuter, a key (der Schlüssel) is masculine. You must learn the article with every noun.</p>
 
           <div class="danger-box"><strong style="color:#e74c3c;">Why gender matters beyond the article:</strong> Gender affects every part of the sentence around the noun. When you say "I see a man" — the article for "man" changes from der to <strong>den</strong> (Akkusativ). When you say "I give the woman" — the article changes from die to <strong>der</strong> (Dativ). You cannot learn cases without knowing gender first. Every wrong gender creates a chain of wrong forms.</div>
 
@@ -599,10 +642,11 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
         <div class="card lesson-content-card">
           <div class="concept-tag">Module 4 · Lesson 5 of 6</div>
           <h2 class="lesson-h">Plural forms — all plurals use <span style="color:var(--die)">die</span></h2>
-          <p class="body-text">The good news: every German noun, regardless of its singular gender, uses <strong style="color:var(--die)">die</strong> in the plural. der Tisch → <strong style="color:var(--die)">die</strong> Tische. das Kind → <strong style="color:var(--die)">die</strong> Kinder. die Frau → <strong style="color:var(--die)">die</strong> Frauen. The article is always die in the plural.</p>
-          <p class="body-text">The hard part is that the noun itself changes — and there are five different plural patterns. You must learn the plural form of each noun along with its gender.</p>
-
           <div class="info-box"><strong style="color:var(--gold)">Learn three things with every noun:</strong> Article + singular + plural. For example: <span style="color:var(--der);">der</span> Tisch / <span style="color:var(--die);">die</span> Tische. Always. Every time you learn a noun, this is what you learn.</div>
+
+          <p class="body-text lesson-intro">The good news: every German noun, regardless of its singular gender, uses <strong style="color:var(--die)">die</strong> in the plural. der Tisch → <strong style="color:var(--die)">die</strong> Tische. das Kind → <strong style="color:var(--die)">die</strong> Kinder.</p>
+          <p class="body-text lesson-intro">die Frau → <strong style="color:var(--die)">die</strong> Frauen. The article is always die in the plural.</p>
+          <p class="body-text lesson-intro">The hard part is that the noun itself changes — and there are five different plural patterns. You must learn the plural form of each noun along with its gender.</p>
 
           <div class="sec-label">The five plural patterns</div>
           <table class="dtable">
@@ -666,7 +710,10 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
         <div class="card lesson-content-card">
           <div class="concept-tag">Module 4 · Lesson 6 of 6</div>
           <h2 class="lesson-h">Gender in real Goethe sentences</h2>
-          <p class="body-text">The Goethe exam tests gender in several ways: form-filling (writing the correct article), Lesen (choosing the right sentence), and Schreiben (producing sentences). These are the patterns that appear most often.</p>
+          <div class="success-box"><strong style="color:var(--green)">The article before a noun tells you everything:</strong> In the Goethe Lesen section, you often identify meaning from context. The article is a free clue — it narrows down what the noun can be. "Der" signals a masculine noun. If you hear "die" before a time word, you know it is die Zeit or die Stunde or die Uhrzeit. Use articles actively as comprehension clues.</div>
+
+          <p class="body-text lesson-intro">The Goethe exam tests gender in several ways: form-filling (writing the correct article), Lesen (choosing the right sentence), and Schreiben (producing sentences).</p>
+          <p class="body-text lesson-intro">These are the patterns that appear most often.</p>
 
           <div class="sec-label">Form-filling — Goethe Schreiben Part 1</div>
           <p class="body-text">The first Schreiben task is a form where you fill in personal information. Gender appears here because German forms use articles before categories.</p>
@@ -708,7 +755,6 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
             </div>
           </div>
 
-          <div class="success-box"><strong style="color:var(--green)">The article before a noun tells you everything:</strong> In the Goethe Lesen section, you often identify meaning from context. The article is a free clue — it narrows down what the noun can be. "Der" signals a masculine noun. If you hear "die" before a time word, you know it is die Zeit or die Stunde or die Uhrzeit. Use articles actively as comprehension clues.</div>
         </div>
         <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Start Final Quiz →</button></div>
       </div>
