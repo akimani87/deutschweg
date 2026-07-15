@@ -245,6 +245,13 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
 .lesson-content-card .lesson-h { max-width:19ch; margin-bottom:14px; font-weight:800; letter-spacing:-0.025em; }
 .lesson-content-card > .body-text { max-width:58ch; }
 .lesson-intro { font-size:15px; line-height:1.7; color:#475569; }
+.lesson-rule { margin:0 0 14px; padding:14px 16px; border-left:4px solid #2563EB; border-radius:0 12px 12px 0; background:#EFF6FF; color:#1E3A8A; font-size:16px; font-weight:700; line-height:1.55; }
+.lesson-rule::before { content:'Main rule'; display:block; margin-bottom:5px; color:#2563EB; font-size:10px; font-weight:800; letter-spacing:1.7px; text-transform:uppercase; }
+.lesson-step { margin:28px 0 10px; color:#334155; font-size:13px; font-weight:800; letter-spacing:.04em; }
+.lesson-step::before { color:#3B82F6; }
+.learner-check { margin:22px 0 0; padding:16px 18px; border:1px solid #C4B5FD; border-left:4px solid #7C3AED; border-radius:12px; background:#FAF5FF; color:#4C1D95; font-size:14px; line-height:1.65; }
+.learner-check::before { content:'Quick learner check'; display:block; margin-bottom:6px; color:#7C3AED; font-size:10px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; }
+.learner-check strong { color:#5B21B6; }
 .lesson-content-card .sec-label { margin:28px 0 12px; line-height:1.5; }
 .lesson-content-card .info-box,
 .lesson-content-card .warn-box,
@@ -286,6 +293,9 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
   .lesson-content-card { padding:20px 18px; border-radius:16px; }
   .lesson-content-card .lesson-h { font-size:24px; line-height:1.25; }
   .lesson-content-card .body-text { font-size:15px; line-height:1.7; margin-bottom:12px; }
+  .lesson-rule { font-size:15px; padding:13px 14px; }
+  .lesson-step { margin-top:24px; }
+  .learner-check { padding:14px 15px; }
   .lesson-content-card .sec-label { margin-top:24px; letter-spacing:2px; }
   .gender-trio { grid-template-columns:1fr; gap:10px; }
   .gender-card { display:grid; grid-template-columns:auto 1fr; column-gap:14px; padding:16px; text-align:left; }
@@ -374,7 +384,9 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
         <div class="card lesson-content-card">
           <div class="concept-tag">Module 4 · Lesson 1 of 6</div>
           <h2 class="lesson-h">The three genders — masculine, feminine, neuter</h2>
+          <p class="lesson-rule">Every German noun is masculine, feminine, or neuter, and its article—der, die, or das—shows which one.</p>
 
+          <div class="lesson-step">Step 1 · See the three articles</div>
           <div class="gender-trio">
             <div class="gender-card gc-der">
               <div class="gc-art">der</div>
@@ -393,11 +405,11 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
             </div>
           </div>
 
-          <p class="body-text lesson-intro">In German, every noun is one of three genders. The gender is shown by the definite article before the noun.</p>
           <p class="body-text lesson-intro">Unlike biological gender, grammatical gender in German is not always logical — a girl (das Mädchen) is neuter, a key (der Schlüssel) is masculine. You must learn the article with every noun.</p>
 
           <div class="danger-box"><strong style="color:#e74c3c;">Why gender matters beyond the article:</strong> Gender affects every part of the sentence around the noun. When you say "I see a man" — the article for "man" changes from der to <strong>den</strong> (Akkusativ). When you say "I give the woman" — the article changes from die to <strong>der</strong> (Dativ). You cannot learn cases without knowing gender first. Every wrong gender creates a chain of wrong forms.</div>
 
+          <div class="lesson-step">Step 2 · Compare “a/an”</div>
           <div class="sec-label">The indefinite article (a/an) also changes by gender</div>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:14px 0;">
             <div style="background:rgba(52,152,219,0.07);border:1px solid rgba(52,152,219,0.25);border-radius:12px;padding:14px;text-align:center;">
@@ -428,6 +440,7 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
             <button class="speak-btn" onclick="speakSentence(this,'eine Frau')">🔊 eine Frau</button>
             <button class="speak-btn" onclick="speakSentence(this,'ein Kind')">🔊 ein Kind</button>
           </div>
+          <div class="learner-check"><strong>Cover the examples:</strong> Which article belongs with Frau? Which indefinite article belongs with Kind? Say both answers aloud before continuing.</div>
         </div>
         <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Continue →</button></div>
       </div>
@@ -448,8 +461,10 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
         <div class="card lesson-content-card">
           <div class="concept-tag">Module 4 · Lesson 2 of 6</div>
           <h2 class="lesson-h">Gender rules — patterns you can use right now</h2>
-          <p class="body-text">You cannot memorise the gender of every German noun. But you can learn the patterns that predict gender most of the time. These rules cover the majority of the vocabulary in Goethe A1.</p>
+          <p class="lesson-rule">If a noun ends in -ung, use die: die Wohnung, die Zeitung, die Übung.</p>
+          <p class="body-text lesson-intro">You cannot memorise the gender of every German noun. But you can learn the patterns that predict gender most of the time. These rules cover the majority of the vocabulary in Goethe A1.</p>
 
+          <div class="lesson-step">Step 1 · Masculine patterns</div>
           <div class="sec-label" style="color:var(--der);">Rules for der — masculine</div>
           <div class="rule-card">
             <div class="rule-icon">👨</div>
@@ -476,6 +491,7 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
             </div>
           </div>
 
+          <div class="lesson-step">Step 2 · Feminine patterns</div>
           <div class="sec-label" style="color:var(--die);">Rules for die — feminine</div>
           <div class="rule-card">
             <div class="rule-icon">👩</div>
@@ -494,6 +510,7 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
             </div>
           </div>
 
+          <div class="lesson-step">Step 3 · Neuter patterns</div>
           <div class="sec-label" style="color:var(--das);">Rules for das — neuter</div>
           <div class="rule-card">
             <div class="rule-icon">🔤</div>
@@ -512,7 +529,8 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
             </div>
           </div>
 
-          <div class="success-box"><strong style="color:var(--green)">The most powerful rule:</strong> -ung is always die. Every single noun ending in -ung is feminine. Wohnung, Zeitung, Öffnungszeit, Entschuldigung, Übung — all die. Memorise this one ending and you cover dozens of common nouns.</div>
+          <div class="danger-box"><strong>Common mistake:</strong> Do not choose gender only from a noun’s meaning. First look for a reliable ending, then learn the article with the word.</div>
+          <div class="learner-check"><strong>Choose quickly:</strong> Wohnung, Frühling, and Mädchen—which one is die, which is der, and which is das?</div>
         </div>
         <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Continue →</button></div>
       </div>
@@ -533,9 +551,10 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
         <div class="card lesson-content-card">
           <div class="concept-tag">Module 4 · Lesson 3 of 6</div>
           <h2 class="lesson-h">Home and daily life — the nouns Goethe tests most</h2>
-          <p class="body-text">These are the nouns that appear most frequently in Goethe A1 Hören and Lesen. Learn each one with its colour-coded article. Tap any card to hear the German.</p>
-          <div class="info-box"><strong style="color:var(--gold)">Colour system:</strong> <span style="color:var(--der);">Blue = der</span> · <span style="color:var(--die);">Red = die</span> · <span style="color:var(--das);">Green = das</span> — use the colours to build visual memory.</div>
+          <p class="lesson-rule">Learn every noun with its article; use blue for der, red for die, and green for das.</p>
+          <p class="body-text lesson-intro">These are the nouns that appear most frequently in Goethe A1 Hören and Lesen. Tap any card to hear the German.</p>
 
+          <div class="lesson-step">Step 1 · Home and living</div>
           <div class="sec-label">Home and Living</div>
           <div class="noun-grid">
             <div class="noun-cell nc-das" onclick="speakNoun(this,'das Haus')"><div class="nc-art">das</div><div class="nc-word">Haus</div><div class="nc-en">house</div><div class="nc-tap">🔊 tap</div></div>
@@ -550,6 +569,7 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
             <div class="noun-cell nc-der" onclick="speakNoun(this,'der Kühlschrank')"><div class="nc-art">der</div><div class="nc-word">Kühlschrank</div><div class="nc-en">fridge</div><div class="nc-tap">🔊 tap</div></div>
           </div>
 
+          <div class="lesson-step">Step 2 · Food and daily life</div>
           <div class="sec-label">Food and Daily Life</div>
           <div class="noun-grid">
             <div class="noun-cell nc-das" onclick="speakNoun(this,'das Frühstück')"><div class="nc-art">das</div><div class="nc-word">Frühstück</div><div class="nc-en">breakfast</div><div class="nc-tap">🔊 tap</div></div>
@@ -563,6 +583,8 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
             <div class="noun-cell nc-die" onclick="speakNoun(this,'die Apotheke')"><div class="nc-art">die</div><div class="nc-word">Apotheke</div><div class="nc-en">pharmacy</div><div class="nc-tap">🔊 tap</div></div>
             <div class="noun-cell nc-der" onclick="speakNoun(this,'der Arzt')"><div class="nc-art">der</div><div class="nc-word">Arzt</div><div class="nc-en">doctor (m)</div><div class="nc-tap">🔊 tap</div></div>
           </div>
+          <div class="danger-box"><strong>Common mistake:</strong> Do not memorise “Tisch” or “Wohnung” alone. The article is part of the word: der Tisch, die Wohnung.</div>
+          <div class="learner-check"><strong>Recall without looking:</strong> What are the articles for Haus, Wohnung, and Kaffee? Then tap the cards to check.</div>
         </div>
         <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Continue →</button></div>
       </div>
@@ -583,7 +605,9 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
         <div class="card lesson-content-card">
           <div class="concept-tag">Module 4 · Lesson 4 of 6</div>
           <h2 class="lesson-h">Work, people, and places — tap to hear each</h2>
+          <p class="lesson-rule">Learn people, professions, and places as complete article+noun pairs.</p>
 
+          <div class="lesson-step">Step 1 · Family and people</div>
           <div class="sec-label">Family and People</div>
           <div class="noun-grid">
             <div class="noun-cell nc-der" onclick="speakNoun(this,'der Mann')"><div class="nc-art">der</div><div class="nc-word">Mann</div><div class="nc-en">man / husband</div><div class="nc-tap">🔊 tap</div></div>
@@ -600,6 +624,7 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
 
           <div class="warn-box"><strong style="color:var(--blue)">das Mädchen — the most famous gender trap:</strong> "Girl" is grammatically neuter in German because it ends in -chen (diminutive). The biology says female; the grammar says neuter. The grammar wins. Always: das Mädchen, es ist... (not sie ist in a grammar context).</div>
 
+          <div class="lesson-step">Step 2 · Compare profession pairs</div>
           <div class="sec-label">Professions — pairs</div>
           <table class="dtable">
             <tr><th>Masculine (der)</th><th>Feminine (die)</th><th>English</th></tr>
@@ -611,6 +636,7 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
             <tr><td class="de-der">der Student</td><td class="de-die">die Studentin</td><td style="font-size:13px;color:var(--gray);">student</td></tr>
           </table>
 
+          <div class="lesson-step">Step 3 · Places and transport</div>
           <div class="sec-label">Places and Transport</div>
           <div class="noun-grid">
             <div class="noun-cell nc-der" onclick="speakNoun(this,'der Bahnhof')"><div class="nc-art">der</div><div class="nc-word">Bahnhof</div><div class="nc-en">train station</div><div class="nc-tap">🔊 tap</div></div>
@@ -622,6 +648,7 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
             <div class="noun-cell nc-das" onclick="speakNoun(this,'das Büro')"><div class="nc-art">das</div><div class="nc-word">Büro</div><div class="nc-en">office</div><div class="nc-tap">🔊 tap</div></div>
             <div class="noun-cell nc-die" onclick="speakNoun(this,'die Stadt')"><div class="nc-art">die</div><div class="nc-word">Stadt</div><div class="nc-en">city / town</div><div class="nc-tap">🔊 tap</div></div>
           </div>
+          <div class="learner-check"><strong>Compare:</strong> Say the masculine and feminine forms for doctor, then name the articles for Bahnhof and Büro.</div>
         </div>
         <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Continue →</button></div>
       </div>
@@ -642,12 +669,14 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
         <div class="card lesson-content-card">
           <div class="concept-tag">Module 4 · Lesson 5 of 6</div>
           <h2 class="lesson-h">Plural forms — all plurals use <span style="color:var(--die)">die</span></h2>
-          <div class="info-box"><strong style="color:var(--gold)">Learn three things with every noun:</strong> Article + singular + plural. For example: <span style="color:var(--der);">der</span> Tisch / <span style="color:var(--die);">die</span> Tische. Always. Every time you learn a noun, this is what you learn.</div>
+          <p class="lesson-rule">Every plural uses die; learn each noun as article + singular + plural.</p>
+          <div class="info-box"><strong style="color:var(--gold)">Immediate example:</strong> <span style="color:var(--der);">der</span> Tisch → <span style="color:var(--die);">die</span> Tische.</div>
 
           <p class="body-text lesson-intro">The good news: every German noun, regardless of its singular gender, uses <strong style="color:var(--die)">die</strong> in the plural. der Tisch → <strong style="color:var(--die)">die</strong> Tische. das Kind → <strong style="color:var(--die)">die</strong> Kinder.</p>
           <p class="body-text lesson-intro">die Frau → <strong style="color:var(--die)">die</strong> Frauen. The article is always die in the plural.</p>
           <p class="body-text lesson-intro">The hard part is that the noun itself changes — and there are five different plural patterns. You must learn the plural form of each noun along with its gender.</p>
 
+          <div class="lesson-step">Step 1 · Compare plural patterns</div>
           <div class="sec-label">The five plural patterns</div>
           <table class="dtable">
             <tr><th>Pattern</th><th>Example singular</th><th>Plural</th><th>Change</th></tr>
@@ -659,6 +688,7 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
             <tr><td style="font-size:13px;color:var(--cream);">Add -s</td><td class="de-das">das Auto</td><td class="de-die">die Autos</td><td style="font-size:12px;color:var(--gray);">Foreign loanwords, abbreviations</td></tr>
           </table>
 
+          <div class="lesson-step">Step 2 · Hear plurals in sentences</div>
           <div class="sec-label">Plurals in Goethe sentences — tap to hear</div>
           <div style="display:flex;flex-direction:column;gap:10px;margin:14px 0;">
             <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
@@ -690,6 +720,8 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
               <button class="speak-btn" onclick="speakSentence(this,'Wir haben drei Zimmer in der Wohnung.')">🔊</button>
             </div>
           </div>
+          <div class="danger-box"><strong>Common mistake:</strong> The plural article is always die, but the noun ending is not always the same. Learn the complete plural form.</div>
+          <div class="learner-check"><strong>Change to plural:</strong> der Tisch, das Kind, and die Frau. Say the three plural forms before checking the examples.</div>
         </div>
         <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Continue →</button></div>
       </div>
@@ -710,11 +742,13 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
         <div class="card lesson-content-card">
           <div class="concept-tag">Module 4 · Lesson 6 of 6</div>
           <h2 class="lesson-h">Gender in real Goethe sentences</h2>
-          <div class="success-box"><strong style="color:var(--green)">The article before a noun tells you everything:</strong> In the Goethe Lesen section, you often identify meaning from context. The article is a free clue — it narrows down what the noun can be. "Der" signals a masculine noun. If you hear "die" before a time word, you know it is die Zeit or die Stunde or die Uhrzeit. Use articles actively as comprehension clues.</div>
+          <p class="lesson-rule">Use the article before a noun as a clue to its gender and meaning.</p>
+          <div class="success-box">In the Goethe Lesen section, the article narrows down what the noun can be. “Der” signals a masculine noun. If you hear “die” before a time word, you know it is die Zeit, die Stunde, or die Uhrzeit.</div>
 
           <p class="body-text lesson-intro">The Goethe exam tests gender in several ways: form-filling (writing the correct article), Lesen (choosing the right sentence), and Schreiben (producing sentences).</p>
           <p class="body-text lesson-intro">These are the patterns that appear most often.</p>
 
+          <div class="lesson-step">Step 1 · Use articles in form fields</div>
           <div class="sec-label">Form-filling — Goethe Schreiben Part 1</div>
           <p class="body-text">The first Schreiben task is a form where you fill in personal information. Gender appears here because German forms use articles before categories.</p>
 
@@ -731,6 +765,7 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
             </table>
           </div>
 
+          <div class="lesson-step">Step 2 · Listen for the article</div>
           <div class="sec-label">Gender in Hören — sentences to recognise</div>
           <div style="display:flex;flex-direction:column;gap:10px;margin:14px 0;">
             <div style="background:var(--card2-bg);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;">
@@ -754,6 +789,9 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
               <button class="speak-btn" onclick="speakSentence(this,'Die Wohnung hat drei Zimmer und eine Küche.')">🔊</button>
             </div>
           </div>
+
+          <div class="danger-box"><strong>Common mistake:</strong> Do not ignore a short article while listening. It may be the fastest clue to the noun you heard.</div>
+          <div class="learner-check"><strong>Listen and identify:</strong> Play one sentence above. Is the key noun der, die, or das—and which spoken article proves it?</div>
 
         </div>
         <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Start Final Quiz →</button></div>
