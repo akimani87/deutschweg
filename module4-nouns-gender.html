@@ -229,7 +229,7 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
 
 /* MODULE 4 LESSON CONTENT — presentation only */
 .lesson-shell { max-width:680px; margin:0 auto; width:100%; padding:24px; }
-.lesson-content-card { padding:32px; font-family:'Plus Jakarta Sans',sans-serif; }
+.lesson-content-card { padding:32px; color:#1E293B; font-family:'Plus Jakarta Sans',sans-serif; }
 .lesson-content-card .lesson-h,
 .lesson-content-card .concept-tag,
 .lesson-content-card .sec-label,
@@ -244,10 +244,10 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
 .lesson-content-card .gc-label { font-family:'Plus Jakarta Sans',sans-serif !important; }
 .lesson-content-card .lesson-h { max-width:19ch; margin-bottom:14px; font-weight:800; letter-spacing:-0.025em; }
 .lesson-content-card > .body-text { max-width:58ch; }
-.lesson-intro { font-size:15px; line-height:1.7; color:#475569; }
+.lesson-intro { font-size:16px; line-height:1.75; color:#334155; }
 .lesson-rule { margin:0 0 14px; padding:14px 16px; border-left:4px solid #2563EB; border-radius:0 12px 12px 0; background:#EFF6FF; color:#1E3A8A; font-size:16px; font-weight:700; line-height:1.55; }
 .lesson-rule::before { content:'Main rule'; display:block; margin-bottom:5px; color:#2563EB; font-size:10px; font-weight:800; letter-spacing:1.7px; text-transform:uppercase; }
-.lesson-step { margin:28px 0 10px; color:#334155; font-size:13px; font-weight:800; letter-spacing:.04em; }
+.lesson-step { margin:32px 0 12px; padding-top:22px; border-top:1px solid #E2E8F0; color:#1E293B; font-size:14px; font-weight:800; letter-spacing:.025em; }
 .lesson-step::before { color:#3B82F6; }
 .learner-check { margin:22px 0 0; padding:16px 18px; border:1px solid #C4B5FD; border-left:4px solid #7C3AED; border-radius:12px; background:#FAF5FF; color:#4C1D95; font-size:14px; line-height:1.65; }
 .learner-check::before { content:'Quick learner check'; display:block; margin-bottom:6px; color:#7C3AED; font-size:10px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; }
@@ -262,6 +262,16 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
 .lesson-content-card .warn-box,
 .lesson-content-card .danger-box { background:#FEF2F2; border:1px solid #FECACA; border-left:4px solid #EF4444; color:#991B1B; }
 .lesson-content-card .success-box { background:#ECFDF5; border:1px solid #A7F3D0; border-left:4px solid #10B981; color:#065F46; }
+.lesson-content-card .info-box,
+.lesson-content-card .warn-box,
+.lesson-content-card .danger-box,
+.lesson-content-card .success-box,
+.lesson-content-card .learner-check { font-size:15px; line-height:1.7; }
+.lesson-content-card .rule-card { margin:14px 0; padding:20px; }
+.lesson-content-card .rule-title { font-size:15px; line-height:1.45; }
+.lesson-content-card .rule-desc { color:#475569; font-size:14px; line-height:1.7; }
+.lesson-content-card .rule-ex { color:#334155; font-size:13px; line-height:1.75; }
+.lesson-content-card .gc-examples { color:#334155; font-size:13px; line-height:1.8; }
 .common-mistake::before,
 .lesson-recap::before { display:block; margin-bottom:6px; font-family:'DM Mono',monospace; font-size:10px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; }
 .common-mistake::before { content:'Common mistake'; color:var(--red); }
@@ -289,25 +299,28 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
 .lesson-shell { padding-bottom:180px; }
 
 @media(max-width:600px){
-  .lesson-shell { padding:16px 14px; }
-  .lesson-content-card { padding:20px 18px; border-radius:16px; }
-  .lesson-content-card .lesson-h { font-size:24px; line-height:1.25; }
-  .lesson-content-card .body-text { font-size:15px; line-height:1.7; margin-bottom:12px; }
-  .lesson-rule { font-size:15px; padding:13px 14px; }
-  .lesson-step { margin-top:24px; }
-  .learner-check { padding:14px 15px; }
+  .lesson-shell { padding:18px 14px 320px; }
+  .lesson-content-card { padding:22px 18px; border-radius:16px; }
+  .lesson-content-card .lesson-h { font-size:25px; line-height:1.28; margin-bottom:16px; }
+  .lesson-content-card .body-text { font-size:16px; line-height:1.75; margin-bottom:16px; }
+  .lesson-rule { font-size:16px; line-height:1.6; padding:15px 16px; margin-bottom:18px; }
+  .lesson-step { margin-top:30px; padding-top:22px; font-size:14px; line-height:1.5; }
+  .learner-check { padding:16px; }
   .lesson-content-card .sec-label { margin-top:24px; letter-spacing:2px; }
   .gender-trio { grid-template-columns:1fr; gap:10px; }
   .gender-card { display:grid; grid-template-columns:auto 1fr; column-gap:14px; padding:16px; text-align:left; }
   .gender-card .gc-art { grid-row:1 / 3; align-self:center; margin:0; }
   .gender-card .gc-label { margin:2px 0 4px; }
   .gender-card .gc-examples { line-height:1.65; }
-  .rule-card { padding:16px; gap:12px; }
+  .rule-card { padding:18px !important; gap:13px; }
   .rule-icon { font-size:22px; }
   .rule-ex { overflow-wrap:anywhere; }
-  .noun-grid { gap:8px; }
-  .noun-cell { min-width:0; padding:14px 8px; }
-  .nc-word { overflow-wrap:anywhere; font-size:14px; }
+  .noun-grid { gap:10px; }
+  .noun-cell { min-width:0; min-height:158px; padding:16px 13px; display:flex; flex-direction:column; align-items:flex-start; text-align:left; }
+  .nc-art { font-size:12px; font-weight:800; letter-spacing:.08em; }
+  .nc-word { overflow-wrap:anywhere; color:#1E293B; font-size:16px; line-height:1.35; }
+  .nc-en { color:#475569; font-size:13px; line-height:1.45; }
+  .nc-tap { margin-top:auto; padding-top:10px; color:#1D4ED8; font-size:11px; font-weight:800; opacity:1; }
   .example-block[style*="justify-content:space-between"] { align-items:stretch !important; flex-direction:column; }
   .example-block[style*="justify-content:space-between"] .speak-btn { justify-content:center; min-height:42px; margin:4px 0 0; }
   #lesson-4 .lesson-content-card > div[style*="flex-direction:column"] > div[style*="justify-content:space-between"] { align-items:stretch !important; flex-direction:column; }
@@ -328,8 +341,7 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
   #lesson-5 .dtable td:nth-child(1)::before { content:'Field'; }
   #lesson-5 .dtable td:nth-child(2)::before { content:'Article'; }
   #lesson-5 .dtable td:nth-child(3)::before { content:'Why'; }
-  #screen-lesson { padding-bottom:300px; }
-  .lesson-shell { padding-bottom:240px; }
+  #screen-lesson { padding-bottom:340px; }
   .nav-row { margin-top:16px; }
 }
 </style>
