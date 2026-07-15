@@ -227,6 +227,29 @@
   .draft-banner-btn.primary { background: #D97706; color: #fff; }
   .draft-banner-btn.ghost   { background: #fff; color: #92400E; border: 1.5px solid #FDE68A; }
 
+  /* Complete Mock Exam set picker — scoped so shared cards stay unchanged. */
+  .mock-exam-set-picker-card { padding: 24px; }
+  .mock-exam-set-picker-header { margin-bottom: 20px; }
+  .mock-exam-set-picker-title { font-size: 20px; font-weight: 800; line-height: 1.25; margin: 0 0 6px; }
+  .mock-exam-set-picker-subtitle { font-size: 13.5px; color: var(--mid); line-height: 1.5; margin: 0; }
+  .mock-exam-set-picker-list { display: grid; gap: 12px; }
+  .mock-exam-set-picker-item { margin-bottom: 0; flex-wrap: nowrap; padding: 16px 18px; }
+  .mock-exam-set-picker-copy { min-width: 0; }
+  .mock-exam-set-picker-name { font-size: 15px; font-weight: 800; line-height: 1.35; }
+  .mock-exam-set-picker-meta { font-size: 12.5px; color: var(--mid); line-height: 1.5; margin-top: 4px; }
+  .mock-exam-set-picker-btn { min-width: 96px; min-height: 40px; flex-shrink: 0; }
+
+  @media (max-width: 600px) {
+    .mock-exam-set-picker-card { padding: 18px; }
+    .mock-exam-set-picker-header { margin-bottom: 16px; }
+    .mock-exam-set-picker-title { font-size: 19px; }
+    .mock-exam-set-picker-list { gap: 10px; }
+    .mock-exam-set-picker-item { align-items: stretch; flex-direction: column; gap: 14px; padding: 16px; }
+    .mock-exam-set-picker-name { font-size: 15.5px; }
+    .mock-exam-set-picker-meta { font-size: 13px; }
+    .mock-exam-set-picker-btn { width: 100%; min-height: 44px; }
+  }
+
   /* ── Autosave status pill (quiet, non-blocking) ──────────────── */
   .autosave-status {
     font-size: 12px; font-weight: 600; color: var(--light);
@@ -995,10 +1018,12 @@
        showMockExamOverview() skips straight to the overview below, same as
        before this existed. -->
   <div id="mockExamSetPicker" style="display:none;">
-    <div class="card" style="background:#fff; border:1px solid var(--border); border-radius:16px; padding:20px; margin-bottom:16px;">
-      <h2 style="font-size:18px; font-weight:800; margin:0 0 4px;">Choose an Übungssatz</h2>
-      <p style="font-size:13.5px; color:var(--mid); margin:0 0 16px;">Pick which Complete Mock Exam set to take.</p>
-      <div id="mockExamSetPickerBody"><div class="spinner"></div></div>
+    <div class="card mock-exam-set-picker-card" style="background:#fff; border:1px solid var(--border); border-radius:16px; margin-bottom:16px;">
+      <div class="mock-exam-set-picker-header">
+        <h2 class="mock-exam-set-picker-title">Choose a Mock Exam</h2>
+        <p class="mock-exam-set-picker-subtitle">Pick which Complete Mock Exam set to take.</p>
+      </div>
+      <div id="mockExamSetPickerBody" class="mock-exam-set-picker-list"><div class="spinner"></div></div>
     </div>
   </div>
 
@@ -1843,10 +1868,10 @@
       var minutes = estimateSetMinutes(set);
       var state = stateBySetId[set.id];
       var actionLabel = state === 'incomplete' ? 'Continue' : (state === 'completed' ? 'View result' : 'Start');
-      return '<div class="draft-banner" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;" data-set-id="' + escapeHtml(set.id) + '">'
-        +   '<div>'
-        +     '<div style="font-weight:700; font-size:14.5px;">' + escapeHtml(set.title) + '</div>'
-        +     '<div style="font-size:12.5px; color:var(--mid); margin-top:2px;">'
+      return '<div class="draft-banner mock-exam-set-picker-item" data-set-id="' + escapeHtml(set.id) + '">'
+        +   '<div class="mock-exam-set-picker-copy">'
+        +     '<div class="mock-exam-set-picker-name">' + escapeHtml(set.level + ' Mock Exam ' + set.set_number) + '</div>'
+        +     '<div class="mock-exam-set-picker-meta">'
         +       sections.map(sectionDisplayLabel).join(' · ') + ' · ~' + minutes + ' min total'
         +     '</div>'
         +   '</div>'
