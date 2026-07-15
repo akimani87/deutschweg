@@ -197,6 +197,61 @@
   .lesson-table td{ padding:10px 14px; border-bottom:1px solid #F1F5F9; color:#1F2937; }
   .lesson-table tr:last-child td { border-bottom:none; }
 
+  /* ── Reusable block types: rule-card, comparison-table, pathway-card,
+       common-mistake, recap, vocab-grid — generic, not module-specific ── */
+  .lesson-rule-card { display:flex; gap:12px; background:#F8FAFC; border:1px solid #E5E7EB; border-radius:12px; padding:14px 16px; margin:10px 0; }
+  .lesson-rule-card-icon { font-size:22px; line-height:1; flex-shrink:0; }
+  .lesson-rule-card-title { font-weight:700; font-size:14px; margin-bottom:4px; color:#1F2937; }
+  .lesson-rule-card-title.color-der { color:#3B82F6; }
+  .lesson-rule-card-title.color-die { color:#EF4444; }
+  .lesson-rule-card-title.color-das { color:#10B981; }
+  .lesson-rule-card-desc { font-size:13px; color:#4B5563; line-height:1.6; margin-bottom:6px; }
+  .lesson-rule-card-ex { font-size:13px; color:#6B7280; line-height:1.6; }
+
+  .lesson-ct-cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:10px; margin:12px 0; }
+  .lesson-ct-card { text-align:center; border-radius:12px; padding:14px; border:1px solid #E5E7EB; background:#F8FAFC; }
+  .lesson-ct-card-label { font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#6B7280; margin-bottom:6px; }
+  .lesson-ct-card-value { font-size:18px; font-weight:700; margin-bottom:4px; }
+  .lesson-ct-card-examples { font-size:12px; color:#6B7280; line-height:1.5; }
+  .lesson-ct-card-der .lesson-ct-card-value, .lesson-ct-card-der .lesson-ct-card-label { color:#3B82F6; }
+  .lesson-ct-card-die .lesson-ct-card-value, .lesson-ct-card-die .lesson-ct-card-label { color:#EF4444; }
+  .lesson-ct-card-das .lesson-ct-card-value, .lesson-ct-card-das .lesson-ct-card-label { color:#10B981; }
+  .lesson-ct-cell-der { color:#3B82F6; font-weight:600; }
+  .lesson-ct-cell-die { color:#EF4444; font-weight:600; }
+  .lesson-ct-cell-das { color:#10B981; font-weight:600; }
+  @media (max-width:600px) {
+    .lesson-table-wrap.mobile-stack table, .lesson-table-wrap.mobile-stack thead,
+    .lesson-table-wrap.mobile-stack tbody, .lesson-table-wrap.mobile-stack tr,
+    .lesson-table-wrap.mobile-stack td { display:block; width:100%; }
+    .lesson-table-wrap.mobile-stack thead { display:none; }
+    .lesson-table-wrap.mobile-stack tr { margin-bottom:8px; border:1px solid #E5E7EB; border-radius:8px; padding:4px 12px; }
+    .lesson-table-wrap.mobile-stack td { border:none; padding:6px 0; display:flex; justify-content:space-between; gap:10px; }
+    .lesson-table-wrap.mobile-stack td::before { content:attr(data-label); font-weight:700; color:#64748B; font-size:11px; text-transform:uppercase; letter-spacing:0.4px; }
+  }
+
+  .lesson-pathway-card { background:#EEF2FF; border:1px solid #C7D2FE; border-left:4px solid #4F46E5; border-radius:12px; padding:14px 16px; margin:12px 0; color:#312E81; }
+  .lesson-pathway-label { font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#4F46E5; margin-bottom:6px; }
+  .lesson-pathway-line { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:6px 0; font-size:14px; line-height:1.5; }
+  .lesson-pathway-line + .lesson-pathway-line { border-top:1px solid #C7D2FE; }
+  @media (max-width:480px) { .lesson-pathway-line { flex-direction:column; align-items:flex-start; } }
+
+  .lesson-common-mistake { background:#FEF2F2; border:1px solid #FECACA; border-left:4px solid #EF4444; color:#991B1B; padding:12px 14px; margin:10px 0; border-radius:0 8px 8px 0; font-size:14px; line-height:1.7; }
+
+  .lesson-recap { background:#EFF6FF; border:1px solid #BFDBFE; border-radius:12px; padding:14px 16px; margin:18px 0 6px; color:#1E3A8A; }
+  .lesson-recap-label { font-size:10px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; color:#2563EB; margin-bottom:6px; }
+  .lesson-recap-body { font-size:14px; line-height:1.7; }
+
+  .lesson-vocab-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(110px,1fr)); gap:10px; margin:12px 0; }
+  .lesson-vg-cell { text-align:center; border-radius:12px; padding:12px 8px; border:1px solid #E5E7EB; background:#F8FAFC; cursor:pointer; transition:background .15s; }
+  .lesson-vg-cell:hover, .lesson-vg-cell:active { background:#F1F5F9; }
+  .lesson-vg-art { font-size:11px; font-weight:700; letter-spacing:0.5px; margin-bottom:2px; color:#6B7280; }
+  .lesson-vg-word { font-size:14px; font-weight:700; color:#1F2937; overflow-wrap:anywhere; }
+  .lesson-vg-en { font-size:11px; color:#6B7280; margin-top:2px; }
+  .lesson-vg-tap { font-size:10px; color:#9CA3AF; margin-top:4px; }
+  .lesson-vg-der .lesson-vg-art { color:#3B82F6; }
+  .lesson-vg-die .lesson-vg-art { color:#EF4444; }
+  .lesson-vg-das .lesson-vg-art { color:#10B981; }
+
   /* ── NEW BLOCK TYPES (Modul 3+) ─────────────────────── */
 
   /* pattern-table — mobile-first: stack vertically, side-by-side on wider screens */
@@ -1194,6 +1249,124 @@
           return '<div class="dw-dialogue">' + dlLabel + dlLines + '</div>';
         }
 
+        // ── rule-card ──────────────────────────────────────────────────────
+        // A single grammar rule: icon + title (optionally der/die/das
+        // colored) + description + example words. Generic — not specific to
+        // any one module's rule set.
+        // Data: { type, icon, title, title_color?: 'der'|'die'|'das', description, examples? }
+        case 'rule-card': {
+          var rcColorClass = (block.title_color === 'der' || block.title_color === 'die' || block.title_color === 'das')
+            ? ' color-' + block.title_color : '';
+          return '<div class="lesson-rule-card">' +
+            '<div class="lesson-rule-card-icon">' + escapeHtml(block.icon || '') + '</div>' +
+            '<div class="lesson-rule-card-body">' +
+              '<div class="lesson-rule-card-title' + rcColorClass + '">' + escapeHtml(block.title || '') + '</div>' +
+              '<div class="lesson-rule-card-desc">' + escapeHtml(block.description || '') + '</div>' +
+              (block.examples ? '<div class="lesson-rule-card-ex">' + escapeHtml(block.examples) + '</div>' : '') +
+            '</div>' +
+          '</div>';
+        }
+
+        // ── comparison-table ───────────────────────────────────────────────
+        // Two variants of the same idea — comparing several labeled things.
+        // "cards" is a small grid of label/value/examples cards (e.g. three
+        // genders side by side). "rows" extends the existing plain 'table'
+        // type with an optional per-cell color tag and an opt-in mobile
+        // stacked layout — existing 'table' blocks are untouched either way.
+        // Data (cards): { type, variant:'cards', cards:[{label, value, value_color?:'der'|'die'|'das', examples?}] }
+        // Data (rows):  { type, variant:'rows'|omitted, headers?, rows: [ (string|{value,color?:'der'|'die'|'das'})[] ], mobile_stack? }
+        case 'comparison-table': {
+          var ctColorClass = function(c) {
+            return (c === 'der' || c === 'die' || c === 'das') ? ' lesson-ct-card-' + c : '';
+          };
+          if (block.variant === 'cards') {
+            var ctCards = (Array.isArray(block.cards) ? block.cards : []).map(function(c) {
+              return '<div class="lesson-ct-card' + ctColorClass(c && c.value_color) + '">' +
+                (c && c.label ? '<div class="lesson-ct-card-label">' + escapeHtml(c.label) + '</div>' : '') +
+                (c && c.value ? '<div class="lesson-ct-card-value">' + escapeHtml(c.value) + '</div>' : '') +
+                (c && c.examples ? '<div class="lesson-ct-card-examples">' + escapeHtml(c.examples) + '</div>' : '') +
+              '</div>';
+            }).join('');
+            return '<div class="lesson-ct-cards">' + ctCards + '</div>';
+          }
+          var ctHeaders = Array.isArray(block.headers) ? block.headers : [];
+          var ctRows    = Array.isArray(block.rows) ? block.rows : [];
+          var ctThead = ctHeaders.length
+            ? '<thead><tr>' + ctHeaders.map(function(h){ return '<th>' + escapeHtml(h) + '</th>'; }).join('') + '</tr></thead>'
+            : '';
+          var ctTbody = '<tbody>' + ctRows.map(function(r) {
+            var cells = Array.isArray(r) ? r : [];
+            return '<tr>' + cells.map(function(c, ci) {
+              var isObj = c && typeof c === 'object';
+              var cellVal = isObj ? (c.value == null ? '' : c.value) : c;
+              var cellClass = isObj ? (' lesson-ct-cell-' + (c.color || '')).replace(/lesson-ct-cell-$/, '').trim() : '';
+              var classAttr = cellClass ? ' class="' + cellClass + '"' : '';
+              var labelAttr = ctHeaders[ci] ? ' data-label="' + escapeHtml(ctHeaders[ci]) + '"' : '';
+              return '<td' + classAttr + labelAttr + '>' + escapeHtml(cellVal) + '</td>';
+            }).join('') + '</tr>';
+          }).join('') + '</tbody>';
+          var ctWrapClass = 'lesson-table-wrap' + (block.mobile_stack ? ' mobile-stack' : '');
+          return '<div class="' + ctWrapClass + '"><table class="lesson-table lesson-comparison-table">' + ctThead + ctTbody + '</table></div>';
+        }
+
+        // ── pathway-card ───────────────────────────────────────────────────
+        // A themed set of example sentences for one real-life scenario
+        // ("Work", "Living in Germany"), each with tap-to-hear audio.
+        // Data: { type, label, lines:[{text, audio?}] }
+        case 'pathway-card': {
+          var pcLabel = block.label ? '<div class="lesson-pathway-label">' + escapeHtml(block.label) + ' pathway</div>' : '';
+          var pcLines = (Array.isArray(block.lines) ? block.lines : []).map(function(line) {
+            var lineText = (line && line.text) || '';
+            var lineAudio = (line && (line.audio || line.text)) || '';
+            var jsAud = String(lineAudio).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+            return '<div class="lesson-pathway-line">' +
+              '<span>' + escapeHtml(lineText) + '</span>' +
+              (lineAudio ? '<button class="audio-btn" onclick="speakText(\'' + jsAud + '\')">🔊 Hear it</button>' : '') +
+            '</div>';
+          }).join('');
+          return '<div class="lesson-pathway-card">' + pcLabel + pcLines + '</div>';
+        }
+
+        // ── common-mistake ─────────────────────────────────────────────────
+        // A labeled warning callout for a specific, named mistake learners
+        // make — distinct from the general-purpose 'warning' type.
+        // Data: { type, content }
+        case 'common-mistake':
+          return renderCollapsible('lesson-common-mistake', '<strong>Common mistake:</strong> ', block.content);
+
+        // ── recap ──────────────────────────────────────────────────────────
+        // A short, always-fully-visible takeaway at the end of a lesson.
+        // Deliberately does NOT use renderCollapsible()/its 100-char preview
+        // truncation — a recap that's partly hidden behind "Show more"
+        // defeats its own purpose as a quick end-of-lesson summary.
+        // Data: { type, content }
+        case 'recap':
+          return '<div class="lesson-recap">' +
+            '<div class="lesson-recap-label">Quick recap</div>' +
+            '<div class="lesson-recap-body">' + escapeHtml(block.content == null ? '' : block.content) + '</div>' +
+          '</div>';
+
+        // ── vocab-grid ─────────────────────────────────────────────────────
+        // A responsive grid of tap-to-hear vocabulary cards, optionally
+        // color-coded by grammatical gender.
+        // Data: { type, items:[{article?, word, translation?}] }
+        case 'vocab-grid': {
+          var vgItems = (Array.isArray(block.items) ? block.items : []).map(function(item) {
+            var vgArticle = (item && item.article) || '';
+            var vgWord    = (item && item.word) || '';
+            var vgFull    = String((vgArticle + ' ' + vgWord)).trim();
+            var jsFull    = vgFull.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+            var vgGenderClass = { der:' lesson-vg-der', die:' lesson-vg-die', das:' lesson-vg-das' }[String(vgArticle).toLowerCase()] || '';
+            return '<div class="lesson-vg-cell' + vgGenderClass + '" onclick="speakText(\'' + jsFull + '\')">' +
+              (vgArticle ? '<div class="lesson-vg-art">' + escapeHtml(vgArticle) + '</div>' : '') +
+              '<div class="lesson-vg-word">' + escapeHtml(vgWord) + '</div>' +
+              (item && item.translation ? '<div class="lesson-vg-en">' + escapeHtml(item.translation) + '</div>' : '') +
+              '<div class="lesson-vg-tap">🔊 tap</div>' +
+            '</div>';
+          }).join('');
+          return '<div class="lesson-vocab-grid">' + vgItems + '</div>';
+        }
+
         default:
           return '';
       }
@@ -1438,14 +1611,18 @@
       var contentHtml;
       // Sequential block display only applies to lessons that contain at least
       // one new-style block (pattern-table, tile-assembly, clock-quiz,
-      // listening-input, dialogue). Legacy A2/B1/B2 lessons that use only old
-      // block types (intro, text, example, audio, table, infobox, tip, warning)
-      // must show all blocks at once — same behaviour as before the sequential
-      // system was introduced. Passing lessonIdx=undefined to renderContent
-      // triggers the legacy "all visible" path.
+      // listening-input, dialogue, rule-card, comparison-table, pathway-card,
+      // common-mistake, recap, vocab-grid). Legacy A2/B1/B2 lessons that use
+      // only old block types (intro, text, example, audio, table, infobox,
+      // tip, warning) must show all blocks at once — same behaviour as
+      // before the sequential system was introduced. Passing
+      // lessonIdx=undefined to renderContent triggers the legacy "all
+      // visible" path.
       var NEW_BLOCK_TYPES = {
         'pattern-table':1, 'tile-assembly':1, 'clock-quiz':1,
-        'listening-input':1, 'dialogue':1
+        'listening-input':1, 'dialogue':1,
+        'rule-card':1, 'comparison-table':1, 'pathway-card':1,
+        'common-mistake':1, 'recap':1, 'vocab-grid':1
       };
       var hasNewBlocks = Array.isArray(lesson.content_json) && lesson.content_json.some(function(b) {
         return NEW_BLOCK_TYPES[b && b.type];
