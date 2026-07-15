@@ -189,6 +189,56 @@
     .anatomy-de { font-size:15px; }
     .transform { gap:8px; }
   }
+
+  /* MODULE 5 BEGINNER LESSON PRESENTATION */
+  #screen-lesson > div[style*="max-width:680px"] { padding:24px 24px 220px !important; }
+  .lesson-pane .step:first-child .card { padding:32px; color:#1E293B; font-family:'Plus Jakarta Sans',sans-serif; }
+  .lesson-pane .step:first-child .lesson-h { max-width:20ch; margin-bottom:14px; font-family:'Plus Jakarta Sans',sans-serif; font-weight:800; letter-spacing:-.025em; }
+  .lesson-pane .step:first-child .body-text { max-width:58ch; color:#334155; font-size:16px; line-height:1.75; }
+  .lesson-rule { margin:0 0 16px; padding:15px 17px; border:1px solid #BFDBFE; border-left:4px solid #2563EB; border-radius:0 12px 12px 0; background:#EFF6FF; color:#1E3A8A; font-size:16px; font-weight:700; line-height:1.6; }
+  .lesson-rule::before { content:'Main rule'; display:block; margin-bottom:5px; color:#2563EB; font-size:10px; font-weight:800; letter-spacing:1.7px; text-transform:uppercase; }
+  .lesson-step { margin:30px 0 12px; padding-top:22px; border-top:1px solid #E2E8F0; color:#1E293B; font-size:14px; font-weight:800; line-height:1.5; }
+  .lesson-step::before { color:#2563EB; }
+  .common-mistake::before, .learner-check::before, .lesson-recap::before, .pathway-example::before { display:block; margin-bottom:6px; font-size:10px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; }
+  .common-mistake { margin:20px 0; padding:16px 18px; border:1px solid #FECACA; border-left:4px solid #EF4444; border-radius:12px; background:#FEF2F2; color:#991B1B; font-size:15px; line-height:1.7; }
+  .common-mistake::before { content:'Common mistake'; color:#DC2626; }
+  .learner-check { margin:20px 0; padding:16px 18px; border:1px solid #C4B5FD; border-left:4px solid #7C3AED; border-radius:12px; background:#FAF5FF; color:#4C1D95; font-size:15px; line-height:1.7; }
+  .learner-check::before { content:'Quick learner check'; color:#7C3AED; }
+  .lesson-recap { margin-top:22px; padding:16px 18px; border:1px solid #A7F3D0; border-left:4px solid #10B981; border-radius:12px; background:#ECFDF5; color:#065F46; font-size:15px; line-height:1.7; }
+  .lesson-recap::before { content:'Quick recap'; color:#047857; }
+  .pathway-example { margin:18px 0; padding:16px 18px; border:1px solid #C7D2FE; border-left:4px solid #4F46E5; border-radius:12px; background:#EEF2FF; color:#312E81; }
+  .pathway-example::before { content:'Work pathway'; color:#4F46E5; }
+  .pathway-example .pathway-line { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:7px 0; font-size:15px; line-height:1.55; }
+  .pathway-example .pathway-line + .pathway-line { border-top:1px solid #C7D2FE; }
+  .pathway-example .speak-btn { flex-shrink:0; margin:0; }
+  .lesson-pane .step:first-child .info-box, .lesson-pane .step:first-child .warn-box, .lesson-pane .step:first-child .danger-box, .lesson-pane .step:first-child .success-box { margin:20px 0; padding:16px 18px; border-radius:12px; font-size:15px; line-height:1.7; }
+  .lesson-pane .step:first-child .ex-card, .lesson-pane .step:first-child .verb-card, .lesson-pane .step:first-child .anatomy { border-color:#CBD5E1; box-shadow:0 1px 2px rgba(15,23,42,.04); }
+  .lesson-pane .step:first-child .ex-de, .lesson-pane .step:first-child .vc-de { color:#1E293B; font-family:'Plus Jakarta Sans',sans-serif; }
+  .lesson-pane .step:first-child .ex-en, .lesson-pane .step:first-child .vc-en { color:#475569; }
+  .lesson-pane .step:first-child .ex-note, .lesson-pane .step:first-child .vc-ex { color:#334155; line-height:1.65; }
+
+  @media(max-width:600px){
+    #screen-lesson { padding-bottom:340px; }
+    #screen-lesson > div[style*="max-width:680px"] { padding:18px 14px 340px !important; }
+    .lesson-pane .step:first-child .card { padding:22px 18px; border-radius:16px; }
+    .lesson-pane .step:first-child .lesson-h { font-size:25px; line-height:1.28; margin-bottom:16px; }
+    .lesson-pane .step:first-child .body-text { font-size:16px; line-height:1.75; margin-bottom:16px; }
+    .lesson-rule { font-size:16px; line-height:1.6; padding:15px 16px; }
+    .case-table, .neg-table { display:block; overflow-x:auto; -webkit-overflow-scrolling:touch; border:1px solid #E2E8F0; border-radius:12px; }
+    .case-table tbody, .neg-table tbody { display:table; min-width:560px; width:100%; }
+    .verb-grid { grid-template-columns:1fr; }
+    .verb-card { min-height:132px; display:flex; flex-direction:column; padding:16px; }
+    .vc-de { font-size:16px; }
+    .vc-en { font-size:13px; }
+    .vc-tap { margin-top:auto; padding-top:8px; color:#1D4ED8; font-weight:800; opacity:1; }
+    .ex-card { flex-direction:column; gap:10px; padding:16px; }
+    .ex-card .speak-btn { align-self:stretch; justify-content:center; min-height:42px; margin:0; }
+    .anatomy { padding:16px 12px; overflow-x:auto; }
+    .anatomy-row { min-width:300px; gap:14px; }
+    .pathway-example .pathway-line { align-items:stretch; flex-direction:column; }
+    .pathway-example .speak-btn { justify-content:center; min-height:42px; }
+    .nav-row { margin-top:18px; }
+  }
 </style>
 <style>
 /* LIGHT THEME OVERRIDE */
@@ -284,7 +334,7 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
         <div class="card">
           <div class="concept-tag">Module 5 · Lesson 1 of 6</div>
           <h2 class="lesson-h">Subject vs Object — why the article changes</h2>
-          <p class="body-text">In German, the article in front of a noun changes to show its role in the sentence. The <strong style="color:var(--nom)">Nominativ</strong> (subject) is who is doing the action. The <strong style="color:var(--akk)">Akkusativ</strong> (direct object) is what is being acted upon.</p>
+          <div class="lesson-rule">The subject does the action; the direct object receives it and takes the Akkusativ.</div>
 
           <div class="anatomy">
             <div class="anatomy-de">
@@ -298,7 +348,7 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
           </div>
           <button class="speak-btn" onclick="speakSentence(this,'Der Mann kauft einen Kaffee.')">🔊 Hear it</button>
 
-          <p class="body-text">In English, word order tells you who is doing what. "The dog bites the man" vs "The man bites the dog" — same words, different meaning, because of position. In German, cases carry that information. So German can rearrange words for emphasis — the case endings signal the role, not the position.</p>
+          <p class="body-text">The article ending shows each noun's role, so German can move the object for emphasis without changing who does the action.</p>
 
           <div class="anatomy" style="margin-top:16px;">
             <div class="anatomy-de">
@@ -314,12 +364,14 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
 
           <div class="info-box" style="margin-top:14px;"><strong style="color:var(--gold)">The key insight:</strong> "Den Mann beißt der Hund" = "The man is bitten by the dog." The word order changed for emphasis — but "den" signals that Mann is still the object, not the subject. Without cases, this rearrangement would be impossible. Cases give German its word-order flexibility.</div>
 
-          <div class="danger-box"><strong style="color:#e74c3c;">The change you must know:</strong><br><br>
+          <div class="danger-box common-mistake"><strong style="color:#e74c3c;">Do not change every article:</strong><br><br>
             <span style="color:var(--der-c);font-family:'DM Mono',monospace;">der</span> (masculine Nominativ) → <span style="color:var(--akk);font-family:'DM Mono',monospace;font-weight:700;">den</span> (masculine Akkusativ)<br>
             <span style="color:var(--die-c);font-family:'DM Mono',monospace;">die</span> (feminine) → stays <span style="color:var(--die-c);font-family:'DM Mono',monospace;">die</span><br>
             <span style="color:var(--das-c);font-family:'DM Mono',monospace;">das</span> (neuter) → stays <span style="color:var(--das-c);font-family:'DM Mono',monospace;">das</span><br>
             <span style="color:var(--die-c);font-family:'DM Mono',monospace;">die</span> (plural) → stays <span style="color:var(--die-c);font-family:'DM Mono',monospace;">die</span>
           </div>
+          <div class="learner-check"><strong>Who receives the action?</strong> In “Der Mann kauft einen Kaffee,” <em>einen Kaffee</em> is the object.</div>
+          <div class="lesson-recap">Nominativ marks the subject. Akkusativ marks the direct object. At A1, the visible article change is masculine: <strong>der → den</strong>.</div>
         </div>
         <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(0,0)">Continue →</button></div>
       </div>
@@ -340,7 +392,9 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
         <div class="card">
           <div class="concept-tag">Module 5 · Lesson 2 of 6</div>
           <h2 class="lesson-h">The article table — what changes and what stays</h2>
-          <p class="body-text">This table is the core of the Akkusativ. Study it until you can produce the correct form without thinking. The orange cells are the changes — everything else stays the same as the Nominativ.</p>
+          <div class="lesson-rule">Only masculine articles change: <strong>der → den</strong> and <strong>ein → einen</strong>.</div>
+          <div class="anatomy"><div class="anatomy-de">Ich sehe <span class="a-obj">den Mann</span>.</div></div>
+          <p class="body-text">Use the orange cells to learn the two masculine changes. Feminine, neuter, and plural forms stay the same.</p>
 
           <div class="sec-label">Definite Articles (the)</div>
           <table class="case-table">
@@ -449,6 +503,9 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
             <button class="speak-btn" onclick="speakSentence(this,'Der Mann kommt.')">🔊 Der Mann (subject)</button>
             <button class="speak-btn" onclick="speakSentence(this,'Ich sehe den Mann.')">🔊 den Mann (object)</button>
           </div>
+          <div class="common-mistake">Do not write <strong>den Frau</strong> or <strong>den Kind</strong>. The change to <strong>den</strong> is masculine only.</div>
+          <div class="learner-check">Complete the object: “Ich kaufe ___ Apfel.” Because <em>Apfel</em> is masculine, the answer is <strong>einen</strong>.</div>
+          <div class="lesson-recap">Masculine gains <strong>-n</strong>: der → den, ein → einen. All other A1 Akkusativ article forms stay unchanged.</div>
         </div>
         <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(1,0)">Continue →</button></div>
       </div>
@@ -469,7 +526,14 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
         <div class="card">
           <div class="concept-tag">Module 5 · Lesson 3 of 6</div>
           <h2 class="lesson-h">Verbs that take the Akkusativ</h2>
-          <p class="body-text">Transitive verbs — verbs that pass their action onto an object — take the Akkusativ. These are the most common action verbs in German. When you use any of these verbs, the direct object takes the Akkusativ article. Tap each card to hear a sentence.</p>
+          <div class="lesson-rule">If a verb acts directly on someone or something, that object takes the Akkusativ.</div>
+          <div class="anatomy"><div class="anatomy-de">Ich kaufe <span class="a-obj">einen Apfel</span>.</div></div>
+          <p class="body-text">Ask “what?” or “whom?” after the verb. If there is an answer, that answer is the direct object.</p>
+
+          <div class="pathway-example">
+            <div class="pathway-line"><span>Ich suche einen Job.</span><button class="speak-btn" onclick="speakVerb(this,'Ich suche einen Job.')">🔊 Hear it</button></div>
+            <div class="pathway-line"><span>Sie schreibt einen Brief.</span><button class="speak-btn" onclick="speakVerb(this,'Sie schreibt einen Brief.')">🔊 Hear it</button></div>
+          </div>
 
           <div class="verb-grid">
             <div class="verb-card" onclick="speakVerb(this,'Ich kaufe einen Apfel.')">
@@ -514,12 +578,6 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
               <div class="vc-ex">Ich habe einen Termin.</div>
               <div class="vc-tap">🔊 tap</div>
             </div>
-            <div class="verb-card" onclick="speakVerb(this,'Ich suche einen Job.')">
-              <div class="vc-de">suchen</div>
-              <div class="vc-en">to look for</div>
-              <div class="vc-ex">Ich suche einen Job.</div>
-              <div class="vc-tap">🔊 tap</div>
-            </div>
             <div class="verb-card" onclick="speakVerb(this,'Ich lerne einen neuen Wort.')">
               <div class="vc-de">lernen</div>
               <div class="vc-en">to learn</div>
@@ -538,18 +596,15 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
               <div class="vc-ex">Er besucht seinen Vater.</div>
               <div class="vc-tap">🔊 tap</div>
             </div>
-            <div class="verb-card" onclick="speakVerb(this,'Sie schreibt einen Brief.')">
-              <div class="vc-de">schreiben</div>
-              <div class="vc-en">to write</div>
-              <div class="vc-ex">Sie schreibt einen Brief.</div>
-              <div class="vc-tap">🔊 tap</div>
-            </div>
           </div>
 
           <div class="warn-box"><strong style="color:var(--blue)">The test to apply:</strong> Ask "what?" or "whom?" after the verb. If there is an answer, that answer takes the Akkusativ.<br><br>
             "Ich kaufe ___ ?" → einen Apfel (Akkusativ) ✓<br>
             "Ich gehe ___ ?" → nowhere — gehen has no object. No Akkusativ.
           </div>
+          <div class="common-mistake">Do not force an Akkusativ object after every verb. <em>gehen</em> and <em>schlafen</em> can stand without a direct object.</div>
+          <div class="learner-check">In “Ich nehme den Bus,” ask “I take what?” The answer <strong>den Bus</strong> is the Akkusativ object.</div>
+          <div class="lesson-recap">Action verbs such as <em>kaufen, sehen, brauchen, nehmen</em>, and <em>haben</em> take a direct Akkusativ object.</div>
         </div>
         <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(2,0)">Continue →</button></div>
       </div>
@@ -570,7 +625,9 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
         <div class="card">
           <div class="concept-tag">Module 5 · Lesson 4 of 6</div>
           <h2 class="lesson-h">Negation — kein and nicht</h2>
-          <p class="body-text">German has two ways to say "no/not" — <strong style="color:var(--akk)">kein</strong> and <strong style="color:var(--akk)">nicht</strong>. Choosing the wrong one is one of the most common A1 mistakes. The rule is simple once you see it.</p>
+          <div class="lesson-rule">Use <strong>kein</strong> before nouns; use <strong>nicht</strong> to negate verbs, adjectives, or a specific definite noun.</div>
+          <div class="anatomy"><div class="anatomy-de">Ich habe <span class="a-obj">keinen Bruder</span>.</div></div>
+          <p class="body-text">First identify what you are negating. Then apply the masculine Akkusativ ending when <em>kein</em> comes before a masculine object.</p>
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0;">
             <div style="background:rgba(230,126,34,0.06);border:1px solid rgba(230,126,34,0.25);border-radius:14px;padding:18px;">
@@ -657,6 +714,9 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
               <button class="speak-btn" onclick="speakSentence(this,'Das ist nicht richtig.')">🔊</button>
             </div>
           </div>
+          <div class="common-mistake">Do not say <strong>Ich habe nicht Hunger</strong>. A noun without a definite article is negated with <strong>kein</strong>: <em>Ich habe keinen Hunger.</em></div>
+          <div class="learner-check">Choose the negation: “Das ist ___ richtig.” Because <em>richtig</em> is an adjective, use <strong>nicht</strong>.</div>
+          <div class="lesson-recap">Use <strong>kein</strong> with nouns and <strong>nicht</strong> elsewhere. Masculine Akkusativ changes <strong>kein → keinen</strong>.</div>
         </div>
         <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(3,0)">Continue →</button></div>
       </div>
@@ -677,7 +737,9 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
         <div class="card">
           <div class="concept-tag">Module 5 · Lesson 5 of 6</div>
           <h2 class="lesson-h">Akkusativ prepositions — always den, never der</h2>
-          <p class="body-text">Certain prepositions always take the Akkusativ. This means the noun after them always uses the Akkusativ article — even if it would otherwise be the subject of a sentence. Memorise this list. It is short and fixed.</p>
+          <div class="lesson-rule">After <strong>durch, für, gegen, ohne</strong>, and <strong>um</strong>, use the Akkusativ.</div>
+          <div class="anatomy"><div class="anatomy-de">Das ist <span class="a-obj">für einen Freund</span>.</div></div>
+          <p class="body-text">These five prepositions always control the article that follows them. Learn each one with a short example.</p>
 
           <div class="info-box"><strong style="color:var(--gold)">The five Akkusativ prepositions — memory trick:</strong><br><br>
             <span style="font-family:'DM Mono',monospace;font-size:16px;color:var(--akk);">durch · für · gegen · ohne · um</span><br><br>
@@ -733,6 +795,9 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
           </div>
 
           <div class="warn-box"><strong style="color:var(--blue)">Für is the most common in Goethe:</strong> "Das ist für Sie" (That is for you — formal), "ein Kurs für Anfänger" (a course for beginners), "für wie lange?" (for how long?). It appears in nearly every Goethe section. Always triggers Akkusativ after it.</div>
+          <div class="common-mistake">Do not use <strong>der</strong> after one of these prepositions: say <em>für den Mann</em>, not <em>für der Mann</em>.</div>
+          <div class="learner-check">Complete the phrase: “ohne ___ Schlüssel.” Because <em>Schlüssel</em> is masculine, use <strong>den</strong>.</div>
+          <div class="lesson-recap">Memorise the fixed group: <strong>durch · für · gegen · ohne · um</strong>. Each one is followed by the Akkusativ.</div>
         </div>
         <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(4,0)">Continue →</button></div>
       </div>
@@ -753,7 +818,8 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
         <div class="card">
           <div class="concept-tag">Module 5 · Lesson 6 of 6</div>
           <h2 class="lesson-h">Akkusativ in real Goethe sentences</h2>
-          <p class="body-text">The Akkusativ appears in every section of the Goethe exam. These are the real sentence patterns the examiner uses. Read, hear, and internalise each one.</p>
+          <div class="lesson-rule">In Goethe tasks, listen and look for Akkusativ objects after common verbs and fixed prepositions.</div>
+          <p class="body-text">Read and hear each sentence pattern, then identify the word that triggers the Akkusativ.</p>
 
           <div class="sec-label">Goethe Sprechen — introduction sentences</div>
           <div class="ex-list">
@@ -831,6 +897,9 @@ body { background:#F8FAFC; color:#1F2937; font-family:'Plus Jakarta Sans',sans-s
           </div>
 
           <div class="success-box"><strong style="color:var(--green)">What to listen for in Goethe Hören:</strong> When you hear "den" before a masculine noun, you know the noun is an object. This is a comprehension clue. "Nehmen Sie den Bus" — you immediately know the bus is what you should take (object), not a new subject. Cases help you understand sentences faster.</div>
+          <div class="common-mistake">Do not assume the first noun is always the subject. Use the article and the verb to identify the noun's role.</div>
+          <div class="learner-check">In “Nehmen Sie den Bus,” which word signals masculine Akkusativ? The answer is <strong>den</strong>.</div>
+          <div class="lesson-recap">For the exam, recognise common triggers such as <em>haben, suchen, nehmen, brauchen</em>, and <em>für</em>, then check the article ending.</div>
         </div>
         <div class="nav-row"><button class="btn btn-primary" onclick="nextStep(5,0)">Start Final Quiz →</button></div>
       </div>
