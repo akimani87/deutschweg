@@ -1037,7 +1037,7 @@
   // so they don't get a manual "Continue →" button.
   var INTERACTIVE_TYPES = { 'tile-assembly':1, 'clock-quiz':1, 'listening-input':1 };
 
-  function renderContent(blocks, lessonIdx) {
+  function renderContent(blocks, lessonIdx, outcomeHtml) {
     if (!blocks || !Array.isArray(blocks) || blocks.length === 0) {
       return '<div class="body-text empty">Content coming soon.</div>';
     }
@@ -1390,9 +1390,18 @@
 
       if (!blockHtml) return '';
 
+      // The lesson-outcome card ("In this lesson, you'll learn how to…") is
+      // nested inside block 0's own wrapper rather than sitting as a
+      // permanent sibling above the block sequence. This ties its
+      // visibility to block 0's own display state — a pure position
+      // check, not a one-time flag — so it shows only while slide 1 is
+      // the active slide and would reappear automatically if the learner
+      // ever returned to it, with no separate hide/show logic to desync.
+      var outcomePrefix = (bi === 0 && outcomeHtml) ? outcomeHtml : '';
+
       // If no lessonIdx was passed (e.g. from a legacy call site), return
       // the raw HTML — all blocks visible at once (backward-compatible).
-      if (lessonIdx === undefined || lessonIdx === null) return blockHtml;
+      if (lessonIdx === undefined || lessonIdx === null) return outcomePrefix + blockHtml;
 
       // Sequential block wrapper. Only block 0 is visible on lesson open;
       // the rest are revealed one-by-one via dwModule.nextBlock().
@@ -1405,7 +1414,7 @@
 
       return '<div class="dw-block" id="blk-' + lessonIdx + '-' + bi + '"' +
         (bi > 0 ? ' style="display:none"' : '') + '>' +
-        blockHtml + continueBtn +
+        outcomePrefix + blockHtml + continueBtn +
       '</div>';
     }).join('');
   }
@@ -1658,18 +1667,11 @@
         return NEW_BLOCK_TYPES[b && b.type];
       });
 
-      // Prefer structured content_json; fall back to plain content_text; finally a placeholder.
-      if (Array.isArray(lesson.content_json) && lesson.content_json.length > 0) {
-        contentHtml = renderContent(lesson.content_json, hasNewBlocks ? idx : undefined);
-      } else if (lesson.content_text && String(lesson.content_text).trim().length > 0) {
-        contentHtml = '<div class="body-text">' + escapeHtml(lesson.content_text) + '</div>';
-      } else {
-        contentHtml = '<div class="body-text empty">Content for this lesson is being added.</div>';
-      }
-
       // Outcome box — only renders when lernziel_intro is a non-empty string.
-      // Sits between the lesson title and the body so the reader sees the
-      // outcome before the content.
+      // Built before contentHtml so it can be handed to renderContent(),
+      // which nests it inside block 0's own wrapper (see renderContent) —
+      // that makes it visible only while slide 1 is the active slide,
+      // rather than a permanent header for the whole lesson.
       var introText = (lesson.lernziel_intro && String(lesson.lernziel_intro).trim()) || '';
       var outcomeHtml = introText
         ? '<div class="lesson-outcome">' +
@@ -1680,6 +1682,21 @@
             '</div>' +
           '</div>'
         : '';
+
+      // Prefer structured content_json; fall back to plain content_text; finally a placeholder.
+      // outcomeHandledInline tracks whether renderContent() already nested
+      // outcomeHtml into block 0 -- only the content_json path does that;
+      // the content_text/placeholder fallbacks never call renderContent,
+      // so they need outcomeHtml placed as a sibling the old way.
+      var outcomeHandledInline = false;
+      if (Array.isArray(lesson.content_json) && lesson.content_json.length > 0) {
+        contentHtml = renderContent(lesson.content_json, hasNewBlocks ? idx : undefined, outcomeHtml);
+        outcomeHandledInline = true;
+      } else if (lesson.content_text && String(lesson.content_text).trim().length > 0) {
+        contentHtml = '<div class="body-text">' + escapeHtml(lesson.content_text) + '</div>';
+      } else {
+        contentHtml = '<div class="body-text empty">Content for this lesson is being added.</div>';
+      }
 
       var nextLabel = exercises.length > 0
         ? 'Start Quiz →'
@@ -1706,7 +1723,7 @@
         '<div class="card">' +
           '<div class="concept-tag">' + escapeHtml(m.level) + ' · LESSON ' + lessonNo + '</div>' +
           '<h1 class="lesson-h">' + escapeHtml(lessonTitle) + '</h1>' +
-          outcomeHtml +
+          (outcomeHandledInline ? '' : outcomeHtml) +
           contentHtml +
           // The advance button starts hidden. dwModule.nextBlock() reveals it
           // once the learner has seen the final content block. On lessons with
