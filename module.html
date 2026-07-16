@@ -202,7 +202,7 @@
   .lesson-rule-card { display:flex; gap:12px; background:#F8FAFC; border:1px solid #E5E7EB; border-radius:12px; padding:14px 16px; margin:10px 0; }
   .lesson-rule-card-icon { font-size:22px; line-height:1; flex-shrink:0; }
   .lesson-rule-card-title { font-weight:700; font-size:14px; margin-bottom:4px; color:#1F2937; }
-  .lesson-rule-card-title.color-der { color:#3B82F6; }
+  .lesson-rule-card-title.color-der { color:#4F46E5; } /* indigo, distinct from the site's #3B82F6 accent blue */
   .lesson-rule-card-title.color-die { color:#EF4444; }
   .lesson-rule-card-title.color-das { color:#10B981; }
   .lesson-rule-card-desc { font-size:13px; color:#4B5563; line-height:1.6; margin-bottom:6px; }
@@ -213,10 +213,10 @@
   .lesson-ct-card-label { font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#6B7280; margin-bottom:6px; }
   .lesson-ct-card-value { font-size:18px; font-weight:700; margin-bottom:4px; }
   .lesson-ct-card-examples { font-size:12px; color:#6B7280; line-height:1.5; }
-  .lesson-ct-card-der .lesson-ct-card-value, .lesson-ct-card-der .lesson-ct-card-label { color:#3B82F6; }
+  .lesson-ct-card-der .lesson-ct-card-value, .lesson-ct-card-der .lesson-ct-card-label { color:#4F46E5; }
   .lesson-ct-card-die .lesson-ct-card-value, .lesson-ct-card-die .lesson-ct-card-label { color:#EF4444; }
   .lesson-ct-card-das .lesson-ct-card-value, .lesson-ct-card-das .lesson-ct-card-label { color:#10B981; }
-  .lesson-ct-cell-der { color:#3B82F6; font-weight:600; }
+  .lesson-ct-cell-der { color:#4F46E5; font-weight:600; }
   .lesson-ct-cell-die { color:#EF4444; font-weight:600; }
   .lesson-ct-cell-das { color:#10B981; font-weight:600; }
   @media (max-width:600px) {
@@ -248,7 +248,7 @@
   .lesson-vg-word { font-size:14px; font-weight:700; color:#1F2937; overflow-wrap:anywhere; }
   .lesson-vg-en { font-size:11px; color:#6B7280; margin-top:2px; }
   .lesson-vg-tap { font-size:10px; color:#9CA3AF; margin-top:4px; }
-  .lesson-vg-der .lesson-vg-art { color:#3B82F6; }
+  .lesson-vg-der .lesson-vg-art { color:#4F46E5; }
   .lesson-vg-die .lesson-vg-art { color:#EF4444; }
   .lesson-vg-das .lesson-vg-art { color:#10B981; }
 
@@ -584,113 +584,18 @@
   /* ══════════════════════════════════════════════════════════════════
      CODEX THEME — scoped entirely under body.dw-theme-codex, applied
      only when state.module.id is in CODEX_THEME_MODULE_IDS (see JS).
-     Colors/fonts sourced directly from module-a1-5-der-die-das.html.
-     Covers only what that module's lessons actually render — other
-     block types (pattern-table, tile-assembly, clock-quiz,
-     listening-input, dialogue) are untouched and keep the light theme
-     everywhere, since this class is never applied to them.
+     Structure/layout/quiz-behavior/block-types are unchanged; this is
+     now typography-only (Playfair Display headers, DM Mono labels) —
+     colors intentionally fall back to the site's default white/blue
+     theme (same as Module 1), so nothing here overrides color/background.
      ══════════════════════════════════════════════════════════════════ */
-  body.dw-theme-codex {
-    background:#0a0a0a; color:#f5f0e8;
-    font-family:'DM Sans','Plus Jakarta Sans',-apple-system,sans-serif;
-  }
-  .dw-theme-codex .top-nav { background:rgba(10,10,10,0.95); border-bottom:1px solid rgba(201,168,76,0.2); }
-  .dw-theme-codex .back-btn { background:transparent; border-color:rgba(201,168,76,0.2); color:#f5f0e8; }
-  .dw-theme-codex .back-btn:hover { border-color:#c9a84c; color:#c9a84c; }
-  .dw-theme-codex .mod-tag { color:#c9a84c; }
-  .dw-theme-codex .progress-bar { background:rgba(255,255,255,0.08); }
-  .dw-theme-codex .progress-fill { background:#c9a84c; }
-  .dw-theme-codex .dot { background:rgba(255,255,255,0.15); }
-  .dw-theme-codex .dot.done { background:#27ae60; }
-  .dw-theme-codex .dot.in-progress { background:rgba(201,168,76,0.5); box-shadow:none; }
-  .dw-theme-codex .dot.active { background:#c9a84c; }
-  .dw-theme-codex .xp-disp { color:#c9a84c; }
-  .dw-theme-codex .card {
-    background:#141414; border:1px solid rgba(201,168,76,0.2); border-radius:20px;
-  }
   .dw-theme-codex .concept-tag {
-    font-family:'DM Mono',monospace; letter-spacing:3px; color:#c9a84c;
+    font-family:'DM Mono',monospace; letter-spacing:3px;
   }
   .dw-theme-codex .lesson-h {
-    font-family:'Playfair Display',serif; font-weight:900; color:#f5f0e8;
+    font-family:'Playfair Display',serif; font-weight:900;
   }
-  .dw-theme-codex .lesson-outcome { background:rgba(201,168,76,0.06); border-color:rgba(201,168,76,0.3); }
-  .dw-theme-codex .lesson-outcome-title { color:#c9a84c; }
-  .dw-theme-codex .lesson-outcome-text { color:#ede8dc; }
-
-  /* content blocks Module 5 actually uses */
-  .dw-theme-codex .lesson-intro { color:#f5f0e8; }
-  .dw-theme-codex .lesson-text { color:#ede8dc; }
-  .dw-theme-codex .lesson-tip { background:rgba(39,174,96,0.08); border-left-color:#27ae60; color:#ede8dc; }
-  .dw-theme-codex .lesson-warning { background:rgba(192,57,43,0.08); border-left-color:#c0392b; color:#ede8dc; }
-  .dw-theme-codex .lesson-infobox { background:rgba(201,168,76,0.08); border-left-color:#c9a84c; color:#ede8dc; }
-  .dw-theme-codex .audio-btn { background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); color:#c9a84c; }
-  .dw-theme-codex .audio-btn:hover { background:rgba(201,168,76,0.2); }
-  .dw-theme-codex .toggle-btn { color:#c9a84c; }
-  .dw-theme-codex .toggle-btn:hover { color:#e8c96a; }
-  .dw-theme-codex .lesson-table-wrap { border-color:rgba(201,168,76,0.2); }
-  .dw-theme-codex .lesson-table th { background:#1a1a1a; color:#c9a84c; border-bottom-color:rgba(201,168,76,0.2); }
-  .dw-theme-codex .lesson-table td { color:#ede8dc; border-bottom-color:rgba(255,255,255,0.06); }
-
-  /* new reusable block types */
-  .dw-theme-codex .lesson-rule-card { background:#1a1a1a; border-color:rgba(201,168,76,0.2); }
-  .dw-theme-codex .lesson-rule-card-title { color:#f5f0e8; }
-  .dw-theme-codex .lesson-rule-card-desc { color:#ede8dc; }
-  .dw-theme-codex .lesson-rule-card-ex { color:#9a9488; }
-  .dw-theme-codex .lesson-ct-card { background:#1a1a1a; border-color:rgba(201,168,76,0.2); }
-  .dw-theme-codex .lesson-ct-card-label,
-  .dw-theme-codex .lesson-ct-card-examples { color:#9a9488; }
-  .dw-theme-codex .lesson-comparison-table { background:transparent; }
-  .dw-theme-codex .lesson-pathway-card { background:rgba(201,168,76,0.06); border-color:rgba(201,168,76,0.3); border-left-color:#c9a84c; color:#ede8dc; }
-  .dw-theme-codex .lesson-pathway-label { color:#c9a84c; }
-  .dw-theme-codex .lesson-pathway-line + .lesson-pathway-line { border-top-color:rgba(201,168,76,0.15); }
-  .dw-theme-codex .lesson-common-mistake { background:rgba(192,57,43,0.08); border-color:rgba(192,57,43,0.3); border-left-color:#c0392b; color:#ede8dc; }
-  .dw-theme-codex .lesson-recap { background:rgba(201,168,76,0.06); border-color:rgba(201,168,76,0.3); color:#ede8dc; }
-  .dw-theme-codex .lesson-recap-label { color:#c9a84c; }
-  .dw-theme-codex .lesson-vocab-grid .lesson-vg-cell { background:#1a1a1a; border-color:rgba(201,168,76,0.2); }
-  .dw-theme-codex .lesson-vg-cell:hover { background:#202020; }
-  .dw-theme-codex .lesson-vg-word { color:#f5f0e8; }
-  .dw-theme-codex .lesson-vg-en,
-  .dw-theme-codex .lesson-vg-tap { color:#9a9488; }
-
-  /* quiz UI — part of Module 5's rendered experience, needs matching theme */
-  .dw-theme-codex .quiz-card { background:#141414; border-color:rgba(201,168,76,0.2); }
-  .dw-theme-codex .quiz-qnum { color:#c9a84c; }
-  .dw-theme-codex .quiz-q { color:#f5f0e8; }
-  .dw-theme-codex .qopt { background:#1a1a1a; border-color:rgba(201,168,76,0.2); color:#ede8dc; }
-  .dw-theme-codex .qopt:hover:not([disabled]) { border-color:#c9a84c; background:#202020; }
-  .dw-theme-codex .qopt.correct { border-color:#27ae60; background:rgba(39,174,96,0.12); }
-  .dw-theme-codex .qopt.wrong { border-color:#c0392b; background:rgba(192,57,43,0.12); }
-  .dw-theme-codex .qletter { background:rgba(201,168,76,0.15); color:#c9a84c; }
-  .dw-theme-codex .qopt.correct .qletter { background:#27ae60; color:#fff; }
-  .dw-theme-codex .qopt.wrong .qletter { background:#c0392b; color:#fff; }
-  .dw-theme-codex .qfeedback.ok { background:rgba(39,174,96,0.1); border-color:rgba(39,174,96,0.3); }
-  .dw-theme-codex .qfeedback.no { background:rgba(192,57,43,0.1); border-color:rgba(192,57,43,0.3); }
-  .dw-theme-codex .qft.ok { color:#27ae60; }
-  .dw-theme-codex .qft.no { color:#e74c3c; }
-  .dw-theme-codex .qfb { color:#ede8dc; }
-  .dw-theme-codex .qfr { background:rgba(201,168,76,0.1); color:#c9a84c; }
-  .dw-theme-codex .quiz-success { background:rgba(39,174,96,0.1); border-color:rgba(39,174,96,0.3); color:#ede8dc; }
-  .dw-theme-codex .quiz-success-outcome { border-top-color:rgba(39,174,96,0.3); }
-  .dw-theme-codex .quiz-success-outcome-icon { background:#27ae60; }
-  .dw-theme-codex .quiz-success-outcome-label { color:#27ae60; }
-  .dw-theme-codex .quiz-success-outcome-text { color:#ede8dc; }
-  .dw-theme-codex .complete-title { color:#f5f0e8; font-family:'Playfair Display',serif; }
-  .dw-theme-codex .complete-sub { color:#ede8dc; }
-  .dw-theme-codex .xp-badge { background:rgba(201,168,76,0.12); border-color:#c9a84c; color:#c9a84c; }
-
-  /* buttons */
-  .dw-theme-codex .dw-block-continue { background:rgba(201,168,76,0.12); color:#c9a84c; }
-  .dw-theme-codex .dw-block-continue:hover { background:rgba(201,168,76,0.2); }
-  .dw-theme-codex .btn-primary { background:#c9a84c; color:#0a0a0a; }
-  .dw-theme-codex .btn-primary:hover { background:#e8c96a; }
-  .dw-theme-codex .lesson-nav { border-top-color:rgba(201,168,76,0.2); }
-  .dw-theme-codex .lesson-nav .nav-prev,
-  .dw-theme-codex .lesson-nav .nav-next { background:transparent; border-color:rgba(201,168,76,0.2); color:#f5f0e8; }
-  .dw-theme-codex .lesson-nav .nav-prev:hover:not(:disabled),
-  .dw-theme-codex .lesson-nav .nav-next:hover:not(:disabled) { border-color:#c9a84c; color:#c9a84c; }
-  .dw-theme-codex .lesson-nav .nav-next { background:#c9a84c; color:#0a0a0a; border-color:#c9a84c; }
-  .dw-theme-codex .lesson-nav .nav-next:hover { background:#e8c96a; }
+  .dw-theme-codex .complete-title { font-family:'Playfair Display',serif; }
 </style>
 </head>
 <body>
@@ -1597,7 +1502,7 @@
         document.body.classList.add('dw-theme-codex');
         var codexFontLink = document.createElement('link');
         codexFontLink.rel = 'stylesheet';
-        codexFontLink.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap';
+        codexFontLink.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Mono:wght@400;500&display=swap';
         document.head.appendChild(codexFontLink);
       }
 
