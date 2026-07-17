@@ -994,7 +994,8 @@
       palLessonTopic = topic || '';
       palLessonRule  = ruleText || '';
       openCard();
-      appendPalPlain('Want to go deeper on "' + palLessonTopic + '"? Ask me anything about it.');
+      var topicEndsWithPunct = /[?!.]$/.test(palLessonTopic);
+      appendPalPlain('Want to go deeper on "' + palLessonTopic + '"' + (topicEndsWithPunct ? '' : '?') + ' Ask me anything about it.');
     }
   };
 })();
