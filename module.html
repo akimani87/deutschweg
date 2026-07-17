@@ -1760,7 +1760,7 @@
           '<div id="blk-adv-' + idx + '"' +
             (hasNewBlocks ? ' style="display:none"' : '') + '>' +
             '<div class="go-deeper" id="go-deeper-' + idx + '">' +
-              '<div class="go-deeper-line">Want to go deeper on ' + escapeHtml(lessonTitle) + '?</div>' +
+              '<div class="go-deeper-line">Want to go deeper on ' + escapeHtml(lessonTitle) + (/[?!.]$/.test(lessonTitle) ? '' : '?') + '</div>' +
               '<div class="go-deeper-btns">' +
                 '<button class="gd-btn gd-pal" type="button" onclick="dwModule.goDeeperPal(' + idx + ')">' +
                   '<span class="gd-ic">💬</span><span class="gd-lb">Ask a quick question</span>' +
