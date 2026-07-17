@@ -96,6 +96,32 @@
   .dot.active { background:#3B82F6; width:24px; border-radius:5px; }
   .dot.active:hover { background:#2563EB; transform:none; }
 
+  /* ── "Go Deeper" lesson-end prompt (AI Pal / AI Tutor discoverability) ── */
+  .go-deeper { border-top:1px dashed #E5E7EB; padding-top:14px; margin-top:16px; margin-bottom:4px; }
+  .go-deeper-line { font-size:13px; font-weight:700; color:#1F2937; margin-bottom:10px; text-align:center; }
+  .go-deeper-btns { display:flex; gap:8px; }
+  .gd-btn {
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;
+    border-radius:14px; padding:10px 8px; cursor:pointer; border:1.5px solid;
+    text-align:center; font-family:inherit; transition:transform .15s ease;
+  }
+  .gd-btn:hover { transform:translateY(-1px); }
+  .gd-btn .gd-ic { width:26px; height:26px; display:flex; align-items:center; justify-content:center; }
+  .gd-btn .gd-lb { font-size:11.5px; font-weight:800; line-height:1.25; }
+  .gd-btn.gd-pal { background:#EFF6FF; border-color:#DBEAFE; color:#1D4ED8; }
+  .gd-btn.gd-tutor { background:linear-gradient(135deg,#1D4ED8 0%,#3B82F6 100%); border-color:transparent; color:#fff; }
+  .gd-tutor-av {
+    width:26px; height:26px; border-radius:50%; background-image:url('./assets/angela-brand-photo.png');
+    background-size:290%; background-position:58% 22%; background-repeat:no-repeat;
+    border:1.5px solid rgba(255,255,255,0.7);
+  }
+  .gd-tooltip {
+    display:flex; align-items:flex-start; gap:8px; background:#1F2937; color:#fff;
+    border-radius:12px; padding:10px 12px 10px 14px; font-size:12px; line-height:1.5;
+    margin-bottom:12px; position:relative;
+  }
+  .gd-tooltip .gd-tt-x { cursor:pointer; font-size:12px; color:rgba(255,255,255,0.6); flex-shrink:0; padding:2px; }
+
   /* ── EXPLICIT LESSON NAV (always visible at bottom of lesson screen) ── */
   .lesson-nav {
     display:flex; gap:10px; margin-top:18px; padding-top:16px;
@@ -1733,11 +1759,28 @@
           // visible immediately (display:'' = no style override).
           '<div id="blk-adv-' + idx + '"' +
             (hasNewBlocks ? ' style="display:none"' : '') + '>' +
+            '<div class="go-deeper" id="go-deeper-' + idx + '">' +
+              '<div class="go-deeper-line">Want to go deeper on ' + escapeHtml(lessonTitle) + '?</div>' +
+              '<div class="go-deeper-btns">' +
+                '<button class="gd-btn gd-pal" type="button" onclick="dwModule.goDeeperPal(' + idx + ')">' +
+                  '<span class="gd-ic">💬</span><span class="gd-lb">Ask a quick question</span>' +
+                '</button>' +
+                '<button class="gd-btn gd-tutor" type="button" onclick="dwModule.goDeeperTutor(' + idx + ')">' +
+                  '<span class="gd-ic"><span class="gd-tutor-av"></span></span><span class="gd-lb">Explore this properly</span>' +
+                '</button>' +
+              '</div>' +
+            '</div>' +
             '<button class="btn btn-primary" onclick="dwModule.advance(' + idx + ', 0)">' + nextLabel + '</button>' +
           '</div>' +
           navHtml +
         '</div>';
       screen.appendChild(contentStep);
+
+      // Legacy (non-sequential) lessons show the advance button -- and
+      // therefore the "Go Deeper" prompt inside it -- immediately, with no
+      // nextBlock() reveal to hook into. Catch the tooltip check here for
+      // the one lesson visible by default on page load.
+      if (!hasNewBlocks && idx === 0) maybeShowGoDeeperTooltip(0);
 
       // Steps 1..N: one per exercise. The completion outcome (from
       // lernziel_completion) is populated by answer() into the success
@@ -1958,16 +2001,90 @@
 
   // Persist a quiz-struggle handoff for AI Tutor. weak_word is the correct
   // answer (or rule hint) of the exercise the learner just missed.
-  function writePalTutorHandoff(lesson, lastMessage) {
-    if (!state.user) return;
+  // lessonContext (optional) is the "Go Deeper" rule-block text -- present
+  // when the handoff comes from the lesson-end prompt rather than a quiz
+  // struggle.
+  function writePalTutorHandoff(lesson, lastMessage, lessonContext) {
+    if (!state.user) return Promise.resolve();
     var ex   = state.lastWrongExercise;
     var weak = (ex && (ex.correct_answer || ex.rule_hint)) || null;
-    dwSupabase.from('pal_tutor_handoff').insert({
+    return dwSupabase.from('pal_tutor_handoff').insert({
       user_id:          state.user.id,
       topic:            (lesson && lesson.title) || null,
       weak_word:        weak,
-      last_pal_message: lastMessage || null
+      last_pal_message: lastMessage || null,
+      lesson_context:   lessonContext || null
     }).then(function() {}).catch(function() {});
+  }
+
+  // ── "Go Deeper" lesson-end prompt ────────────────────────────────────────
+  // Context is pulled automatically from the lesson's own data -- no
+  // per-lesson manual authoring required, so this works across every A1
+  // module without extra editorial work:
+  //   topic     = lesson.title (always present)
+  //   ruleText  = first rule-card's title+description, else the first
+  //               plain text block, else null (topic-only fallback)
+  function extractLessonContext(lesson) {
+    var topic = (lesson && lesson.title) || 'this lesson';
+    var ruleText = null;
+    var cj = (lesson && Array.isArray(lesson.content_json)) ? lesson.content_json : [];
+    var ruleCard = cj.filter(function(b){ return b && b.type === 'rule-card'; })[0];
+    if (ruleCard) {
+      ruleText = [ruleCard.title, ruleCard.description].filter(Boolean).join(' — ');
+    } else {
+      var textBlock = cj.filter(function(b){ return b && b.type === 'text' && b.content; })[0];
+      if (textBlock) ruleText = textBlock.content;
+    }
+    return { topic: topic, ruleText: ruleText || '' };
+  }
+
+  function goDeeperPal(idx) {
+    var lesson = state.lessons[idx];
+    if (!lesson) return;
+    var ctx = extractLessonContext(lesson);
+    if (window.DWPal) window.DWPal.seedLesson(ctx.topic, ctx.ruleText);
+  }
+
+  function goDeeperTutor(idx) {
+    var lesson = state.lessons[idx];
+    if (!lesson) return;
+    var ctx = extractLessonContext(lesson);
+    // No prior Pal message on this path -- writePalTutorHandoff's
+    // last_pal_message stays null, and server.js frames the Tutor's
+    // opener accordingly (see buildAitutorHandoffBlock).
+    writePalTutorHandoff(lesson, null, ctx.ruleText).then(function(){
+      window.location.href = 'ai-tutor.html';
+    }, function(){
+      window.location.href = 'ai-tutor.html';
+    });
+  }
+
+  // Site-wide, one-time dismissible tooltip: shown the first time ANY
+  // learner reaches ANY lesson-end "Go Deeper" prompt. Flag lives on
+  // profiles so it never reappears after dismissal, on any device.
+  var goDeeperTooltipChecked = false;
+  function maybeShowGoDeeperTooltip(idx) {
+    if (goDeeperTooltipChecked || !state.user) return;
+    goDeeperTooltipChecked = true;
+    dwSupabase.from('profiles').select('go_deeper_tooltip_seen').eq('id', state.user.id).maybeSingle()
+      .then(function(res) {
+        if (res.error || !res.data || res.data.go_deeper_tooltip_seen) return;
+        var wrap = document.getElementById('go-deeper-' + idx);
+        if (!wrap) return;
+        var tip = document.createElement('div');
+        tip.className = 'gd-tooltip';
+        tip.innerHTML = '<span>💬</span>' +
+          '<span>This connects you with AI help, right here — no need to search elsewhere.</span>' +
+          '<span class="gd-tt-x">✕</span>';
+        wrap.parentNode.insertBefore(tip, wrap);
+        function dismiss() {
+          if (tip.parentNode) tip.parentNode.removeChild(tip);
+          dwSupabase.from('profiles').update({ go_deeper_tooltip_seen: true }).eq('id', state.user.id)
+            .then(function(){}).catch(function(){});
+        }
+        tip.querySelector('.gd-tt-x').addEventListener('click', dismiss);
+      })
+      .catch(function() {});
   }
 
   // ── Behavior 6: confidence tracker store ─────────────────────────────────
@@ -2250,8 +2367,13 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       // All content blocks shown — reveal the lesson advance button
+      // (which now also carries the "Go Deeper" prompt, see buildAllLessons)
       var advBtn = document.getElementById('blk-adv-' + lessonIdx);
-      if (advBtn) { advBtn.style.display = ''; window.scrollTo({ top: 0, behavior: 'smooth' }); }
+      if (advBtn) {
+        advBtn.style.display = '';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        maybeShowGoDeeperTooltip(lessonIdx);
+      }
     }
   }
 
@@ -2649,6 +2771,10 @@
   window.dwModule = {
     // Expose nextBlock so inline onclick handlers in content blocks can reach it.
     nextBlock: function(lessonIdx, blockIdx) { nextBlock(lessonIdx, blockIdx); },
+
+    // "Go Deeper" lesson-end prompt buttons.
+    goDeeperPal:   function(idx) { goDeeperPal(idx); },
+    goDeeperTutor: function(idx) { goDeeperTutor(idx); },
 
     answer: function(lIdx, eIdx, choiceIdx, correctIdx) {
       var key = lIdx + '-' + eIdx;

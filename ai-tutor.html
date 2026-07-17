@@ -62,8 +62,11 @@
   .tutor-back:hover{background:rgba(255,255,255,0.26);}
   .tutor-avatar-h{
     width:40px;height:40px;border-radius:50%;
-    background:#fff;display:flex;align-items:center;justify-content:center;
-    font-size:22px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.18);
+    background-color:#fff;
+    background-image:url('./assets/angela-brand-photo.png');
+    background-size:290%;background-position:58% 22%;background-repeat:no-repeat;
+    flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.18);
+    border:2px solid rgba(255,255,255,0.85);
   }
   .tutor-title-wrap{flex:1;min-width:0;}
   .tutor-title{font-size:16px;font-weight:800;line-height:1.2;letter-spacing:-0.2px;}
@@ -122,9 +125,10 @@
 
   .msg-av{
     width:32px;height:32px;border-radius:50%;
-    background:#EFF6FF;border:1.5px solid #DBEAFE;
-    display:flex;align-items:center;justify-content:center;
-    font-size:17px;flex-shrink:0;
+    background-color:#EFF6FF;border:1.5px solid #DBEAFE;
+    background-image:url('./assets/angela-brand-photo.png');
+    background-size:290%;background-position:58% 22%;background-repeat:no-repeat;
+    flex-shrink:0;
   }
 
   .bubble{
@@ -199,7 +203,13 @@
     padding:28px 18px 8px;
     color:#475569;
   }
-  .welcome-emoji{font-size:54px;margin-bottom:14px;}
+  .welcome-emoji{
+    width:84px;height:84px;border-radius:50%;margin:0 auto 14px;
+    background-color:#EFF6FF;border:2px solid #DBEAFE;
+    background-image:url('./assets/angela-brand-photo.png');
+    background-size:290%;background-position:58% 22%;background-repeat:no-repeat;
+    box-shadow:0 4px 16px rgba(0,0,0,0.1);
+  }
   .welcome-title{
     font-size:22px;font-weight:800;color:#1F2937;
     margin-bottom:8px;letter-spacing:-0.3px;
@@ -302,7 +312,7 @@
 <!-- HEADER -->
 <header class="tutor-header">
   <a href="/dashboard" class="tutor-back" aria-label="Back to dashboard">←</a>
-  <div class="tutor-avatar-h">👩‍🏫</div>
+  <div class="tutor-avatar-h" role="img" aria-label="AI Tutor"></div>
   <div class="tutor-title-wrap">
     <div class="tutor-title">AI Tutor</div>
     <div class="tutor-status"><span class="tutor-dot"></span> Ask me anything about German</div>
@@ -320,7 +330,7 @@
 <!-- CHAT -->
 <main class="chat" id="chat">
   <div class="welcome" id="welcome">
-    <div class="welcome-emoji">👩‍🏫</div>
+    <div class="welcome-emoji" role="img" aria-label="AI Tutor"></div>
     <div class="welcome-title">Hallo! I'm your AI Tutor</div>
     <div class="welcome-sub">Ask grammar questions, get sentences corrected, request writing feedback, or do speaking roleplay. Pick your level above to get started.</div>
     <div class="quick-chips">
@@ -427,7 +437,7 @@
       if (!user) return;
       var sinceISO = new Date(Date.now() - 6 * 3600 * 1000).toISOString();
       return dwSupabase.from('pal_tutor_handoff')
-        .select('id, topic, weak_word, last_pal_message, created_at')
+        .select('id, topic, weak_word, last_pal_message, lesson_context, created_at')
         .eq('user_id', user.id)
         .gte('created_at', sinceISO)
         .order('created_at', { ascending: false })
@@ -439,7 +449,8 @@
           handoffCtx = {
             topic:            h.topic || '',
             weak_word:        h.weak_word || '',
-            last_pal_message: h.last_pal_message || ''
+            last_pal_message: h.last_pal_message || '',
+            lesson_context:   h.lesson_context || ''
           };
           startHandoffOpener(h.id);
         });
@@ -507,7 +518,7 @@
     row.className = 'msg ' + role;
     var bubbleClass = role === 'tutor' ? 'bubble tutor-bubble' : 'bubble';
     var html = '';
-    if (role === 'tutor') html += '<div class="msg-av">👩‍🏫</div>';
+    if (role === 'tutor') html += '<div class="msg-av" role="img" aria-label="AI Tutor"></div>';
     html += '<div class="' + bubbleClass + '"></div>';
     row.innerHTML = html;
     var bubbleEl = row.querySelector('.bubble');
@@ -615,7 +626,7 @@
     var row = document.createElement('div');
     row.className = 'msg tutor';
     row.id = 'typing-row';
-    row.innerHTML = '<div class="msg-av">👩‍🏫</div><div class="bubble typing"><span></span><span></span><span></span></div>';
+    row.innerHTML = '<div class="msg-av" role="img" aria-label="AI Tutor"></div><div class="bubble typing"><span></span><span></span><span></span></div>';
     chat.appendChild(row);
     chat.scrollTop = chat.scrollHeight;
   }

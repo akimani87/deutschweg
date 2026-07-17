@@ -395,6 +395,13 @@
   var lastPalMessage   = '';   // most recent AI Pal reply (set in appendPal)
   var palStruggleActive = false;
 
+  // ── "Go Deeper" lesson-end context (set via DWPal.seedLesson) ───────────
+  // Carries the current lesson's title + rule-block text into every /api/aipal
+  // request as lessonContext, so a question asked right after finishing a
+  // lesson is grounded in exactly what was just taught -- no re-explaining.
+  var palLessonTopic = '';
+  var palLessonRule  = '';
+
   // Label text for the handoff "topic" string now comes from taxonomy.js
   // (window.dwTaxonomy) — this used to be a second, independently-worded
   // copy of the same 6 categories defined in server.js (AIPAL_ERROR_LABELS),
@@ -564,19 +571,52 @@
     + '@media (max-width:380px){'
     +   '#aip-card{right:10px;width:calc(100vw - 20px);bottom:148px;}'
     +   '#aip-bubble{right:14px;bottom:80px;}'
+    +   '#aip-label{right:10px;bottom:150px;}'
+    + '}'
+
+    // ── "Ask Pal" label — sits just above the persistent bubble so its
+    // function is legible without prior knowledge. Purely decorative,
+    // pointer-events:none so it never intercepts the bubble's click area.
+    + '#aip-label{'
+    +   'position:fixed;bottom:142px;right:14px;z-index:9998;'
+    +   'background:#fff;border:1px solid #DBEAFE;color:#1D4ED8;'
+    +   'border-radius:10px;padding:3px 9px;font-size:10.5px;font-weight:800;'
+    +   'font-family:"Plus Jakarta Sans","DM Sans",-apple-system,sans-serif;'
+    +   'box-shadow:0 2px 8px rgba(0,0,0,0.08);pointer-events:none;white-space:nowrap;'
     + '}';
 
   var style = document.createElement('style');
   style.textContent = css;
   document.head.appendChild(style);
 
+  // ── Brand mascot icon (flat "chat bubble" character, brand-blue gradient
+  // from the DeutschWeg "D" logomark — not a generic robot) ───────────────
+  // Two copies needed (bubble + header), so each gets its own gradient id
+  // to keep the SVG spec's per-document id-uniqueness happy.
+  var msgIdCounter = 0;
+  function palIconSvg(gradId, size){
+    return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 88 88" style="display:block;">'
+      + '<defs><linearGradient id="' + gradId + '" x1="0" y1="0" x2="1" y2="1">'
+      +   '<stop offset="0%" stop-color="#2563EB"/><stop offset="100%" stop-color="#60A5FA"/>'
+      + '</linearGradient></defs>'
+      + '<path d="M14 20 Q14 8 26 8 L62 8 Q74 8 74 20 L74 46 Q74 58 62 58 L38 58 L24 72 L26 58 L26 58 Q14 58 14 46 Z" fill="url(#' + gradId + ')"/>'
+      + '<circle cx="34" cy="32" r="4.5" fill="#fff"/>'
+      + '<circle cx="54" cy="32" r="4.5" fill="#fff"/>'
+      + '<path d="M32 42 Q44 50 56 42" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"/>'
+      + '</svg>';
+  }
+
   // ── Build DOM ───────────────────────────────────────────────────────────
+  var label = document.createElement('div');
+  label.id = 'aip-label';
+  label.textContent = 'Ask Pal';
+
   var bubble = document.createElement('button');
   bubble.id = 'aip-bubble';
   bubble.type = 'button';
   bubble.title = 'Ask AI Pal';
   bubble.setAttribute('aria-label', 'Open AI Pal');
-  bubble.innerHTML = '<span id="aip-ico">🤖</span><span id="aip-badge"></span>';
+  bubble.innerHTML = '<span id="aip-ico">' + palIconSvg('aipGradBubble', 26) + '</span><span id="aip-badge"></span>';
 
   var card = document.createElement('div');
   card.id = 'aip-card';
@@ -584,7 +624,7 @@
   card.setAttribute('aria-label', 'AI Pal chat');
   card.innerHTML =
       '<div class="aip-header">'
-    +   '<div class="aip-av-h">🤖</div>'
+    +   '<div class="aip-av-h">' + palIconSvg('aipGradHeader', 20) + '</div>'
     +   '<div class="aip-title">'
     +     '<div class="aip-name">AI Pal</div>'
     +     '<div class="aip-sub">QUICK HINTS · LEVEL <span id="aip-lvl"></span></div>'
@@ -593,7 +633,7 @@
     + '</div>'
     + '<div class="aip-msgs" id="aip-msgs">'
     +   '<div class="aip-welcome" id="aip-welcome">'
-    +     '<div class="aip-welcome-emoji">🤖</div>'
+    +     '<div class="aip-welcome-emoji">' + palIconSvg('aipGradWelcome', 40) + '</div>'
     +     '<div class="aip-welcome-title">Stuck on this lesson?</div>'
     +     '<div class="aip-welcome-sub">Ask me a quick question. I keep it short — full explanations live in the AI Tutor.</div>'
     +   '</div>'
@@ -603,6 +643,7 @@
     +   '<button class="aip-send" type="button" id="aip-send" aria-label="Send">➤</button>'
     + '</div>';
 
+  document.body.appendChild(label);
   document.body.appendChild(bubble);
   document.body.appendChild(card);
 
@@ -617,9 +658,9 @@
 
   // ── Bubble icon / attention badge helpers (v2) ──────────────────────────
   // open/close only swaps the icon span so the unread badge survives.
-  function setIcon(ch){
+  function setIcon(html){
     var ico = document.getElementById('aip-ico');
-    if (ico) ico.textContent = ch; else bubble.innerHTML = '<span id="aip-ico">' + ch + '</span><span id="aip-badge"></span>';
+    if (ico) ico.innerHTML = html; else bubble.innerHTML = '<span id="aip-ico">' + html + '</span><span id="aip-badge"></span>';
   }
   function showBadge(){
     var b = document.getElementById('aip-badge');
@@ -639,7 +680,7 @@
     isOpen = true;
     card.classList.add('open');
     bubble.classList.add('open');
-    setIcon('✕');
+    setIcon('✕');  // plain glyph — innerHTML renders it identically to a text char
     clearBadge();
     bubble.setAttribute('aria-label', 'Close AI Pal');
     lvlEl.textContent = getLevel();
@@ -651,7 +692,7 @@
     isOpen = false;
     card.classList.remove('open');
     bubble.classList.remove('open');
-    setIcon('🤖');
+    setIcon(palIconSvg('aipGradBubble', 26));
     bubble.setAttribute('aria-label', 'Open AI Pal');
   }
   bubble.addEventListener('click', function(){ isOpen ? closeCard() : openCard(); });
@@ -689,7 +730,7 @@
     var row = document.createElement('div');
     row.className = 'aip-msg pal';
     row.innerHTML =
-        '<div class="aip-msg-av">🤖</div>'
+        '<div class="aip-msg-av">' + palIconSvg('aipGradMsg' + (msgIdCounter++), 15) + '</div>'
       + '<div class="aip-bubble-wrap">'
       +   '<div class="aip-bubble"></div>'
       +   '<a class="aip-ask-tutor" href="ai-tutor.html">Ask Tutor 👩‍🏫</a>'
@@ -703,7 +744,7 @@
     var row = document.createElement('div');
     row.className = 'aip-msg pal';
     row.id = 'aip-typing';
-    row.innerHTML = '<div class="aip-msg-av">🤖</div><div class="aip-bubble aip-typing"><span></span><span></span><span></span></div>';
+    row.innerHTML = '<div class="aip-msg-av">' + palIconSvg('aipGradTyping', 15) + '</div><div class="aip-bubble aip-typing"><span></span><span></span><span></span></div>';
     msgsEl.appendChild(row);
     msgsEl.scrollTop = msgsEl.scrollHeight;
   }
@@ -738,7 +779,10 @@
           level:          levelNow,
           module:         moduleName,
           errorContext:   errorContext || '',
-          userTopErrors:  topErrors
+          userTopErrors:  topErrors,
+          lessonContext:  (palLessonTopic || palLessonRule)
+            ? { topic: palLessonTopic, rule: palLessonRule }
+            : null
         })
       });
     })
@@ -773,7 +817,7 @@
     var row = document.createElement('div');
     row.className = 'aip-msg pal';
     row.innerHTML =
-        '<div class="aip-msg-av">🤖</div>'
+        '<div class="aip-msg-av">' + palIconSvg('aipGradPlain' + (msgIdCounter++), 15) + '</div>'
       + '<div class="aip-bubble-wrap"><div class="aip-bubble"></div></div>';
     row.querySelector('.aip-bubble').textContent = text;
     msgsEl.appendChild(row);
@@ -941,6 +985,16 @@
     nudge:   showBadge,
     // v2 Behaviors 3/5/6 — modal moments
     completePopup: completePopup,
-    milestone:     milestonePopup
+    milestone:     milestonePopup,
+    // "Go Deeper" lesson-end prompt: seed the lesson's title + rule text so
+    // the very next /api/aipal call is grounded in what was just studied,
+    // then open the card with a proactive opener naming the topic --
+    // the learner never has to re-explain what lesson they're on.
+    seedLesson: function(topic, ruleText){
+      palLessonTopic = topic || '';
+      palLessonRule  = ruleText || '';
+      openCard();
+      appendPalPlain('Want to go deeper on "' + palLessonTopic + '"? Ask me anything about it.');
+    }
   };
 })();

@@ -827,7 +827,7 @@ RESPONSE CHECKLIST before sending:
 }
 
 app.post('/api/aipal', async (req, res) => {
-  const { messages, level, module: moduleName, errorContext, userTopErrors } = req.body;
+  const { messages, level, module: moduleName, errorContext, userTopErrors, lessonContext } = req.body;
   const safeLevel  = AIPAL_VALID_LEVELS.includes(level) ? level : 'A1';
   const safeModule = (typeof moduleName === 'string' && moduleName.trim())
     ? moduleName.trim().slice(0, 200)
@@ -837,7 +837,20 @@ app.post('/api/aipal', async (req, res) => {
     : '';
   const weakSpotsBlock = buildAipalWeakSpotsBlock(userTopErrors);
 
-  console.log(`[/api/aipal] Request — level: ${safeLevel}, module: "${safeModule}", msgs: ${Array.isArray(messages) ? messages.length : 'invalid'}, errCtx: ${safeErrorContext ? 'yes' : 'no'}, weakSpots: ${weakSpotsBlock ? 'yes' : 'no'}, origin: ${req.headers.origin || 'none'}`);
+  // "Go Deeper" lesson-end seed: the lesson title + its rule-block text,
+  // extracted client-side (no per-lesson manual authoring). Grounds the
+  // very first reply in exactly what the learner just finished studying.
+  const safeLessonContext = (lessonContext && typeof lessonContext === 'object')
+    ? {
+        topic: (typeof lessonContext.topic === 'string' ? lessonContext.topic.trim().slice(0, 200) : ''),
+        rule:  (typeof lessonContext.rule  === 'string' ? lessonContext.rule.trim().slice(0, 600)  : ''),
+      }
+    : null;
+  const lessonContextBlock = (safeLessonContext && (safeLessonContext.topic || safeLessonContext.rule))
+    ? `\n\nLESSON JUST FINISHED — the learner tapped "Ask a quick question" right after this lesson. Ground your first reply in it; don't ask them what lesson they mean:\n- Lesson: ${safeLessonContext.topic || '(untitled)'}\n- Core rule taught: ${safeLessonContext.rule || '(not captured)'}`
+    : '';
+
+  console.log(`[/api/aipal] Request — level: ${safeLevel}, module: "${safeModule}", msgs: ${Array.isArray(messages) ? messages.length : 'invalid'}, errCtx: ${safeErrorContext ? 'yes' : 'no'}, weakSpots: ${weakSpotsBlock ? 'yes' : 'no'}, lessonCtx: ${lessonContextBlock ? 'yes' : 'no'}, origin: ${req.headers.origin || 'none'}`);
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'No messages provided.' });
@@ -865,7 +878,7 @@ app.post('/api/aipal', async (req, res) => {
       body: JSON.stringify({
         model:      'claude-sonnet-4-6',
         max_tokens: 150,
-        system:     buildAipalPrompt(safeLevel, safeModule) + weakSpotsBlock + safeErrorContext,
+        system:     buildAipalPrompt(safeLevel, safeModule) + weakSpotsBlock + safeErrorContext + lessonContextBlock,
         messages:   trimmed,
       }),
     });
@@ -1251,19 +1264,41 @@ function sanitizeHandoff(h) {
     topic:            s(h.topic, 200),
     weak_word:        s(h.weak_word, 120),
     last_pal_message: s(h.last_pal_message, 800),
+    // "Go Deeper" lesson-end seed: the lesson's rule-block text, extracted
+    // client-side. Distinct from last_pal_message (what Pal said) -- this
+    // is what the LESSON taught, present even if the learner never opened
+    // Pal at all and went straight to "Explore this properly".
+    lesson_context:   s(h.lesson_context, 600),
   };
-  return (out.topic || out.weak_word || out.last_pal_message) ? out : null;
+  return (out.topic || out.weak_word || out.last_pal_message || out.lesson_context) ? out : null;
 }
 
 function buildAitutorHandoffBlock(handoff) {
   if (!handoff) return '';
-  return `
+
+  // Two distinct paths reach this handoff: (1) AI Pal → "Ask Tutor" after a
+  // real chat exchange (last_pal_message present), and (2) the lesson-end
+  // "Explore this properly" button, which can fire with NO prior Pal chat
+  // at all -- only a topic + lesson_context. Word the framing to match
+  // whichever actually happened, rather than implying a Pal chat that
+  // didn't occur.
+  if (handoff.last_pal_message) {
+    const lessonLine = handoff.lesson_context ? `\n- Core rule from the lesson: ${handoff.lesson_context}` : '';
+    return `
 
 HANDOFF FROM AI PAL — the learner was just chatting with AI Pal (a quick-help study buddy), got stuck, and came straight to you. They have NOT re-typed their question, and they should never have to. Continue seamlessly from here:
 - Topic they were working on: ${handoff.topic || '(general practice)'}
 - The specific word or point they struggled with: ${handoff.weak_word || '(not specified)'}
-- The last thing AI Pal told them: "${handoff.last_pal_message || ''}"
+- The last thing AI Pal told them: "${handoff.last_pal_message}"${lessonLine}
 In your FIRST message: warmly acknowledge what they were just working on (by name), then immediately continue teaching that exact point in more depth — do not ask them what they need or make them repeat themselves.`;
+  }
+
+  return `
+
+LESSON JUST FINISHED — the learner tapped "Explore this properly" right at the end of a lesson, wanting a structured deeper dive. They have NOT typed anything yet and should not have to restate what they just studied:
+- Lesson: ${handoff.topic || '(general practice)'}
+- Core rule taught in that lesson: ${handoff.lesson_context || '(not captured)'}
+In your FIRST message: name the lesson topic, then go deeper on it immediately — more examples, exceptions, and where it shows up in the Goethe exam. Do not ask what they want to talk about.`;
 }
 
 function buildAitutorPrompt(level, handoff) {
