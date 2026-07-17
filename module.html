@@ -216,9 +216,11 @@
   .lesson-ct-card-der .lesson-ct-card-value, .lesson-ct-card-der .lesson-ct-card-label { color:#4F46E5; }
   .lesson-ct-card-die .lesson-ct-card-value, .lesson-ct-card-die .lesson-ct-card-label { color:#EF4444; }
   .lesson-ct-card-das .lesson-ct-card-value, .lesson-ct-card-das .lesson-ct-card-label { color:#10B981; }
+  .lesson-ct-card-dativ .lesson-ct-card-value, .lesson-ct-card-dativ .lesson-ct-card-label { color:#B45309; }
   td.lesson-ct-cell-der { color:#4F46E5; font-weight:600; }
   td.lesson-ct-cell-die { color:#EF4444; font-weight:600; }
   td.lesson-ct-cell-das { color:#10B981; font-weight:600; }
+  td.lesson-ct-cell-dativ { color:#B45309; font-weight:600; }
   @media (max-width:600px) {
     .lesson-table-wrap.mobile-stack table, .lesson-table-wrap.mobile-stack thead,
     .lesson-table-wrap.mobile-stack tbody, .lesson-table-wrap.mobile-stack tr,
@@ -1289,11 +1291,11 @@
         // genders side by side). "rows" extends the existing plain 'table'
         // type with an optional per-cell color tag and an opt-in mobile
         // stacked layout — existing 'table' blocks are untouched either way.
-        // Data (cards): { type, variant:'cards', cards:[{label, value, value_color?:'der'|'die'|'das', examples?}] }
-        // Data (rows):  { type, variant:'rows'|omitted, headers?, rows: [ (string|{value,color?:'der'|'die'|'das'})[] ], mobile_stack? }
+        // Data (cards): { type, variant:'cards', cards:[{label, value, value_color?:'der'|'die'|'das'|'dativ', examples?}] }
+        // Data (rows):  { type, variant:'rows'|omitted, headers?, rows: [ (string|{value,color?:'der'|'die'|'das'|'dativ'})[] ], mobile_stack? }
         case 'comparison-table': {
           var ctColorClass = function(c) {
-            return (c === 'der' || c === 'die' || c === 'das') ? ' lesson-ct-card-' + c : '';
+            return (c === 'der' || c === 'die' || c === 'das' || c === 'dativ') ? ' lesson-ct-card-' + c : '';
           };
           if (block.variant === 'cards') {
             var ctCards = (Array.isArray(block.cards) ? block.cards : []).map(function(c) {
