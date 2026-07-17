@@ -589,7 +589,7 @@
   style.textContent = css;
   document.head.appendChild(style);
 
-  // ── Brand mascot icon (flat "chat bubble" character, brand-blue gradient
+  // ── Brand mascot icon (flat blob-face character, brand-blue gradient
   // from the DeutschWeg "D" logomark — not a generic robot) ───────────────
   // Two copies needed (bubble + header), so each gets its own gradient id
   // to keep the SVG spec's per-document id-uniqueness happy.
@@ -599,10 +599,16 @@
       + '<defs><linearGradient id="' + gradId + '" x1="0" y1="0" x2="1" y2="1">'
       +   '<stop offset="0%" stop-color="#2563EB"/><stop offset="100%" stop-color="#60A5FA"/>'
       + '</linearGradient></defs>'
-      + '<path d="M14 20 Q14 8 26 8 L62 8 Q74 8 74 20 L74 46 Q74 58 62 58 L38 58 L24 72 L26 58 L26 58 Q14 58 14 46 Z" fill="url(#' + gradId + ')"/>'
-      + '<circle cx="34" cy="32" r="4.5" fill="#fff"/>'
-      + '<circle cx="54" cy="32" r="4.5" fill="#fff"/>'
-      + '<path d="M32 42 Q44 50 56 42" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"/>'
+      + '<circle cx="44" cy="42" r="32" fill="url(#' + gradId + ')"/>'
+      + '<ellipse cx="22" cy="50" rx="6" ry="4" fill="#FDA4AF" opacity="0.55"/>'
+      + '<ellipse cx="66" cy="50" rx="6" ry="4" fill="#FDA4AF" opacity="0.55"/>'
+      + '<circle cx="31" cy="38" r="7.5" fill="#fff"/>'
+      + '<circle cx="57" cy="38" r="7.5" fill="#fff"/>'
+      + '<circle cx="32.8" cy="40.2" r="3.4" fill="#1E3A8A"/>'
+      + '<circle cx="58.8" cy="40.2" r="3.4" fill="#1E3A8A"/>'
+      + '<circle cx="29.8" cy="36" r="1.4" fill="#fff"/>'
+      + '<circle cx="55.8" cy="36" r="1.4" fill="#fff"/>'
+      + '<path d="M28 54 Q44 65 60 54" stroke="#fff" stroke-width="5.5" fill="none" stroke-linecap="round"/>'
       + '</svg>';
   }
 
