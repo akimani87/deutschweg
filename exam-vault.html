@@ -5045,15 +5045,17 @@
           // Only one Übungssatz published — keep the dropdown hidden.
           dropdown.style.display = 'none';
         } else {
-          // Populate options as "<LEVEL> Übungssatz N" (1-indexed by
-          // load order) — the level prefix makes the dropdown self-
-          // explanatory across A1/A2/B1/B2. The page header + attempt
+          // Populate options as "<LEVEL> Mock Exam N" (1-indexed by load
+          // order) — matches the Complete Mock Exam set-picker's own
+          // "<LEVEL> Mock Exam N" phrasing (renderMockExamSetPickerCards
+          // above) so the same set is never labeled "Übungssatz" in one
+          // picker and "Mock Exam" in the other. The page header + attempt
           // history still read the canonical exam title, so consistency
           // across sets is preserved.
           select.innerHTML = '<option value="">— Übungssatz wählen —</option>'
             + exams.map(function (e, i) {
                 return '<option value="' + escapeHtml(e.id) + '">'
-                  +    escapeHtml(currentLevel + ' Übungssatz ' + (i + 1))
+                  +    escapeHtml(currentLevel + ' Mock Exam ' + (i + 1))
                   + '</option>';
               }).join('');
           select.value = exams[0].id;
