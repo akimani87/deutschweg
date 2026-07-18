@@ -284,7 +284,11 @@ function tf(question_text, correct_answer, explanation) {
           explanation: '"Kontakt" (a) nennt die Telefonnummer. "Team" (b) informiert nur über die Ärzte selbst, nicht über Kontaktdaten.',
         },
         {
-          q: 'Sie möchten wissen, wann der nächste Deutschkurs für Anfänger beginnt.',
+          // Reworded post-seed by fix-mock-exam-3-lesen-t2-duplicate.js —
+          // the original text here was byte-identical to Übungssatz 2's
+          // own Lesen Teil 2 item 4, caught by a --level-scope validator
+          // run. Kept in sync so this script matches live DB content.
+          q: 'Sie möchten Deutsch lernen und suchen den Starttermin für den nächsten Anfängerkurs.',
           answer: 'b',
           options: { a: 'Sprachschule Berlin — Preise (Preise für alle Kurse)', b: 'Sprachschule Berlin — Kurstermine (Alle Starttermine der Kurse)' },
           explanation: '"Kurstermine" (b) nennt die Starttermine. "Preise" (a) informiert nur über Kosten, nicht über Termine.',

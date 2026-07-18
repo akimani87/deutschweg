@@ -148,7 +148,7 @@ model difference, not an open question.
   everything already flagged true, which the flag alone can't detect.
   Flagging as a process question, not something I should decide.
 
-## 3. No repeated premises/scenarios within the same Übungssatz
+## 3. No repeated premises/scenarios — within the set AND across all previously certified sets
 
 Every task within one `exams` row (and every clip within a Hören task's
 `stimulus.clips`) must use a distinct premise/scenario — no two tasks or
@@ -156,12 +156,45 @@ clips in the same Übungssatz should reuse the same situation (e.g. two
 "lost umbrella" scenarios, as happened during this session's Hören content
 generation before the anti-repetition fix).
 
-This is scoped explicitly to **within one Übungssatz's own tasks**, per
-your wording. Repetition *across different* Übungssätze of the same
-level+section (e.g. Übungssatz 1 and Übungssatz 2 both using a similar
-premise) is a related but different question — not covered by this
-checklist item, flagging only because it will start to matter once a 2nd
-Übungssatz exists.
+**§3 originally scoped this to within one Übungssatz's own tasks only,
+explicitly flagging cross-set repetition as a future concern "once a 2nd
+Übungssatz exists." It now has: Übungssatz 3's Lesen Teil 2 Item 9 was
+authored with a situational prompt byte-identical to Übungssatz 2's own
+Item 4** ("Sie möchten wissen, wann der nächste Deutschkurs für Anfänger
+beginnt.") — caught only after the fact, by a validator run at a wider
+scope than the documented workflow requires, and reworded afterward
+(`scripts/fix-mock-exam-3-lesen-t2-duplicate.js`). This item is now
+closed to prevent a repeat on Übungssatz 4 and beyond.
+
+**Root cause, confirmed by reading `scripts/validate-mock-exams.js`
+directly:** `runDuplicateChecks()` only ever compares tasks among the
+sets actually loaded into that run. The documented certification workflow
+(`mock-exam-set-workflow.md` step 3) runs `--set <id>` — which loads
+*only the target set* — so cross-set duplication is structurally
+invisible at that scope, regardless of how many other sets already exist.
+Running at `--level`/`--published` scope *does* catch it (confirmed: this
+is how Übungssatz 3's Item 9 was actually found), but even then it's
+severity `WARNING`, not `FAIL` — so it would not have blocked
+`certify-mock-exam-set.js` (which only refuses on `FAIL`) even if that
+wider scope had been run as part of the standard flow.
+
+**Certification requirement, effective immediately:** before certifying
+any new set, run the validator at **`--level <level>`** (not `--set
+<id>`) so the comparison spans every existing set of that level —
+published, draft, and previously certified alike — and manually review
+every `duplicates.exact_question_text` / `duplicates.normalized_question_text`
+/ `duplicates.exact_instructions` finding that involves the new set's own
+tasks specifically (cross-referencing two *other*, unrelated sets — e.g.
+the pre-existing Übungssatz 1/Übungssatz 2 "Kursname:" field-label overlap
+— is not this set's problem to fix). Treat any such finding touching the
+new set as blocking for certification purposes even though the validator
+itself only WARNs — this is a human-enforced gate until/unless the
+validator is updated to FAIL on cross-set exact duplication.
+
+Repetition across sets that is *similar but not verbatim* (e.g. two sets
+both featuring a pharmacy scenario, with different specifics) is not
+flagged by this check and remains a softer judgment call for the human
+reviewer (§6), not an automated gate.
 
 ## 4. Every answer key manually verified against its own content
 
