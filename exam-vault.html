@@ -1068,11 +1068,15 @@
     <a class="exam-pill" id="pillSprechen"  role="tab">🎤 Sprechen</a>
   </div>
 
-  <!-- Übungssatz dropdown — visible only when 2+ exams exist for the section -->
+  <!-- Practice Set dropdown — visible only when 2+ exams exist for the
+       section. Deliberately NOT "Mock Exam" (that label is reserved for
+       the real, timed, certified Complete Mock Exam experience) and NOT
+       "Übungssatz" (banned from learner-facing text) — this picks among
+       standalone Practice Pool content only. -->
   <div id="examSetSelector" style="display:none; margin-bottom: 20px;">
-    <label for="examSetSelect" style="font-size:12.5px; font-weight:700; color:var(--mid); display:block; margin-bottom:6px;">Übungssatz wählen</label>
+    <label for="examSetSelect" style="font-size:12.5px; font-weight:700; color:var(--mid); display:block; margin-bottom:6px;">Practice Set wählen</label>
     <select id="examSetSelect" class="form-input" style="max-width: 280px;">
-      <option value="">— Übungssatz wählen —</option>
+      <option value="">— Practice Set wählen —</option>
     </select>
   </div>
 
@@ -5042,20 +5046,23 @@
         var select   = el('examSetSelect');
 
         if (exams.length === 1) {
-          // Only one Übungssatz published — keep the dropdown hidden.
+          // Only one Practice Set published — keep the dropdown hidden.
           dropdown.style.display = 'none';
         } else {
-          // Populate options as "<LEVEL> Mock Exam N" (1-indexed by load
-          // order) — matches the Complete Mock Exam set-picker's own
-          // "<LEVEL> Mock Exam N" phrasing (renderMockExamSetPickerCards
-          // above) so the same set is never labeled "Übungssatz" in one
-          // picker and "Mock Exam" in the other. The page header + attempt
-          // history still read the canonical exam title, so consistency
-          // across sets is preserved.
-          select.innerHTML = '<option value="">— Übungssatz wählen —</option>'
+          // Populate options as "<LEVEL> Practice Set N" (1-indexed by
+          // load order). Deliberately NOT "Mock Exam" — this dropdown
+          // lists standalone Practice Pool exams (most sections have
+          // 10-11 of them, not linked to any mock_exam_sets row at all),
+          // and "Mock Exam" must only ever refer to the real, timed,
+          // certified Complete Mock Exam experience
+          // (renderMockExamSetPickerCards above is the only place that
+          // label belongs). The page header + attempt history still read
+          // the canonical exam title, so consistency across sets is
+          // preserved.
+          select.innerHTML = '<option value="">— Practice Set wählen —</option>'
             + exams.map(function (e, i) {
                 return '<option value="' + escapeHtml(e.id) + '">'
-                  +    escapeHtml(currentLevel + ' Mock Exam ' + (i + 1))
+                  +    escapeHtml(currentLevel + ' Practice Set ' + (i + 1))
                   + '</option>';
               }).join('');
           select.value = exams[0].id;
