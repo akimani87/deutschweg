@@ -30,13 +30,13 @@ const ROOT   = path.resolve(__dirname, '..');
 const MARKER = '<!-- DW SEO INJECT -->';
 
 const GENERIC = {
-  title:        'DeutschWeg — Goethe Exam Prep for African Learners',
-  description:  'Prepare for your Goethe German exam with AI-powered lessons. A1, A2, B1, B2 — built for African learners. Start free today.',
-  ogTitle:      'DeutschWeg — Goethe Exam Prep for African Learners',
-  ogDesc:       'AI-powered German exam preparation. A1 to B2. Built for African learners. Start free.',
+  title:        'DeutschWeg — Goethe Exam Prep for Your Move to Germany',
+  description:  'Prepare for your Goethe German exam with AI-powered lessons. A1, A2, B1, B2 — for anyone moving to Germany for study, work, or family. Start free today.',
+  ogTitle:      'DeutschWeg — Goethe Exam Prep for Your Move to Germany',
+  ogDesc:       'AI-powered German exam preparation. A1 to B2. For anyone moving to Germany for study, work, or family. Start free.',
   twitterTitle: 'DeutschWeg — Goethe Exam Prep',
-  twitterDesc:  'AI-powered German exam prep for African learners. A1 to B2. Start free.',
-  keywords:     'Goethe exam, German exam Africa, learn German Kenya, Goethe A1 B1, German certificate, Ausbildung German, family reunification German',
+  twitterDesc:  'AI-powered German exam prep for your move to Germany. A1 to B2. Start free.',
+  keywords:     'Goethe exam, learn German, Goethe A1 B1, German certificate, Ausbildung German, family reunification German, German exam preparation',
   ogImage:      'https://deutschweg.de/og-image.png'
 };
 

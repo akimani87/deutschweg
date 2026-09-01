@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DeutschWeg — Digital Product Fulfillment Explanation</title>
+<style>
+  @page { size: A4; margin: 22mm 18mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    color: #1a1a1a;
+    line-height: 1.55;
+    font-size: 12.5px;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 22px;
+    margin: 0 0 4px;
+    color: #111;
+  }
+  .subtitle {
+    font-size: 12px;
+    color: #555;
+    margin-bottom: 22px;
+    font-family: Arial, sans-serif;
+  }
+  h2 {
+    font-size: 15px;
+    margin: 26px 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 1.5px solid #ccc;
+    color: #111;
+  }
+  p { margin: 8px 0; }
+  ol, ul { margin: 8px 0; padding-left: 22px; }
+  li { margin: 4px 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0 4px;
+    font-family: Arial, sans-serif;
+    font-size: 11.5px;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 6px 8px;
+    text-align: left;
+  }
+  th { background: #f3f3f3; }
+  .step {
+    background: #fafafa;
+    border-left: 3px solid #888;
+    padding: 8px 12px;
+    margin: 6px 0;
+  }
+  .step b { color: #111; }
+  .note {
+    font-size: 11px;
+    color: #555;
+    font-style: italic;
+  }
+  footer {
+    margin-top: 32px;
+    padding-top: 10px;
+    border-top: 1px solid #ccc;
+    font-size: 10.5px;
+    color: #777;
+    font-family: Arial, sans-serif;
+  }
+</style>
+</head>
+<body>
+
+<h1>DeutschWeg — Digital Product Fulfillment Explanation</h1>
+<div class="subtitle">How customers receive access to purchased content, and how fulfillment is delivered end-to-end</div>
+
+<h2>1. What DeutschWeg is</h2>
+<p>DeutschWeg is a web-based German language learning platform (deutschweg.de). Learners create a free account, work through structured lessons and practice exercises, and can optionally purchase additional levels of content and an AI-based writing feedback tool. There is no physical product, no shipping, and no manual order processing at any point — every product is delivered automatically, inside the account the customer already has.</p>
+
+<h2>2. What is sold</h2>
+<table>
+  <tr><th>Product</th><th>Type</th><th>Price</th><th>What it unlocks</th></tr>
+  <tr><td>Unlock A2</td><td>One-time digital unlock</td><td>€39</td><td>All A2-level lesson modules</td></tr>
+  <tr><td>Unlock B1</td><td>One-time digital unlock</td><td>€44</td><td>All B1-level lesson modules</td></tr>
+  <tr><td>Unlock B2</td><td>One-time digital unlock</td><td>€49</td><td>All B2-level lesson modules</td></tr>
+  <tr><td>Exam Whisperer A2</td><td>One-time digital unlock</td><td>€19</td><td>AI-scored writing feedback for A2 exam practice</td></tr>
+  <tr><td>Exam Whisperer B1</td><td>One-time digital unlock</td><td>€19</td><td>AI-scored writing feedback for B1 exam practice</td></tr>
+  <tr><td>Exam Whisperer B2</td><td>One-time digital unlock</td><td>€19</td><td>AI-scored writing feedback for B2 exam practice</td></tr>
+</table>
+<p class="note">A1-level content is always free and is never gated. Nothing above is a subscription — each is a single, one-time purchase that unlocks that piece of content permanently on the customer's account.</p>
+
+<h2>3. Sequence of events, from signup to access</h2>
+
+<div class="step"><b>Step 1 — Account creation (before any purchase).</b> The customer signs up for a free DeutschWeg account (email + password, via Supabase Auth) and can immediately start using the free A1 content. No purchase is required to create an account.</div>
+
+<div class="step"><b>Step 2 — Customer chooses a paid product.</b> While signed in, the customer clicks "Unlock" on a specific level or on Exam Whisperer for a level. This takes them to our unlock page (freischalten.html), which shows the exact product, its price, and what it includes before any payment is initiated.</div>
+
+<div class="step"><b>Step 3 — Checkout.</b> Our server generates a Lemon Squeezy hosted checkout URL for that specific product, tagging it with the customer's internal account ID so we know which account to unlock. The customer completes payment entirely on Lemon Squeezy's checkout page — DeutschWeg never handles card details directly.</div>
+
+<div class="step"><b>Step 4 — Automatic fulfillment via webhook.</b> The instant Lemon Squeezy confirms the order, it sends a signed webhook to our server. Our server verifies the signature, reads the account ID and product from the order, and writes a single record granting that account access to that product. This happens within seconds of payment — there is no manual step, no queue, and no human review in the fulfillment path.</div>
+
+<div class="step"><b>Step 5 — Access.</b> The customer is redirected back to DeutschWeg after checkout. Their account now has access to the purchased content immediately — the same lesson pages that were previously gated now render normally, because the app checks for that access record on every page load.</div>
+
+<h2>4. Timing</h2>
+<p>Fulfillment is instant and fully automated. From the moment Lemon Squeezy confirms payment, access is granted in well under a minute (typically a few seconds), governed only by webhook delivery latency. There is no fulfillment backlog, no shipping time, and no dependency on staff availability.</p>
+
+<h2>5. Refunds</h2>
+<p>If an order is refunded, Lemon Squeezy sends a corresponding webhook event, and our server automatically removes that access record from the customer's account — again with no manual step required. Refund handling is symmetric with granting access: the same webhook receiver processes both events.</p>
+
+<h2>6. Safeguards against abuse</h2>
+<ul>
+  <li>Every webhook is verified against Lemon Squeezy's signing secret before anything is processed; unsigned or invalid requests are rejected outright.</li>
+  <li>Product identifiers and price points are configured only on our server, never exposed to or editable from the browser, so a customer cannot manipulate which product they receive or at what price.</li>
+  <li>Access grants are idempotent — if the same order event is received more than once (e.g., a retried webhook), it does not create duplicate access records or duplicate charges.</li>
+</ul>
+
+<h2>7. Customer support</h2>
+<p>If a customer does not see access appear after payment (for example, due to a delayed webhook), support can verify the order in the Lemon Squeezy dashboard and, if needed, grant the corresponding access record manually as a fallback — this is the only point in the entire flow that could involve a person, and it exists purely as a safety net, not as the normal path.</p>
+
+<footer>
+DeutschWeg · deutschweg.de · Prepared to accompany a Lemon Squeezy merchant application, describing how digital products are delivered to customers after purchase.
+</footer>
+
+</body>
+</html>

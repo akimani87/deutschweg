@@ -27,7 +27,7 @@ const POSTS = [
     levelTag:    'Goethe A1 Required',
     h1:          'How to Come to Germany for Family Reunification — What German Level Do You Need?',
     metaDesc:    'Family reunification visa for Germany — Goethe A1 is the entry-level requirement. Here\'s what to expect, exceptions, and how to prepare.',
-    lead:        'If your spouse, parent, or child lives in Germany, you may be eligible to join them through family reunification — one of the most common pathways to Germany from Africa.',
+    lead:        'If your spouse, parent, or child lives in Germany, you may be eligible to join them through family reunification — one of the most common pathways to Germany.',
     sections: [
       { title: 'What is family reunification?', body:
         '<p>Family reunification (Familienzusammenführung) allows non-EU citizens to move to Germany to live with a close family member who has legal residence there. This applies to spouses, minor children, and in some cases parents of German citizens.</p>'
@@ -66,8 +66,8 @@ const POSTS = [
     levels:      [['a1', 'A1'], ['a2', 'A2']],
     levelTag:    'Goethe A1 minimum — A2 recommended',
     h1:          'Coming to Germany as an Au-Pair — Language Requirements and How to Prepare',
-    metaDesc:    'The Au-Pair programme is an accessible route to Germany for young Africans. A1 is the minimum, A2 makes your application stronger.',
-    lead:        'The Au-Pair programme is one of the most accessible ways for young Africans to live and work in Germany legally. But language preparation is essential — and starting early gives you a major advantage.',
+    metaDesc:    'The Au-Pair programme is an accessible route to Germany for young people from around the world. A1 is the minimum, A2 makes your application stronger.',
+    lead:        'The Au-Pair programme is one of the most accessible ways for young people to live and work in Germany legally. But language preparation is essential — and starting early gives you a major advantage.',
     sections: [
       { title: 'What is an Au-Pair?', body:
         '<p>An Au-Pair lives with a German host family, helps with childcare and light household tasks, and in return receives accommodation, meals, pocket money, and time to attend German language classes. It is a cultural exchange programme, not employment.</p>'
@@ -103,9 +103,9 @@ const POSTS = [
     category:    'Vocational Training',
     levels:      [['b1', 'B1']],
     levelTag:    'Goethe B1 Required',
-    h1:          'Ausbildung in Germany — How Africans Can Apply and What German Level is Required',
-    metaDesc:    'Germany\'s Ausbildung (dual vocational training) is open to Africans. B1 German is the standard entry requirement — here\'s the full pathway.',
-    lead:        'Germany\'s Ausbildung (dual vocational training) system is one of the best in the world — and it is now open to applicants from Africa. You work, earn a salary, and gain a recognised German qualification at the same time.',
+    h1:          'Ausbildung in Germany — How to Apply and What German Level is Required',
+    metaDesc:    'Germany\'s Ausbildung (dual vocational training) is open to international applicants. B1 German is the standard entry requirement — here\'s the full pathway.',
+    lead:        'Germany\'s Ausbildung (dual vocational training) system is one of the best in the world — and it is now open to international applicants. You work, earn a salary, and gain a recognised German qualification at the same time.',
     sections: [
       { title: 'What is Ausbildung?', body:
         '<p>Ausbildung is a vocational training programme lasting 2 to 3.5 years. You split your time between a company (where you work and earn) and a Berufsschule (vocational school). Popular fields include nursing, IT, logistics, hospitality, and engineering.</p>'
@@ -113,8 +113,8 @@ const POSTS = [
       { title: 'What German level do you need?', body:
         '<p>Most Ausbildung programmes require <strong>Goethe B1</strong> minimum. Some competitive programmes or larger companies require B2. The language requirement exists because your training happens in German — classes, workplace communication, exams — all in German.</p>'
       },
-      { title: 'The Western Balkans Regulation — and what it means for Africans', body:
-        '<p>Germany introduced the Chancenkarte (Opportunity Card) in 2024, which makes it easier for skilled workers and Ausbildung applicants from non-EU countries to come to Germany. This includes African applicants with recognised qualifications.</p>'
+      { title: 'The Chancenkarte — and what it means for international applicants', body:
+        '<p>Germany introduced the Chancenkarte (Opportunity Card) in 2024, which makes it easier for skilled workers and Ausbildung applicants from non-EU countries to come to Germany. This includes applicants from outside the EU with recognised qualifications.</p>'
       },
       { title: 'Steps to apply for Ausbildung', body:
         '<ul>' +
@@ -137,8 +137,8 @@ const POSTS = [
     category:    'University Studies',
     levels:      [['b2', 'B2']],
     levelTag:    'Goethe B2 / C1 Required',
-    h1:          'Studying at a German University — Language Requirements for African Students',
-    metaDesc:    'German universities require B2 or C1 German for degree programmes taught in German. Here\'s the full pathway for African students.',
+    h1:          'Studying at a German University — Language Requirements for International Students',
+    metaDesc:    'German universities require B2 or C1 German for degree programmes taught in German. Here\'s the full pathway for international students.',
     lead:        'Germany has some of the best universities in the world — and many charge no tuition fees, even for international students. But getting in requires strong German language skills.',
     sections: [
       { title: 'What German level do universities require?', body:
@@ -153,7 +153,7 @@ const POSTS = [
         '<li>telc Deutsch B2/C1 Hochschule</li>' +
         '</ul>'
       },
-      { title: 'Pathway for African students', body:
+      { title: 'Pathway for international students', body:
         '<ul>' +
         '<li>Complete your secondary school or university at home</li>' +
         '<li>Have your certificates evaluated by uni-assist or anabin</li>' +
@@ -182,7 +182,7 @@ const POSTS = [
       { title: 'New citizenship rules from 2024', body:
         '<ul>' +
         '<li>Citizenship after 5 years of legal residence (reduced from 8)</li>' +
-        '<li>Dual citizenship now allowed — you do not have to give up your Kenyan/Nigerian/Ghanaian passport</li>' +
+        '<li>Dual citizenship now allowed — you do not have to give up your original passport</li>' +
         '<li>Special cases: 3 years for exceptional integration</li>' +
         '<li>B1 German language minimum — must be demonstrated</li>' +
         '</ul>'
@@ -213,9 +213,9 @@ const POSTS = [
     category:    'Skilled Worker Visa',
     levels:      [['b1', 'B1'], ['b2', 'B2']],
     levelTag:    'B1 minimum — B2 recommended',
-    h1:          'Germany\'s Skilled Worker Visa (Fachkräfteeinwanderung) — What African Professionals Need to Know',
+    h1:          'Germany\'s Skilled Worker Visa (Fachkräfteeinwanderung) — What International Professionals Need to Know',
     metaDesc:    'Germany\'s skilled worker visa and Chancenkarte make moving easier than ever. B1 minimum, B2 recommended — here\'s the full picture.',
-    lead:        'Germany is actively recruiting skilled workers from outside the EU — including from Africa. The Fachkräfteeinwanderungsgesetz (Skilled Immigration Act) and the new Chancenkarte (Opportunity Card) have made this easier than ever.',
+    lead:        'Germany is actively recruiting skilled workers from outside the EU — including from around the world. The Fachkräfteeinwanderungsgesetz (Skilled Immigration Act) and the new Chancenkarte (Opportunity Card) have made this easier than ever.',
     sections: [
       { title: 'Who qualifies?', body:
         '<ul>' +
@@ -296,7 +296,7 @@ function renderPage(post) {
   const canonicalUrl  = `https://deutschweg.de/blog/${canonicalSlug}`;
   const description   = post.metaDesc;
   const ogImage       = 'https://deutschweg.de/og-image.png';
-  const keywords      = 'Goethe exam, German exam Africa, learn German Kenya, Goethe A1 B1, German certificate, Ausbildung German, family reunification German';
+  const keywords      = 'Goethe exam, learn German, Goethe A1 B1, German certificate, Ausbildung German, family reunification German, German exam preparation';
 
   return `<!DOCTYPE html>
 <html lang="en">

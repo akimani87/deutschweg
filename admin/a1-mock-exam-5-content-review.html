@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>A1 Mock Exam 5 — Content Review</title>
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans', system-ui, sans-serif; min-height:100vh; }
+  .wrap { max-width:920px; margin:0 auto; padding:28px 20px 80px; }
+  .page-header { margin-bottom:8px; }
+  .eyebrow { font-family:monospace; font-size:11px; letter-spacing:3px; color:var(--gold); margin-bottom:6px; }
+  h1 { font-family:Georgia,serif; font-size:26px; font-weight:900; margin-bottom:4px; }
+  h1 span { color:var(--gold); }
+  .subtitle { font-size:13px; color:var(--gray); margin-bottom:20px; }
+  .not-published-note { font-size:12px; color:var(--gray); background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:10px 14px; margin-bottom:24px; }
+  .not-published-note code { color:var(--gold-light); }
+  .scope-note { font-size:12px; color:var(--cream); background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); border-radius:10px; padding:10px 14px; margin-bottom:28px; }
+
+  .section-header { font-family:Georgia,serif; font-size:20px; font-weight:900; margin:36px 0 4px; color:var(--gold-light); border-bottom:1px solid var(--border); padding-bottom:8px; }
+  .section-sub { font-size:12.5px; color:var(--gray); margin-bottom:18px; }
+
+  .task-card { background:var(--card-bg); border:1px solid var(--border); border-radius:16px; padding:22px 24px; margin-bottom:20px; }
+  .task-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; flex-wrap:wrap; gap:8px; }
+  .task-title { font-size:15.5px; font-weight:800; }
+  .teil-badge { font-family:monospace; font-size:10.5px; letter-spacing:1.5px; color:var(--gold); background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); border-radius:20px; padding:3px 10px; }
+  .instructions { font-size:12.5px; color:var(--gray); margin-bottom:16px; white-space:pre-line; }
+
+  .item-block { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:14px 16px; margin-bottom:10px; }
+  .item-num { font-weight:700; font-size:13.5px; margin-bottom:6px; color:var(--cream); }
+  .transcript-box { font-size:13px; line-height:1.7; white-space:pre-line; color:var(--cream); margin-bottom:8px; padding:10px 12px; background:rgba(255,255,255,0.03); border-radius:8px; }
+  .q-text { font-size:13.5px; font-weight:600; margin-bottom:6px; }
+  .q-options { font-size:13px; color:var(--cream); margin:4px 0 8px; padding-left:4px; }
+  .q-options div { margin-bottom:2px; }
+  .q-options .correct { color:var(--green); font-weight:700; }
+  .q-explanation { font-size:12.5px; color:var(--gray); }
+  .answer-line { font-size:13px; margin-top:4px; }
+  .answer-line b.correct { color:var(--green); }
+  .answer-line b.wrong { color:var(--red); }
+
+  .field-table { width:100%; border-collapse:collapse; font-size:13px; margin-top:8px; }
+  .field-table td { padding:6px 10px; border-bottom:1px solid rgba(255,255,255,0.06); }
+  .field-table td:first-child { color:var(--gray); width:40%; }
+
+  .sign-list { list-style:none; }
+  .sign-list li { margin-bottom:10px; }
+
+  .placeholder-note { font-size:12px; color:var(--gray); font-style:italic; margin-top:6px; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="page-header">
+    <div class="eyebrow">INTERNAL · NOT LEARNER-FACING · NOT PUBLISHED</div>
+    <h1>A1 <span>Mock Exam 5</span> — Content Review</h1>
+    <div class="subtitle">Content pillar: clothing, sizes, colours and shopping. Read-only review of all authored Hören, Lesen, and Schreiben content. Nothing here writes to the database.</div>
+  </div>
+
+  <div class="not-published-note">
+    Set: <code>mock_exam_sets.id = 9dcce5d1-df19-4429-b4eb-e9ef89998272</code> · <code>is_published = false</code> on the set and all 3 exams · <code>is_certified_mock_exam = false</code>. Invisible to learners. Validated clean: <code>node scripts/validate-mock-exams.js --set 9dcce5d1-df19-4429-b4eb-e9ef89998272</code> and <code>--level A1</code> (cross-set duplication scope) both ran with 0 FAIL.
+  </div>
+  <div class="scope-note">
+    Scope of this review: Hören / Lesen / Schreiben content only. Hören audio is machine-generated (ElevenLabs, same pipeline as Mock Exam 3/4) — <b>a human listen-through pass is still required before certification</b> (mock-exam-certification-checklist.md §2/§4): script accuracy, correct voice assignment, clear numerals (sizes/prices/percentages), and natural pace. Check the box under each clip once you've listened and confirmed it. Sprechen is not shown here — it uses the same dynamic engine as every other A1 set, unlinked and unscored.
+  </div>
+
+  <!-- ══════════════════════ HÖREN ══════════════════════ -->
+  <div class="section-header">🎧 Hören — 15 Punkte</div>
+  <div class="section-sub" id="hoerenReviewProgress">Listen-through progress: 0 / 15 items reviewed (saved locally in this browser only)</div>
+
+  <div class="task-card">
+    <div class="task-head"><div class="task-title">Teil 1 — Kurze Gespräche</div><div class="teil-badge">6 ITEMS · PLAYED TWICE</div></div>
+    <div class="instructions">🇩🇪 Sie hören sechs kurze Gespräche. Wählen Sie bei jeder Frage die richtige Antwort: a, b oder c.
+🇬🇧 You will hear six short dialogues. Choose the correct answer: a, b or c.</div>
+    <div id="hoerenT1"></div>
+  </div>
+
+  <div class="task-card">
+    <div class="task-head"><div class="task-title">Teil 2 — Durchsagen</div><div class="teil-badge">4 ITEMS · PLAYED ONCE</div></div>
+    <div class="instructions">🇩🇪 Sie hören vier Durchsagen. Sind die Aussagen dazu richtig oder falsch?
+🇬🇧 You will hear four announcements. Are the statements right or wrong?</div>
+    <div id="hoerenT2"></div>
+  </div>
+
+  <div class="task-card">
+    <div class="task-head"><div class="task-title">Teil 3 — Anrufbeantworter</div><div class="teil-badge">5 ITEMS · PLAYED TWICE</div></div>
+    <div class="instructions">🇩🇪 Sie hören fünf Anrufe auf einem Anrufbeantworter. Wählen Sie bei jeder Frage die richtige Antwort: a, b oder c.
+🇬🇧 You will hear five voicemail messages. Choose the correct answer: a, b or c.</div>
+    <div id="hoerenT3"></div>
+  </div>
+
+  <!-- ══════════════════════ LESEN ══════════════════════ -->
+  <div class="section-header">📖 Lesen — 15 Punkte</div>
+
+  <div class="task-card">
+    <div class="task-head"><div class="task-title">Teil 1 — Zwei Texte</div><div class="teil-badge">5 ITEMS</div></div>
+    <div id="lesenT1"></div>
+  </div>
+
+  <div class="task-card">
+    <div class="task-head"><div class="task-title">Teil 2 — Wo finden Sie diese Information?</div><div class="teil-badge">5 ITEMS</div></div>
+    <div id="lesenT2"></div>
+  </div>
+
+  <div class="task-card">
+    <div class="task-head"><div class="task-title">Teil 3 — Schilder</div><div class="teil-badge">5 ITEMS</div></div>
+    <div id="lesenT3"></div>
+  </div>
+
+  <!-- ══════════════════════ SCHREIBEN ══════════════════════ -->
+  <div class="section-header">✍️ Schreiben — 17 Punkte (real runtime max: 5 + 12)</div>
+
+  <div class="task-card">
+    <div class="task-head"><div class="task-title">Teil 1 — Formular ausfüllen</div><div class="teil-badge">MAX 5</div></div>
+    <div id="schreibenT1"></div>
+  </div>
+
+  <div class="task-card">
+    <div class="task-head"><div class="task-title">Teil 2 — Kurze Mitteilung</div><div class="teil-badge">MAX 12 (real runtime)</div></div>
+    <div id="schreibenT2"></div>
+  </div>
+</div>
+
+<script>
+function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+
+var HOEREN_AUDIO_BASE = 'https://udmunxzzuqoynlftapwh.supabase.co/storage/v1/object/public/hoerverstehen-audio/mock-exam-5/';
+var HOEREN_T1 = [
+  { scenario: 'A woman needs a bigger jacket size.', q: 'Welche Größe braucht die Frau?', options: ['Größe 38','Größe 40','Größe 42'], correct: 1, audio: 'hoeren_t1_item_01.mp3',
+    transcript: 'Frau: Ich habe diese Jacke in Größe 38 anprobiert, aber sie ist zu eng.\nEmpfang: Kein Problem, ich hole Ihnen Größe 40.\nFrau: Danke, das wäre super.\nEmpfang: Hier bitte, probieren Sie die mal an.' },
+  { scenario: 'A man chooses a shirt colour.', q: 'Welche Farbe kauft der Mann?', options: ['Blau','Weiß','Grün'], correct: 2, audio: 'hoeren_t1_item_02.mp3',
+    transcript: 'Mann: Haben Sie dieses Hemd auch in Blau?\nEmpfang: Nein, aber wir haben es noch in Weiß und Grün.\nMann: Dann nehme ich das grüne Hemd.\nEmpfang: Gute Wahl, das grüne steht Ihnen bestimmt gut.' },
+  { scenario: 'Two friends compare shoe prices.', audio: 'hoeren_t1_item_03.mp3', q: 'Wie viel kosten die schwarzen Schuhe?', options: ['45 Euro','90 Euro','145 Euro'], correct: 0,
+    transcript: 'Frau: Wie findest du diese Schuhe?\nMann: Schön, aber 90 Euro sind mir zu teuer.\nFrau: Stimmt, aber die schwarzen dort kosten nur 45 Euro.\nMann: Die schauen wir uns mal an.' },
+  { scenario: 'A woman returns a sweater that is too small.', audio: 'hoeren_t1_item_04.mp3', q: 'Was braucht die Frau für den Umtausch?', options: ['Die Rechnung per E-Mail','Den Kassenbon','Die Kreditkarte'], correct: 1,
+    transcript: 'Frau: Ich möchte diesen Pullover umtauschen. Er ist leider zu klein.\nEmpfang: Kein Problem, haben Sie den Kassenbon?\nFrau: Ja, hier bitte.\nEmpfang: Danke, welche Größe brauchen Sie denn?' },
+  { scenario: 'A man asks about a discount on trousers.', audio: 'hoeren_t1_item_05.mp3', q: 'Wie viel Rabatt gibt es heute auf Hosen?', options: ['10 Prozent','20 Prozent','30 Prozent'], correct: 1,
+    transcript: 'Mann: Sind diese Hosen auch im Angebot?\nEmpfang: Ja, heute 20 Prozent Rabatt auf alle Hosen.\nMann: Super, dann nehme ich die blaue Hose.\nEmpfang: Gute Wahl, ich bringe Ihnen gleich eine Tüte.' },
+  { scenario: 'A customer asks where the fitting room is.', audio: 'hoeren_t1_item_06.mp3', q: 'Wo ist die Umkleidekabine?', options: ['Vorne rechts','Hinten links','Neben dem Eingang'], correct: 1,
+    transcript: 'Frau: Entschuldigung, wo ist die Umkleidekabine?\nEmpfang: Die Umkleidekabine ist hinten links, neben der Kasse.\nFrau: Vielen Dank.\nEmpfang: Gern, rufen Sie mich, wenn Sie eine andere Größe brauchen.' },
+];
+
+var HOEREN_T2 = [
+  { scenario: 'Summer sale ends today.', audio: 'hoeren_t2_item_07.mp3', statement: 'Der Sommerschlussverkauf endet heute.', answer: true,
+    transcript: 'Liebe Kundinnen und Kunden, der Sommerschlussverkauf endet heute um 20 Uhr. Nutzen Sie die letzte Gelegenheit für bis zu 50 Prozent Rabatt.' },
+  { scenario: 'A fitting room is closed for cleaning.', audio: 'hoeren_t2_item_08.mp3', statement: 'Umkleidekabine 2 ist jetzt frei.', answer: false,
+    transcript: 'Achtung, liebe Kundinnen und Kunden: Umkleidekabine 2 ist zurzeit wegen Reinigung geschlossen. Bitte benutzen Sie Umkleidekabine 1 oder 3.' },
+  { scenario: 'The shoe collection has moved upstairs.', audio: 'hoeren_t2_item_09.mp3', statement: 'Die neue Schuhkollektion ist im Erdgeschoss.', answer: false,
+    transcript: 'Liebe Kundinnen und Kunden, die neue Schuhkollektion ist ab sofort im ersten Stock erhältlich, nicht mehr im Erdgeschoss.' },
+  { scenario: 'A checkout redirect.', audio: 'hoeren_t2_item_10.mp3', statement: 'Kunden sollen zu Kasse 2 oder Kasse 3 gehen.', answer: true,
+    transcript: 'Bitte beachten Sie: Kasse 1 ist geschlossen. Bitte gehen Sie zu Kasse 2 oder Kasse 3.' },
+];
+
+var HOEREN_T3 = [
+  { scenario: 'Online store voicemail about a size substitution.', audio: 'hoeren_t3_item_11.mp3', q: 'Welche Größe ist noch auf Lager?', options: ['S','M','L'], correct: 2,
+    transcript: 'Guten Tag, hier ist der Kundenservice von Modehaus Klein. Sie haben Größe M bestellt, aber wir haben nur noch Größe L auf Lager. Rufen Sie uns bitte zurück.' },
+  { scenario: 'Tailor voicemail: altered trousers are ready.', audio: 'hoeren_t3_item_12.mp3', q: 'Wann kann man die Hose abholen?', options: ['Ab Mittwoch','Ab Donnerstag','Ab Freitag'], correct: 1,
+    transcript: 'Hallo, hier ist die Schneiderei Nadel & Faden. Ihre Hose ist fertig gekürzt. Sie können sie ab Donnerstag abholen.' },
+  { scenario: 'Shoe shop voicemail with the repair cost.', audio: 'hoeren_t3_item_13.mp3', q: 'Wie viel kostet die Reparatur?', options: ['15 Euro','25 Euro','35 Euro'], correct: 1,
+    transcript: 'Guten Tag, hier ist das Schuhgeschäft Fuchs. Ihre Stiefel sind repariert. Die Reparatur kostet 25 Euro.' },
+  { scenario: 'A friend asks to borrow a jacket for a party.', audio: 'hoeren_t3_item_14.mp3', q: 'Was möchte Julia leihen?', options: ['Ein Kleid','Eine Jacke','Einen Schal'], correct: 1,
+    transcript: 'Hallo, hier ist Julia. Kannst du mir deine schwarze Jacke leihen? Ich brauche sie für die Party am Samstag.' },
+  { scenario: 'Boutique voicemail about a reserved dress with a deadline.', audio: 'hoeren_t3_item_15.mp3', q: 'Bis wann muss man das Kleid abholen?', options: ['Bis Mittwoch','Bis Freitag','Bis Montag'], correct: 1,
+    transcript: 'Hallo, hier ist die Boutique Lisa. Ihr reserviertes Kleid liegt noch für Sie bereit. Bitte holen Sie es bis Freitag ab, sonst verkaufen wir es weiter.' },
+];
+
+// itemNumber is the GLOBAL 1-15 number (matches the audio filenames
+// actually generated by scripts/generate-mock-exam-5-hoeren-audio.js),
+// independent of Teil.
+function audioAndChecklistHtml(itemNumber, filename) {
+  var key = 'mock5-hoeren-review-' + itemNumber;
+  return '<audio controls preload="none" style="width:100%; margin-bottom:8px;" src="' + esc(HOEREN_AUDIO_BASE + filename) + '"></audio>'
+    + '<label style="display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--cream); cursor:pointer;">'
+    +   '<input type="checkbox" class="review-check" data-key="' + key + '" style="accent-color:var(--green); width:15px; height:15px;">'
+    +   'Gehört & geprüft (Skript korrekt, Stimme passend, Aussprache klar, natürliches Tempo)'
+    + '</label>';
+}
+
+function renderClipMC(containerId, items, letters, itemOffset) {
+  letters = letters || ['a','b','c'];
+  document.getElementById(containerId).innerHTML = items.map(function (it, i) {
+    var itemNumber = itemOffset + i;
+    return '<div class="item-block">'
+      + '<div class="item-num">Item ' + itemNumber + ' — ' + esc(it.scenario) + '</div>'
+      + (it.audio ? audioAndChecklistHtml(itemNumber, it.audio) : '')
+      + '<div class="transcript-box">' + esc(it.transcript) + '</div>'
+      + '<div class="q-text">' + esc(it.q) + '</div>'
+      + '<div class="q-options">' + it.options.map(function (o, oi) {
+          return '<div class="' + (oi === it.correct ? 'correct' : '') + '">' + letters[oi] + ') ' + esc(o) + (oi === it.correct ? ' ✓' : '') + '</div>';
+        }).join('') + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+function renderClipTF(containerId, items, itemOffset) {
+  document.getElementById(containerId).innerHTML = items.map(function (it, i) {
+    var itemNumber = itemOffset + i;
+    return '<div class="item-block">'
+      + '<div class="item-num">Item ' + itemNumber + ' — ' + esc(it.scenario) + '</div>'
+      + (it.audio ? audioAndChecklistHtml(itemNumber, it.audio) : '')
+      + '<div class="transcript-box">' + esc(it.transcript) + '</div>'
+      + '<div class="q-text">' + esc(it.statement) + '</div>'
+      + '<div class="answer-line">Antwort: <b class="' + (it.answer ? 'correct' : 'wrong') + '">' + (it.answer ? 'Richtig' : 'Falsch') + '</b></div>'
+      + '</div>';
+  }).join('');
+}
+
+// Local-only review progress (never written to the DB).
+function wireReviewChecklist() {
+  var boxes = document.querySelectorAll('.review-check');
+  boxes.forEach(function (box) {
+    box.checked = localStorage.getItem(box.getAttribute('data-key')) === '1';
+    box.addEventListener('change', function () {
+      localStorage.setItem(box.getAttribute('data-key'), box.checked ? '1' : '0');
+      updateReviewProgress();
+    });
+  });
+  updateReviewProgress();
+}
+function updateReviewProgress() {
+  var boxes = document.querySelectorAll('.review-check');
+  var done = 0;
+  boxes.forEach(function (b) { if (b.checked) done++; });
+  var el = document.getElementById('hoerenReviewProgress');
+  if (el) el.textContent = 'Listen-through progress: ' + done + ' / ' + boxes.length + ' items reviewed (saved locally in this browser only)';
+}
+
+renderClipMC('hoerenT1', HOEREN_T1, null, 1);
+renderClipTF('hoerenT2', HOEREN_T2, 7);
+renderClipMC('hoerenT3', HOEREN_T3, null, 11);
+wireReviewChecklist();
+
+// ── LESEN ──────────────────────────────────────────────────────────────
+document.getElementById('lesenT1').innerHTML =
+  '<div class="item-block"><div class="item-num">Text A — Notiz</div><div class="transcript-box">Hallo Sara, wollen wir morgen zusammen einkaufen gehen? Ich brauche neue Winterschuhe. Das neue Einkaufszentrum hat bis 21 Uhr geöffnet. Wollen wir uns um 16 Uhr am Eingang treffen? Bring bitte dein Auto mit, meins ist kaputt. Bis morgen, Meline</div></div>'
+  + '<div class="item-block"><div class="item-num">Text B — Aushang</div><div class="transcript-box">Modehaus Frühling — Winterschlussverkauf! Vom 2. bis 15. Januar: bis zu 40 Prozent Rabatt auf Jacken und Mäntel. Kinderkleidung ist vom Rabatt ausgeschlossen. Öffnungszeiten während des Verkaufs: täglich 9:00–20:00 Uhr.</div></div>'
+  + [
+      ['Meline möchte neue Winterschuhe kaufen.', true, 'A'],
+      ['Das Einkaufszentrum schließt um 20 Uhr.', false, 'A'],
+      ['Melines Auto ist kaputt.', true, 'A'],
+      ['Der Winterschlussverkauf dauert bis zum 15. Januar.', true, 'B'],
+      ['Kinderkleidung ist auch im Angebot.', false, 'B'],
+    ].map(function (r, i) {
+      return '<div class="item-block"><div class="item-num">' + (i+1) + '. (Text ' + r[2] + ')</div><div class="q-text">' + esc(r[0]) + '</div>'
+        + '<div class="answer-line">Antwort: <b class="' + (r[1] ? 'correct' : 'wrong') + '">' + (r[1] ? 'Richtig' : 'Falsch') + '</b></div></div>';
+    }).join('');
+
+document.getElementById('lesenT2').innerHTML = [
+  ['Sie möchten wissen, ob ein Kleid auch in Größe 42 erhältlich ist.', 'Online-Shop — Größentabelle (Umrechnung internationaler Kleidergrößen)', 'Online-Shop — Lagerbestand (Verfügbare Größen pro Artikel in Echtzeit)', 'b'],
+  ['Sie möchten wissen, wie man eine Jacke online zurückschickt.', 'Modehaus Klein — Rückgabebedingungen (Anleitung zum Retournieren von Bestellungen)', 'Modehaus Klein — Neuheiten (Die neuesten Jacken der Saison)', 'a'],
+  ['Sie suchen ein günstiges Paar Winterschuhe unter 30 Euro.', 'Schuhgeschäft Fuchs — Sale (Reduzierte Schuhe ab 15 Euro)', 'Schuhgeschäft Fuchs — Neue Kollektion (Schuhe der aktuellen Saison, ab 60 Euro)', 'a'],
+  ['Sie möchten wissen, welche Farben ein bestimmtes T-Shirt hat.', 'Modehaus Frühling — Produktseite (Farben und Größen für jeden Artikel)', 'Modehaus Frühling — Kundenbewertungen (Meinungen anderer Käufer zum Produkt)', 'a'],
+  ['Sie möchten wissen, ob das Geschäft am Sonntag geöffnet hat, um eine Hose umzutauschen.', 'Boutique Lisa — Öffnungszeiten (Öffnungszeiten aller Filialen)', 'Boutique Lisa — Über uns (Geschichte und Team der Boutique)', 'a'],
+].map(function (r, i) {
+  return '<div class="item-block"><div class="item-num">Item ' + (i+6) + '</div><div class="q-text">' + esc(r[0]) + '</div>'
+    + '<div class="q-options">'
+    + '<div class="' + (r[3]==='a'?'correct':'') + '">a) ' + esc(r[1]) + (r[3]==='a'?' ✓':'') + '</div>'
+    + '<div class="' + (r[3]==='b'?'correct':'') + '">b) ' + esc(r[2]) + (r[3]==='b'?' ✓':'') + '</div>'
+    + '</div></div>';
+}).join('');
+
+document.getElementById('lesenT3').innerHTML = [
+  ['Umtausch nur mit Kassenbon möglich.', 'Man kann ohne Kassenbon umtauschen.', false],
+  ['Reduzierte Ware — kein Umtausch.', 'Reduzierte Ware kann man nicht umtauschen.', true],
+  ['Anprobe: maximal 5 Kleidungsstücke pro Kabine.', 'Man darf höchstens fünf Kleidungsstücke in die Kabine mitnehmen.', true],
+  ['Nur mit Karte zahlen — kein Bargeld.', 'Man kann hier bar bezahlen.', false],
+  ['Kindermode — 2. Stock.', 'Kindermode ist im zweiten Stock.', true],
+].map(function (r, i) {
+  return '<div class="item-block"><div class="item-num">Item ' + (i+11) + '</div><div class="transcript-box">' + esc(r[0]) + '</div>'
+    + '<div class="q-text">' + esc(r[1]) + '</div>'
+    + '<div class="answer-line">Antwort: <b class="' + (r[2] ? 'correct' : 'wrong') + '">' + (r[2] ? 'Richtig' : 'Falsch') + '</b></div></div>';
+}).join('');
+
+// ── SCHREIBEN ──────────────────────────────────────────────────────────
+document.getElementById('schreibenT1').innerHTML =
+  '<div class="item-block"><div class="transcript-box">Ihr Freund Daniel möchte eine Jacke online bestellen. Er braucht Größe L. Er möchte die Jacke in Schwarz. Die Lieferung soll an seine Arbeitsadresse gehen. Er bezahlt mit PayPal.</div>'
+  + '<table class="field-table">'
+  + '<tr><td>Name</td><td>Daniel</td></tr>'
+  + '<tr><td>Größe</td><td>L</td></tr>'
+  + '<tr><td>Farbe</td><td>Schwarz</td></tr>'
+  + '<tr><td>Lieferadresse</td><td>Arbeitsadresse</td></tr>'
+  + '<tr><td>Zahlungsart</td><td>PayPal</td></tr>'
+  + '</table></div>';
+
+document.getElementById('schreibenT2').innerHTML =
+  '<div class="item-block">'
+  + '<div class="q-text">Situation</div>'
+  + '<div class="transcript-box">Sie haben im Einkaufszentrum einen tollen Rabatt gefunden. Schreiben Sie eine Nachricht an eine Freundin oder einen Freund:\n- Sagen Sie, was im Angebot ist (zum Beispiel Kleidung).\n- Sagen Sie, wie viel Rabatt es gibt.\n- Fragen Sie, ob sie oder er mit Ihnen einkaufen gehen möchte.</div>'
+  + '<div class="q-text">Register</div><div class="transcript-box">informal (du-form) — word target ~30, min 20</div>'
+  + '<div class="q-text">Internal sample answer (hidden from learner)</div>'
+  + '<div class="transcript-box">Hallo Lea, im Einkaufszentrum gibt es gerade 30 Prozent Rabatt auf Winterjacken! Ich habe schon eine schöne blaue Jacke gesehen. Hast du morgen Zeit? Wollen wir zusammen einkaufen gehen? Liebe Grüße, Mira</div>'
+  + '<div class="placeholder-note">example_answer is stored in exam_tasks.stimulus only — never sent to any learner-facing endpoint.</div>'
+  + '</div>';
+</script>
+
+</body>
+</html>

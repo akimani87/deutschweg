@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>A1 Mock Exam 10 — Content Review</title>
+<style>
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+    --border:rgba(201,168,76,0.2);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans', system-ui, sans-serif; min-height:100vh; }
+  .wrap { max-width:920px; margin:0 auto; padding:28px 20px 80px; }
+  .page-header { margin-bottom:8px; }
+  .eyebrow { font-family:monospace; font-size:11px; letter-spacing:3px; color:var(--gold); margin-bottom:6px; }
+  h1 { font-family:Georgia,serif; font-size:26px; font-weight:900; margin-bottom:4px; }
+  h1 span { color:var(--gold); }
+  .subtitle { font-size:13px; color:var(--gray); margin-bottom:20px; }
+  .not-published-note { font-size:12px; color:var(--gray); background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:10px 14px; margin-bottom:24px; }
+  .not-published-note code { color:var(--gold-light); }
+  .scope-note { font-size:12px; color:var(--cream); background:rgba(192,57,43,0.08); border:1px solid rgba(192,57,43,0.3); border-radius:10px; padding:10px 14px; margin-bottom:28px; }
+  .dist-note { font-size:12px; color:var(--cream); background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.3); border-radius:10px; padding:10px 14px; margin-bottom:28px; }
+  .dist-table { width:100%; border-collapse:collapse; font-size:12px; margin-top:8px; }
+  .dist-table th, .dist-table td { text-align:left; padding:5px 8px; border-bottom:1px solid rgba(255,255,255,0.08); }
+  .dist-table th { color:var(--gold-light); font-weight:700; }
+  .fix-note { font-size:12px; color:var(--cream); background:rgba(155,89,182,0.08); border:1px solid rgba(155,89,182,0.3); border-radius:10px; padding:10px 14px; margin-bottom:28px; }
+
+  .section-header { font-family:Georgia,serif; font-size:20px; font-weight:900; margin:36px 0 4px; color:var(--gold-light); border-bottom:1px solid var(--border); padding-bottom:8px; }
+  .section-sub { font-size:12.5px; color:var(--gray); margin-bottom:18px; }
+
+  .task-card { background:var(--card-bg); border:1px solid var(--border); border-radius:16px; padding:22px 24px; margin-bottom:20px; }
+  .task-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; flex-wrap:wrap; gap:8px; }
+  .task-title { font-size:15.5px; font-weight:800; }
+  .teil-badge { font-family:monospace; font-size:10.5px; letter-spacing:1.5px; color:var(--gold); background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.3); border-radius:20px; padding:3px 10px; }
+  .instructions { font-size:12.5px; color:var(--gray); margin-bottom:16px; white-space:pre-line; }
+
+  .item-block { background:var(--card2-bg); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:14px 16px; margin-bottom:10px; }
+  .item-num { font-weight:700; font-size:13.5px; margin-bottom:6px; color:var(--cream); }
+  .transcript-box { font-size:13px; line-height:1.7; white-space:pre-line; color:var(--cream); margin-bottom:8px; padding:10px 12px; background:rgba(255,255,255,0.03); border-radius:8px; }
+  .q-text { font-size:13.5px; font-weight:600; margin-bottom:6px; }
+  .q-options { font-size:13px; color:var(--cream); margin:4px 0 8px; padding-left:4px; }
+  .q-options div { margin-bottom:2px; }
+  .q-options .correct { color:var(--green); font-weight:700; }
+  .q-explanation { font-size:12.5px; color:var(--gray); }
+  .answer-line { font-size:13px; margin-top:4px; }
+  .answer-line b.correct { color:var(--green); }
+  .answer-line b.wrong { color:var(--red); }
+
+  .field-table { width:100%; border-collapse:collapse; font-size:13px; margin-top:8px; }
+  .field-table td { padding:6px 10px; border-bottom:1px solid rgba(255,255,255,0.06); }
+  .field-table td:first-child { color:var(--gray); width:40%; }
+
+  .sign-list { list-style:none; }
+  .sign-list li { margin-bottom:10px; }
+
+  .placeholder-note { font-size:12px; color:var(--gray); font-style:italic; margin-top:6px; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="page-header">
+    <div class="eyebrow">INTERNAL · NOT LEARNER-FACING · NOT PUBLISHED</div>
+    <h1>A1 <span>Mock Exam 10</span> — Content Review</h1>
+    <div class="subtitle">Content pillar: weather, seasons, leisure and simple plans. Read-only review of all authored Hören, Lesen, and Schreiben content. Nothing here writes to the database.</div>
+  </div>
+
+  <div class="not-published-note">
+    Set: <code>mock_exam_sets.id = 46dcdc91-b38a-45c5-8111-f2c5f03a4b79</code> · <code>is_published = false</code> on the set and all 3 exams · <code>is_certified_mock_exam = false</code>. Invisible to learners. Validated clean: <code>node scripts/validate-mock-exams.js --set 46dcdc91-b38a-45c5-8111-f2c5f03a4b79</code> and <code>--level A1</code> (cross-set duplication scope) both ran with 0 FAIL.
+  </div>
+  <div class="fix-note">
+    <b>Duplication catches during authoring:</b> the cross-set validator initially flagged two verbatim collisions with earlier sets — Hören T1 item 4's question text matched Mock Exam 5's item 15 ("Wo treffen sie sich jetzt?"), and Lesen T2 item 6's question matched Mock Exam 8's item 10 (weekend weather forecast). Both reworded before certification — Hören item 4 now asks "An welchem Ort treffen sie sich?" and Lesen item 6 now asks about rain in the afternoon specifically.
+  </div>
+  <div class="dist-note">
+    <b>Scenario distribution</b> (planned before drafting, so no weather/leisure premise repeats across modules):
+    <table class="dist-table">
+      <tr><th>Module</th><th>Scenario</th></tr>
+      <tr><td>Hören T1-1..6</td><td>weather-based weekend decision (rain→cinema) · picnic item assignment · swim vs. park choice · moving an outdoor meeting indoors · birthday celebration time · free-time preference</td></tr>
+      <tr><td>Hören T2-7..10</td><td>park festival cancelled for rain · outdoor pool opens for season · radio weather forecast · park concert time moved earlier</td></tr>
+      <tr><td>Hören T3-11..15</td><td>picnic cancelled for rain, museum instead · friend invites to swim · birthday party moved indoors · outdoor training cancelled, moved to hall · friend asks what time for a walk</td></tr>
+      <tr><td>Lesen T1</td><td>weekend bike-tour/picnic note · park festival notice (rain contingency)</td></tr>
+      <tr><td>Lesen T2</td><td>afternoon rain check · pool hours · day-trip ideas · town-festival program · park concert listings</td></tr>
+      <tr><td>Lesen T3</td><td>picnic on the lawn only · swimming needs lifeguard · no grilling · playground age limit · free lakeside parking</td></tr>
+      <tr><td>Schreiben T1</td><td>booking a community room for a friend's birthday party</td></tr>
+      <tr><td>Schreiben T2</td><td>asking a friend what to do this weekend, indoor-or-outdoor</td></tr>
+      <tr><td>Sprechen (reference only, not wired)</td><td>T2 topics: Wetter, Jahreszeiten, Freizeit, Wochenende, Freunde, Feiern · T3 actions: mitkommen, Regenschirm bringen, Fenster schließen, Foto machen, Picknickdecke holen, warten — see a1-mock-exam-10-sprechen-content-reference.md</td></tr>
+    </table>
+  </div>
+  <div class="scope-note">
+    Scope of this review: Hören / Lesen / Schreiben content only. Hören audio is machine-generated (ElevenLabs, same pipeline as every prior mock exam) — <b>a human listen-through pass is still required before certification</b> (mock-exam-certification-checklist.md §2/§4): script accuracy, correct voice assignment, clear numerals, and natural pace. Check the box under each clip once you've listened and confirmed it. Sprechen is not shown here — it uses the same dynamic engine as every other A1 set, unlinked and unscored; the topic/action cards above are documented for reference only.
+  </div>
+
+  <!-- ══════════════════════ HÖREN ══════════════════════ -->
+  <div class="section-header">🎧 Hören — 15 Punkte</div>
+  <div class="section-sub" id="hoerenReviewProgress">Listen-through progress: 0 / 15 items reviewed (saved locally in this browser only)</div>
+
+  <div class="task-card">
+    <div class="task-head"><div class="task-title">Teil 1 — Kurze Gespräche</div><div class="teil-badge">6 ITEMS · PLAYED TWICE</div></div>
+    <div class="instructions">🇩🇪 Sie hören sechs kurze Gespräche. Wählen Sie bei jeder Frage die richtige Antwort: a, b oder c.
+🇬🇧 You will hear six short dialogues. Choose the correct answer: a, b or c.</div>
+    <div id="hoerenT1"></div>
+  </div>
+
+  <div class="task-card">
+    <div class="task-head"><div class="task-title">Teil 2 — Durchsagen</div><div class="teil-badge">4 ITEMS · PLAYED ONCE</div></div>
+    <div class="instructions">🇩🇪 Sie hören vier Durchsagen. Sind die Aussagen dazu richtig oder falsch?
+🇬🇧 You will hear four announcements. Are the statements right or wrong?</div>
+    <div id="hoerenT2"></div>
+  </div>
+
+  <div class="task-card">
+    <div class="task-head"><div class="task-title">Teil 3 — Anrufbeantworter</div><div class="teil-badge">5 ITEMS · PLAYED TWICE</div></div>
+    <div class="instructions">🇩🇪 Sie hören fünf Anrufe auf einem Anrufbeantworter. Wählen Sie bei jeder Frage die richtige Antwort: a, b oder c.
+🇬🇧 You will hear five voicemail messages. Choose the correct answer: a, b or c.</div>
+    <div id="hoerenT3"></div>
+  </div>
+
+  <!-- ══════════════════════ LESEN ══════════════════════ -->
+  <div class="section-header">📖 Lesen — 15 Punkte</div>
+
+  <div class="task-card">
+    <div class="task-head"><div class="task-title">Teil 1 — Zwei Texte</div><div class="teil-badge">5 ITEMS</div></div>
+    <div id="lesenT1"></div>
+  </div>
+
+  <div class="task-card">
+    <div class="task-head"><div class="task-title">Teil 2 — Wo finden Sie diese Information?</div><div class="teil-badge">5 ITEMS</div></div>
+    <div id="lesenT2"></div>
+  </div>
+
+  <div class="task-card">
+    <div class="task-head"><div class="task-title">Teil 3 — Schilder</div><div class="teil-badge">5 ITEMS</div></div>
+    <div id="lesenT3"></div>
+  </div>
+
+  <!-- ══════════════════════ SCHREIBEN ══════════════════════ -->
+  <div class="section-header">✍️ Schreiben — 17 Punkte (real runtime max: 5 + 12)</div>
+
+  <div class="task-card">
+    <div class="task-head"><div class="task-title">Teil 1 — Formular ausfüllen</div><div class="teil-badge">MAX 5</div></div>
+    <div id="schreibenT1"></div>
+  </div>
+
+  <div class="task-card">
+    <div class="task-head"><div class="task-title">Teil 2 — Kurze Mitteilung</div><div class="teil-badge">MAX 12 (real runtime)</div></div>
+    <div id="schreibenT2"></div>
+  </div>
+</div>
+
+<script>
+function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+
+var HOEREN_AUDIO_BASE = 'https://udmunxzzuqoynlftapwh.supabase.co/storage/v1/object/public/hoerverstehen-audio/mock-exam-10/';
+var HOEREN_T1 = [
+  { scenario: 'A couple decides on a weekend plan based on the weather.', q: 'Wie wird das Wetter am Wochenende?', options: ['Sonnig','Regnerisch','Windig'], correct: 1, audio: 'hoeren_t1_item_01.mp3',
+    transcript: 'Frau: Was machen wir am Wochenende?\nMann: Es soll regnen. Vielleicht gehen wir ins Kino?\nFrau: Gute Idee, dann bleiben wir trocken.\nMann: Perfekt, ich schaue nach den Filmzeiten.' },
+  { scenario: 'Two friends plan a picnic and divide who brings what.', q: 'Was bringt der Mann mit?', options: ['Die Getränke','Die Sandwiches','Den Kuchen'], correct: 0, audio: 'hoeren_t1_item_02.mp3',
+    transcript: 'Frau: Sollen wir am Samstag ein Picknick machen?\nMann: Ja, gute Idee! Ich bringe die Getränke mit.\nFrau: Super, ich mache Sandwiches.\nMann: Perfekt, das wird schön.' },
+  { scenario: 'A couple chooses between swimming and a walk in the park.', audio: 'hoeren_t1_item_03.mp3', q: 'Was möchte die Frau machen?', options: ['Im Park spazieren','Schwimmen gehen','Zu Hause bleiben'], correct: 1,
+    transcript: 'Mann: Wollen wir heute schwimmen gehen oder im Park spazieren?\nFrau: Es ist so warm heute, lass uns schwimmen gehen.\nMann: Gute Idee, das Wasser ist bestimmt angenehm.\nFrau: Ich hole mein Handtuch.' },
+  { scenario: 'A couple moves an outdoor meeting indoors because of rain.', audio: 'hoeren_t1_item_04.mp3', q: 'An welchem Ort treffen sie sich?', options: ['Im Park','Im Café','Zu Hause'], correct: 1,
+    transcript: 'Frau: Sollen wir uns wie geplant im Park treffen?\nMann: Es regnet leider. Lass uns lieber im Café treffen.\nFrau: Gute Idee, dann bleiben wir trocken.\nMann: Bis später im Café!' },
+  { scenario: 'A man invites a friend to his birthday celebration.', audio: 'hoeren_t1_item_05.mp3', q: 'Wann ist die Geburtstagsfeier?', options: ['Um 14 Uhr','Um 15 Uhr','Um 16 Uhr'], correct: 1,
+    transcript: 'Mann: Ich feiere am Samstag meinen Geburtstag. Hast du Zeit?\nFrau: Ja, gerne! Um wie viel Uhr?\nMann: Um 15 Uhr bei mir zu Hause.\nFrau: Perfekt, ich komme.' },
+  { scenario: 'Two women talk about what they like to do in their free time.', audio: 'hoeren_t1_item_06.mp3', q: 'Was macht die zweite Frau gern?', options: ['Sport machen','Bücher lesen','Kochen'], correct: 1,
+    transcript: 'Frau: Was machst du gern in deiner Freizeit?\nEmpfang: Ich lese gern Bücher im Park.\nFrau: Das klingt schön und ruhig.\nEmpfang: Ja, ich mag das sehr.' },
+];
+
+var HOEREN_T2 = [
+  { scenario: 'Summer festival cancelled due to rain.', audio: 'hoeren_t2_item_07.mp3', statement: 'Das Sommerfest findet heute statt.', answer: false,
+    transcript: 'Liebe Besucherinnen und Besucher, das Sommerfest im Park fällt heute wegen Regen aus.' },
+  { scenario: 'Outdoor pool opens for the season.', audio: 'hoeren_t2_item_08.mp3', statement: 'Das Freibad öffnet morgen.', answer: true,
+    transcript: 'Liebe Gäste, das Freibad öffnet ab morgen für die Sommersaison.' },
+  { scenario: 'Radio weather forecast.', audio: 'hoeren_t2_item_09.mp3', statement: 'Morgen wird es kalt.', answer: false,
+    transcript: 'Und hier das Wetter: Morgen wird es sonnig und warm, am Nachmittag bis 25 Grad.' },
+  { scenario: 'Park concert time moved earlier.', audio: 'hoeren_t2_item_10.mp3', statement: 'Das Konzert beginnt heute um 17 Uhr.', answer: true,
+    transcript: 'Liebe Musikfreunde, das Konzert im Park beginnt heute nicht um 18 Uhr, sondern schon um 17 Uhr.' },
+];
+
+var HOEREN_T3 = [
+  { scenario: 'Friend cancels a picnic because of rain.', audio: 'hoeren_t3_item_11.mp3', q: 'Warum fällt das Picknick aus?', options: ['Es soll regnen','Lisa ist krank','Der Park ist geschlossen'], correct: 0,
+    transcript: 'Hallo, hier ist Lisa. Das Picknick morgen fällt leider aus, es soll regnen. Wollen wir stattdessen ins Museum gehen?' },
+  { scenario: 'Friend invites the listener to go swimming.', audio: 'hoeren_t3_item_12.mp3', q: 'Wozu lädt Ben ein?', options: ['Zum Schwimmen','Zum Picknick','Zum Kino'], correct: 0,
+    transcript: 'Hallo, hier ist Ben. Das Wetter ist super heute. Hast du Lust, mit mir schwimmen zu gehen?' },
+  { scenario: 'Birthday party location change.', audio: 'hoeren_t3_item_13.mp3', q: 'Wo ist die Party jetzt?', options: ['Im Garten','Drinnen','Im Park'], correct: 1,
+    transcript: 'Hallo, meine Geburtstagsparty ist jetzt nicht im Garten, sondern drinnen, weil es regnen soll.' },
+  { scenario: 'Sports club cancels outdoor training.', audio: 'hoeren_t3_item_14.mp3', q: 'Wo findet das Training heute statt?', options: ['Im Freien','In der Halle','Gar nicht'], correct: 1,
+    transcript: 'Guten Tag, hier ist der Sportverein. Das Training heute Abend im Freien fällt aus. Wir trainieren stattdessen in der Halle.' },
+  { scenario: 'Friend asks what time to go for a walk.', audio: 'hoeren_t3_item_15.mp3', q: 'Was fragt Nina?', options: ['Wohin sie gehen sollen','Um wie viel Uhr sie sich treffen','Wer mitkommt'], correct: 1,
+    transcript: 'Hallo, ich bin\'s, Nina. Sollen wir um 10 Uhr oder um 11 Uhr spazieren gehen? Ruf mich zurück.' },
+];
+
+// itemNumber is the GLOBAL 1-15 number (matches the audio filenames
+// actually generated by scripts/generate-mock-exam-10-hoeren-audio.js),
+// independent of Teil.
+function audioAndChecklistHtml(itemNumber, filename) {
+  var key = 'mock10-hoeren-review-' + itemNumber;
+  return '<audio controls preload="none" style="width:100%; margin-bottom:8px;" src="' + esc(HOEREN_AUDIO_BASE + filename) + '"></audio>'
+    + '<label style="display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--cream); cursor:pointer;">'
+    +   '<input type="checkbox" class="review-check" data-key="' + key + '" style="accent-color:var(--green); width:15px; height:15px;">'
+    +   'Gehört & geprüft (Skript korrekt, Stimme passend, Aussprache klar, natürliches Tempo)'
+    + '</label>';
+}
+
+function renderClipMC(containerId, items, letters, itemOffset) {
+  letters = letters || ['a','b','c'];
+  document.getElementById(containerId).innerHTML = items.map(function (it, i) {
+    var itemNumber = itemOffset + i;
+    return '<div class="item-block">'
+      + '<div class="item-num">Item ' + itemNumber + ' — ' + esc(it.scenario) + '</div>'
+      + (it.audio ? audioAndChecklistHtml(itemNumber, it.audio) : '')
+      + '<div class="transcript-box">' + esc(it.transcript) + '</div>'
+      + '<div class="q-text">' + esc(it.q) + '</div>'
+      + '<div class="q-options">' + it.options.map(function (o, oi) {
+          return '<div class="' + (oi === it.correct ? 'correct' : '') + '">' + letters[oi] + ') ' + esc(o) + (oi === it.correct ? ' ✓' : '') + '</div>';
+        }).join('') + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+function renderClipTF(containerId, items, itemOffset) {
+  document.getElementById(containerId).innerHTML = items.map(function (it, i) {
+    var itemNumber = itemOffset + i;
+    return '<div class="item-block">'
+      + '<div class="item-num">Item ' + itemNumber + ' — ' + esc(it.scenario) + '</div>'
+      + (it.audio ? audioAndChecklistHtml(itemNumber, it.audio) : '')
+      + '<div class="transcript-box">' + esc(it.transcript) + '</div>'
+      + '<div class="q-text">' + esc(it.statement) + '</div>'
+      + '<div class="answer-line">Antwort: <b class="' + (it.answer ? 'correct' : 'wrong') + '">' + (it.answer ? 'Richtig' : 'Falsch') + '</b></div>'
+      + '</div>';
+  }).join('');
+}
+
+// Local-only review progress (never written to the DB).
+function wireReviewChecklist() {
+  var boxes = document.querySelectorAll('.review-check');
+  boxes.forEach(function (box) {
+    box.checked = localStorage.getItem(box.getAttribute('data-key')) === '1';
+    box.addEventListener('change', function () {
+      localStorage.setItem(box.getAttribute('data-key'), box.checked ? '1' : '0');
+      updateReviewProgress();
+    });
+  });
+  updateReviewProgress();
+}
+function updateReviewProgress() {
+  var boxes = document.querySelectorAll('.review-check');
+  var done = 0;
+  boxes.forEach(function (b) { if (b.checked) done++; });
+  var el = document.getElementById('hoerenReviewProgress');
+  if (el) el.textContent = 'Listen-through progress: ' + done + ' / ' + boxes.length + ' items reviewed (saved locally in this browser only)';
+}
+
+renderClipMC('hoerenT1', HOEREN_T1, null, 1);
+renderClipTF('hoerenT2', HOEREN_T2, 7);
+renderClipMC('hoerenT3', HOEREN_T3, null, 11);
+wireReviewChecklist();
+
+// ── LESEN ──────────────────────────────────────────────────────────────
+document.getElementById('lesenT1').innerHTML =
+  '<div class="item-block"><div class="item-num">Text A — Notiz</div><div class="transcript-box">Hallo Tom, das Wetter soll am Samstag schön werden. Wollen wir eine Fahrradtour machen? Wir könnten auch am See picknicken. Ruf mich an! Liebe Grüße, Anna</div></div>'
+  + '<div class="item-block"><div class="item-num">Text B — Aushang</div><div class="transcript-box">Stadtpark — Sommerfest am Sonntag von 14 bis 18 Uhr. Bei Regen findet das Fest in der Stadthalle statt. Der Eintritt ist frei.</div></div>'
+  + [
+      ['Das Wetter soll am Samstag schön werden.', true, 'A'],
+      ['Anna möchte eine Fahrradtour machen.', true, 'A'],
+      ['Anna schlägt vor, im Restaurant zu essen.', false, 'A'],
+      ['Das Sommerfest ist am Sonntag.', true, 'B'],
+      ['Bei Regen fällt das Fest aus.', false, 'B'],
+    ].map(function (r, i) {
+      return '<div class="item-block"><div class="item-num">' + (i+1) + '. (Text ' + r[2] + ')</div><div class="q-text">' + esc(r[0]) + '</div>'
+        + '<div class="answer-line">Antwort: <b class="' + (r[1] ? 'correct' : 'wrong') + '">' + (r[1] ? 'Richtig' : 'Falsch') + '</b></div></div>';
+    }).join('');
+
+document.getElementById('lesenT2').innerHTML = [
+  ['Sie möchten wissen, ob es am Nachmittag regnet.', 'Wetterportal — Über uns (Geschichte des Portals)', 'Wetterportal — Vorhersage (Wetter für die nächsten Tage)', 'b'],
+  ['Sie möchten wissen, ob das Freibad heute geöffnet hat.', 'Freibad — Öffnungszeiten (Öffnungszeiten und Wassertemperatur)', 'Freibad — Preise (Eintrittspreise für alle)', 'a'],
+  ['Sie suchen eine Idee für einen Ausflug am Wochenende.', 'Freizeitportal — Kontakt (Telefonnummer der Redaktion)', 'Freizeitportal — Ausflugstipps (Ideen für Ausflüge in der Region)', 'b'],
+  ['Sie möchten wissen, was beim Stadtfest passiert.', 'Stadtfest — Programm (Zeiten und Aktivitäten für den Tag)', 'Stadtfest — Anmeldung (Formular für Stände)', 'a'],
+  ['Sie möchten wissen, ob es heute Abend im Park ein Konzert gibt.', 'Stadtpark — Anfahrt (Wie man zum Park kommt)', 'Stadtpark — Veranstaltungen (Konzerte und Termine im Park)', 'b'],
+].map(function (r, i) {
+  return '<div class="item-block"><div class="item-num">Item ' + (i+6) + '</div><div class="q-text">' + esc(r[0]) + '</div>'
+    + '<div class="q-options">'
+    + '<div class="' + (r[3]==='a'?'correct':'') + '">a) ' + esc(r[1]) + (r[3]==='a'?' ✓':'') + '</div>'
+    + '<div class="' + (r[3]==='b'?'correct':'') + '">b) ' + esc(r[2]) + (r[3]==='b'?' ✓':'') + '</div>'
+    + '</div></div>';
+}).join('');
+
+document.getElementById('lesenT3').innerHTML = [
+  ['Picknicken nur auf der Wiese erlaubt.', 'Picknicken ist nur auf der Wiese erlaubt.', true],
+  ['Schwimmen nur bei Rettungsschwimmer.', 'Man darf nur schwimmen, wenn ein Rettungsschwimmer da ist.', true],
+  ['Grillen im Park verboten.', 'Man darf im Park grillen.', false],
+  ['Spielplatz: Für Kinder bis 12 Jahre.', 'Der Spielplatz ist für Kinder bis 12 Jahre.', true],
+  ['Parkplatz am See kostenlos.', 'Der Parkplatz am See kostet Geld.', false],
+].map(function (r, i) {
+  return '<div class="item-block"><div class="item-num">Item ' + (i+11) + '</div><div class="transcript-box">' + esc(r[0]) + '</div>'
+    + '<div class="q-text">' + esc(r[1]) + '</div>'
+    + '<div class="answer-line">Antwort: <b class="' + (r[2] ? 'correct' : 'wrong') + '">' + (r[2] ? 'Richtig' : 'Falsch') + '</b></div></div>';
+}).join('');
+
+// ── SCHREIBEN ──────────────────────────────────────────────────────────
+document.getElementById('schreibenT1').innerHTML =
+  '<div class="item-block"><div class="transcript-box">Ihre Freundin Sara möchte den Gemeinschaftsraum für eine Geburtstagsfeier mieten. Die Feier ist am 20. Juni. Es kommen ungefähr 15 Gäste. Sie braucht den Raum von 14 bis 18 Uhr.</div>'
+  + '<table class="field-table">'
+  + '<tr><td>Datum</td><td>20. Juni</td></tr>'
+  + '<tr><td>Veranstaltung</td><td>Geburtstagsfeier</td></tr>'
+  + '<tr><td>Gästezahl</td><td>15</td></tr>'
+  + '<tr><td>Startzeit</td><td>14 Uhr</td></tr>'
+  + '<tr><td>Endzeit</td><td>18 Uhr</td></tr>'
+  + '</table></div>';
+
+document.getElementById('schreibenT2').innerHTML =
+  '<div class="item-block">'
+  + '<div class="q-text">Situation</div>'
+  + '<div class="transcript-box">Sie wissen noch nicht, was Sie am Wochenende machen möchten. Schreiben Sie eine Nachricht an eine Freundin oder einen Freund:\n- Fragen Sie, was sie oder er am Wochenende machen möchte.\n- Machen Sie einen Vorschlag (drinnen oder draußen).\n- Schlagen Sie eine Uhrzeit vor.</div>'
+  + '<div class="q-text">Register</div><div class="transcript-box">informal (du-form) — word target ~30, min 20</div>'
+  + '<div class="q-text">Internal sample answer (hidden from learner)</div>'
+  + '<div class="transcript-box">Hallo Finn, was machst du am Wochenende? Wenn das Wetter schön ist, können wir im Park spazieren gehen. Wollen wir uns um 15 Uhr treffen? Liebe Grüße, Ela</div>'
+  + '<div class="placeholder-note">example_answer is stored in exam_tasks.stimulus only — never sent to any learner-facing endpoint.</div>'
+  + '</div>';
+</script>
+
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DeutschWeg — Fulfillment Explanation</title>
+<style>
+  @page { size: A4; margin: 20mm 18mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    color: #1a1a1a;
+    line-height: 1.55;
+    font-size: 12px;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 24px; margin: 0 0 4px; color: #111; }
+  .subtitle { font-size: 12.5px; color: #555; margin-bottom: 18px; }
+  h2 {
+    font-size: 16px;
+    margin: 30px 0 6px;
+    padding-bottom: 4px;
+    border-bottom: 1.5px solid #ccc;
+    color: #111;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 13.5px;
+    color: #2952d9;
+    margin: 22px 0 6px;
+    page-break-after: avoid;
+  }
+  p { margin: 6px 0; }
+  ol, ul { margin: 6px 0; padding-left: 20px; }
+  li { margin: 3px 0; }
+  .intro p { margin: 8px 0; }
+  .step-figure {
+    margin: 8px 0 4px;
+    page-break-inside: avoid;
+  }
+  .step-figure img {
+    width: 100%;
+    max-width: 620px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: block;
+  }
+  .caption {
+    font-size: 11.5px;
+    color: #444;
+    margin: 6px 0 4px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0 4px;
+    font-size: 11px;
+  }
+  th, td { border: 1px solid #ddd; padding: 5px 7px; text-align: left; }
+  th { background: #f3f3f3; }
+  .note { font-size: 10.5px; color: #555; font-style: italic; }
+  .fraud-box {
+    background: #fafafa;
+    border-left: 3px solid #888;
+    padding: 8px 12px;
+    margin: 6px 0;
+  }
+  .summary-box {
+    background: #eef4ff;
+    border: 1px solid #cfe0ff;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin: 10px 0 6px;
+  }
+  footer {
+    margin-top: 30px;
+    padding-top: 8px;
+    border-top: 1px solid #ccc;
+    font-size: 10px;
+    color: #777;
+  }
+</style>
+</head>
+<body>
+
+<h1>DeutschWeg — Fulfillment Explanation</h1>
+<div class="subtitle">Prepared for Lemon Squeezy merchant review</div>
+
+<div class="intro">
+<p>DeutschWeg (deutschweg.de) is an online course that prepares learners for the Goethe German-language exam, aimed primarily at people preparing to move to Germany for study, work, or family reunification.</p>
+<p>This document walks through exactly what a customer experiences from the moment they sign up to the moment a paid tier is unlocked, using real screenshots captured end-to-end with a freshly created test account, in the order a real customer would encounter them. It then covers the technical and anti-fraud safeguards behind that flow.</p>
+</div>
+
+<div class="summary-box">
+<b>How fulfillment works, in short:</b>
+<ol>
+  <li>A visitor creates a free account (no payment required).</li>
+  <li>The account is instantly provisioned with full access to the A1 course tier — 13 interactive modules, an AI tutor, and progress tracking — at no cost.</li>
+  <li>From the dashboard, the learner can see additional course tiers (A2, B1, B2), each clearly marked as locked and priced as a one-time purchase.</li>
+  <li>Tapping a locked tier opens an unlock/checkout summary screen showing exactly what is included, the one-time price, and a "Secure checkout via Lemon Squeezy" notice.</li>
+  <li>Completing checkout through Lemon Squeezy instantly unlocks that tier's modules on the same account — no separate download, shipping, or manual step is required. Fulfillment is immediate and automatic.</li>
+</ol>
+</div>
+
+<h2>Walkthrough, step by step</h2>
+
+<h3>Step 1 — Marketing / landing page</h3>
+<div class="step-figure"><img src="screenshots/step1-landing-page.png" alt="Landing page"></div>
+<p class="caption">A prospective learner arrives at deutschweg.de. The homepage explains the product and offers a free path to start ("Start A1 Free") alongside a "Get Started" signup button in the top navigation.</p>
+
+<h3>Step 2 — Account creation form</h3>
+<div class="step-figure"><img src="screenshots/step2-signup-form.png" alt="Signup form"></div>
+<p class="caption">Clicking "Get Started" opens the signup form. Only a name, email address, and password are required. No payment information is requested at signup — the free tier truly requires no card.</p>
+
+<h3>Step 3 — Form completed</h3>
+<div class="step-figure"><img src="screenshots/step3-form-completed.png" alt="Form completed"></div>
+<p class="caption">A test account is filled in (name, email, password) ready for submission.</p>
+
+<h3>Step 4 — Instant confirmation</h3>
+<div class="step-figure"><img src="screenshots/step4-instant-confirmation.png" alt="Instant confirmation"></div>
+<p class="caption">Immediately after submitting the form, the account is created and the customer is shown a confirmation screen: "Welcome to DeutschWeg! A1 is free forever — all 13 modules are unlocked." This confirms that free-tier fulfillment (account + content access) is instantaneous.</p>
+
+<h3>Step 5 — Real course content, unlocked and interactive</h3>
+<div class="step-figure"><img src="screenshots/step5-course-content.png" alt="Course content"></div>
+<p class="caption">After a short onboarding flow, the learner lands inside actual paid-quality course content: Module 1, Lesson 1.1 ("Greetings"), with interactive vocabulary, audio playback, comprehension checks, and an AI tutor ("AI Pal") panel that responds by name. This is delivered entirely in-browser with no additional download.</p>
+
+<h3>Step 6 — Dashboard showing free vs. paid tiers</h3>
+<div class="step-figure"><img src="screenshots/step6-dashboard-tiers.png" alt="Dashboard tiers"></div>
+<p class="caption">Back on the main dashboard, the learner can see the full course structure: the A1 tier they already have access to, and three additional tiers — A2 (€39), B1 (€44), and B2 (€49) — each shown with a lock icon and its one-time price. Nothing is hidden or ambiguous about what costs money.</p>
+
+<h3>Step 7 — Locked-module screen</h3>
+<div class="step-figure"><img src="screenshots/step7-locked-module.png" alt="Locked module"></div>
+<p class="caption">Tapping the A2 tab (a paid, not-yet-purchased tier) shows a clear "Unlock A2" screen stating the one-time price (€39) and a single "Unlock →" call to action. The learner cannot access A2 lesson content until this purchase is completed.</p>
+
+<h3>Step 8 — Purchase summary before checkout</h3>
+<div class="step-figure"><img src="screenshots/step8-purchase-summary.png" alt="Purchase summary"></div>
+<p class="caption">Tapping "Unlock" opens a purchase summary: price (€39, one-time, no subscription), what's included (all 12 A2 modules, AI Tutor + AI Pal, Exam Vault A2 access, Goethe A2 exam prep), and a "Unlock A2 — €39" button that proceeds to checkout.</p>
+
+<h3>Step 9 — Lemon Squeezy checkout hand-off</h3>
+<div class="step-figure"><img src="screenshots/step9-lemonsqueezy-checkout.png" alt="Lemon Squeezy checkout"></div>
+<p class="caption">Directly beneath the purchase button, the page states "Secure checkout via Lemon Squeezy · one-time payment." Selecting this button opens Lemon Squeezy's own hosted checkout (shown here in Test Mode) to collect payment. On successful payment, Lemon Squeezy's webhook flips the corresponding tier to "unlocked" on the customer's DeutschWeg account, and the purchased modules become immediately available — the same instant, automatic fulfillment already demonstrated for the free A1 tier in Step 4.</p>
+
+<h2>Full product catalog</h2>
+<table>
+  <tr><th>Product</th><th>Type</th><th>Price</th><th>What it unlocks</th></tr>
+  <tr><td>Unlock A2</td><td>One-time digital unlock</td><td>€39</td><td>All A2-level lesson modules</td></tr>
+  <tr><td>Unlock B1</td><td>One-time digital unlock</td><td>€44</td><td>All B1-level lesson modules</td></tr>
+  <tr><td>Unlock B2</td><td>One-time digital unlock</td><td>€49</td><td>All B2-level lesson modules</td></tr>
+  <tr><td>Exam Whisperer A2</td><td>One-time digital unlock</td><td>€19</td><td>AI-scored writing feedback for A2 exam practice</td></tr>
+  <tr><td>Exam Whisperer B1</td><td>One-time digital unlock</td><td>€19</td><td>AI-scored writing feedback for B1 exam practice</td></tr>
+  <tr><td>Exam Whisperer B2</td><td>One-time digital unlock</td><td>€19</td><td>AI-scored writing feedback for B2 exam practice</td></tr>
+</table>
+<p class="note">A1-level content is always free and is never gated. Nothing above is a subscription — each is a single, one-time purchase that unlocks that piece of content permanently on the customer's account. Exam Whisperer is unlocked the same way as a course tier (paywall screen → Lemon Squeezy checkout → instant webhook-driven unlock), not shown separately above since the mechanism is identical to Steps 7–9.</p>
+
+<h2>Technical fulfillment mechanics</h2>
+<p>Behind the screens above, fulfillment works as follows:</p>
+<div class="fraud-box"><b>Checkout.</b> Our server generates a Lemon Squeezy hosted checkout URL for the specific product being purchased, tagging it with the customer's internal account ID. The customer completes payment entirely on Lemon Squeezy's checkout page — DeutschWeg never handles card details directly.</div>
+<div class="fraud-box"><b>Automatic fulfillment via webhook.</b> The instant Lemon Squeezy confirms the order, it sends a signed webhook to our server. Our server verifies the signature, reads the account ID and product from the order, and writes a single record granting that account access to that product — within seconds of payment, with no manual step, no queue, and no human review in the fulfillment path.</div>
+<div class="fraud-box"><b>Refunds.</b> If an order is refunded, Lemon Squeezy sends a corresponding webhook event, and our server automatically removes that access record from the customer's account. Refund handling is symmetric with granting access: the same webhook receiver processes both events.</div>
+
+<h2>Safeguards against abuse</h2>
+<ul>
+  <li>Every webhook is verified against Lemon Squeezy's signing secret before anything is processed; unsigned or invalid requests are rejected outright.</li>
+  <li>Product identifiers and price points are configured only on our server, never exposed to or editable from the browser, so a customer cannot manipulate which product they receive or at what price.</li>
+  <li>Access grants are idempotent — if the same order event is received more than once (e.g., a retried webhook), it does not create duplicate access records or duplicate charges.</li>
+</ul>
+
+<h2>Customer support</h2>
+<p>If a customer does not see access appear after payment (for example, due to a delayed webhook), support can verify the order in the Lemon Squeezy dashboard and, if needed, grant the corresponding access record manually as a fallback — this is the only point in the entire flow that could involve a person, and it exists purely as a safety net, not as the normal path.</p>
+
+<h2>Summary</h2>
+<p>DeutschWeg delivers a purely digital product: interactive lesson content, AI tutoring, and exam-preparation tools accessed directly in the browser on the customer's own account. There is no physical shipping, no manual provisioning step, and no delay between payment and access — fulfillment for both the free A1 tier and each paid tier (A2, B1, B2, and Exam Whisperer) happens automatically and immediately once the corresponding step (signup, or checkout via Lemon Squeezy) completes.</p>
+
+<footer>
+DeutschWeg · deutschweg.de · Prepared to accompany a Lemon Squeezy merchant application, describing how digital products are delivered to customers after purchase. Screenshots captured end-to-end using a freshly created test account.
+</footer>
+
+</body>
+</html>
