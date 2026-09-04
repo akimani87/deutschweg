@@ -10,17 +10,13 @@
 /blog/integration-course    /blog-integration-course.html    200
 /blog/a1-sprechen-scoring   /blog-a1-sprechen-scoring.html   200
 
-# Lemon Squeezy checkout + success pages — explicit rewrites (200, not a
-# redirect) so the clean URL stays in the address bar. Cloudflare Pages
-# appends the incoming query string (?level=a2|b1|b2) to the destination
-# automatically since these rules have no query string of their own.
-# (A prior version of this file rewrote /freischalten/a2 etc. as a *path
-# segment* → those rules never applied: Cloudflare Pages' own clean-URL
-# match on the freischalten.html asset pre-empted them, 308-redirecting to
-# /freischalten and silently dropping the level. The rules below rewrite the
-# exact clean path itself, so there's nothing left to pre-empt them.)
-/freischalten          /freischalten.html          200
-/freischalten-success  /freischalten-success.html  200
+# Lemon Squeezy checkout + success pages — no explicit rules. Explicit
+# /freischalten → /freischalten.html (200) rewrites caused a redirect loop
+# with Cloudflare Pages' own clean-URL handling for the freischalten.html /
+# freischalten-success.html assets, so they were removed. The clean URLs
+# (/freischalten, /freischalten-success) are served by Pages' implicit
+# clean-URL match instead; ?level=a2|b1|b2 survives since it's a query
+# string, not a path segment.
 
 # Grammar hub
 /grammar  /grammar.html  200
