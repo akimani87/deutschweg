@@ -27,8 +27,6 @@
 <title>Unlock — DeutschWeg</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="/deutschweg-theme.css">
-<!-- Lemon Squeezy overlay script — opens checkout in an iframe overlay -->
-<script src="https://app.lemonsqueezy.com/js/lemon.js" defer></script>
 <style>
   body { background: var(--bg); }
   .unlock-wrap {
@@ -198,7 +196,7 @@
       '<ul class="unlock-features">' +
         info.features.map(function(f){ return '<li>' + f + '</li>'; }).join('') +
       '</ul>' +
-      '<a id="checkoutBtn" class="unlock-btn lemonsqueezy-button" href="' + checkoutUrl + '">' +
+      '<a id="checkoutBtn" class="unlock-btn" href="' + checkoutUrl + '">' +
         'Unlock ' + level.toUpperCase() + ' — ' + info.price + ' →' +
       '</a>' +
       '<div class="unlock-guarantee">🔒 Secure checkout via Lemon Squeezy · one-time payment</div>' +
@@ -216,8 +214,6 @@
       .then(function(j) {
         if (j.url) {
           renderCard(j.url);
-          // Re-initialise Lemon Squeezy overlay after DOM update
-          if (window.createLemonSqueezy) window.createLemonSqueezy();
         } else {
           showError(j.error || 'Could not load checkout. Please try again.');
         }
