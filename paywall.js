@@ -31,11 +31,10 @@
       price:        39,
       description:  'All A2 modules',
       ctaLabel:     'Unlock',
-      // Query string, not a path segment — Cloudflare Pages' clean-URL
-      // resolution 308s /freischalten/a2 down to plain /freischalten
-      // (freischalten.html's own asset collides with the nested path),
-      // dropping the level. The query string survives that redirect intact.
-      placeholder:  '/freischalten?level=a2'
+      // Direct file route — freischalten/index.html served natively by
+      // Cloudflare Pages, avoiding the /freischalten clean-URL ambiguity.
+      // Level is a query string, read by freischalten/index.html's script.
+      placeholder:  '/freischalten/index.html?level=a2'
     },
     b1_module: {
       level:        'B1',
@@ -44,7 +43,7 @@
       price:        44,
       description:  'All B1 modules',
       ctaLabel:     'Unlock',
-      placeholder:  '/freischalten?level=b1'
+      placeholder:  '/freischalten/index.html?level=b1'
     },
     b2_module: {
       level:        'B2',
@@ -53,7 +52,7 @@
       price:        49,
       description:  'All B2 modules',
       ctaLabel:     'Unlock',
-      placeholder:  '/freischalten?level=b2'
+      placeholder:  '/freischalten/index.html?level=b2'
     },
     examwhisperer_a2: {
       level:        'A2',
