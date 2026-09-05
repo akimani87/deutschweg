@@ -1435,12 +1435,18 @@
 
       // Sequential block wrapper. Only block 0 is visible on lesson open;
       // the rest are revealed one-by-one via dwModule.nextBlock().
-      // Interactive blocks (clock-quiz, tile-assembly, listening-input) carry
-      // their own "Next →" button generated when the practice completes, so
-      // they don't get a manual Continue button.
-      var isInteractive = INTERACTIVE_TYPES[block && block.type || ''];
+      // Interactive blocks (clock-quiz in quiz mode, tile-assembly,
+      // listening-input) carry their own "Next →" button generated when the
+      // practice completes, so they don't get a manual Continue button.
+      // clock-quiz in "pattern" mode (its default) is a passive display with
+      // no click/self-advance mechanism of its own — treating it as
+      // interactive would leave it with no button at all, dead-ending the
+      // sequence for every block after it.
+      var isPatternClock = block && block.type === 'clock-quiz' &&
+        (block.variant || 'pattern') === 'pattern';
+      var isInteractive = !!INTERACTIVE_TYPES[block && block.type || ''] && !isPatternClock;
       var continueBtn = isInteractive ? '' :
-        '<button class="dw-block-continue" onclick="dwModule.nextBlock(' + lessonIdx + ',' + bi + ')">Continue →</button>';
+        '<button class="dw-block-continue" onclick="dwModule.nextBlock(' + lessonIdx + ',' + bi + ')">Weiter →</button>';
 
       return '<div class="dw-block" id="blk-' + lessonIdx + '-' + bi + '"' +
         (bi > 0 ? ' style="display:none"' : '') + '>' +
@@ -1728,22 +1734,34 @@
         contentHtml = '<div class="body-text empty">Content for this lesson is being added.</div>';
       }
 
-      var nextLabel = exercises.length > 0
-        ? 'Start Quiz →'
-        : (idx < state.lessons.length - 1 ? 'Next Lesson →' : 'Finish →');
+      // Primary CTA — one of three states:
+      //   1. Has a quiz            → "Start Quiz →"          (advance() into quiz steps, unchanged)
+      //   2. No quiz, not done yet → "Lektion abschließen ✓" (completeLessonCta() — writes completed, stays put)
+      //   3. Already completed     → "Nächste Lektion →" / "Fertig →" on the module's last lesson (goNext())
+      // State 3 also covers a learner reopening an already-completed lesson
+      // (state.completedIds is restored from the DB before lessons are built).
+      var isLastLesson = idx >= state.lessons.length - 1;
+      var alreadyDone  = !!state.completedIds[lesson.id];
+      var nextLabel, nextOnclick;
+      if (exercises.length > 0) {
+        nextLabel   = 'Start Quiz →';
+        nextOnclick = 'dwModule.advance(' + idx + ', 0)';
+      } else if (alreadyDone) {
+        nextLabel   = isLastLesson ? 'Fertig →' : 'Nächste Lektion →';
+        nextOnclick = 'dwModule.goNext(' + idx + ')';
+      } else {
+        nextLabel   = 'Lektion abschließen ✓';
+        nextOnclick = 'dwModule.completeLessonCta(' + idx + ')';
+      }
 
-      // Step 0: lesson content
-      // Three buttons: primary action (Start Quiz / Next Lesson / Finish),
-      // and an always-visible Prev / Next pair so users can skip the quiz
-      // and navigate freely between lessons regardless of quiz progress.
+      // Step 0: lesson content. Only backward nav is always-visible — moving
+      // forward must go through the block sequence and the primary CTA above
+      // (no shortcut that can leave a lesson stuck at 'in_progress' forever).
       var prevDisabled = idx === 0;
-      var nextDisabled = idx >= state.lessons.length - 1;
       var navHtml =
         '<div class="lesson-nav">' +
           '<button class="nav-prev" ' + (prevDisabled ? 'disabled' : '') +
             ' onclick="dwModule.goToLesson(' + (idx - 1) + ')">← Vorherige</button>' +
-          '<button class="nav-next" ' + (nextDisabled ? 'disabled' : '') +
-            ' onclick="dwModule.weiter(' + idx + ')">Weiter →</button>' +
         '</div>';
 
       var contentStep = document.createElement('div');
@@ -1772,7 +1790,7 @@
                 '</button>' +
               '</div>' +
             '</div>' +
-            '<button class="btn btn-primary" onclick="dwModule.advance(' + idx + ', 0)">' + nextLabel + '</button>' +
+            '<button class="btn btn-primary" id="adv-btn-' + idx + '" onclick="' + nextOnclick + '">' + nextLabel + '</button>' +
           '</div>' +
           navHtml +
         '</div>';
@@ -2440,6 +2458,9 @@
       .catch(function() {});
   }
 
+  // Not currently called from any lesson CTA (its former caller, weiter(),
+  // was removed — see completeLessonCta()/goNext() below). Left in place in
+  // case a future "lesson opened" signal wants it; safe to remove if not.
   function markLessonInProgress(lesson) {
     if (!state.user) {
       console.log('[progress] in_progress skipped — anonymous (no user)');
@@ -2898,8 +2919,11 @@
             return;
           }
         }
-        // No exercises — advance to next lesson
-        return this.nextLesson(lIdx);
+        // No exercises — this stepNum=0 path is only reachable today via the
+        // "Start Quiz →" CTA, which requires exercises.length > 0 (see
+        // buildAllLessons). Kept as a defensive fallback: complete the
+        // lesson via the same CTA flow rather than silently auto-navigating.
+        return this.completeLessonCta(lIdx);
       }
 
       // The Next button on quiz q-N calls advance(lIdx, N+1) — the encoded
@@ -2917,11 +2941,41 @@
       this.nextLesson(lIdx);
     },
 
+    // Quiz-driven completion: the last quiz question's "Continue →" calls
+    // advance(lIdx, exCount), which lands here. Complete and advance in one
+    // step, same as before this fix — quizzes already had a real, working
+    // completion trigger, so that flow is left untouched.
     nextLesson: function(lIdx) {
-      // The user finished lesson lIdx (either via the quiz flow or by clicking
-      // "Next Lesson →" on a quiz-less lesson). Mark it complete before moving.
       markLessonComplete(state.lessons[lIdx]);
+      this.goNext(lIdx);
+    },
 
+    /**
+     * Click handler for "Lektion abschließen ✓" — shown once a quiz-less
+     * lesson's content blocks have all been viewed. Writes the completion
+     * (existing markLessonComplete(): status/completed_at/XP/module-bonus,
+     * upsert-based so no duplicate rows) and then flips this same button in
+     * place to "Nächste Lektion →" / "Fertig →". No navigation happens here —
+     * that only happens on the follow-up click, via goNext().
+     */
+    completeLessonCta: function(lIdx) {
+      markLessonComplete(state.lessons[lIdx]);
+      var isLast = lIdx >= state.lessons.length - 1;
+      var btn = document.getElementById('adv-btn-' + lIdx);
+      if (btn) {
+        btn.textContent = isLast ? 'Fertig →' : 'Nächste Lektion →';
+        btn.onclick = function() { window.dwModule.goNext(lIdx); };
+      }
+    },
+
+    /**
+     * Advance past lesson lIdx to the next one, or show the module-complete
+     * screen if lIdx was the last lesson. This is the navigation half of
+     * what used to be a single nextLesson() call — split out so completion
+     * (completeLessonCta) and navigation (this) are two separate, explicit
+     * user actions instead of one silent auto-chain.
+     */
+    goNext: function(lIdx) {
       var current = document.getElementById('lesson-' + lIdx);
       if (current) current.classList.remove('active');
 
@@ -2962,21 +3016,10 @@
     },
 
     /**
-     * Click handler for the "Weiter →" button on a lesson. The student has
-     * read the content but is skipping the quiz — mark the source lesson
-     * as 'in_progress' (won't downgrade if already completed), then jump.
-     * Quiz-driven completion writes happen in nextLesson() instead.
-     */
-    weiter: function(fromIdx) {
-      markLessonInProgress(state.lessons[fromIdx]);
-      this.goToLesson(fromIdx + 1);
-    },
-
-    /**
      * Jump directly to a lesson by index (0-based). Used by clickable
      * progress dots and the explicit Prev nav. Bypasses quiz flow —
      * users can navigate freely without finishing every quiz first.
-     * Does NOT mark anything complete (use weiter() for that).
+     * Does NOT mark anything complete or in_progress.
      */
     goToLesson: function(targetIdx) {
       if (targetIdx < 0 || targetIdx >= state.lessons.length) return;
