@@ -522,6 +522,18 @@
     + '.aip-welcome-emoji{font-size:34px;margin-bottom:6px;}'
     + '.aip-welcome-title{font-size:14px;font-weight:800;color:#1F2937;margin-bottom:4px;}'
     + '.aip-welcome-sub{font-size:12px;line-height:1.55;}'
+    + '.aip-welcome-ex-label{font-size:11.5px;font-weight:800;color:#1F2937;margin-top:10px;margin-bottom:6px;}'
+    + '.aip-welcome-ex{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:6px;align-items:center;}'
+    + '.aip-welcome-ex li{background:#EFF6FF;border:1px solid #DBEAFE;color:#1D4ED8;border-radius:12px;padding:6px 12px;font-size:12px;font-weight:600;}'
+    + '.aip-welcome-hint{font-size:11.5px;color:#64748B;margin-bottom:10px;}'
+    + '.aip-welcome-ok{background:#3B82F6;color:#fff;border:none;border-radius:12px;padding:8px 22px;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;transition:background .18s;}'
+    + '.aip-welcome-ok:hover{background:#2563EB;}'
+
+    + '.aip-help-row{position:relative;padding:0 12px;flex-shrink:0;background:#fff;}'
+    + '.aip-help-link{background:none;border:none;color:#3B82F6;font-size:11.5px;font-weight:700;font-family:inherit;cursor:pointer;padding:6px 0;}'
+    + '.aip-help-link:hover{text-decoration:underline;}'
+    + '.aip-help-pop{display:none;flex-direction:column;gap:5px;background:#F8FAFC;border:1px solid #E5E7EB;border-radius:10px;padding:8px 10px;margin-bottom:8px;font-size:12px;color:#374151;}'
+    + '.aip-help-pop.show{display:flex;}'
 
     // ── Proactive opener (v2): attention badge + bubble nudge ──────────────
     + '#aip-badge{position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;border-radius:8px;background:#EF4444;color:#fff;font-size:10px;font-weight:800;line-height:16px;text-align:center;padding:0 4px;box-shadow:0 1px 4px rgba(0,0,0,0.25);display:none;}'
@@ -640,8 +652,25 @@
     + '<div class="aip-msgs" id="aip-msgs">'
     +   '<div class="aip-welcome" id="aip-welcome">'
     +     '<div class="aip-welcome-emoji">' + palIconSvg('aipGradWelcome', 40) + '</div>'
-    +     '<div class="aip-welcome-title">Stuck on this lesson?</div>'
-    +     '<div class="aip-welcome-sub">Ask me a quick question. I keep it short — full explanations live in the AI Tutor.</div>'
+    +     '<div class="aip-welcome-title">Meet your AI Pal 👋</div>'
+    +     '<div class="aip-welcome-sub">Your AI Pal is here to help you during the lesson.<br>You can type a question when something is difficult or not clear.</div>'
+    +     '<div class="aip-welcome-ex-label">You can ask:</div>'
+    +     '<ul class="aip-welcome-ex">'
+    +       '<li>"What does this word mean?"</li>'
+    +       '<li>"Can you explain this again?"</li>'
+    +       '<li>"Give me an example."</li>'
+    +     '</ul>'
+    +     '<div class="aip-welcome-hint">Type your question in the box and send it.</div>'
+    +     '<button type="button" class="aip-welcome-ok" id="aip-welcome-ok">Okay</button>'
+    +   '</div>'
+    + '</div>'
+    + '<div class="aip-help-row">'
+    +   '<button type="button" class="aip-help-link" id="aip-help-link">What can I ask?</button>'
+    +   '<div class="aip-help-pop" id="aip-help-pop">'
+    +     '<div>"What does this mean?"</div>'
+    +     '<div>"Can you explain it again?"</div>'
+    +     '<div>"Give me an example."</div>'
+    +     '<div>"Help me with this lesson."</div>'
     +   '</div>'
     + '</div>'
     + '<div class="aip-input-row">'
@@ -661,6 +690,16 @@
   var closeBtn = card.querySelector('#aip-close');
   var lvlEl    = card.querySelector('#aip-lvl');
   lvlEl.textContent = getLevel();
+
+  // ── First-use explanation + help popover ────────────────────────────────
+  var welcomeOkBtn = card.querySelector('#aip-welcome-ok');
+  if (welcomeOkBtn) welcomeOkBtn.addEventListener('click', function(){ dropWelcome(); });
+
+  var helpLink = card.querySelector('#aip-help-link');
+  var helpPop  = card.querySelector('#aip-help-pop');
+  if (helpLink && helpPop) {
+    helpLink.addEventListener('click', function(){ helpPop.classList.toggle('show'); });
+  }
 
   // ── Bubble icon / attention badge helpers (v2) ──────────────────────────
   // open/close only swaps the icon span so the unread badge survives.

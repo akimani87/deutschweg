@@ -98,25 +98,20 @@
   .dot.active { background:#3B82F6; width:24px; border-radius:5px; }
   .dot.active:hover { background:#2563EB; transform:none; }
 
-  /* ── "Go Deeper" lesson-end prompt (AI Pal / AI Tutor discoverability) ── */
-  .go-deeper { border-top:1px dashed #E5E7EB; padding-top:14px; margin-top:16px; margin-bottom:4px; }
-  .go-deeper-line { font-size:13px; font-weight:700; color:#1F2937; margin-bottom:10px; text-align:center; }
-  .go-deeper-btns { display:flex; gap:8px; }
-  .gd-btn {
-    flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;
-    border-radius:14px; padding:10px 8px; cursor:pointer; border:1.5px solid;
-    text-align:center; font-family:inherit; transition:transform .15s ease;
+  /* ── "Go Deeper" lesson-end prompt (AI Tutor discoverability) ── */
+  .go-deeper { border-top:1px dashed #E5E7EB; padding-top:14px; margin-top:16px; margin-bottom:4px; text-align:center; }
+  .gd-title { font-size:14px; font-weight:800; color:#1F2937; margin-bottom:6px; }
+  .gd-body { font-size:13px; line-height:1.55; color:#475569; margin-bottom:10px; }
+  .gd-ex-label { font-size:11.5px; font-weight:800; color:#1F2937; margin-bottom:6px; }
+  .gd-ex { list-style:none; margin:0 0 10px; padding:0; display:flex; flex-direction:column; gap:6px; align-items:center; }
+  .gd-ex li { background:#EFF6FF; border:1px solid #DBEAFE; color:#1D4ED8; border-radius:12px; padding:6px 12px; font-size:12px; font-weight:600; }
+  .gd-hint { font-size:11.5px; color:#64748B; margin-bottom:12px; }
+  .gd-tutor-btn { margin-bottom:8px; }
+  .gd-skip {
+    display:block; width:100%; background:none; border:none; color:#64748B;
+    font-family:inherit; font-size:12.5px; font-weight:700; cursor:pointer; padding:4px;
   }
-  .gd-btn:hover { transform:translateY(-1px); }
-  .gd-btn .gd-ic { width:26px; height:26px; display:flex; align-items:center; justify-content:center; }
-  .gd-btn .gd-lb { font-size:11.5px; font-weight:800; line-height:1.25; }
-  .gd-btn.gd-pal { background:#EFF6FF; border-color:#DBEAFE; color:#1D4ED8; }
-  .gd-btn.gd-tutor { background:linear-gradient(135deg,#1D4ED8 0%,#3B82F6 100%); border-color:transparent; color:#fff; }
-  .gd-tutor-av {
-    width:26px; height:26px; border-radius:50%; background-image:url('./assets/angela-brand-photo.png');
-    background-size:290%; background-position:58% 22%; background-repeat:no-repeat;
-    border:1.5px solid rgba(255,255,255,0.7);
-  }
+  .gd-skip:hover { color:#3B82F6; text-decoration:underline; }
   .gd-tooltip {
     display:flex; align-items:flex-start; gap:8px; background:#1F2937; color:#fff;
     border-radius:12px; padding:10px 12px 10px 14px; font-size:12px; line-height:1.5;
@@ -1780,15 +1775,18 @@
           '<div id="blk-adv-' + idx + '"' +
             (hasNewBlocks ? ' style="display:none"' : '') + '>' +
             '<div class="go-deeper" id="go-deeper-' + idx + '">' +
-              '<div class="go-deeper-line">Want to go deeper on ' + escapeHtml(lessonTitle) + (/[?!.]$/.test(lessonTitle) ? '' : '?') + '</div>' +
-              '<div class="go-deeper-btns">' +
-                '<button class="gd-btn gd-pal" type="button" onclick="dwModule.goDeeperPal(' + idx + ')">' +
-                  '<span class="gd-ic">💬</span><span class="gd-lb">Ask a quick question</span>' +
-                '</button>' +
-                '<button class="gd-btn gd-tutor" type="button" onclick="dwModule.goDeeperTutor(' + idx + ')">' +
-                  '<span class="gd-ic"><span class="gd-tutor-av"></span></span><span class="gd-lb">Explore this properly</span>' +
-                '</button>' +
-              '</div>' +
+              '<div class="gd-title">Do you want more help?</div>' +
+              '<div class="gd-body">Your AI Tutor can help you learn more about this lesson.<br>You can ask for another explanation, more examples, or a short practice.</div>' +
+              '<div class="gd-ex-label">You can ask:</div>' +
+              '<ul class="gd-ex">' +
+                '<li>"Explain this again."</li>' +
+                '<li>"Give me 3 more examples."</li>' +
+                '<li>"Ask me some questions."</li>' +
+                '<li>"Help me practise."</li>' +
+              '</ul>' +
+              '<div class="gd-hint">Type what you need help with.</div>' +
+              '<button class="btn btn-primary gd-tutor-btn" type="button" onclick="dwModule.goDeeperTutor(' + idx + ')">Ask AI Tutor</button>' +
+              '<button class="gd-skip" type="button" onclick="' + nextOnclick + '">Next lesson</button>' +
             '</div>' +
             '<button class="btn btn-primary" id="adv-btn-' + idx + '" onclick="' + nextOnclick + '">' + nextLabel + '</button>' +
           '</div>' +
@@ -2058,6 +2056,10 @@
     return { topic: topic, ruleText: ruleText || '' };
   }
 
+  // Not currently called from the end-of-lesson card (that's Tutor-only now
+  // — AI Pal's own "during the lesson" entry point is the floating widget
+  // itself). Left in place in case a future entry point wants to seed Pal
+  // with lesson context; safe to remove if not.
   function goDeeperPal(idx) {
     var lesson = state.lessons[idx];
     if (!lesson) return;
