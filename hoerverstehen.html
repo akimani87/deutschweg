@@ -111,12 +111,12 @@
   .spin{width:30px;height:30px;border:3px solid #DBEAFE;border-top-color:#3B82F6;border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 12px;}
   @keyframes sp{to{transform:rotate(360deg);}}
 
-  /* Bottom nav (7 items) */
-  .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #E5E7EB;display:flex;justify-content:space-around;padding:10px 0 18px;z-index:100;box-shadow:0 -4px 20px rgba(0,0,0,0.06);}
-  .nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 4px;border-radius:10px;transition:all .2s;border:none;background:none;color:#9CA3AF;text-decoration:none;flex:1;max-width:70px;}
+  /* Bottom nav (5 items) */
+  .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #E5E7EB;display:flex;justify-content:space-around;padding:10px 0 18px;z-index:100;box-shadow:0 -4px 20px rgba(0,0,0,0.06);overflow-x:hidden;}
+  .nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 8px;border-radius:10px;transition:all .2s;border:none;background:none;color:#9CA3AF;text-decoration:none;flex:1;max-width:80px;}
   .nav-item:hover,.nav-item.active{color:#3B82F6;}
-  .nav-icon{font-size:19px;line-height:1;} .nav-label{font-size:9.5px;font-weight:700;letter-spacing:0.3px;text-transform:uppercase;}
-  @media (max-width:380px){ .nav-item{padding:6px 2px;} .nav-label{font-size:8.5px;letter-spacing:0;} }
+  .nav-icon{font-size:20px;line-height:1;} .nav-label{font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;}
+  @media (max-width:380px){ .nav-item{padding:6px 3px;} .nav-label{font-size:9px;letter-spacing:0.2px;} }
 </style>
 </head>
 <body>
@@ -172,13 +172,11 @@
 
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
-  <a class="nav-item" href="/dashboard"><span class="nav-icon">📚</span><span class="nav-label">Modules</span></a>
-  <a class="nav-item" href="ai-tutor.html"><span class="nav-icon">👩‍🏫</span><span class="nav-label">Tutor</span></a>
-  <a class="nav-item" href="ai-pal.html"><span class="nav-icon">🤗</span><span class="nav-label">AI Pal</span></a>
-  <a class="nav-item" href="dictionary.html"><span class="nav-icon">📖</span><span class="nav-label">Wörterbuch</span></a>
+  <a class="nav-item" href="/dashboard"><span class="nav-icon">🏠</span><span class="nav-label">Learn</span></a>
   <a class="nav-item active" href="hoerverstehen.html"><span class="nav-icon">🎧</span><span class="nav-label">Hören</span></a>
   <a class="nav-item" href="sprechen.html"><span class="nav-icon">🎤</span><span class="nav-label">Sprechen</span></a>
-  <a class="nav-item" href="exam-vault.html"><span class="nav-icon">📝</span><span class="nav-label">Vault</span></a>
+  <a class="nav-item" href="exam-vault.html"><span class="nav-icon">📝</span><span class="nav-label">Exams</span></a>
+  <a class="nav-item" href="ai.html"><span class="nav-icon">💬</span><span class="nav-label">AI</span></a>
 </nav>
 
 <script>

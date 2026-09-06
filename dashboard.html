@@ -281,10 +281,11 @@
     border-top:1px solid #E5E7EB;
     display:flex;justify-content:space-around;padding:10px 0 18px;z-index:100;
     box-shadow:0 -4px 20px rgba(0,0,0,0.06);
+    overflow-x:hidden;
   }
   .nav-item{
     display:flex;flex-direction:column;align-items:center;gap:3px;
-    cursor:pointer;padding:6px 16px;border-radius:10px;
+    cursor:pointer;padding:6px 8px;border-radius:10px;flex:1;min-width:0;
     transition:all 0.2s;border:none;background:none;color:#9CA3AF;
     text-decoration:none;
   }
@@ -350,10 +351,6 @@
     padding:20px 22px;margin:0 0 18px;
     box-shadow:0 1px 3px rgba(0,0,0,0.07);
   }
-  .dash-welcome-row{
-    display:flex;align-items:flex-start;justify-content:space-between;
-    gap:14px;margin-bottom:14px;
-  }
   .dash-greeting{
     font-size:20px;font-weight:800;color:#1F2937;line-height:1.25;margin-bottom:4px;
   }
@@ -364,6 +361,7 @@
     display:flex;flex-direction:column;align-items:center;
     background:#EFF6FF;border:1px solid #DBEAFE;
     border-radius:12px;padding:10px 16px;flex-shrink:0;min-width:80px;text-align:center;
+    margin-bottom:14px;
   }
   .dash-streak-num{font-size:22px;font-weight:800;color:#3B82F6;line-height:1;}
   .dash-streak-label{font-size:11px;font-weight:600;color:#4B5563;margin-top:3px;white-space:nowrap;}
@@ -372,6 +370,43 @@
     background:#ECFDF5;border:1px solid #A7F3D0;border-radius:10px;
     font-size:13px;color:#065F46;font-style:italic;
   }
+
+  /* ── QUICK GRIDS: Practice (3-up) + Need help (2-up) ── */
+  .quick-grid{display:grid;gap:10px;margin-bottom:20px;}
+  .quick-grid-3{grid-template-columns:repeat(3,1fr);}
+  .quick-grid-2{grid-template-columns:repeat(2,1fr);}
+  .quick-card{
+    display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;
+    background:#fff;border:1px solid #E5E7EB;border-radius:14px;padding:16px 8px;
+    text-decoration:none;transition:transform .15s ease,box-shadow .15s ease;
+  }
+  .quick-card:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,0.08);}
+  .quick-icon{font-size:24px;}
+  .quick-title{font-size:13px;font-weight:800;color:#1F2937;}
+  .quick-sub{font-size:10.5px;color:#9CA3AF;line-height:1.3;}
+  .quick-section-label{font-size:13px;font-weight:800;color:#1F2937;margin-bottom:10px;}
+  .help-card{
+    display:flex;flex-direction:column;align-items:flex-start;gap:6px;
+    background:#fff;border:1px solid #E5E7EB;border-radius:14px;padding:16px 16px;
+    text-decoration:none;transition:transform .15s ease,box-shadow .15s ease;
+  }
+  .help-card:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,0.08);}
+  .help-icon{font-size:22px;}
+  .help-title{font-size:13.5px;font-weight:800;color:#1F2937;}
+  .help-sub{font-size:11.5px;color:#4B5563;line-height:1.4;}
+  @media(max-width:380px){
+    .quick-sub,.help-sub{display:none;}
+  }
+
+  /* ── YOUR PROGRESS section (moved lower on the dashboard) ── */
+  .progress-section{
+    background:#fff;border:1px solid #E5E7EB;border-radius:16px;
+    padding:20px 22px;margin:0 0 28px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.07);
+  }
+  .progress-section-title{font-size:16px;font-weight:800;color:#1F2937;margin-bottom:14px;}
+  .progress-section .dw-progress-banner{border-bottom:none;padding:0;margin-bottom:0;}
+  .progress-section .dw-progress-banner-inner{margin:0;}
 
   /* ── PHASE 2: End-of-A1 screen ────────────── */
   .eoa-screen{
@@ -432,7 +467,6 @@
   }
 
   @media(max-width:640px){
-    .dash-welcome-row{flex-direction:column;}
     .eoa-h1{font-size:24px;}
   }
 </style>
@@ -456,57 +490,14 @@
   </div>
 </div>
 
-<!-- PROGRESS BANNER -->
-<div class="dw-progress-banner" id="progressBanner">
-  <div class="dw-progress-banner-inner">
-    <div class="dw-pb-item">
-      <div class="dw-pb-number" id="totalDone">0</div>
-      <div class="dw-pb-label">Modules done</div>
-    </div>
-    <div class="dw-pb-divider"></div>
-    <div class="dw-pb-item">
-      <div class="dw-pb-number" id="levelProgress">A1</div>
-      <div class="dw-pb-label">Current level</div>
-    </div>
-    <div class="dw-pb-bar-wrap">
-      <div class="dw-pb-bar-label">Overall progress</div>
-      <div class="dw-progress-bg">
-        <div class="dw-progress-fill" id="overallBar" style="width:0%"></div>
-      </div>
-      <div class="dw-pb-pct" id="overallPct">0% complete</div>
-    </div>
-  </div>
-</div>
-
 <!-- MAIN CONTENT -->
 <div class="main">
 
-  <!-- WELCOME + GERMANY READINESS + STREAK (Phase 2) -->
-  <!-- JS populates #dashGreeting with name, #dash-readiness-bar with real
-       per-level %s, #dashStreakNum with localStorage streak, and reveals
-       #dashMotivational after a completed lesson is detected. -->
+  <!-- GREETING — slim, leads straight into Continue. Streak, readiness bar
+       and the motivational line moved into "Your progress" further down. -->
   <div class="dash-welcome-section">
-    <div class="dash-welcome-row">
-      <div>
-        <div class="dash-greeting" id="dashGreeting">Welcome back!</div>
-        <div class="dash-goal" id="dashGoal">Today's goal: complete your next lesson 🎯</div>
-      </div>
-      <div class="dash-streak-badge">
-        <span class="dash-streak-num" id="dashStreakNum">0</span>
-        <span class="dash-streak-label">day streak 🔥</span>
-      </div>
-    </div>
-    <div id="dash-readiness-bar"></div>
-    <div class="dash-motivational" id="dashMotivational">
-      Every lesson brings you closer to life in Germany.
-    </div>
-  </div>
-
-  <!-- COURSE HEADER -->
-  <div class="course-header">
-    <div class="course-eyebrow" id="dashEyebrow">GOETHE A1 · FULL COURSE</div>
-    <h1 class="course-title">Your <span>Learning</span><br>Dashboard</h1>
-    <p class="course-sub" id="dashSub">13 modules covering every topic on the Goethe A1 exam. All modules are unlocked — work through them in order for the best results.</p>
+    <div class="dash-greeting" id="dashGreeting">Welcome back!</div>
+    <div class="dash-goal" id="dashGoal">Today's goal: complete your next lesson 🎯</div>
   </div>
 
   <!-- WEITER LERNEN — primary continue card, populated from profiles.letzte_modul_slug -->
@@ -521,6 +512,84 @@
       <span class="continue-cta-arrow">→</span>
     </span>
   </a>
+
+  <!-- PRACTICE GRID -->
+  <div class="quick-grid quick-grid-3">
+    <a class="quick-card" href="hoerverstehen.html">
+      <span class="quick-icon">🎧</span>
+      <span class="quick-title">Hören</span>
+      <span class="quick-sub">Train your listening</span>
+    </a>
+    <a class="quick-card" href="sprechen.html">
+      <span class="quick-icon">🎤</span>
+      <span class="quick-title">Sprechen</span>
+      <span class="quick-sub">Practice speaking</span>
+    </a>
+    <a class="quick-card" href="exam-vault.html">
+      <span class="quick-icon">📝</span>
+      <span class="quick-title">Exam Vault</span>
+      <span class="quick-sub">Try a mock exam</span>
+    </a>
+  </div>
+
+  <!-- NEED HELP? -->
+  <div class="quick-section-label">Need help?</div>
+  <div class="quick-grid quick-grid-2">
+    <a class="help-card" href="ai-pal.html">
+      <span class="help-icon">😊</span>
+      <span class="help-title">AI Pal</span>
+      <span class="help-sub">Practice German in a friendly chat</span>
+    </a>
+    <a class="help-card" href="ai-tutor.html">
+      <span class="help-icon">👩‍🏫</span>
+      <span class="help-title">AI Tutor</span>
+      <span class="help-sub">Ask questions and get clear explanations</span>
+    </a>
+  </div>
+
+  <!-- YOUR PROGRESS (moved lower) — modules-done/level/overall stats,
+       streak, and the Germany-readiness bar. JS populates #totalDone,
+       #levelProgress, #overallBar/#overallPct, #dash-readiness-bar with real
+       per-level %s, #dashStreakNum with localStorage streak, and reveals
+       #dashMotivational after a completed lesson is detected. -->
+  <div class="progress-section">
+    <div class="progress-section-title">Your progress</div>
+    <div class="dw-progress-banner" id="progressBanner">
+      <div class="dw-progress-banner-inner">
+        <div class="dw-pb-item">
+          <div class="dw-pb-number" id="totalDone">0</div>
+          <div class="dw-pb-label">Modules done</div>
+        </div>
+        <div class="dw-pb-divider"></div>
+        <div class="dw-pb-item">
+          <div class="dw-pb-number" id="levelProgress">A1</div>
+          <div class="dw-pb-label">Current level</div>
+        </div>
+        <div class="dw-pb-bar-wrap">
+          <div class="dw-pb-bar-label">Overall progress</div>
+          <div class="dw-progress-bg">
+            <div class="dw-progress-fill" id="overallBar" style="width:0%"></div>
+          </div>
+          <div class="dw-pb-pct" id="overallPct">0% complete</div>
+        </div>
+      </div>
+    </div>
+    <div class="dash-streak-badge">
+      <span class="dash-streak-num" id="dashStreakNum">0</span>
+      <span class="dash-streak-label">day streak 🔥</span>
+    </div>
+    <div id="dash-readiness-bar"></div>
+    <div class="dash-motivational" id="dashMotivational">
+      Every lesson brings you closer to life in Germany.
+    </div>
+  </div>
+
+  <!-- COURSE HEADER -->
+  <div class="course-header">
+    <div class="course-eyebrow" id="dashEyebrow">GOETHE A1 · FULL COURSE</div>
+    <h1 class="course-title">Your <span>Learning</span><br>Dashboard</h1>
+    <p class="course-sub" id="dashSub">13 modules covering every topic on the Goethe A1 exam. All modules are unlocked — work through them in order for the best results.</p>
+  </div>
 
   <!-- LEVEL TABS -->
   <div class="level-tabs">
@@ -559,7 +628,7 @@
     </div>
     <div class="op-info">
       <div class="op-label">Overall A1 Progress</div>
-      <div class="op-bar"><div class="op-fill" id="overallBar"></div></div>
+      <div class="op-bar"><div class="op-fill" id="a1RingBar"></div></div>
     </div>
     <div class="op-stat">
       <strong id="modDoneDisp">0/13</strong>
@@ -743,22 +812,10 @@
 </div>
 
 <!-- BOTTOM NAV -->
-<div class="bottom-nav">
+<nav class="bottom-nav">
   <a class="nav-item active" href="/dashboard">
-    <span class="nav-icon">📚</span>
-    <span class="nav-label">Modules</span>
-  </a>
-  <a class="nav-item" href="ai-tutor.html">
-    <span class="nav-icon">👩‍🏫</span>
-    <span class="nav-label">AI Tutor</span>
-  </a>
-  <a class="nav-item" href="ai-pal.html">
-    <span class="nav-icon">🤗</span>
-    <span class="nav-label">AI Pal</span>
-  </a>
-  <a class="nav-item" href="dictionary.html">
-    <span class="nav-icon">📖</span>
-    <span class="nav-label">Wörterbuch</span>
+    <span class="nav-icon">🏠</span>
+    <span class="nav-label">Learn</span>
   </a>
   <a class="nav-item" href="hoerverstehen.html">
     <span class="nav-icon">🎧</span>
@@ -770,9 +827,13 @@
   </a>
   <a class="nav-item" href="exam-vault.html">
     <span class="nav-icon">📝</span>
-    <span class="nav-label">Exam Vault</span>
+    <span class="nav-label">Exams</span>
   </a>
-</div>
+  <a class="nav-item" href="ai.html">
+    <span class="nav-icon">💬</span>
+    <span class="nav-label">AI</span>
+  </a>
+</nav>
 
 <!-- PLACEMENT MODAL -->
 <div class="pm-overlay" id="placementModal">
@@ -1365,7 +1426,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   var pct = Math.round((done / 13) * 100);
   document.getElementById('pctDisp').textContent = pct + '%';
-  document.getElementById('overallBar').style.width = pct + '%';
+  document.getElementById('a1RingBar').style.width = pct + '%';
   document.getElementById('modDoneDisp').textContent = done + '/13';
 
   // Progress-banner: Modules-done / % complete are driven by Supabase
