@@ -205,33 +205,33 @@ section{padding:96px 0;}
 .paths-eyebrow{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:14px;text-align:center;}
 .paths-h{font-size:38px;font-weight:800;line-height:1.2;letter-spacing:-0.3px;color:var(--dark);margin-bottom:14px;text-align:center;}
 .paths-sub{font-size:16px;color:var(--mid);line-height:1.7;max-width:560px;margin:0 auto 48px;text-align:center;}
-/* Mobile-first single column → 2 on tablet → 3 on desktop. With 5 cards
-   the bottom row will have 1 (tablet) or 2 (desktop) cards — visually
-   ragged but more scannable than a forced 5-wide row. */
-.paths-grid{display:grid;grid-template-columns:1fr;gap:18px;}
+/* Mobile-first single column → 2 on tablet → one row of 5 on desktop,
+   matching the demo. */
+.paths-grid{display:grid;grid-template-columns:1fr;gap:16px;}
 @media(min-width:640px){.paths-grid{grid-template-columns:repeat(2,1fr);}}
-@media(min-width:1000px){.paths-grid{grid-template-columns:repeat(3,1fr);}}
+@media(min-width:1000px){.paths-grid{grid-template-columns:repeat(5,1fr);gap:14px;}}
 .path-card{
   background:var(--white);border:1px solid var(--blue-mid);
-  border-radius:var(--radius-lg);padding:24px 22px;
-  display:flex;flex-direction:column;gap:14px;
+  border-radius:var(--radius-lg);padding:20px 18px;
+  display:flex;flex-direction:column;gap:10px;
   text-decoration:none;color:inherit;
   transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
 .path-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--blue-mid);}
-.path-icon{font-size:36px;line-height:1;}
-.path-title-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
-.path-title{font-size:17px;font-weight:800;color:var(--dark);letter-spacing:-0.2px;margin:0;}
+.path-icon{font-size:28px;line-height:1;}
+.path-title-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.path-title{font-size:15.5px;font-weight:800;color:var(--dark);letter-spacing:-0.2px;margin:0;}
 .path-level-chip{
-  font-size:11px;font-weight:700;letter-spacing:0.5px;
+  font-size:10.5px;font-weight:700;letter-spacing:0.5px;
   background:var(--blue-light);color:var(--blue);
   border:1px solid var(--blue-mid);
-  border-radius:50px;padding:3px 10px;
+  border-radius:50px;padding:3px 9px;
   white-space:nowrap;
 }
+.path-desc{font-size:12.5px;color:var(--mid);line-height:1.5;}
 .path-cta{
   margin-top:auto;align-self:flex-start;
-  font-size:13px;font-weight:700;color:var(--blue);
+  font-size:12.5px;font-weight:700;color:var(--blue);
   border-bottom:2px solid transparent;
   transition:border-color .15s;
 }
@@ -246,17 +246,18 @@ section{padding:96px 0;}
 .what-inner{display:grid;grid-template-columns:1.1fr 1fr;gap:56px;align-items:center;}
 .what-h{
   font-size:38px;font-weight:800;line-height:1.2;
-  letter-spacing:-0.3px;margin-bottom:32px;color:var(--dark);
+  letter-spacing:-0.3px;margin-bottom:10px;color:var(--dark);
   text-align:left;
 }
+.what-sub{font-size:15px;color:var(--mid);line-height:1.6;margin-bottom:28px;}
 .what-grid{
   display:grid;grid-template-columns:repeat(2,1fr);
   gap:20px;margin-bottom:32px;
 }
 .what-card{
-  background:var(--blue-light);border:1px solid var(--blue-mid);
-  border-radius:20px;padding:26px;
-  display:flex;gap:16px;align-items:flex-start;
+  background:var(--white);border:1px solid var(--blue-mid);
+  border-radius:16px;padding:20px;
+  display:flex;flex-direction:column;gap:10px;
   transition:all 0.2s;
 }
 .what-img-col{width:100%;}
@@ -269,12 +270,13 @@ section{padding:96px 0;}
   transform:translateY(-3px);box-shadow:var(--shadow-lg);
 }
 .what-icon{
-  width:44px;height:44px;border-radius:12px;
-  background:var(--white);border:1px solid var(--border);
+  width:38px;height:38px;border-radius:10px;
+  background:var(--blue-light);border:1px solid var(--blue-mid);
   display:flex;align-items:center;justify-content:center;
-  font-size:22px;flex-shrink:0;
+  font-size:19px;flex-shrink:0;
 }
-.what-text{font-size:15px;color:var(--dark);font-weight:600;line-height:1.55;}
+.what-card-title{font-size:14.5px;font-weight:800;color:var(--dark);line-height:1.3;}
+.what-card-desc{font-size:12.5px;color:var(--mid);line-height:1.5;}
 .what-cta-wrap{text-align:center;}
 .what-cta-note{font-size:13px;color:var(--light);margin-top:14px;}
 
@@ -308,10 +310,10 @@ section{padding:96px 0;}
 }
 
 /* ── HOW IT WORKS ── */
-.how-section{background:var(--bg);}
+.how-section{background:var(--blue-light);}
 .how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
 .how-card{
-  background:var(--white);border:1px solid var(--border);border-radius:24px;
+  background:var(--white);border:1px solid var(--blue-mid);border-radius:24px;
   padding:32px 28px;transition:all 0.2s;
 }
 .how-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
@@ -400,7 +402,7 @@ section{padding:96px 0;}
   gap:24px;max-width:720px;margin:0 auto;
 }
 .pricing-card{
-  background:var(--bg);border:1.5px solid var(--border);
+  background:var(--white);border:1.5px solid var(--blue-mid);
   border-radius:20px;padding:32px 28px;text-align:left;
 }
 .pricing-card-premium{
@@ -751,18 +753,20 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
       <a class="path-card" href="/blog-family-reunification.html">
         <div class="path-icon">❤️</div>
         <div class="path-title-row">
-          <h3 class="path-title">Family Reunification</h3>
+          <h3 class="path-title">Family Reunion</h3>
           <span class="path-level-chip">A1</span>
         </div>
+        <div class="path-desc">Join your loved ones in Germany.</div>
         <span class="path-cta">Read the guide →</span>
       </a>
 
       <a class="path-card" href="/blog-au-pair.html">
-        <div class="path-icon">🧒</div>
+        <div class="path-icon">👶</div>
         <div class="path-title-row">
-          <h3 class="path-title">Au-Pair</h3>
+          <h3 class="path-title">Au-pair</h3>
           <span class="path-level-chip">A1 / A2</span>
         </div>
+        <div class="path-desc">Live with a host family and experience Germany.</div>
         <span class="path-cta">Read the guide →</span>
       </a>
 
@@ -772,6 +776,7 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
           <h3 class="path-title">Ausbildung</h3>
           <span class="path-level-chip">B1</span>
         </div>
+        <div class="path-desc">Start your career in Germany.</div>
         <span class="path-cta">Read the guide →</span>
       </a>
 
@@ -781,6 +786,7 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
           <h3 class="path-title">University Studies</h3>
           <span class="path-level-chip">B2</span>
         </div>
+        <div class="path-desc">Study at a German university.</div>
         <span class="path-cta">Read the guide →</span>
       </a>
 
@@ -790,6 +796,7 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
           <h3 class="path-title">Skilled Worker Visa</h3>
           <span class="path-level-chip">B1 / B2</span>
         </div>
+        <div class="path-desc">Work and build your future in Germany.</div>
         <span class="path-cta">Read the guide →</span>
       </a>
     </div>
@@ -807,22 +814,27 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
     <div class="what-inner">
       <div>
         <h2 class="what-h">What you'll find on DeutschWeg</h2>
+        <p class="what-sub">More than just lessons — a complete system to help you reach your goals.</p>
         <div class="what-grid">
           <div class="what-card">
             <div class="what-icon">📚</div>
-            <div class="what-text">52 Module von A1 bis B2 — auf Deutsch, mit englischer Hilfe, wenn du sie brauchst</div>
+            <div class="what-card-title">52 Modules A1 to B2</div>
+            <div class="what-card-desc">Step-by-step lessons with audio, examples and practice.</div>
           </div>
           <div class="what-card">
-            <div class="what-icon">📝</div>
-            <div class="what-text">Real Goethe-style practice exams that actually prepare you</div>
+            <div class="what-icon">📄</div>
+            <div class="what-card-title">Goethe-style Mock Exams</div>
+            <div class="what-card-desc">Real exam practice for Hören, Lesen, Schreiben and Sprechen.</div>
           </div>
           <div class="what-card">
             <div class="what-icon">🤖</div>
-            <div class="what-text">Ein KI-Tutor, der weiß, wo du stehst, und mit dir übt</div>
+            <div class="what-card-title">AI Tutor &amp; AI Pal</div>
+            <div class="what-card-desc">Ask questions, get clear explanations, and practice through conversation.</div>
           </div>
           <div class="what-card">
-            <div class="what-icon">🌍</div>
-            <div class="what-text">Beispiele, Namen und Situationen, die zu deinem Weg passen</div>
+            <div class="what-icon">📊</div>
+            <div class="what-card-title">Personalized Learning</div>
+            <div class="what-card-desc">Focus on your weak areas and track your progress every step of the way.</div>
           </div>
         </div>
         <div class="what-cta-wrap" style="text-align:left;">
@@ -876,20 +888,20 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
       <div class="how-card">
         <div class="how-num">1</div>
         <div class="how-icon">🎯</div>
-        <div class="how-title">Choose Your Level</div>
-        <div class="how-body">Pick A1, A2, B1 or B2 based on where you are. Not sure? Take our 3-question placement guide and we'll point you in the right direction.</div>
+        <div class="how-title">Choose your level</div>
+        <div class="how-body">Pick A1, A2, B1 or B2. Not sure? Take our 3-question guide.</div>
       </div>
       <div class="how-card">
         <div class="how-num">2</div>
         <div class="how-icon">📚</div>
-        <div class="how-title">Practice Lessons &amp; Quizzes</div>
-        <div class="how-body">Work through structured modules with interactive quizzes, audio, and AI-powered explanations in simple English — designed for how you think.</div>
+        <div class="how-title">Practice lessons &amp; quizzes</div>
+        <div class="how-body">Work through modules with interactive exercises and AI feedback.</div>
       </div>
       <div class="how-card">
         <div class="how-num">3</div>
         <div class="how-icon">📈</div>
-        <div class="how-title">Improve Based on Mistakes</div>
-        <div class="how-body">The AI tracks your weak areas and focuses your practice where you need it most. Every session gets smarter as you learn.</div>
+        <div class="how-title">Improve based on feedback</div>
+        <div class="how-body">The AI tracks your weak areas and gives you targeted practice.</div>
       </div>
     </div>
   </div>
@@ -973,7 +985,7 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
           <div class="author-av"><img src="assets/images/testimonial-portrait.png" alt="Portrait of Ana M., a DeutschWeg learner"></div>
           <div>
             <div class="author-name">Ana M.</div>
-            <div class="author-sub">Goethe A2</div>
+            <div class="author-sub">🇰🇪 Kenya · Goethe A2</div>
           </div>
         </div>
       </div>
