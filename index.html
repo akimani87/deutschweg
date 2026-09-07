@@ -39,7 +39,7 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
-body{background:#F8FAFC;color:#1F2937;font-family:'Plus Jakarta Sans',sans-serif;line-height:1.6;opacity:0;transition:opacity 0.3s ease;}
+body{background:#fff;color:#1F2937;font-family:'Plus Jakarta Sans',sans-serif;line-height:1.6;opacity:0;transition:opacity 0.3s ease;}
 body.ready{opacity:1;}
 
 /* ── TOKENS ── */
@@ -186,23 +186,22 @@ section{padding:96px 0;}
 .fc-blue{background:var(--blue);}
 
 /* ── BELONGING IMAGE (hero right) ── */
-.hero-img-col{position:relative;}
+.hero-img-col{position:relative;margin-bottom:20px;}
 .hero-img-wrap{
   width:100%;
-  aspect-ratio:4/3;
-  background:var(--blue-light);
   border:1px solid var(--blue-mid);
   border-radius:24px;
   overflow:hidden;
   box-shadow:var(--shadow-lg);
+  line-height:0;
 }
 .hero-img{
-  width:100%;height:100%;
-  object-fit:cover;display:block;
+  width:100%;height:auto;
+  display:block;
 }
 
 /* ── YOUR PATH TO GERMANY (goal-recognition band → blog guides) ── */
-.paths-section{background:var(--bg);}
+.paths-section{background:var(--blue-light);}
 .paths-eyebrow{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:14px;text-align:center;}
 .paths-h{font-size:38px;font-weight:800;line-height:1.2;letter-spacing:-0.3px;color:var(--dark);margin-bottom:14px;text-align:center;}
 .paths-sub{font-size:16px;color:var(--mid);line-height:1.7;max-width:560px;margin:0 auto 48px;text-align:center;}
@@ -213,7 +212,7 @@ section{padding:96px 0;}
 @media(min-width:640px){.paths-grid{grid-template-columns:repeat(2,1fr);}}
 @media(min-width:1000px){.paths-grid{grid-template-columns:repeat(3,1fr);}}
 .path-card{
-  background:var(--white);border:1px solid var(--border);
+  background:var(--white);border:1px solid var(--blue-mid);
   border-radius:var(--radius-lg);padding:24px 22px;
   display:flex;flex-direction:column;gap:14px;
   text-decoration:none;color:inherit;
@@ -244,23 +243,29 @@ section{padding:96px 0;}
 
 /* ── WAS DICH BEI DEUTSCHWEG ERWARTET ── */
 .what-section{background:var(--white);}
+.what-inner{display:grid;grid-template-columns:1.1fr 1fr;gap:56px;align-items:center;}
 .what-h{
   font-size:38px;font-weight:800;line-height:1.2;
-  letter-spacing:-0.3px;margin-bottom:40px;color:var(--dark);
-  text-align:center;
+  letter-spacing:-0.3px;margin-bottom:32px;color:var(--dark);
+  text-align:left;
 }
 .what-grid{
   display:grid;grid-template-columns:repeat(2,1fr);
-  gap:20px;margin-bottom:40px;
+  gap:20px;margin-bottom:32px;
 }
 .what-card{
-  background:var(--bg);border:1px solid var(--border);
+  background:var(--blue-light);border:1px solid var(--blue-mid);
   border-radius:20px;padding:26px;
   display:flex;gap:16px;align-items:flex-start;
   transition:all 0.2s;
 }
+.what-img-col{width:100%;}
+.what-img-wrap{
+  width:100%;border:1px solid var(--blue-mid);border-radius:24px;
+  overflow:hidden;box-shadow:var(--shadow-lg);line-height:0;
+}
+.what-img{width:100%;height:auto;display:block;}
 .what-card:hover{
-  background:var(--blue-light);border-color:var(--blue-mid);
   transform:translateY(-3px);box-shadow:var(--shadow-lg);
 }
 .what-icon{
@@ -358,11 +363,20 @@ section{padding:96px 0;}
 .feat-body{font-size:14px;color:var(--mid);line-height:1.75;}
 
 /* ── TESTIMONIAL ── */
-.testimonial-section{background:var(--bg);}
-.testimonial-card{
-  background:var(--white);border:1px solid var(--border);border-radius:20px;
-  padding:40px 44px;max-width:640px;margin:0 auto;box-shadow:var(--shadow);
+.testimonial-section{background:var(--blue-light);}
+.testimonial-inner{
+  display:grid;grid-template-columns:1.1fr 1fr;gap:32px;align-items:center;
+  max-width:920px;margin:0 auto;text-align:left;
 }
+.testimonial-card{
+  background:var(--white);border:1px solid var(--blue-mid);border-radius:20px;
+  padding:40px 44px;box-shadow:var(--shadow);
+}
+.testimonial-illustration-wrap{
+  border:1px solid var(--blue-mid);border-radius:20px;
+  overflow:hidden;box-shadow:var(--shadow);line-height:0;
+}
+.testimonial-illustration{width:100%;height:auto;display:block;}
 .stars{font-size:20px;margin-bottom:20px;letter-spacing:2px;}
 .testimonial-quote{
   font-size:18px;font-weight:500;color:var(--dark);line-height:1.75;
@@ -373,7 +387,9 @@ section{padding:96px 0;}
   width:44px;height:44px;border-radius:50%;background:var(--blue);
   display:flex;align-items:center;justify-content:center;
   font-size:18px;font-weight:700;color:#fff;flex-shrink:0;
+  overflow:hidden;
 }
+.author-av img{width:100%;height:100%;object-fit:cover;display:block;}
 .author-name{font-size:15px;font-weight:700;color:var(--dark);margin-bottom:2px;}
 .author-sub{font-size:13px;color:var(--light);}
 
@@ -467,6 +483,9 @@ section{padding:96px 0;}
 .cta-section .section-label{color:rgba(255,255,255,0.65);}
 .cta-section .section-h{color:#fff;}
 .cta-section .section-sub{color:rgba(255,255,255,0.75);max-width:480px;}
+.cta-inner{display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:center;}
+.cta-img-col{display:flex;justify-content:center;}
+.cta-img{width:100%;max-width:320px;height:auto;display:block;border-radius:16px;}
 .btn-white{
   padding:15px 36px;border-radius:10px;border:none;
   background:#fff;color:var(--blue);font-size:15px;font-weight:700;
@@ -502,7 +521,7 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
   .pricing-grid{grid-template-columns:1fr;}
   .levels-grid{grid-template-columns:1fr;}
   .footer-top{grid-template-columns:1fr 1fr;}
-  .hero-right{display:none;}
+  .what-inner,.cta-inner,.testimonial-inner{grid-template-columns:1fr;gap:32px;}
   .what-h{font-size:30px;}
   .trust-bar-inner{gap:16px;}
 }
@@ -522,7 +541,7 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
   .what-h{font-size:24px;}
   .paths-h{font-size:26px;}
   .paths-sub{font-size:14px;margin-bottom:32px;}
-  .hero-img-wrap{aspect-ratio:5/4;border-radius:18px;}
+  .hero-img-wrap{border-radius:18px;}
   .testimonial-card{padding:28px 22px;}
   .footer-top{grid-template-columns:1fr;}
   .footer-bottom{flex-direction:column;gap:10px;text-align:center;}
@@ -689,15 +708,26 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
            file with a call that passes real per-level completion % from
            Supabase. The component handles all rendering — no markup changes
            needed here for Phase 2. -->
-      <div class="hero-right" style="display:flex;flex-direction:column;gap:16px;">
-        <!-- Label above the component so visitors immediately understand what they're seeing -->
-        <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--light);">Your progress tracker</div>
-        <!-- Container for the Germany Readiness Bar component -->
-        <div id="hero-readiness-bar"></div>
-        <!-- Contextual note: keeps the bar honest (0% for new users) -->
-        <div style="background:var(--blue-light);border:1px solid var(--blue-mid);border-radius:12px;padding:14px 16px;">
-          <div style="font-size:13px;font-weight:600;color:#1D4ED8;margin-bottom:4px;">A1 is free — start today</div>
-          <div style="font-size:12.5px;color:var(--mid);line-height:1.6;">Every module you complete moves this bar. A2, B1 unlock when you're ready — one-time, no subscription.</div>
+      <div class="hero-right">
+        <!-- Human hero photo — its own baked-in progress-card overlay is
+             why the readiness-bar widget below is kept smaller/secondary
+             rather than removed; both stay since the widget shows real
+             live progress for returning logged-in visitors. -->
+        <div class="hero-img-col">
+          <div class="hero-img-wrap">
+            <img class="hero-img" src="assets/images/hero-image-with-progress.png" alt="A DeutschWeg learner studying German at her desk, with a progress card showing 31% of A1 complete" loading="eager">
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <!-- Label above the component so visitors immediately understand what they're seeing -->
+          <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--light);">Your progress tracker</div>
+          <!-- Container for the Germany Readiness Bar component -->
+          <div id="hero-readiness-bar"></div>
+          <!-- Contextual note: keeps the bar honest (0% for new users) -->
+          <div style="background:var(--blue-light);border:1px solid var(--blue-mid);border-radius:12px;padding:14px 16px;">
+            <div style="font-size:13px;font-weight:600;color:#1D4ED8;margin-bottom:4px;">A1 is free — start today</div>
+            <div style="font-size:12.5px;color:var(--mid);line-height:1.6;">Every module you complete moves this bar. A2, B1 unlock when you're ready — one-time, no subscription.</div>
+          </div>
         </div>
       </div>
     </div>
@@ -774,27 +804,36 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
 <!-- ── WAS DICH BEI DEUTSCHWEG ERWARTET ── -->
 <section class="what-section">
   <div class="wrap">
-    <h2 class="what-h">What you'll find on DeutschWeg</h2>
-    <div class="what-grid">
-      <div class="what-card">
-        <div class="what-icon">📚</div>
-        <div class="what-text">52 Module von A1 bis B2 — auf Deutsch, mit englischer Hilfe, wenn du sie brauchst</div>
+    <div class="what-inner">
+      <div>
+        <h2 class="what-h">What you'll find on DeutschWeg</h2>
+        <div class="what-grid">
+          <div class="what-card">
+            <div class="what-icon">📚</div>
+            <div class="what-text">52 Module von A1 bis B2 — auf Deutsch, mit englischer Hilfe, wenn du sie brauchst</div>
+          </div>
+          <div class="what-card">
+            <div class="what-icon">📝</div>
+            <div class="what-text">Real Goethe-style practice exams that actually prepare you</div>
+          </div>
+          <div class="what-card">
+            <div class="what-icon">🤖</div>
+            <div class="what-text">Ein KI-Tutor, der weiß, wo du stehst, und mit dir übt</div>
+          </div>
+          <div class="what-card">
+            <div class="what-icon">🌍</div>
+            <div class="what-text">Beispiele, Namen und Situationen, die zu deinem Weg passen</div>
+          </div>
+        </div>
+        <div class="what-cta-wrap" style="text-align:left;">
+          <a href="signup.html" class="btn-primary btn-large">Start with A1 free — no card, no risk</a>
+        </div>
       </div>
-      <div class="what-card">
-        <div class="what-icon">📝</div>
-        <div class="what-text">Real Goethe-style practice exams that actually prepare you</div>
+      <div class="what-img-col">
+        <div class="what-img-wrap">
+          <img class="what-img" src="assets/images/study-image-headphones.png" alt="A DeutschWeg learner listening to German audio practice with headphones while taking notes" loading="lazy">
+        </div>
       </div>
-      <div class="what-card">
-        <div class="what-icon">🤖</div>
-        <div class="what-text">Ein KI-Tutor, der weiß, wo du stehst, und mit dir übt</div>
-      </div>
-      <div class="what-card">
-        <div class="what-icon">🌍</div>
-        <div class="what-text">Beispiele, Namen und Situationen, die zu deinem Weg passen</div>
-      </div>
-    </div>
-    <div class="what-cta-wrap">
-      <a href="signup.html" class="btn-primary btn-large">Start with A1 free — no card, no risk</a>
     </div>
   </div>
 </section>
@@ -921,15 +960,25 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
   <div class="wrap" style="text-align:center;">
     <div class="section-label">STUDENT STORIES</div>
     <div class="section-h">Real results from real learners</div>
-    <div class="testimonial-card">
-      <div class="stars">★★★★★</div>
-      <div class="testimonial-quote">"DeutschWeg explained German grammar in a way that finally made sense to me. The examples felt relevant to my own life. I passed my Goethe A2 exam on the first try."</div>
-      <div class="testimonial-author">
-        <div class="author-av">A</div>
-        <div>
-          <div class="author-name">Ana M.</div>
-          <div class="author-sub">Goethe A2</div>
+    <div class="testimonial-inner">
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <div class="testimonial-quote">"DeutschWeg explained German grammar in a way that finally made sense to me. The examples felt relevant to my own life. I passed my Goethe A2 exam on the first try."</div>
+        <!-- Placeholder testimonial content pending a real, verified learner
+             quote/photo — kept visible so the section reads as intended, not
+             presented as production social proof. Swap the src/quote/name
+             below when a real testimonial is available; markup needs no
+             other changes. -->
+        <div class="testimonial-author">
+          <div class="author-av"><img src="assets/images/testimonial-portrait.png" alt="Portrait of Ana M., a DeutschWeg learner"></div>
+          <div>
+            <div class="author-name">Ana M.</div>
+            <div class="author-sub">Goethe A2</div>
+          </div>
         </div>
+      </div>
+      <div class="testimonial-illustration-wrap">
+        <img class="testimonial-illustration" src="assets/images/testimonial-quote-illustration.png" alt="Illustration reading: Different countries. Same dreams. A brighter tomorrow in Germany. Berlin TV tower in the background.">
       </div>
     </div>
   </div>
@@ -1087,11 +1136,18 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
 
 <!-- ── CTA ── -->
 <section class="cta-section">
-  <div class="wrap" style="text-align:center;">
-    <div class="section-label">GET STARTED</div>
-    <div class="section-h" style="max-width:520px;margin:0 auto 16px;">Prepare for Goethe Faster</div>
-    <div class="section-sub" style="margin:0 auto 36px;">Join learners from Kenya, Nigeria, India, Sri Lanka and beyond who are turning "one day in Germany" into a date on a visa. Start free with the full A1 course — no card, no trial clock.</div>
-    <a href="signup.html" class="btn-white">Start with A1 — Free →</a>
+  <div class="wrap">
+    <div class="cta-inner">
+      <div>
+        <div class="section-label">GET STARTED</div>
+        <div class="section-h" style="margin-bottom:16px;">Prepare for Goethe Faster</div>
+        <div class="section-sub" style="margin-bottom:36px;">Join learners from Kenya, Nigeria, India, Sri Lanka and beyond who are turning "one day in Germany" into a date on a visa. Start free with the full A1 course — no card, no trial clock.</div>
+        <a href="signup.html" class="btn-white">Start with A1 — Free →</a>
+      </div>
+      <div class="cta-img-col">
+        <img class="cta-img" src="assets/images/cta-mountain-illustration.png" alt="Illustration of a mountain with a flag, captioned 'Your Germany Starts Here'">
+      </div>
+    </div>
   </div>
 </section>
 
