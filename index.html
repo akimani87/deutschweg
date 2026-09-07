@@ -187,6 +187,7 @@ section{padding:96px 0;}
 
 /* ── BELONGING IMAGE (hero right) ── */
 .hero-img-col{position:relative;margin-bottom:20px;}
+.hero-progress-widget{display:flex;flex-direction:column;gap:16px;}
 .hero-img-wrap{
   width:100%;
   border:1px solid var(--blue-mid);
@@ -518,6 +519,19 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
   .nav-links{display:none;}
   .hero-inner{grid-template-columns:1fr;gap:40px;}
   .hero-h1{font-size:34px;}
+  /* Photo already shows a progress card; the live widget stacked
+     underneath it on mobile duplicates that and adds ~150-200px of
+     scroll height. Desktop keeps it (sits beside the photo, not under). */
+  .hero-progress-widget{display:none;}
+  /* Three-steps cards: num+icon share a row instead of stacking (the
+     wrapper is a plain block on desktop, so nothing changes there) —
+     saves a full margin-stack per card, on top of trimmed padding. */
+  .how-grid{gap:14px;}
+  .how-card{padding:16px 18px;}
+  .how-top-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .how-num{margin-bottom:0;width:28px;height:28px;font-size:13px;flex-shrink:0;}
+  .how-icon{margin-bottom:0;font-size:22px;}
+  .how-title{margin-bottom:4px;font-size:16px;}
   .feat-grid,.how-grid,.what-grid{grid-template-columns:1fr;}
   .why-inner{grid-template-columns:1fr;gap:32px;}
   .pricing-grid{grid-template-columns:1fr;}
@@ -543,6 +557,13 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
   .what-h{font-size:24px;}
   .paths-h{font-size:26px;}
   .paths-sub{font-size:14px;margin-bottom:32px;}
+  /* ~25-30% density reduction — one card per row on mobile, but no need
+     for desktop-scale padding/gaps at that width. */
+  .paths-grid{gap:12px;}
+  .path-card{padding:15px 14px;gap:7px;}
+  .what-grid{gap:14px;margin-bottom:24px;}
+  .what-card{padding:15px;gap:7px;}
+  .what-sub{margin-bottom:20px;}
   .hero-img-wrap{border-radius:18px;}
   .testimonial-card{padding:28px 22px;}
   .footer-top{grid-template-columns:1fr;}
@@ -713,14 +734,16 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
       <div class="hero-right">
         <!-- Human hero photo — its own baked-in progress-card overlay is
              why the readiness-bar widget below is kept smaller/secondary
-             rather than removed; both stay since the widget shows real
-             live progress for returning logged-in visitors. -->
+             rather than removed on desktop, where it sits beside the photo,
+             not underneath it. On mobile the two stack and duplicate each
+             other (photo already shows progress), so .hero-progress-widget
+             is hidden below 900px — see RESPONSIVE section. -->
         <div class="hero-img-col">
           <div class="hero-img-wrap">
             <img class="hero-img" src="assets/images/hero-image-with-progress.png" alt="A DeutschWeg learner studying German at her desk, with a progress card showing 31% of A1 complete" loading="eager">
           </div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="hero-progress-widget">
           <!-- Label above the component so visitors immediately understand what they're seeing -->
           <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--light);">Your progress tracker</div>
           <!-- Container for the Germany Readiness Bar component -->
@@ -886,20 +909,17 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
     <div class="section-sub">From beginner to Goethe-ready in a structured path built around your level and your mistakes.</div>
     <div class="how-grid">
       <div class="how-card">
-        <div class="how-num">1</div>
-        <div class="how-icon">🎯</div>
+        <div class="how-top-row"><div class="how-num">1</div><div class="how-icon">🎯</div></div>
         <div class="how-title">Choose your level</div>
         <div class="how-body">Pick A1, A2, B1 or B2. Not sure? Take our 3-question guide.</div>
       </div>
       <div class="how-card">
-        <div class="how-num">2</div>
-        <div class="how-icon">📚</div>
+        <div class="how-top-row"><div class="how-num">2</div><div class="how-icon">📚</div></div>
         <div class="how-title">Practice lessons &amp; quizzes</div>
         <div class="how-body">Work through modules with interactive exercises and AI feedback.</div>
       </div>
       <div class="how-card">
-        <div class="how-num">3</div>
-        <div class="how-icon">📈</div>
+        <div class="how-top-row"><div class="how-num">3</div><div class="how-icon">📈</div></div>
         <div class="how-title">Improve based on feedback</div>
         <div class="how-body">The AI tracks your weak areas and gives you targeted practice.</div>
       </div>
