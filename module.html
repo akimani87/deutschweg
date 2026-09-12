@@ -277,6 +277,26 @@
   .lesson-vg-die .lesson-vg-art { color:#EF4444; }
   .lesson-vg-das .lesson-vg-art { color:#10B981; }
 
+  /* ── write-prompt: open textarea + optional reveal-example ── */
+  .dw-write-prompt { margin:14px 0; }
+  .dw-wp-prompt { font-size:15px; margin-bottom:10px; }
+  .dw-wp-input {
+    width:100%; font-family:inherit; font-size:14px; line-height:1.5;
+    border:1px solid #E5E7EB; border-radius:10px; padding:12px 14px;
+    resize:vertical; box-sizing:border-box;
+  }
+  .dw-wp-input:focus { outline:none; border-color:#93C5FD; box-shadow:0 0 0 3px rgba(147,197,253,0.35); }
+  .dw-wp-reveal-btn {
+    margin-top:10px; background:none; border:1px solid #E5E7EB; border-radius:20px;
+    padding:6px 14px; font-size:13px; color:#374151; cursor:pointer;
+  }
+  .dw-wp-reveal-btn:hover { background:#F9FAFB; }
+  .dw-wp-example {
+    margin-top:10px; background:#F9FAFB; border:1px solid #E5E7EB; border-radius:10px;
+    padding:10px 14px; font-size:13.5px; color:#374151;
+  }
+  .dw-wp-example-label { font-weight:700; color:#6B7280; }
+
   /* ── NEW BLOCK TYPES (Modul 3+) ─────────────────────── */
 
   /* pattern-table — mobile-first: stack vertically, side-by-side on wider screens */
@@ -1010,6 +1030,21 @@
     function init(id) { setTimeout(function() { render(id); }, 0); }
     return { init: init, play: play, onInput: onInput, check: check, next: next };
   }());
+
+  // ── dwWritePrompt: reveal-example toggle for the write-prompt block ─────
+  // Not interactive in the auto-advance sense (see INTERACTIVE_TYPES) — the
+  // learner writes in the open textarea, taps "Show an example" whenever
+  // they want it, then uses the lesson's normal Continue button. Nothing is
+  // submitted or graded here in v1; the textarea is for the learner only.
+  var dwWritePrompt = (function() {
+    function reveal(id) {
+      var ex = document.getElementById(id + '-example');
+      var btn = document.getElementById(id + '-reveal-btn');
+      if (ex) ex.style.display = '';
+      if (btn) btn.style.display = 'none';
+    }
+    return { reveal: reveal };
+  }());
 </script>
 
 <script>
@@ -1406,6 +1441,29 @@
             '</div>';
           }).join('');
           return '<div class="lesson-vocab-grid">' + vgItems + '</div>';
+        }
+
+        // ── write-prompt ────────────────────────────────────────────────────
+        // A free-text writing activity: a prompt, an open textarea (nothing
+        // is submitted or graded in v1 — the learner writes for themselves),
+        // and an optional "Show an example" reveal to compare against one
+        // model answer. Not in INTERACTIVE_TYPES — advances via the lesson's
+        // normal Continue button, same as a plain text/example block.
+        // Data: { type, prompt, placeholder?, example? }
+        case 'write-prompt': {
+          var wpId = 'wp-' + Math.random().toString(36).slice(2, 7);
+          var wpPlaceholder = block.placeholder || 'Write your answer here …';
+          var wpReveal = block.example
+            ? '<button type="button" class="dw-wp-reveal-btn" id="' + wpId + '-reveal-btn" onclick="dwWritePrompt.reveal(\'' + wpId + '\')">Show an example</button>' +
+              '<div class="dw-wp-example" id="' + wpId + '-example" style="display:none;">' +
+                '<span class="dw-wp-example-label">Example:</span> ' + escapeHtml(block.example) +
+              '</div>'
+            : '';
+          return '<div class="dw-write-prompt" id="' + wpId + '">' +
+            '<div class="dw-wp-prompt">' + escapeHtml(block.prompt || '') + '</div>' +
+            '<textarea class="dw-wp-input" placeholder="' + escapeHtml(wpPlaceholder) + '" rows="3"></textarea>' +
+            wpReveal +
+          '</div>';
         }
 
         default:
@@ -1819,6 +1877,19 @@
     // clock-quiz, listening-input). Scripts injected via innerHTML don't
     // execute in browsers, so we scan for data-init attributes instead.
     initInteractiveBlocks(container);
+
+    // Deep-link support: ?lesson=<order_index> opens straight to that lesson
+    // instead of defaulting to lesson 1. Used by topic.html, whose steps
+    // point at lessons that don't always sit at position 1 of their host
+    // module. No existing link passes this param, so behavior is unchanged
+    // when it's absent or doesn't match any lesson in this module.
+    var deepLinkOrderIndex = params.get('lesson');
+    if (deepLinkOrderIndex !== null) {
+      var deepLinkIdx = state.lessons.findIndex(function(l) {
+        return String(l.order_index) === String(deepLinkOrderIndex);
+      });
+      if (deepLinkIdx !== -1) window.dwModule.goToLesson(deepLinkIdx);
+    }
 
     finalizeBoot();
     // AI Pal v2 — proactive opener once the lesson UI is ready (signed-in only).

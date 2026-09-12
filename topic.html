@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- DW SEO INJECT -->
+<meta name="title" content="DeutschWeg — Topic">
+<meta name="description" content="Prepare for your Goethe German exam with AI-powered lessons. A1, A2, B1, B2 — for anyone moving to Germany for study, work, or family. Start free today.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="language" content="English">
+<meta name="author" content="DeutschWeg">
+<!-- /DW SEO INJECT -->
+
+<title>DeutschWeg — Topic</title>
+<link rel="stylesheet" href="deutschweg-theme.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
+<style>
+  /* Tokens + components below (top-nav, continue-card, bottom-nav) are
+     copied verbatim from dashboard.html — this page is reached from the
+     dashboard and should look like a continuation of it, not a new visual
+     system. Only the secondary-nav chips, status lines and step list are
+     new to this page. */
+  :root {
+    --black:#0a0a0a; --white:#f5f0e8; --cream:#ede8dc;
+    --gold:#c9a84c; --gold-light:#e8c96a;
+    --red:#c0392b; --green:#27ae60; --blue:#3498db;
+    --gray:#6b6b6b; --card-bg:#141414; --card2-bg:#1a1a1a;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:'DM Sans',system-ui,sans-serif;
+    background:#fff;color:#1F2937;
+    min-height:100vh;
+    opacity:0;transition:opacity 0.25s ease;
+  }
+  body.ready{opacity:1;}
+
+  /* ── TOP NAV (copied from dashboard.html) ── */
+  .top-nav{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 24px; height:58px;
+    border-bottom:1px solid #E5E7EB; background:#fff;
+    position:sticky;top:0;z-index:50;
+  }
+  .logo{display:flex;align-items:center;gap:9px;text-decoration:none;color:#1F2937;}
+  .logo-icon{width:32px;height:32px;background:#3B82F6;border-radius:9px;display:flex;align-items:center;justify-content:center;color:white;font-size:16px;font-weight:800;flex-shrink:0;}
+  .logo-text{font-size:17px;font-weight:800;color:#1F2937;letter-spacing:-0.3px;}
+  .logo-text span{color:#3B82F6;}
+
+  .main{max-width:680px;margin:0 auto;padding:36px 24px 120px;}
+
+  /* ── TOPIC HEADER — bilingual title, this page's one addition above the
+       reused continue-card ── */
+  .topic-eyebrow{font-size:11px;font-weight:700;letter-spacing:2px;color:#3B82F6;margin-bottom:8px;text-transform:uppercase;}
+  .topic-title{font-size:26px;font-weight:800;margin:0 0 26px;color:#1F2937;letter-spacing:-0.3px;}
+  .topic-title .en{color:#6B7280;font-weight:600;}
+
+  /* ── CONTINUE CARD (copied verbatim from dashboard.html) ── */
+  .continue-card{
+    background:linear-gradient(135deg,#3B82F6 0%,#2563EB 100%);
+    border-radius:20px; padding:24px 26px; margin:0 0 22px;
+    box-shadow:0 10px 30px rgba(59,130,246,0.25);
+    color:#fff; text-decoration:none;
+    display:flex;flex-direction:column;gap:18px;
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .continue-card:hover{transform:translateY(-2px);box-shadow:0 14px 38px rgba(59,130,246,0.32);}
+  .continue-eyebrow{
+    font-size:11px;font-weight:800;letter-spacing:2px;
+    color:rgba(255,255,255,0.85);text-transform:uppercase;
+    display:flex;align-items:center;gap:8px;
+  }
+  .continue-eyebrow::before{
+    content:'';width:6px;height:6px;border-radius:50%;
+    background:#fff;display:inline-block;box-shadow:0 0 0 3px rgba(255,255,255,0.25);
+  }
+  .continue-title{font-size:22px;font-weight:800;line-height:1.25;color:#fff;letter-spacing:-0.3px;}
+  .continue-meta{font-size:13px;color:rgba(255,255,255,0.8);}
+  .continue-cta{
+    display:inline-flex;align-items:center;gap:8px;
+    background:#fff;color:#1D4ED8;
+    padding:13px 22px;border-radius:50px;
+    font-size:14px;font-weight:800;letter-spacing:0.2px;
+    text-decoration:none;align-self:flex-start;
+    box-shadow:0 4px 14px rgba(0,0,0,0.12);
+    transition:background .18s, transform .18s;
+  }
+  .continue-cta:hover{background:#EFF6FF;transform:translateY(-1px);}
+  .continue-cta-arrow{font-size:16px;}
+  @media(max-width:480px){
+    .continue-card{padding:20px 20px;border-radius:18px;}
+    .continue-title{font-size:18px;}
+  }
+
+  /* ── SELF-REPORT CONFIRM — appears only in the "independent check" state,
+       between the hero and the secondary nav. Deliberately plain (not
+       gold/celebratory) since ticking it is a self-report, not an
+       achievement the UI should oversell. ── */
+  .confirm-check-btn{
+    display:block; width:100%; margin:0 0 6px;
+    background:#F9FAFB; border:1.5px solid #D1D5DB; border-radius:12px;
+    padding:13px 18px; font-size:14px; font-weight:700; color:#1F2937;
+    cursor:pointer; transition:background .15s, border-color .15s;
+    font-family:inherit;
+  }
+  .confirm-check-btn:hover{background:#F3F4F6; border-color:#9CA3AF;}
+  .confirm-check-btn:disabled{opacity:.6; cursor:default;}
+  .confirm-check-note{font-size:12px; color:#9CA3AF; margin:0 0 22px; line-height:1.5;}
+
+  /* ── SECONDARY NAV — deliberately de-emphasized relative to the continue
+       card above: small muted chips in a horizontally-scrollable row, not
+       a grid of equal-weight tiles (that's what .quick-grid on the
+       dashboard is for, and reusing it here would compete with Continue). ── */
+  .sec-nav-label{font-size:10px;font-weight:700;letter-spacing:1.5px;color:#9CA3AF;text-transform:uppercase;margin:0 0 10px;}
+  .sec-nav{
+    display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:26px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .sec-nav::-webkit-scrollbar{display:none;}
+  .sec-nav-chip{
+    flex:none; display:inline-flex; align-items:center; gap:6px;
+    background:#F9FAFB; border:1px solid #E5E7EB; border-radius:20px;
+    padding:8px 16px; font-size:13px; font-weight:600; color:#4B5563;
+    text-decoration:none; white-space:nowrap;
+    transition:background .15s, border-color .15s;
+  }
+  .sec-nav-chip:hover{background:#F3F4F6; border-color:#D1D5DB;}
+
+  /* ── STATUS LINES — two, always separate, never merged ── */
+  .status-panel{
+    background:#fff; border:1px solid #E5E7EB; border-radius:14px;
+    padding:4px 18px; margin-bottom:28px;
+  }
+  .status-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 0; font-size:14px; color:#374151;
+  }
+  .status-row + .status-row{border-top:1px solid #F3F4F6;}
+  .status-value{font-weight:700; font-size:13px; font-family:'DM Mono',monospace;}
+  .status-value.pending{color:#9CA3AF;}
+  .status-value.progress{color:#3B82F6;}
+  .status-value.done{color:#16A34A;}
+  .status-value.review{color:#B45309;}
+
+  /* ── BOTTOM NAV (copied verbatim from dashboard.html) ── */
+  .bottom-nav{
+    position:fixed;bottom:0;left:0;right:0;
+    background:#fff; border-top:1px solid #DBEAFE;
+    display:flex;justify-content:space-around;padding:10px 0 18px;z-index:100;
+    box-shadow:0 -4px 20px rgba(0,0,0,0.06);
+    overflow-x:hidden;
+  }
+  .nav-item{
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+    cursor:pointer;padding:6px 8px;border-radius:10px;flex:1;min-width:0;
+    transition:all 0.2s;border:none;background:none;color:#9CA3AF;
+    text-decoration:none;
+  }
+  .nav-item:hover,.nav-item.active{color:#3B82F6;}
+  .nav-icon{font-size:20px;}
+  .nav-label{font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;}
+
+  .load-msg{color:#9CA3AF;font-size:14px;}
+</style>
+</head>
+<body>
+
+<div class="top-nav">
+  <a href="dashboard.html" class="logo">
+    <div class="logo-icon">D</div>
+    <span class="logo-text">Deutsch<span>Weg</span></span>
+  </a>
+</div>
+
+<div class="main">
+  <div class="topic-eyebrow" id="topicEyebrow">Topic</div>
+  <h1 class="topic-title" id="topicTitle"><span class="load-msg">Loading…</span></h1>
+
+  <a class="continue-card" id="continueCard" href="#" style="display:none;">
+    <div>
+      <div class="continue-eyebrow" id="continueEyebrow">Your next step</div>
+      <div class="continue-title" id="continueTitle">Loading…</div>
+      <div class="continue-meta" id="continueMeta"></div>
+    </div>
+    <span class="continue-cta">
+      <span id="continueCtaText">Continue</span>
+      <span class="continue-cta-arrow">→</span>
+    </span>
+  </a>
+
+  <!-- Self-report confirmation for the independent check — v1 has no AI
+       grading (per plan), so this is the only way the check result gets
+       recorded. Communication-based, not accuracy-based: the learner is
+       trusted to judge whether they got their message across, matching
+       the success criteria taught in the check lesson itself. -->
+  <button class="confirm-check-btn" id="confirmCheckBtn" style="display:none;">I introduced myself ✓</button>
+  <div class="confirm-check-note" id="confirmCheckNote" style="display:none;">Tap this once you've actually done the check above — it records your result, it doesn't grade it.</div>
+
+  <div class="sec-nav-label">Explore</div>
+  <div class="sec-nav" id="secNav"><!-- populated once topic data loads --></div>
+
+  <div class="status-panel" id="statusPanel" style="display:none;">
+    <div class="status-row">
+      <span>Lessons</span>
+      <span class="status-value" id="lessonsStatus">—</span>
+    </div>
+    <div class="status-row">
+      <span>Independent check</span>
+      <span class="status-value" id="checkStatus">—</span>
+    </div>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <a class="nav-item" href="dashboard.html">
+    <span class="nav-icon">🏠</span>
+    <span class="nav-label">Learn</span>
+  </a>
+  <a class="nav-item" href="hoerverstehen.html">
+    <span class="nav-icon">🎧</span>
+    <span class="nav-label">Hören</span>
+  </a>
+  <a class="nav-item" href="sprechen.html">
+    <span class="nav-icon">🎤</span>
+    <span class="nav-label">Sprechen</span>
+  </a>
+  <a class="nav-item" href="exam-vault.html">
+    <span class="nav-icon">📝</span>
+    <span class="nav-label">Exams</span>
+  </a>
+  <a class="nav-item" href="ai.html">
+    <span class="nav-icon">💬</span>
+    <span class="nav-label">AI</span>
+  </a>
+</nav>
+
+<script>
+(function() {
+  'use strict';
+
+  function escapeHtml(s) {
+    if (s === null || s === undefined) return '';
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  function finalizeBoot() { document.body.classList.add('ready'); }
+
+  function showError(title, sub) {
+    document.getElementById('topicTitle').textContent = title || 'Something went wrong';
+    if (sub) document.getElementById('continueMeta').textContent = sub;
+    finalizeBoot();
+  }
+
+  var params  = new URLSearchParams(location.search);
+  var topicId = params.get('id');
+
+  if (!topicId) { showError('No topic specified', 'Add ?id=<topic-uuid> to the URL.'); return; }
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(topicId)) {
+    showError('Invalid topic ID', 'The id parameter doesn\'t look like a valid UUID.');
+    return;
+  }
+  if (typeof dwSupabase === 'undefined') { showError('Connection error', 'Supabase client failed to load. Refresh the page.'); return; }
+
+  function lessonHref(lesson) {
+    return './module.html?id=' + lesson.module_id + '&lesson=' + lesson.order_index;
+  }
+
+  var state = { topic: null, items: [], performanceLesson: null, user: null, completedLessonIds: {}, topicProgress: null, latestCheck: null };
+
+  loadTopic(topicId);
+
+  async function loadTopic(id) {
+    try {
+      var topicRes = await dwSupabase
+        .from('topics')
+        .select('id, level, title_de, title_en, outcome_line, description, performance_check_lesson_id, is_published, performance_check_lesson:lessons!performance_check_lesson_id(id, module_id, order_index, title)')
+        .eq('id', id)
+        .maybeSingle();
+
+      if (topicRes.error) throw topicRes.error;
+      if (!topicRes.data) { showError('Topic not found', 'No topic exists with this ID.'); return; }
+      state.topic = topicRes.data;
+      state.performanceLesson = topicRes.data.performance_check_lesson || null;
+
+      var itemsRes = await dwSupabase
+        .from('topic_items')
+        .select('id, order_index, display_title, lesson_id, lesson:lessons!lesson_id(id, module_id, order_index, title)')
+        .eq('topic_id', id)
+        .order('order_index', { ascending: true });
+
+      if (itemsRes.error) throw itemsRes.error;
+      state.items = itemsRes.data || [];
+
+      renderHeader();
+      renderSecondaryNav();
+
+      try {
+        var userRes = await dwSupabase.auth.getUser();
+        var user = userRes && userRes.data && userRes.data.user;
+        if (user) {
+          state.user = user;
+          var lessonIds = state.items.map(function(it) { return it.lesson_id; });
+          if (state.performanceLesson) lessonIds.push(state.performanceLesson.id);
+
+          if (lessonIds.length > 0) {
+            var progRes = await dwSupabase
+              .from('user_progress')
+              .select('lesson_id')
+              .eq('user_id', user.id)
+              .eq('status', 'completed')
+              .in('lesson_id', lessonIds);
+            if (!progRes.error) {
+              (progRes.data || []).forEach(function(r) { state.completedLessonIds[r.lesson_id] = true; });
+            }
+          }
+
+          var tpRes = await dwSupabase
+            .from('topic_progress')
+            .select('id, status')
+            .eq('user_id', user.id)
+            .eq('topic_id', id)
+            .maybeSingle();
+          if (!tpRes.error) state.topicProgress = tpRes.data || null;
+
+          var checkRes = await dwSupabase
+            .from('topic_performance_checks')
+            .select('result, completed_at')
+            .eq('user_id', user.id)
+            .eq('topic_id', id)
+            .order('completed_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (!checkRes.error) state.latestCheck = checkRes.data || null;
+
+          checkTopicCompletion();
+        }
+      } catch (authErr) {
+        console.warn('[topic.html] auth/progress fetch failed (continuing as anonymous):', authErr && authErr.message);
+      }
+
+      renderContinueCard();
+      renderStatusPanel();
+      finalizeBoot();
+    } catch (e) {
+      console.error('[topic.html] load error:', e);
+      showError('Could not load topic', e.message || 'Network or database error. Try again.');
+    }
+  }
+
+  function renderHeader() {
+    var t = state.topic;
+    document.title = t.title_de + ' — ' + t.title_en + ' — DeutschWeg';
+    document.getElementById('topicEyebrow').textContent = t.level + ' · Topic';
+    document.getElementById('topicTitle').innerHTML =
+      escapeHtml(t.title_de) + ' <span class="en">— ' + escapeHtml(t.title_en) + '</span>';
+  }
+
+  // Learn = alias for Continue; Vocabulary/Speak route to existing
+  // infrastructure rather than duplicating it; Read/Listen/Write map onto
+  // this topic's own lesson content (first item = earliest audio-bearing
+  // step, last item = the reading/writing "Simple profile" step) so this
+  // stays correct if the content changes without hardcoding lesson ids.
+  function renderSecondaryNav() {
+    var nav = document.getElementById('secNav');
+    if (!state.items.length) { nav.style.display = 'none'; return; }
+    var first = state.items[0].lesson;
+    var last  = state.items[state.items.length - 1].lesson;
+    var chips = [
+      { label: 'Learn',      href: null },
+      { label: 'Vocabulary', href: 'dictionary.html' },
+      { label: 'Read',       href: lessonHref(last) },
+      { label: 'Listen',     href: lessonHref(first) },
+      { label: 'Speak',      href: 'sprechen.html' },
+      { label: 'Write',      href: lessonHref(last) }
+    ];
+    nav.innerHTML = chips.map(function(c, i) {
+      var id = i === 0 ? ' id="secNavLearn"' : '';
+      return '<a class="sec-nav-chip"' + id + ' href="' + (c.href || '#') + '">' + escapeHtml(c.label) + '</a>';
+    }).join('');
+  }
+
+  function nextIncompleteItem() {
+    for (var i = 0; i < state.items.length; i++) {
+      if (!state.completedLessonIds[state.items[i].lesson_id]) return state.items[i];
+    }
+    return null;
+  }
+
+  function renderContinueCard() {
+    var card    = document.getElementById('continueCard');
+    var eyebrow = document.getElementById('continueEyebrow');
+    var titleEl = document.getElementById('continueTitle');
+    var metaEl  = document.getElementById('continueMeta');
+    var ctaEl   = document.getElementById('continueCtaText');
+    var learnChip = document.getElementById('secNavLearn');
+    var confirmBtn  = document.getElementById('confirmCheckBtn');
+    var confirmNote = document.getElementById('confirmCheckNote');
+    confirmBtn.style.display = 'none';
+    confirmNote.style.display = 'none';
+
+    var next = state.user ? nextIncompleteItem() : (state.items[0] || null);
+
+    if (next) {
+      var lesson = next.lesson;
+      card.href = lessonHref(lesson);
+      eyebrow.textContent = 'Your next step';
+      titleEl.textContent = next.display_title;
+      metaEl.textContent  = state.topic.outcome_line || '';
+      ctaEl.textContent   = 'Continue';
+      if (learnChip) learnChip.href = lessonHref(lesson);
+      card.style.display = '';
+      return;
+    }
+
+    // All topic_items are complete.
+    if (state.performanceLesson && !state.latestCheck) {
+      card.href = lessonHref(state.performanceLesson);
+      eyebrow.textContent = 'Independent check';
+      titleEl.textContent = 'Show what you can do — no model this time';
+      metaEl.textContent  = 'Introduce yourself in your own words.';
+      ctaEl.textContent   = 'Start the check';
+      if (learnChip) learnChip.href = lessonHref(state.performanceLesson);
+      card.style.display = '';
+      if (state.user) {
+        confirmBtn.style.display = '';
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'I introduced myself ✓';
+        confirmNote.style.display = '';
+      }
+      return;
+    }
+
+    // Lessons complete and (if this topic has one) the check has a result.
+    card.href = 'dashboard.html';
+    eyebrow.textContent = 'Topic complete';
+    titleEl.textContent = 'You\'ve completed ' + state.topic.title_de;
+    metaEl.textContent  = 'Nice work. More topics are on the way.';
+    ctaEl.textContent   = 'Back to dashboard';
+    if (learnChip) learnChip.href = 'dashboard.html';
+    card.style.display = '';
+  }
+
+  function renderStatusPanel() {
+    if (!state.user) return; // anonymous — no progress to show
+    var panel = document.getElementById('statusPanel');
+    panel.style.display = '';
+
+    var total = state.items.length;
+    var done  = state.items.filter(function(it) { return state.completedLessonIds[it.lesson_id]; }).length;
+    var lessonsEl = document.getElementById('lessonsStatus');
+    lessonsEl.textContent = done + ' / ' + total;
+    lessonsEl.className = 'status-value ' + (done === total && total > 0 ? 'done' : (done > 0 ? 'progress' : 'pending'));
+
+    var checkEl = document.getElementById('checkStatus');
+    if (!state.latestCheck) {
+      checkEl.textContent = 'Not yet attempted';
+      checkEl.className = 'status-value pending';
+    } else if (state.latestCheck.result === 'demonstrated') {
+      checkEl.textContent = 'Demonstrated';
+      checkEl.className = 'status-value done';
+    } else {
+      checkEl.textContent = 'Needs review';
+      checkEl.className = 'status-value review';
+    }
+  }
+
+  // Mirrors module.html's checkModuleCompletion(): topic_progress tracks
+  // "lessons complete" only — it never reads or writes
+  // topic_performance_checks, keeping the two signals fully separate.
+  async function checkTopicCompletion() {
+    if (state.topicProgress && state.topicProgress.status === 'lessons_complete') return;
+    if (!state.items.length) return;
+    var allDone = state.items.every(function(it) { return state.completedLessonIds[it.lesson_id]; });
+    if (!allDone) return;
+
+    var existing = await dwSupabase
+      .from('topic_progress')
+      .select('id')
+      .eq('user_id', state.user.id)
+      .eq('topic_id', state.topic.id)
+      .maybeSingle();
+    if (existing.data) { state.topicProgress = { status: 'lessons_complete' }; return; }
+
+    var payload = {
+      user_id: state.user.id,
+      topic_id: state.topic.id,
+      status: 'lessons_complete',
+      completed_at: new Date().toISOString()
+    };
+    var ins = await dwSupabase.from('topic_progress').insert(payload);
+    if (ins.error) { console.error('[topic.html] topic_progress insert failed', ins.error); return; }
+    state.topicProgress = { status: 'lessons_complete' };
+    console.log('[topic.html] ✓ topic marked lessons_complete');
+  }
+
+  // Self-report only — no AI grading in v1 (see the note next to the
+  // button itself). One insert per attempt into topic_performance_checks,
+  // exactly like hoerverstehen_results: its own table, never folded into
+  // topic_progress.status.
+  async function confirmIndependentCheck() {
+    if (!state.user || !state.topic) return;
+    var btn = document.getElementById('confirmCheckBtn');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
+    var payload = {
+      user_id: state.user.id,
+      topic_id: state.topic.id,
+      result: 'demonstrated',
+      completed_at: new Date().toISOString()
+    };
+    var ins = await dwSupabase.from('topic_performance_checks').insert(payload);
+    if (ins.error) {
+      console.error('[topic.html] topic_performance_checks insert failed', ins.error);
+      btn.disabled = false;
+      btn.textContent = 'I introduced myself ✓';
+      return;
+    }
+    console.log('[topic.html] ✓ independent check recorded');
+    state.latestCheck = { result: 'demonstrated', completed_at: payload.completed_at };
+    renderContinueCard();
+    renderStatusPanel();
+  }
+
+  document.getElementById('confirmCheckBtn').addEventListener('click', confirmIndependentCheck);
+})();
+</script>
+</body>
+</html>

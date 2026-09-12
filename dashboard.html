@@ -148,6 +148,11 @@
   }
   .sec-label::after{content:'';flex:1;height:1px;background:#E5E7EB;}
 
+  /* ── TOPICS SECTION — reuses .module-card/.mc-* below for the card
+       itself; only the section label is new. ── */
+  .topics-section{margin-bottom:24px;}
+  .topics-label{font-size:11px;font-weight:700;letter-spacing:2px;color:#3B82F6;margin-bottom:10px;text-transform:uppercase;}
+
   /* ── MODULE CARD ── */
   .module-card{
     background:#fff;border:1px solid #E5E7EB;
@@ -621,6 +626,15 @@
 
   <!-- A1 LEVEL SECTION -->
   <div class="level-section" id="level-a1">
+
+  <!-- TOPICS — new bilingual topic-based path, additive: only published
+       topics appear here (none are, until a topic's is_published flips to
+       true), and the flat "A1 · MODULES 1–13" list below is completely
+       unaffected either way. -->
+  <div class="topics-section" id="topicsSection" style="display:none;">
+    <div class="topics-label">Your topics</div>
+    <div class="topics-list" id="topicsList"></div>
+  </div>
 
   <!-- OVERALL PROGRESS -->
   <div class="overall-progress">
@@ -1344,6 +1358,91 @@
       lists.forEach(function(el) { renderError(el, "Couldn't load your lessons. Check your connection and try again."); });
     });
   })();
+})();
+
+// ── TOPICS SECTION ── Fully independent of loadAll() above: its own
+// queries, its own render target (#topicsSection / #topicsList), no shared
+// state. If this fails for any reason the section just stays hidden — the
+// flat module list and everything else on the page is unaffected.
+(function loadTopicsSection() {
+  function escapeHtml(s) {
+    if (s === null || s === undefined) return '';
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  function renderTopicCard(t, progress) {
+    var icon = t.icon || '💬';
+    var barHtml = '';
+    if (progress && progress.total > 0) {
+      var pct = Math.round(progress.completed / progress.total * 100);
+      barHtml = '<div class="mc-progress-bar"><div class="mc-progress-bar-fill' + (pct < 100 ? ' partial' : '') + '" style="width:' + pct + '%;"></div></div>';
+    }
+    return (
+      '<a class="module-card" href="./topic.html?id=' + t.id + '">' +
+        '<div class="mc-icon">' + escapeHtml(icon) + '</div>' +
+        '<div class="mc-body">' +
+          '<div class="mc-num">' + escapeHtml(t.level) + ' · TOPIC</div>' +
+          '<div class="mc-title">' + escapeHtml(t.title_de) + ' — ' + escapeHtml(t.title_en) + '</div>' +
+          (t.outcome_line ? '<div class="mc-outcome">' + escapeHtml(t.outcome_line) + '</div>' : '') +
+          barHtml +
+        '</div>' +
+        '<div class="mc-right">' +
+          '<span class="mc-badge badge-unlocked">' + escapeHtml(t.level) + '</span>' +
+          '<span class="mc-arrow">→</span>' +
+        '</div>' +
+      '</a>'
+    );
+  }
+
+  dwSupabase.from('topics')
+    .select('id, level, title_de, title_en, outcome_line, icon')
+    .eq('level', 'A1')
+    .eq('is_published', true)
+    .order('order_index', { ascending: true })
+    .then(function(topicsRes) {
+      if (topicsRes.error || !topicsRes.data || topicsRes.data.length === 0) return;
+      var topics = topicsRes.data;
+      var section = document.getElementById('topicsSection');
+      var list = document.getElementById('topicsList');
+      if (!section || !list) return;
+
+      dwSupabase.auth.getUser().catch(function(){ return { data: { user: null } }; }).then(function(userRes) {
+        var user = userRes && userRes.data && userRes.data.user;
+        if (!user) {
+          list.innerHTML = topics.map(function(t) { return renderTopicCard(t, null); }).join('');
+          section.style.display = '';
+          return;
+        }
+        var topicIds = topics.map(function(t) { return t.id; });
+        dwSupabase.from('topic_items').select('topic_id, lesson_id').in('topic_id', topicIds)
+          .then(function(itemsRes) {
+            var itemsByTopic = {};
+            (itemsRes.data || []).forEach(function(it) {
+              if (!itemsByTopic[it.topic_id]) itemsByTopic[it.topic_id] = [];
+              itemsByTopic[it.topic_id].push(it.lesson_id);
+            });
+            var allLessonIds = (itemsRes.data || []).map(function(it) { return it.lesson_id; });
+            var progressPromise = allLessonIds.length
+              ? dwSupabase.from('user_progress').select('lesson_id')
+                  .eq('user_id', user.id).eq('status', 'completed').in('lesson_id', allLessonIds)
+              : Promise.resolve({ data: [] });
+
+            progressPromise.then(function(progRes) {
+              var completedIds = {};
+              (progRes.data || []).forEach(function(r) { completedIds[r.lesson_id] = true; });
+              list.innerHTML = topics.map(function(t) {
+                var lessonIds = itemsByTopic[t.id] || [];
+                var completed = lessonIds.filter(function(id) { return completedIds[id]; }).length;
+                return renderTopicCard(t, { total: lessonIds.length, completed: completed });
+              }).join('');
+              section.style.display = '';
+            });
+          });
+      });
+    })
+    .catch(function(e) { console.warn('[dashboard] topics section failed to load (non-fatal):', e && e.message); });
 })();
 
 document.addEventListener('DOMContentLoaded', function() {
