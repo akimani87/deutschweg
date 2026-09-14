@@ -324,6 +324,42 @@
     { de: 'Wo wohnst du?', en: 'Where do you live? (informal)' }
   ];
 
+  // ── Topic completion pattern (product rule, applies to every topic) ────
+  // Every completed topic ends in one achievement moment with exactly
+  // three parts: (1) celebrate, (2) tell the learner what they can now
+  // do in practical ability language — not a percentage or lesson count,
+  // (3) one obvious next action — the next topic if one exists, otherwise
+  // a clear fallback ("Back to dashboard"). Never overly gamified: no
+  // streaks, badges, or confetti — the moment itself is the reward.
+  // Keyed by topic id so a future topic just adds an entry here; moves to
+  // a real column on `topics` once enough topics exist to justify a
+  // migration over a lookup map (same tradeoff as the SEO metadata in
+  // scripts/generate-seo-pages.js).
+  var TOPIC_COMPLETION = {
+    '4bf7abfd-0147-4a83-b8c2-df60a263c24d': { // Über mich
+      abilityStatement: "You can now introduce yourself, say where you're from, and say where you live.",
+      nextTopic: null // no second topic yet — falls back to "Back to dashboard"
+    }
+  };
+
+  // Renders parts 1-3 of the completion moment onto the continue-card.
+  // Nothing below is Über-mich-specific — every word comes from
+  // state.topic (celebration) or TOPIC_COMPLETION[topic id] (ability
+  // statement, next action) — so a future topic reuses this unchanged.
+  function renderTopicCompleteMoment(card, eyebrow, titleEl, metaEl, ctaEl) {
+    var completion = TOPIC_COMPLETION[state.topic.id] || {};
+    card.href = 'dashboard.html';
+    eyebrow.textContent = state.topic.title_de + ' complete 🎉';
+    titleEl.textContent = "You've completed " + state.topic.title_de;
+    metaEl.textContent = completion.abilityStatement || "Nice work — you've finished this topic.";
+    ctaEl.textContent = 'Back to dashboard';
+    if (completion.nextTopic && completion.nextTopic.href && completion.nextTopic.label) {
+      card.href = completion.nextTopic.href;
+      ctaEl.textContent = 'Next: ' + completion.nextTopic.label;
+    }
+    card.style.display = '';
+  }
+
   // speakText — copied from module.html so the vocabulary panel can use the
   // same TTS pipeline (backend /api/tts, browser speechSynthesis fallback).
   var _SPEAK_API = 'https://deutschweg.onrender.com';
@@ -483,12 +519,7 @@
       return;
     }
 
-    card.href = 'dashboard.html';
-    eyebrow.textContent = 'Über mich complete';
-    titleEl.textContent = 'You\'ve completed Über mich';
-    metaEl.textContent = 'Nice work. More topics are on the way.';
-    ctaEl.textContent = 'Back to dashboard';
-    card.style.display = '';
+    renderTopicCompleteMoment(card, eyebrow, titleEl, metaEl, ctaEl);
   }
 
   // A row in topic_performance_checks only means the topic is genuinely
@@ -536,7 +567,7 @@
 
     if (state.user && allStepsDone()) {
       banner.innerHTML = checkPassed()
-        ? '<div class="topic-complete-banner">🎉 Über mich complete</div>'
+        ? '<div class="topic-complete-banner">🎉 ' + escapeHtml(state.topic.title_de) + ' complete</div>'
         : '<div class="path-complete-banner">✓ Learning path complete — the independent check is next</div>';
     } else {
       banner.innerHTML = '';
