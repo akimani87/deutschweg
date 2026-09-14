@@ -171,6 +171,17 @@
   .lesson-example { background:#f0f9ff; border-left:3px solid #3b82f6; padding:10px 14px; margin:10px 0; border-radius:0 8px 8px 0; }
   .lesson-example .de { display:block; font-weight:700; color:#1e3a5f; font-size:15px; }
   .lesson-example .en { display:block; color:#6b7280; font-size:13px; margin-top:2px; }
+  .lesson-example-audio { margin-top:8px; }
+  .lesson-example-set-label { margin-bottom:10px; }
+
+  /* ── scenario-check (tap-to-reveal situational self-check) ── */
+  .lesson-scenario-check { background:#FEFCE8; border:1px solid #FDE68A; border-radius:12px; padding:6px 16px; margin:12px 0; }
+  .lesson-sc-intro { font-size:12px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; color:#92400E; padding:10px 0 4px; }
+  .lesson-sc-row { padding:10px 0; border-top:1px solid #FDE68A; }
+  .lesson-sc-row:first-child { border-top:none; }
+  .lesson-sc-q { display:block; width:100%; text-align:left; background:none; border:none; padding:0; font-family:inherit; font-size:14px; font-weight:600; color:#374151; cursor:pointer; }
+  .lesson-sc-prompt { color:#92400E; font-weight:700; }
+  .lesson-sc-answer { font-size:14px; color:#92400E; font-weight:700; margin-top:6px; }
 
   /* ── Tap-to-translate (Dictionary) ── */
   .dw-word { cursor:pointer; border-bottom:1px dotted rgba(59,130,246,0.55); border-radius:3px; transition:background .15s; }
@@ -473,6 +484,7 @@
   .dw-dl-text { flex:1; }
   .dw-dl-audio { background:none; border:none; cursor:pointer; font-size:16px; color:#9CA3AF; flex-shrink:0; transition:color .15s; padding:0; }
   .dw-dl-audio:hover { color:#3B82F6; }
+  .dw-dialogue-group + .dw-dialogue-group { margin-top:16px; padding-top:16px; border-top:1px dashed var(--dw-border); }
 
   @media(max-width:480px) {
     .dw-pt-rev-row { grid-template-columns:1fr; }
@@ -1137,6 +1149,51 @@
                    '<span class="de">' + wrapGermanWords(block.german)  + '</span>' +
                    '<span class="en">' + escapeHtml(block.english) + '</span>' +
                  '</div>';
+
+        // ── example-set ───────────────────────────────────────────────
+        // Two or three example pairs shown together on one screen instead of
+        // one Weiter click per example, with an optional lead-in label
+        // (replacing a separate 'text' block before them) and an optional
+        // per-item "Listen and repeat once" audio button for key phrases.
+        // Data: { type, label?, items:[{german, english, audio?}] }
+        case 'example-set': {
+          var esLabel = block.label ? '<div class="lesson-text lesson-example-set-label">' + escapeHtml(block.label) + '</div>' : '';
+          var esItems = (Array.isArray(block.items) ? block.items : []).map(function(item) {
+            var esAudioBtn = '';
+            if (item && item.audio) {
+              var jsEs = String(item.audio).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+              esAudioBtn = '<button class="audio-btn lesson-example-audio" onclick="speakText(\'' + jsEs + '\')">🔊 Listen and repeat once</button>';
+            }
+            return '<div class="lesson-example">' +
+                     '<span class="de">' + wrapGermanWords(item && item.german) + '</span>' +
+                     '<span class="en">' + escapeHtml(item && item.english) + '</span>' +
+                     esAudioBtn +
+                   '</div>';
+          }).join('');
+          return esLabel + esItems;
+        }
+
+        // ── scenario-check ─────────────────────────────────────────
+        // A short set of "who would you say this to?" situations, each with
+        // a tap-to-reveal answer — a self-check, not a graded quiz, bundled
+        // onto one screen instead of one screen per situation.
+        // Data: { type, intro?, items:[{situation, answer, note?}] }
+        case 'scenario-check': {
+          var scIntro = block.intro ? '<div class="lesson-sc-intro">' + escapeHtml(block.intro) + '</div>' : '';
+          var scItems = (Array.isArray(block.items) ? block.items : []).map(function(item, ii) {
+            var scId = 'sc-' + bi + '-' + ii + '-' + Math.random().toString(36).slice(2, 6);
+            var scAnswer = escapeHtml(item && item.answer) + (item && item.note ? ' — ' + escapeHtml(item.note) : '');
+            return '<div class="lesson-sc-row">' +
+                     '<button type="button" class="lesson-sc-q" onclick="' +
+                       "var a=document.getElementById('" + scId + "');" +
+                       "a.style.display=(a.style.display==='block'?'none':'block');" +
+                     '">' + escapeHtml(item && item.situation) + ' <span class="lesson-sc-prompt">— du or Sie?</span></button>' +
+                     '<div class="lesson-sc-answer" id="' + scId + '" style="display:none;">' + scAnswer + '</div>' +
+                   '</div>';
+          }).join('');
+          return '<div class="lesson-scenario-check">' + scIntro + scItems + '</div>';
+        }
+
         case 'tip':
           return renderCollapsible('lesson-tip',     '💡 ', block.content);
         case 'warning':
@@ -1308,21 +1365,33 @@
         // Reuses the same subject/verb/change/rest/stem fields as pattern-table.
         // Data: { type, label, lines:[{stem,subject,verb,change,rest,audio}] }
         case 'dialogue': {
+          var dlRenderLines = function(lines) {
+            return (Array.isArray(lines) ? lines : []).map(function(line) {
+              var jsAud = String(line.audio || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+              return '<div class="dw-dl-line">' +
+                '<span class="dw-dl-text">' +
+                  escapeHtml(line.stem || '') +
+                  (line.subject ? '<span class="dw-subject">' + escapeHtml(line.subject) + '</span>' : '') +
+                  (line.verb    ? '<span class="dw-verb">'    + escapeHtml(line.verb)    + '</span>' : '') +
+                  (line.change  ? '<span class="dw-change">'  + escapeHtml(line.change)  + '</span>' : '') +
+                  escapeHtml(line.rest || '') +
+                '</span>' +
+                (line.audio ? '<button class="dw-dl-audio" onclick="speakText(\'' + jsAud + '\')" title="Listen">🔊</button>' : '') +
+              '</div>';
+            }).join('');
+          };
+          // Optional block.groups lets two+ short dialogues (e.g. two example
+          // profiles) share one screen instead of one Weiter click each —
+          // falls back to the original flat label/lines shape when absent.
+          if (Array.isArray(block.groups) && block.groups.length) {
+            var dlGroupsHtml = block.groups.map(function(g) {
+              var gLabel = g && g.label ? '<div class="dw-dialogue-label">' + escapeHtml(g.label) + '</div>' : '';
+              return '<div class="dw-dialogue-group">' + gLabel + dlRenderLines(g && g.lines) + '</div>';
+            }).join('');
+            return '<div class="dw-dialogue dw-dialogue-multi">' + dlGroupsHtml + '</div>';
+          }
           var dlLabel = block.label ? '<div class="dw-dialogue-label">' + escapeHtml(block.label) + '</div>' : '';
-          var dlLines = (Array.isArray(block.lines) ? block.lines : []).map(function(line) {
-            var jsAud = String(line.audio || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-            return '<div class="dw-dl-line">' +
-              '<span class="dw-dl-text">' +
-                escapeHtml(line.stem || '') +
-                (line.subject ? '<span class="dw-subject">' + escapeHtml(line.subject) + '</span>' : '') +
-                (line.verb    ? '<span class="dw-verb">'    + escapeHtml(line.verb)    + '</span>' : '') +
-                (line.change  ? '<span class="dw-change">'  + escapeHtml(line.change)  + '</span>' : '') +
-                escapeHtml(line.rest || '') +
-              '</span>' +
-              (line.audio ? '<button class="dw-dl-audio" onclick="speakText(\'' + jsAud + '\')" title="Listen">🔊</button>' : '') +
-            '</div>';
-          }).join('');
-          return '<div class="dw-dialogue">' + dlLabel + dlLines + '</div>';
+          return '<div class="dw-dialogue">' + dlLabel + dlRenderLines(block.lines) + '</div>';
         }
 
         // ── rule-card ──────────────────────────────────────────────────────
@@ -1425,8 +1494,11 @@
         // ── vocab-grid ─────────────────────────────────────────────────────
         // A responsive grid of tap-to-hear vocabulary cards, optionally
         // color-coded by grammatical gender.
-        // Data: { type, items:[{article?, word, translation?}] }
+        // Data: { type, label?, items:[{article?, word, translation?}] }
         case 'vocab-grid': {
+          // Optional label lets a short lead-in explanation share this same
+          // screen instead of needing its own preceding 'text' block/Weiter.
+          var vgLabel = block.label ? '<div class="lesson-text lesson-vg-label">' + escapeHtml(block.label) + '</div>' : '';
           var vgItems = (Array.isArray(block.items) ? block.items : []).map(function(item) {
             var vgArticle = (item && item.article) || '';
             var vgWord    = (item && item.word) || '';
@@ -1440,7 +1512,7 @@
               '<div class="lesson-vg-tap">🔊 tap</div>' +
             '</div>';
           }).join('');
-          return '<div class="lesson-vocab-grid">' + vgItems + '</div>';
+          return vgLabel + '<div class="lesson-vocab-grid">' + vgItems + '</div>';
         }
 
         // ── write-prompt ────────────────────────────────────────────────────
