@@ -1360,10 +1360,55 @@
   })();
 })();
 
+// ── A1 learner-facing path order ────────────────────────────────────────
+// Product rule: Über mich appears as Stage 3 — right after Module 3
+// (Numbers, Time & Dates), before Module 4 (Haben & Sein). Display-only:
+// no module/topic order_index, id, lesson record, or progress row is
+// touched by this — it purely relocates the already-rendered topic card
+// to a different position in the DOM. Greetings (Module 1) is untouched
+// and stays first; if a future decision wants it out of the numbered
+// sequence too, that's a separate, larger change from this one.
+var A1_STAGE3_AFTER_MODULE_ID = '31f6da22-400c-4ee2-9ea7-94dd9ef47f9f'; // Numbers, Time & Dates
+
+// Finds Module 3's card in the already-rendered flat list and inserts the
+// given HTML right after it (and after its Quick Test button, if one
+// exists, so the button stays attached to its own module). Returns false
+// if the flat list hasn't rendered yet (loadAll() below is async and
+// independent of this function).
+function insertA1StageThree(html) {
+  var modulesList = document.querySelector('.modules-list[data-level="A1"]');
+  if (!modulesList) return false;
+  var anchor = modulesList.querySelector('a.module-card[href*="' + A1_STAGE3_AFTER_MODULE_ID + '"]');
+  if (!anchor) return false;
+  var insertAfter = (anchor.nextElementSibling && anchor.nextElementSibling.classList.contains('mt-quick-btn'))
+    ? anchor.nextElementSibling : anchor;
+  insertAfter.insertAdjacentHTML('afterend', html);
+  return true;
+}
+
+// Retries briefly since loadAll() (the flat module list) and
+// loadTopicsSection() (below) are two independent, differently-timed
+// fetches with no guaranteed order. If the flat list genuinely never
+// renders (e.g. its own fetch failed), falls back to the original
+// "Your topics" block above everything — Über mich is never silently
+// dropped, just not in its Stage 3 position.
+function placeA1StageThree(html, attemptsLeft) {
+  if (insertA1StageThree(html)) return;
+  if (attemptsLeft <= 0) {
+    var section = document.getElementById('topicsSection');
+    var list = document.getElementById('topicsList');
+    if (section && list) { list.innerHTML = html; section.style.display = ''; }
+    return;
+  }
+  setTimeout(function() { placeA1StageThree(html, attemptsLeft - 1); }, 150);
+}
+
 // ── TOPICS SECTION ── Fully independent of loadAll() above: its own
-// queries, its own render target (#topicsSection / #topicsList), no shared
-// state. If this fails for any reason the section just stays hidden — the
-// flat module list and everything else on the page is unaffected.
+// queries, its own render target, no shared state. Renders the same topic
+// card as before (unchanged query, unchanged renderTopicCard()) — only
+// where that card ends up in the DOM has changed (see placeA1StageThree
+// above). If this fails for any reason nothing appears — the flat module
+// list and everything else on the page is unaffected.
 (function loadTopicsSection() {
   function escapeHtml(s) {
     if (s === null || s === undefined) return '';
@@ -1411,8 +1456,7 @@
       dwSupabase.auth.getUser().catch(function(){ return { data: { user: null } }; }).then(function(userRes) {
         var user = userRes && userRes.data && userRes.data.user;
         if (!user) {
-          list.innerHTML = topics.map(function(t) { return renderTopicCard(t, null); }).join('');
-          section.style.display = '';
+          placeA1StageThree(topics.map(function(t) { return renderTopicCard(t, null); }).join(''), 20);
           return;
         }
         var topicIds = topics.map(function(t) { return t.id; });
@@ -1432,12 +1476,12 @@
             progressPromise.then(function(progRes) {
               var completedIds = {};
               (progRes.data || []).forEach(function(r) { completedIds[r.lesson_id] = true; });
-              list.innerHTML = topics.map(function(t) {
+              var html = topics.map(function(t) {
                 var lessonIds = itemsByTopic[t.id] || [];
                 var completed = lessonIds.filter(function(id) { return completedIds[id]; }).length;
                 return renderTopicCard(t, { total: lessonIds.length, completed: completed });
               }).join('');
-              section.style.display = '';
+              placeA1StageThree(html, 20);
             });
           });
       });
