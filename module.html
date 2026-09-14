@@ -1522,6 +1522,23 @@
   var params   = new URLSearchParams(location.search);
   var moduleId = params.get('id');
 
+  // Optional: ?topic=<topic-uuid>, alongside ?lesson=. When present, the
+  // module-complete screen's "Back to Dashboard" link points back to that
+  // topic's home instead — used when a topic's whole required sequence
+  // lives in one module, so finishing the last lesson is also finishing
+  // the topic's guided path. No effect when absent (default dashboard
+  // link), so this is backward compatible with every existing link.
+  var topicParam = params.get('topic');
+  if (topicParam) {
+    var backLink = document.querySelector('#completeScreen .complete-actions a.btn-primary');
+    if (backLink) {
+      backLink.href = './topic.html?id=' + topicParam;
+      backLink.textContent = 'Back to topic';
+    }
+    var completeSub = document.getElementById('completeSub');
+    if (completeSub) completeSub.textContent = "Great work — you've finished the guided path. Head back to see what's next.";
+  }
+
   if (!moduleId) {
     showError('No module specified', 'Add ?id=<module-uuid> to the URL.');
     return;
