@@ -1611,6 +1611,29 @@
     if (completeSub) completeSub.textContent = "Great work — you've finished the guided path. Head back to see what's next.";
   }
 
+  // SEO: the 6 Über mich lessons now have real public pages at clean URLs
+  // (scripts/generate-seo-pages.js) — this hidden module was never meant
+  // to be a public entry point, so noindex it outright, and when the
+  // specific lesson is known (?lesson=), self-canonical forward to its
+  // public page to avoid duplicate-content competition with it. Every
+  // other module is untouched — still index, follow, no canonical change
+  // — since none has a clean-URL counterpart yet.
+  var SEO_LESSON_SLUGS = {
+    'b7267868-5cad-4d6d-8755-f2347ca843d3': { // Über mich — Topic Extras
+      1: 'mein-name', 2: 'woher-kommst-du', 3: 'wo-wohnst-du',
+      4: 'du-oder-sie', 5: 'profile-verstehen', 6: 'stell-dich-vor'
+    }
+  };
+  if (SEO_LESSON_SLUGS[moduleId]) {
+    var robotsTag = document.querySelector('meta[name="robots"]');
+    if (robotsTag) robotsTag.setAttribute('content', 'noindex, follow');
+    var seoSlug = SEO_LESSON_SLUGS[moduleId][Number(params.get('lesson'))];
+    if (seoSlug) {
+      var canonicalTag = document.querySelector('link[rel="canonical"]');
+      if (canonicalTag) canonicalTag.setAttribute('href', 'https://deutschweg.de/a1/ueber-mich/' + seoSlug);
+    }
+  }
+
   if (!moduleId) {
     showError('No module specified', 'Add ?id=<module-uuid> to the URL.');
     return;
