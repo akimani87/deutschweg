@@ -262,7 +262,7 @@
     <button type="button" class="check-card-btn" id="startCheckBtn">Start check</button>
   </div>
   <div class="check-card-done" id="checkCardDone" style="display:none;">
-    <span>✓</span><span>Independent check — attempted</span>
+    <span>✓</span><span>Independent check — demonstrated</span>
   </div>
 
   <div class="status-panel" id="statusPanel" style="display:none;">
@@ -473,20 +473,31 @@
       return;
     }
 
-    // All six steps done, independent check not yet attempted — the
+    // All six steps done, independent check not yet demonstrated — the
     // dedicated check-card below (renderCheckCard) is the next action now,
-    // not this card. This card returns once the check is also attempted.
-    if (state.user && !state.latestCheck) {
+    // not this card. This card returns once the check is genuinely
+    // demonstrated — a stored 'needs_review' or fallback 'attempted' row
+    // still routes the learner back through the check-card, not here.
+    if (state.user && !checkPassed()) {
       card.style.display = 'none';
       return;
     }
 
     card.href = 'dashboard.html';
-    eyebrow.textContent = state.latestCheck ? 'Über mich complete' : 'Learning path complete';
-    titleEl.textContent = state.latestCheck ? 'You\'ve completed Über mich' : 'Great work — one more step';
-    metaEl.textContent = state.latestCheck ? 'Nice work. More topics are on the way.' : '';
+    eyebrow.textContent = 'Über mich complete';
+    titleEl.textContent = 'You\'ve completed Über mich';
+    metaEl.textContent = 'Nice work. More topics are on the way.';
     ctaEl.textContent = 'Back to dashboard';
     card.style.display = '';
+  }
+
+  // A row in topic_performance_checks only means the topic is genuinely
+  // complete when the AI evaluation actually said so. 'needs_review' means
+  // required information was missing/unclear; 'attempted' is the fallback
+  // when evaluation itself failed (see independent-check.html) — neither
+  // is a pass, so neither should read as "done" anywhere in this UI.
+  function checkPassed() {
+    return !!(state.latestCheck && state.latestCheck.result === 'demonstrated');
   }
 
   // Independent check — a distinct final card shown after the six-step
@@ -499,8 +510,10 @@
     var card = document.getElementById('checkCard');
     var done = document.getElementById('checkCardDone');
     if (!state.user || !allStepsDone()) { card.style.display = 'none'; done.style.display = 'none'; return; }
-    if (state.latestCheck) { card.style.display = 'none'; done.style.display = 'flex'; return; }
+    if (checkPassed()) { card.style.display = 'none'; done.style.display = 'flex'; return; }
     card.style.display = ''; done.style.display = 'none';
+    var btn = document.getElementById('startCheckBtn');
+    if (btn) btn.textContent = state.latestCheck ? 'Try again' : 'Start check';
   }
 
   function renderPathList() {
@@ -522,7 +535,7 @@
     }).join('');
 
     if (state.user && allStepsDone()) {
-      banner.innerHTML = state.latestCheck
+      banner.innerHTML = checkPassed()
         ? '<div class="topic-complete-banner">🎉 Über mich complete</div>'
         : '<div class="path-complete-banner">✓ Learning path complete — the independent check is next</div>';
     } else {
@@ -542,7 +555,9 @@
 
     var checkEl = document.getElementById('checkStatus');
     if (!state.latestCheck) { checkEl.textContent = 'Not yet attempted'; checkEl.className = 'status-value pending'; }
-    else { checkEl.textContent = 'Attempted'; checkEl.className = 'status-value done'; }
+    else if (state.latestCheck.result === 'demonstrated') { checkEl.textContent = 'Demonstrated'; checkEl.className = 'status-value done'; }
+    else if (state.latestCheck.result === 'needs_review') { checkEl.textContent = 'Needs review'; checkEl.className = 'status-value progress'; }
+    else { checkEl.textContent = 'Attempted'; checkEl.className = 'status-value progress'; }
   }
 
   // ── Practice this topic ──────────────────────────────────────────────

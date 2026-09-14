@@ -80,6 +80,41 @@
   .signin-note a{color:#3B82F6; font-weight:700; text-decoration:none;}
 
   .load-msg{color:#9CA3AF;font-size:14px;}
+
+  /* ── Feedback panel — teacher-style, in the order the corrections skill
+     asks for: praise, what communicated, corrections, corrected version. ── */
+  .fb-result{font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;}
+  .fb-result.demonstrated{color:#059669;}
+  .fb-result.needs-review{color:#B45309;}
+  .fb-praise{font-size:16px;font-weight:700;color:#1F2937;line-height:1.5;margin-bottom:22px;}
+
+  .fb-block{margin-bottom:24px;}
+  .fb-label{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#9CA3AF;margin-bottom:10px;}
+  .fb-communicated{display:flex;flex-direction:column;gap:6px;}
+  .fb-comm-row{display:flex;align-items:center;gap:8px;font-size:14px;color:#374151;}
+  .fb-comm-row .mark{font-weight:800;width:18px;flex-shrink:0;}
+  .fb-comm-row.yes .mark{color:#059669;}
+  .fb-comm-row.no .mark{color:#D1D5DB;}
+  .fb-comm-row.no{color:#9CA3AF;}
+
+  .fb-correction{background:#FFFBEB;border:1px solid #FDE68A;border-radius:12px;padding:12px 16px;margin-bottom:8px;}
+  .fb-correction:last-child{margin-bottom:0;}
+  .fb-cor-line{font-size:14.5px;}
+  .fb-cor-wrong{color:#9CA3AF;text-decoration:line-through;}
+  .fb-cor-arrow{color:#9CA3AF;margin:0 6px;}
+  .fb-cor-right{color:#1F2937;font-weight:700;}
+  .fb-cor-explain{font-size:13px;color:#92400E;margin-top:6px;line-height:1.5;}
+
+  .fb-corrected-box{background:#F0F9FF;border-left:3px solid #3B82F6;border-radius:0 10px 10px 0;padding:14px 16px;font-size:15px;color:#1E3A5F;font-weight:600;line-height:1.6;}
+
+  .fb-missing{background:#FEF2F2;border:1px solid #FCA5A5;border-radius:12px;padding:16px 18px;font-size:14px;color:#7F1D1D;line-height:1.6;margin-bottom:24px;}
+
+  .fb-actions{display:flex;gap:10px;margin-top:8px;}
+  .fb-retry-btn{
+    background:#F9FAFB;border:1.5px solid #D1D5DB;border-radius:50px;color:#1F2937;
+    padding:12px 22px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;
+  }
+  .fb-retry-btn:hover{background:#F3F4F6;}
 </style>
 </head>
 <body>
@@ -156,14 +191,71 @@
     finalizeBoot();
   }
 
-  function renderDone() {
+  function renderDone(note) {
     main.innerHTML =
       '<div class="done-panel">' +
         '<div class="done-icon">✓</div>' +
         '<div class="done-title">Saved</div>' +
-        '<div class="done-sub">This is recorded as attempted — DeutschWeg doesn’t automatically grade this yet.</div>' +
+        '<div class="done-sub">' + escapeHtml(note || 'Your response has been recorded.') + '</div>' +
         '<a class="back-btn" href="topic.html?id=' + encodeURIComponent(topicId) + '">Back to topic</a>' +
       '</div>';
+  }
+
+  var REQUIRED_INFO = [
+    { key: 'name', label: 'Name', prompt: 'their name' },
+    { key: 'origin', label: 'Origin', prompt: 'where they are from' },
+    { key: 'residence', label: 'Residence', prompt: 'where they live' }
+  ];
+
+  // Teacher-style feedback, in the order requested: commend what went
+  // well, show what was communicated, correct mistakes clearly, give a
+  // clean corrected version — then, only for needs_review, say what's
+  // missing and invite another attempt.
+  function renderFeedback(fb) {
+    var isDemonstrated = fb.result === 'demonstrated';
+
+    var communicatedHtml = REQUIRED_INFO.map(function(info) {
+      var got = !!(fb.communicated && fb.communicated[info.key]);
+      return '<div class="fb-comm-row ' + (got ? 'yes' : 'no') + '">' +
+        '<span class="mark">' + (got ? '✓' : '—') + '</span><span>' + escapeHtml(info.label) + '</span>' +
+      '</div>';
+    }).join('');
+
+    var correctionsHtml = (fb.corrections || []).slice(0, 3).map(function(c) {
+      return '<div class="fb-correction">' +
+        '<div class="fb-cor-line"><span class="fb-cor-wrong">' + escapeHtml(c.wrong) + '</span><span class="fb-cor-arrow">→</span><span class="fb-cor-right">' + escapeHtml(c.correct) + '</span></div>' +
+        (c.explanation ? '<div class="fb-cor-explain">' + escapeHtml(c.explanation) + '</div>' : '') +
+      '</div>';
+    }).join('');
+
+    var html = '<div class="eyebrow">Independent check</div>' +
+      '<h1>Über mich — Independent check</h1>' +
+      '<div class="fb-result ' + (isDemonstrated ? 'demonstrated' : 'needs-review') + '">' + (isDemonstrated ? 'Demonstrated' : 'Needs another look') + '</div>';
+
+    if (fb.praise) html += '<div class="fb-praise">' + escapeHtml(fb.praise) + '</div>';
+
+    html += '<div class="fb-block"><div class="fb-label">Communicated</div><div class="fb-communicated">' + communicatedHtml + '</div></div>';
+
+    if (correctionsHtml) {
+      html += '<div class="fb-block"><div class="fb-label">Small corrections</div>' + correctionsHtml + '</div>';
+    }
+
+    if (fb.corrected_version) {
+      html += '<div class="fb-block"><div class="fb-label">Correct version</div><div class="fb-corrected-box">' + escapeHtml(fb.corrected_version) + '</div></div>';
+    }
+
+    if (!isDemonstrated && fb.missing_note) {
+      html += '<div class="fb-missing">' + escapeHtml(fb.missing_note) + '</div>';
+    }
+
+    html += '<div class="fb-actions">';
+    if (!isDemonstrated) html += '<button type="button" class="fb-retry-btn" id="retryBtn">Try again</button>';
+    html += '<a class="back-btn" href="topic.html?id=' + encodeURIComponent(topicId) + '">Back to topic</a>';
+    html += '</div>';
+
+    main.innerHTML = html;
+    var retryBtn = document.getElementById('retryBtn');
+    if (retryBtn) retryBtn.addEventListener('click', renderForm);
   }
 
   // Preferred interaction was: reuse existing speaking/recording infra if
@@ -175,18 +267,35 @@
   // app (sprechen-orientation.html's rehearsal mic) explicitly stores
   // nothing — "no scoring, nothing uploaded" — so there's no upload path
   // to reuse either. Falling back to the documented default: a simple text
-  // response, stored as a real attempt (not a bare self-report checkbox).
+  // response, evaluated server-side (server.js: POST /api/topic-check/
+  // feedback) rather than left as a bare self-report checkbox.
+  var API_BASE = 'https://deutschweg.onrender.com';
+
   async function submitCheck() {
     var input = document.getElementById('responseInput');
     var btn = document.getElementById('submitBtn');
     var text = input.value.trim();
     if (!text || !user || !topicId) return;
     btn.disabled = true;
-    btn.textContent = 'Saving…';
-    // result is 'attempted', never 'demonstrated' — DeutschWeg doesn't
-    // evaluate this response yet. 'demonstrated' is reserved for once an
-    // evaluation actually happens.
-    var payload = { user_id: user.id, topic_id: topicId, result: 'attempted', note: text, completed_at: new Date().toISOString() };
+    btn.textContent = 'Checking…';
+
+    var feedback = null;
+    try {
+      var res = await fetch(API_BASE + '/api/topic-check/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: text, required_info: REQUIRED_INFO.map(function(i) { return i.prompt; }) })
+      });
+      if (res.ok) feedback = await res.json();
+    } catch (e) { /* feedback stays null — falls back below */ }
+
+    // result is only ever 'demonstrated' when the AI evaluation actually
+    // said so; if evaluation failed outright, this falls back to the
+    // original honest default — 'attempted', never invented as
+    // 'demonstrated' — and the raw response is still saved either way.
+    var result = feedback && (feedback.result === 'demonstrated' || feedback.result === 'needs_review')
+      ? feedback.result : 'attempted';
+    var payload = { user_id: user.id, topic_id: topicId, result: result, note: text, completed_at: new Date().toISOString() };
     var ins = await dwSupabase.from('topic_performance_checks').insert(payload);
     if (ins.error) {
       console.error('[independent-check] insert failed', ins.error);
@@ -195,7 +304,12 @@
       alert('Could not save your response. Please try again.');
       return;
     }
-    renderDone();
+
+    if (feedback && (feedback.result === 'demonstrated' || feedback.result === 'needs_review')) {
+      renderFeedback(feedback);
+    } else {
+      renderDone("Saved — we couldn't generate feedback right now, but your attempt is recorded.");
+    }
   }
 
   (async function init() {

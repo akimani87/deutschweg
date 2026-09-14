@@ -404,6 +404,125 @@ ${text.trim()}
   }
 });
 
+// ── POST /api/topic-check/feedback ──────────────────────────────────────────
+// Evaluates a topic's Independent Check text response (currently only Über
+// mich's self-introduction). Deliberately NOT the Schreiben examiner rubric
+// above — this is a beginner's first unscaffolded check, not an exam, so the
+// philosophy is communication first, correction second, confidence
+// preserved: a learner who's understandable but imperfect still passes.
+// required_info describes the task given to the learner (Über mich: name /
+// origin / residence) — a param, not hardcoded, so a later topic's check can
+// reuse this endpoint with its own list.
+app.post('/api/topic-check/feedback', async (req, res) => {
+  const { text, required_info } = req.body;
+
+  if (!text || !text.trim()) {
+    return res.status(400).json({ error: 'Please provide a response to evaluate.' });
+  }
+  const requiredList = Array.isArray(required_info) && required_info.length
+    ? required_info
+    : ['name', 'where they are from', 'where they live'];
+
+  if (!process.env.CLAUDE_API_KEY) {
+    console.error('CLAUDE_API_KEY is not set in .env');
+    return res.status(500).json({ error: 'API key not configured. Add CLAUDE_API_KEY to your .env file.' });
+  }
+
+  const prompt = `You are a warm, encouraging beginner (A1) German teacher reviewing a learner's very first independent self-introduction. They wrote this with no model answer, no sentence starters, and no hints — it's a confidence-building check, not an exam.
+
+REQUIRED INFORMATION the learner was asked to include:
+${requiredList.map((r) => `- ${r}`).join('\n')}
+
+YOUR PHILOSOPHY, in this exact order: communication first, correction second, confidence preserved.
+
+1. For each required piece of information, decide if the learner communicated it clearly — understandable counts, even with imperfect spelling or grammar. Do NOT require perfection for something to count as communicated.
+2. Decide "result":
+   - "demonstrated" — every required piece of information was communicated and understandable. Small spelling/grammar mistakes never block this.
+   - "needs_review" — one or more required pieces of information is missing or genuinely not understandable.
+3. Write "praise" — one short, specific, honest sentence about what they actually did well. Never generic filler ("Good job!"). If almost nothing required was communicated, do not praise the whole attempt — set "praise" to null instead of inventing something (the encouragement in that case belongs in "missing_note", not here).
+4. List "corrections" — the most useful 1 to 3 corrections only (spelling or grammar), most useful first. Each is {"wrong": "the exact learner text", "correct": "the fixed version", "explanation": "..." }. Only add "explanation" when a beginner genuinely needs the why (e.g. a verb-ending rule) — omit it for a plain spelling fix. Never use grammar jargon (no "accusative", "subordinate clause", "conjugation" etc.) — explain it the way you'd tell a complete beginner in one short plain sentence. Do not list every small issue — pick only what's most worth learning from right now. Use [] if there's genuinely nothing worth correcting.
+5. Write "corrected_version" — the learner's own sentences, lightly corrected only where needed. Never rewrite into fancier language, never add content they didn't say. Use "" if nothing usable was written at all.
+6. If "result" is "needs_review", write "missing_note": one short, kind sentence that names exactly what's missing and invites them to try again. Leave it null when "result" is "demonstrated".
+
+RULES:
+- Do not mark "needs_review" just for small spelling or grammar mistakes if the meaning is clear — always correct them, but they never block "demonstrated" on their own.
+- Never give false or fake praise for content that isn't there.
+- If the learner communicated ANY part of the task, say something genuinely positive about that part — even inside a "needs_review" result.
+
+Format your ENTIRE response as a single raw JSON object — no markdown, no code fences, no text outside the JSON:
+{
+  "result": "demonstrated",
+  "praise": "Great job — your introduction is clear and easy to understand." ,
+  "communicated": { "name": true, "origin": true, "residence": true },
+  "corrections": [
+    { "wrong": "Kenya", "correct": "Kenia" },
+    { "wrong": "Ich wohnen in Berlin.", "correct": "Ich wohne in Berlin.", "explanation": "With ich, wohnen becomes wohne." }
+  ],
+  "corrected_version": "Ich heiße Amina. Ich komme aus Kenia. Ich wohne in Berlin.",
+  "missing_note": null
+}
+
+Learner's response:
+"""
+${text.trim()}
+"""`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method:  'POST',
+      headers: {
+        'Content-Type':    'application/json',
+        'x-api-key':       process.env.CLAUDE_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model:      'claude-sonnet-4-6',
+        max_tokens: 800,
+        messages: [
+          { role: 'user', content: prompt }
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      const errBody = await response.json().catch(() => ({}));
+      const message = errBody?.error?.message || `Claude API returned ${response.status}`;
+      console.error('Claude API error:', message);
+      return res.status(502).json({ error: message });
+    }
+
+    const data       = await response.json();
+    const rawContent = data?.content?.[0]?.text ?? '';
+    const cleaned = rawContent
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*```$/,           '')
+      .trim();
+
+    let result;
+    try {
+      result = JSON.parse(cleaned);
+    } catch (parseErr) {
+      console.error('JSON parse error. Raw response:\n', rawContent);
+      return res.status(502).json({ error: 'Could not parse feedback response. Try again.' });
+    }
+
+    if (
+      (result.result !== 'demonstrated' && result.result !== 'needs_review') ||
+      !result.communicated ||
+      !Array.isArray(result.corrections) ||
+      typeof result.corrected_version !== 'string'
+    ) {
+      return res.status(502).json({ error: 'Unexpected response format from AI. Try again.' });
+    }
+
+    return res.json(result);
+
+  } catch (err) {
+    console.error('Unexpected server error:', err);
+    return res.status(500).json({ error: 'Server error: ' + err.message });
+  }
+});
+
 // ── POST /api/sprechen ───────────────────────────────────────────────────────
 app.post('/api/sprechen', async (req, res) => {
   const { part, answer } = req.body;
