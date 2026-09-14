@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- DW SEO INJECT -->
+<meta name="title" content="DeutschWeg — Independent Check">
+<meta name="description" content="Prepare for your Goethe German exam with AI-powered lessons. A1, A2, B1, B2 — for anyone moving to Germany for study, work, or family. Start free today.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="language" content="English">
+<meta name="author" content="DeutschWeg">
+<!-- /DW SEO INJECT -->
+
+<title>DeutschWeg — Independent Check</title>
+<link rel="stylesheet" href="deutschweg-theme.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
+<style>
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:'DM Sans',system-ui,sans-serif;
+    background:#fff; color:#1F2937; min-height:100vh;
+    opacity:0; transition:opacity 0.25s ease;
+  }
+  body.ready{opacity:1;}
+
+  .top-nav{
+    display:flex; align-items:center; padding:0 24px; height:58px;
+    border-bottom:1px solid #E5E7EB; background:#fff;
+    position:sticky; top:0; z-index:50;
+  }
+  .logo{display:flex;align-items:center;gap:9px;text-decoration:none;color:#1F2937;}
+  .logo-icon{width:32px;height:32px;background:#3B82F6;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:800;flex-shrink:0;}
+  .logo-text{font-size:17px;font-weight:800;color:#1F2937;letter-spacing:-0.3px;}
+  .logo-text span{color:#3B82F6;}
+
+  .main{max-width:560px;margin:0 auto;padding:40px 24px 80px;}
+  .eyebrow{font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#B45309;margin-bottom:10px;}
+  h1{font-size:24px;font-weight:800;margin:0 0 22px;color:#1F2937;letter-spacing:-0.3px;}
+
+  /* ── Instruction card — deliberately contains no example German, no
+     sentence starters, no grammar/vocabulary hints. Just the task. ── */
+  .instruction-card{
+    background:#FFFBEB; border:1px solid #FDE68A; border-radius:16px;
+    padding:20px 22px; margin-bottom:24px;
+  }
+  .instruction-lead{font-size:16px;font-weight:700;color:#1F2937;margin-bottom:10px;}
+  .instruction-include{font-size:14px;color:#374151;margin-bottom:2px;}
+  .instruction-list{margin:0 0 12px;padding-left:20px;font-size:14px;color:#374151;line-height:1.7;}
+  .instruction-note{font-size:13px;color:#92400E;font-weight:600;}
+
+  .response-input{
+    width:100%; min-height:180px; border:1.5px solid #E5E7EB; border-radius:14px;
+    padding:16px; font-size:15px; font-family:inherit; line-height:1.6; color:#1F2937;
+    resize:vertical;
+  }
+  .response-input:focus{outline:none; border-color:#93C5FD; box-shadow:0 0 0 3px rgba(147,197,253,.35);}
+
+  .submit-row{display:flex; justify-content:flex-end; margin-top:16px;}
+  .submit-btn{
+    background:#3B82F6; color:#fff; border:none; border-radius:50px;
+    padding:13px 26px; font-size:14px; font-weight:800; cursor:pointer; font-family:inherit;
+    transition:background .15s, transform .15s;
+  }
+  .submit-btn:hover:not(:disabled){background:#2563EB; transform:translateY(-1px);}
+  .submit-btn:disabled{opacity:.5; cursor:default;}
+
+  .done-panel{text-align:center; padding:48px 20px;}
+  .done-icon{font-size:40px; margin-bottom:14px;}
+  .done-title{font-size:19px; font-weight:800; color:#1F2937; margin-bottom:8px;}
+  .done-sub{font-size:14px; color:#6B7280; margin-bottom:28px; line-height:1.6; max-width:380px; margin-left:auto; margin-right:auto;}
+  .back-btn{
+    display:inline-flex; align-items:center; gap:8px;
+    background:#3B82F6; color:#fff; text-decoration:none;
+    border-radius:50px; padding:12px 24px; font-size:14px; font-weight:800;
+  }
+
+  .signin-note{background:#F9FAFB; border:1px solid #E5E7EB; border-radius:14px; padding:20px; font-size:14px; color:#374151; line-height:1.6;}
+  .signin-note a{color:#3B82F6; font-weight:700; text-decoration:none;}
+
+  .load-msg{color:#9CA3AF;font-size:14px;}
+</style>
+</head>
+<body>
+
+<div class="top-nav">
+  <a href="dashboard.html" class="logo">
+    <div class="logo-icon">D</div>
+    <span class="logo-text">Deutsch<span>Weg</span></span>
+  </a>
+</div>
+
+<div class="main" id="main">
+  <div class="load-msg" id="loadMsg">Loading…</div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  function escapeHtml(s) {
+    if (s === null || s === undefined) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  var params = new URLSearchParams(location.search);
+  // Accepts either name — topic.html links with ?topic=, but ?id= also
+  // works so this page matches the rest of the app's convention.
+  var topicId = params.get('topic') || params.get('id');
+  var main = document.getElementById('main');
+  var user = null;
+
+  function finalizeBoot() { document.body.classList.add('ready'); }
+
+  function renderError(msg) {
+    main.innerHTML = '<div class="load-msg">' + escapeHtml(msg) + '</div>';
+    finalizeBoot();
+  }
+
+  function renderSignInRequired() {
+    main.innerHTML =
+      '<div class="eyebrow">Independent check</div>' +
+      '<h1>Über mich — Independent check</h1>' +
+      '<div class="signin-note">Please <a href="login.html">sign in</a> to take the independent check.</div>';
+    finalizeBoot();
+  }
+
+  // Title and instruction copy are the literal Über mich release copy —
+  // this page is scoped to Über mich only for now (no other topics yet),
+  // so nothing here is fetched/parameterized beyond the topic id needed
+  // to save the attempt and link back.
+  function renderForm() {
+    main.innerHTML =
+      '<div class="eyebrow">Independent check</div>' +
+      '<h1>Über mich — Independent check</h1>' +
+      '<div class="instruction-card">' +
+        '<div class="instruction-lead">Introduce yourself in German.</div>' +
+        '<div class="instruction-include">Include:</div>' +
+        '<ul class="instruction-list">' +
+          '<li>your name</li>' +
+          '<li>where you’re from</li>' +
+          '<li>where you live</li>' +
+        '</ul>' +
+        '<div class="instruction-note">Try without looking back at the lesson.</div>' +
+      '</div>' +
+      '<textarea class="response-input" id="responseInput" placeholder="Type your introduction here…" autofocus></textarea>' +
+      '<div class="submit-row"><button type="button" class="submit-btn" id="submitBtn" disabled>Submit</button></div>';
+
+    var input = document.getElementById('responseInput');
+    var btn = document.getElementById('submitBtn');
+    input.addEventListener('input', function() {
+      btn.disabled = input.value.trim().length === 0;
+    });
+    btn.addEventListener('click', submitCheck);
+    finalizeBoot();
+  }
+
+  function renderDone() {
+    main.innerHTML =
+      '<div class="done-panel">' +
+        '<div class="done-icon">✓</div>' +
+        '<div class="done-title">Saved</div>' +
+        '<div class="done-sub">This is recorded as attempted — DeutschWeg doesn’t automatically grade this yet.</div>' +
+        '<a class="back-btn" href="topic.html?id=' + encodeURIComponent(topicId) + '">Back to topic</a>' +
+      '</div>';
+  }
+
+  // Preferred interaction was: reuse existing speaking/recording infra if
+  // that's clean. It isn't — sprechen.html's recording is a live WebSocket
+  // conversation with an AI examiner (mic permission, streaming PCM audio,
+  // server-side session state, part-tracking), not a standalone
+  // record-and-store utility, so bolting a single self-intro onto it would
+  // mean faking a whole exam session. The only other recording code in the
+  // app (sprechen-orientation.html's rehearsal mic) explicitly stores
+  // nothing — "no scoring, nothing uploaded" — so there's no upload path
+  // to reuse either. Falling back to the documented default: a simple text
+  // response, stored as a real attempt (not a bare self-report checkbox).
+  async function submitCheck() {
+    var input = document.getElementById('responseInput');
+    var btn = document.getElementById('submitBtn');
+    var text = input.value.trim();
+    if (!text || !user || !topicId) return;
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+    // result is 'attempted', never 'demonstrated' — DeutschWeg doesn't
+    // evaluate this response yet. 'demonstrated' is reserved for once an
+    // evaluation actually happens.
+    var payload = { user_id: user.id, topic_id: topicId, result: 'attempted', note: text, completed_at: new Date().toISOString() };
+    var ins = await dwSupabase.from('topic_performance_checks').insert(payload);
+    if (ins.error) {
+      console.error('[independent-check] insert failed', ins.error);
+      btn.disabled = false;
+      btn.textContent = 'Submit';
+      alert('Could not save your response. Please try again.');
+      return;
+    }
+    renderDone();
+  }
+
+  (async function init() {
+    if (!topicId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(topicId)) {
+      renderError('No valid topic specified.');
+      return;
+    }
+    if (typeof dwSupabase === 'undefined') { renderError('Connection error. Refresh the page.'); return; }
+    try {
+      var userRes = await dwSupabase.auth.getUser();
+      user = userRes && userRes.data && userRes.data.user;
+    } catch (e) { user = null; }
+    if (!user) { renderSignInRequired(); return; }
+    renderForm();
+  })();
+})();
+</script>
+</body>
+</html>

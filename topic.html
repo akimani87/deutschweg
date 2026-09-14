@@ -89,17 +89,31 @@
     .continue-title{font-size:18px;}
   }
 
-  /* Self-report confirm — shown only in the independent-check state */
-  .confirm-check-btn{
-    display:block; width:100%; margin:10px 0 6px;
-    background:#F9FAFB; border:1.5px solid #D1D5DB; border-radius:12px;
-    padding:13px 18px; font-size:14px; font-weight:700; color:#1F2937;
-    cursor:pointer; transition:background .15s, border-color .15s;
-    font-family:inherit;
+  /* ── Independent check card — a distinct final card after the six-step
+     path, not the same continue-card used for guided steps. Amber accent
+     (vs. the path's blue) deliberately reads as "a different kind of
+     task", not just another lesson to continue. ── */
+  .check-card{
+    background:#FFFBEB; border:1.5px solid #FDE68A; border-radius:16px;
+    padding:20px 22px; margin:4px 0 8px;
   }
-  .confirm-check-btn:hover{background:#F3F4F6; border-color:#9CA3AF;}
-  .confirm-check-btn:disabled{opacity:.6; cursor:default;}
-  .confirm-check-note{font-size:12px; color:#9CA3AF; margin:0 0 22px; line-height:1.5;}
+  .check-card-eyebrow{font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#B45309;margin-bottom:8px;}
+  .check-card-body{font-size:16px;font-weight:700;color:#1F2937;margin-bottom:10px;line-height:1.4;}
+  .check-card-include{font-size:14px;color:#374151;margin-bottom:2px;}
+  .check-card-list{margin:0 0 12px;padding-left:20px;font-size:14px;color:#374151;line-height:1.7;}
+  .check-card-note{font-size:12.5px;color:#92400E;font-style:italic;margin-bottom:16px;}
+  .check-card-btn{
+    display:inline-flex;align-items:center;gap:8px;
+    background:#3B82F6;color:#fff;border:none;border-radius:50px;
+    padding:12px 24px;font-size:14px;font-weight:800;letter-spacing:0.2px;
+    cursor:pointer;font-family:inherit;transition:background .15s, transform .15s;
+  }
+  .check-card-btn:hover{background:#2563EB;transform:translateY(-1px);}
+  .check-card-done{
+    display:flex; align-items:center; gap:10px;
+    background:#ECFDF5; border:1px solid #A7F3D0; border-radius:12px;
+    padding:14px 16px; margin:4px 0 8px; font-size:13.5px; font-weight:700; color:#059669;
+  }
 
   /* ── Tier B: Your path ── */
   .tier-label{font-size:11px;font-weight:700;letter-spacing:1.5px;color:#9CA3AF;text-transform:uppercase;margin:28px 0 10px;}
@@ -227,13 +241,29 @@
       <span class="continue-cta-arrow">→</span>
     </span>
   </a>
-  <button class="confirm-check-btn" id="confirmCheckBtn" style="display:none;">I introduced myself ✓</button>
-  <div class="confirm-check-note" id="confirmCheckNote" style="display:none;">Not graded automatically — this records that you did it, for your own tracking.</div>
-
   <!-- Tier B: Your path -->
   <div class="tier-label">Your path</div>
   <div id="pathBanner"></div>
   <div class="path-list" id="pathList"></div>
+
+  <!-- Independent check — a distinct final card, separate from Step 6 and
+       from the guided continue-card above. Only shown once all six steps
+       are done. -->
+  <div class="check-card" id="checkCard" style="display:none;">
+    <div class="check-card-eyebrow">Independent check</div>
+    <div class="check-card-body">Introduce yourself without help.</div>
+    <div class="check-card-include">Include:</div>
+    <ul class="check-card-list">
+      <li>your name</li>
+      <li>where you're from</li>
+      <li>where you live</li>
+    </ul>
+    <div class="check-card-note">No sentence starters this time.</div>
+    <button type="button" class="check-card-btn" id="startCheckBtn">Start check</button>
+  </div>
+  <div class="check-card-done" id="checkCardDone" style="display:none;">
+    <span>✓</span><span>Independent check — attempted</span>
+  </div>
 
   <div class="status-panel" id="statusPanel" style="display:none;">
     <div class="status-row"><span>Learning path</span><span class="status-value" id="pathStatus">—</span></div>
@@ -345,7 +375,7 @@
     return './module.html?id=' + lesson.module_id + '&lesson=' + lesson.order_index + '&topic=' + topicId;
   }
 
-  var state = { topic: null, items: [], performanceLesson: null, user: null, completedLessonIds: {}, topicProgress: null, latestCheck: null };
+  var state = { topic: null, items: [], user: null, completedLessonIds: {}, topicProgress: null, latestCheck: null };
 
   loadTopic(topicId);
 
@@ -353,12 +383,11 @@
     try {
       var topicRes = await dwSupabase
         .from('topics')
-        .select('id, level, title_de, title_en, outcome_line, description, performance_check_lesson_id, is_published, performance_check_lesson:lessons!performance_check_lesson_id(id, module_id, order_index, title)')
+        .select('id, level, title_de, title_en, outcome_line, description, is_published')
         .eq('id', id).maybeSingle();
       if (topicRes.error) throw topicRes.error;
       if (!topicRes.data) { showError('Topic not found', 'No topic exists with this ID.'); return; }
       state.topic = topicRes.data;
-      state.performanceLesson = topicRes.data.performance_check_lesson || null;
 
       var itemsRes = await dwSupabase
         .from('topic_items')
@@ -376,7 +405,6 @@
         if (user) {
           state.user = user;
           var lessonIds = state.items.map(function(it) { return it.lesson_id; });
-          if (state.performanceLesson) lessonIds.push(state.performanceLesson.id);
 
           if (lessonIds.length > 0) {
             var progRes = await dwSupabase.from('user_progress').select('lesson_id')
@@ -399,6 +427,7 @@
 
       renderContinueCard();
       renderPathList();
+      renderCheckCard();
       renderStatusPanel();
       finalizeBoot();
     } catch (e) {
@@ -430,10 +459,6 @@
     var titleEl = document.getElementById('continueTitle');
     var metaEl = document.getElementById('continueMeta');
     var ctaEl = document.getElementById('continueCtaText');
-    var confirmBtn = document.getElementById('confirmCheckBtn');
-    var confirmNote = document.getElementById('confirmCheckNote');
-    confirmBtn.style.display = 'none';
-    confirmNote.style.display = 'none';
 
     var next = state.user ? nextIncompleteItem() : (state.items[0] || null);
 
@@ -448,19 +473,11 @@
       return;
     }
 
-    if (state.performanceLesson && !state.latestCheck) {
-      card.href = lessonHref(state.performanceLesson);
-      eyebrow.textContent = 'Independent check';
-      titleEl.textContent = 'Show what you can do — no model this time';
-      metaEl.textContent = 'Introduce yourself in your own words.';
-      ctaEl.textContent = 'Start the check';
-      card.style.display = '';
-      if (state.user) {
-        confirmBtn.style.display = '';
-        confirmBtn.disabled = false;
-        confirmBtn.textContent = 'I introduced myself ✓';
-        confirmNote.style.display = '';
-      }
+    // All six steps done, independent check not yet attempted — the
+    // dedicated check-card below (renderCheckCard) is the next action now,
+    // not this card. This card returns once the check is also attempted.
+    if (state.user && !state.latestCheck) {
+      card.style.display = 'none';
       return;
     }
 
@@ -470,6 +487,20 @@
     metaEl.textContent = state.latestCheck ? 'Nice work. More topics are on the way.' : '';
     ctaEl.textContent = 'Back to dashboard';
     card.style.display = '';
+  }
+
+  // Independent check — a distinct final card shown after the six-step
+  // path is done, separate from both Step 6 and the continue-card above.
+  // Opens a dedicated check screen (independent-check.html) rather than
+  // re-using module.html's guided-lesson chrome, so nothing here can leak
+  // model answers, sentence starters, or hints into what should be an
+  // unscaffolded check.
+  function renderCheckCard() {
+    var card = document.getElementById('checkCard');
+    var done = document.getElementById('checkCardDone');
+    if (!state.user || !allStepsDone()) { card.style.display = 'none'; done.style.display = 'none'; return; }
+    if (state.latestCheck) { card.style.display = 'none'; done.style.display = 'flex'; return; }
+    card.style.display = ''; done.style.display = 'none';
   }
 
   function renderPathList() {
@@ -569,31 +600,9 @@
     state.topicProgress = { status: 'lessons_complete' };
   }
 
-  // Self-report only — no automatic evaluation in this release (checked:
-  // reusing Sprechen's /api/sprechen/feedback would mean either building
-  // full audio-capture integration, or feeding written text through a
-  // pipeline built and scored for spoken transcripts — producing a
-  // meaningless "pronunciation" score for text no one spoke. Neither is
-  // "minimal reuse", so this ships honest: result is 'attempted', not
-  // 'demonstrated' — DeutschWeg hasn't evaluated anything here yet.
-  async function confirmIndependentCheck() {
-    if (!state.user || !state.topic) return;
-    var btn = document.getElementById('confirmCheckBtn');
-    btn.disabled = true;
-    btn.textContent = 'Saving…';
-    var payload = { user_id: state.user.id, topic_id: state.topic.id, result: 'attempted', completed_at: new Date().toISOString() };
-    var ins = await dwSupabase.from('topic_performance_checks').insert(payload);
-    if (ins.error) {
-      console.error('[topic.html] topic_performance_checks insert failed', ins.error);
-      btn.disabled = false; btn.textContent = 'I introduced myself ✓';
-      return;
-    }
-    state.latestCheck = { result: 'attempted', completed_at: payload.completed_at };
-    renderContinueCard();
-    renderPathList();
-    renderStatusPanel();
-  }
-  document.getElementById('confirmCheckBtn').addEventListener('click', confirmIndependentCheck);
+  document.getElementById('startCheckBtn').addEventListener('click', function() {
+    window.location.href = 'independent-check.html?topic=' + encodeURIComponent(topicId);
+  });
 })();
 </script>
 </body>
