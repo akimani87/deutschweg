@@ -880,7 +880,7 @@
       var bi = el.getAttribute('data-block-idx');
       console.log('[dw-trace] dwTiles done — lesson=' + li + ' block=' + bi + ' — scheduling nextBlock in 1s');
       if (li !== null && bi !== null) {
-        setTimeout(function() { nextBlock(+li, +bi); }, 1000);
+        setTimeout(function() { window.dwModule.nextBlock(+li, +bi); }, 1000);
       }
     }
 
@@ -910,7 +910,7 @@
         var li = el.getAttribute('data-lesson-idx');
         var bi = el.getAttribute('data-block-idx');
         console.log('[dw-trace] dwClock Practice complete — lesson=' + li + ' block=' + bi + ' — scheduling nextBlock in 1s');
-        if (li !== null && bi !== null) { setTimeout(function() { nextBlock(+li, +bi); }, 1000); }
+        if (li !== null && bi !== null) { setTimeout(function() { window.dwModule.nextBlock(+li, +bi); }, 1000); }
         return;
       }
       var r = rounds[ridx];
@@ -990,7 +990,7 @@
         var li = el.getAttribute('data-lesson-idx');
         var bi = el.getAttribute('data-block-idx');
         console.log('[dw-trace] dwListen complete — lesson=' + li + ' block=' + bi + ' — scheduling nextBlock in 1s');
-        if (li !== null && bi !== null) { setTimeout(function() { nextBlock(+li, +bi); }, 1000); }
+        if (li !== null && bi !== null) { setTimeout(function() { window.dwModule.nextBlock(+li, +bi); }, 1000); }
         return;
       }
       el.querySelector('.li-cur').textContent = ridx + 1;
