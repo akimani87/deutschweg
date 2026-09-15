@@ -1948,8 +1948,28 @@
           // once the learner has seen the final content block. On lessons with
           // no content_json blocks (or legacy calls without lessonIdx), it is
           // visible immediately (display:'' = no style override).
+          //
+          // Primary button rendered FIRST, Go Deeper prompt second — the
+          // actual "leave this lesson" control must be the first thing a
+          // learner sees here, not competing with (or hidden below) an AI
+          // upsell box.
+          //
+          // go-deeper's own "Next lesson" (.gd-skip) does NOT get its own
+          // nextOnclick baked in like it used to. That copy was frozen at
+          // render time to whatever the lesson's state was when the page
+          // built (e.g. completeLessonCta on a fresh lesson) and NOTHING
+          // ever updated it afterward — completeLessonCta() only ever
+          // reassigns #adv-btn-<idx>'s handler in place. A learner clicking
+          // "Next lesson" before completing the lesson silently just wrote
+          // the completion (via that stale completeLessonCta call) with no
+          // visible feedback on the button they clicked, and got stuck
+          // there forever, since the same stale handler ran every time.
+          // Delegating to the primary button's live click() instead means
+          // .gd-skip always does exactly what the primary button currently
+          // does, however that button's own state has changed since render.
           '<div id="blk-adv-' + idx + '"' +
             (hasNewBlocks ? ' style="display:none"' : '') + '>' +
+            '<button class="btn btn-primary" id="adv-btn-' + idx + '" onclick="' + nextOnclick + '">' + nextLabel + '</button>' +
             '<div class="go-deeper" id="go-deeper-' + idx + '">' +
               '<div class="gd-title">Do you want more help?</div>' +
               '<div class="gd-body">Your AI Tutor can help you learn more about this lesson.<br>You can ask for another explanation, more examples, or a short practice.</div>' +
@@ -1962,9 +1982,8 @@
               '</ul>' +
               '<div class="gd-hint">Type what you need help with.</div>' +
               '<button class="btn btn-primary gd-tutor-btn" type="button" onclick="dwModule.goDeeperTutor(' + idx + ')">Ask AI Tutor</button>' +
-              '<button class="gd-skip" type="button" onclick="' + nextOnclick + '">Next lesson</button>' +
+              '<button class="gd-skip" type="button" onclick="document.getElementById(\'adv-btn-' + idx + '\').click();">Next lesson</button>' +
             '</div>' +
-            '<button class="btn btn-primary" id="adv-btn-' + idx + '" onclick="' + nextOnclick + '">' + nextLabel + '</button>' +
           '</div>' +
           navHtml +
         '</div>';
