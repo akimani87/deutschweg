@@ -784,6 +784,13 @@
       answer.innerHTML = '';
       answer.className = 'dw-tiles-answer';
       check.disabled   = true;
+      // check() hides this button via an inline style when a round is
+      // answered (checkBtn.style.display = 'none'); that inline override
+      // persists on this same DOM node across rounds (render() reuses it,
+      // it isn't recreated), so the next round must explicitly clear it
+      // here or the Check button stays invisible for round 2 onward even
+      // though .disabled correctly flips back to false via tap().
+      check.style.display = '';
       fb.className     = 'dw-tiles-feedback';
       fb.textContent   = '';
       nxt.style.display = 'none';
