@@ -2001,6 +2001,19 @@
         return String(l.order_index) === String(deepLinkOrderIndex);
       });
       if (deepLinkIdx !== -1) window.dwModule.goToLesson(deepLinkIdx);
+    } else if (state.user) {
+      // Auto-resume: a signed-in learner reopening a module (dashboard's
+      // ?id= entry, no explicit ?lesson=) lands on their first incomplete
+      // lesson instead of always restarting at lesson 1. Dots already let
+      // anyone jump to any lesson with no gating — this only changes what's
+      // shown by default on load, so a returning learner isn't required to
+      // notice and click a dot every time just to continue where they left
+      // off. Fully completed modules keep opening at lesson 1 (nothing left
+      // to "resume" to).
+      var firstIncompleteIdx = state.lessons.findIndex(function(l) {
+        return !state.completedIds[l.id];
+      });
+      if (firstIncompleteIdx > 0) window.dwModule.goToLesson(firstIncompleteIdx);
     }
 
     finalizeBoot();
