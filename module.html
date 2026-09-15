@@ -878,6 +878,7 @@
       el.innerHTML = '<div class="dw-tiles-score">✅ All ' + total + ' rounds complete!</div>';
       var li = el.getAttribute('data-lesson-idx');
       var bi = el.getAttribute('data-block-idx');
+      console.log('[dw-trace] dwTiles done — lesson=' + li + ' block=' + bi + ' — scheduling nextBlock in 1s');
       if (li !== null && bi !== null) {
         setTimeout(function() { nextBlock(+li, +bi); }, 1000);
       }
@@ -908,6 +909,7 @@
         el.innerHTML = '<div class="dw-tiles-score">✅ Practice complete!</div>';
         var li = el.getAttribute('data-lesson-idx');
         var bi = el.getAttribute('data-block-idx');
+        console.log('[dw-trace] dwClock Practice complete — lesson=' + li + ' block=' + bi + ' — scheduling nextBlock in 1s');
         if (li !== null && bi !== null) { setTimeout(function() { nextBlock(+li, +bi); }, 1000); }
         return;
       }
@@ -987,6 +989,7 @@
         el.innerHTML = '<div class="dw-tiles-score">✅ Listening complete!</div>';
         var li = el.getAttribute('data-lesson-idx');
         var bi = el.getAttribute('data-block-idx');
+        console.log('[dw-trace] dwListen complete — lesson=' + li + ' block=' + bi + ' — scheduling nextBlock in 1s');
         if (li !== null && bi !== null) { setTimeout(function() { nextBlock(+li, +bi); }, 1000); }
         return;
       }
@@ -2591,6 +2594,10 @@
       bl.style.display = bi === 0 ? '' : 'none';
     });
     var advBtn = document.getElementById('blk-adv-' + lessonIdx);
+    // By design: this re-hides THIS lesson's own (not-yet-reached) advance
+    // button for a fresh entry — not the one the learner just saw on the
+    // PREVIOUS lesson, which is a different element (#blk-adv-<lIdx-1>).
+    console.log('[dw-trace] resetLessonBlocks(' + lessonIdx + ') — hiding #blk-adv-' + lessonIdx + ' (this lesson\'s own, fresh start) found=' + !!advBtn);
     if (advBtn) advBtn.style.display = 'none';
     // Re-init any interactive block that is now visible (block 0)
     if (blocks.length > 0) initInteractiveBlocks(blocks[0]);
@@ -2600,10 +2607,12 @@
   // Called by "Continue →" buttons on non-interactive blocks and auto-called
   // by interactive blocks when all their rounds complete.
   function nextBlock(lessonIdx, blockIdx) {
+    console.log('[dw-trace] nextBlock(' + lessonIdx + ',' + blockIdx + ') called');
     var curr = document.getElementById('blk-' + lessonIdx + '-' + blockIdx);
     if (curr) curr.style.display = 'none';
     var next = document.getElementById('blk-' + lessonIdx + '-' + (blockIdx + 1));
     if (next) {
+      console.log('[dw-trace] nextBlock: revealing block ' + (blockIdx + 1) + ' in lesson ' + lessonIdx);
       next.style.display = '';
       // Init any interactive block that just became visible
       initInteractiveBlocks(next);
@@ -2612,8 +2621,10 @@
       // All content blocks shown — reveal the lesson advance button
       // (which now also carries the "Go Deeper" prompt, see buildAllLessons)
       var advBtn = document.getElementById('blk-adv-' + lessonIdx);
+      console.log('[dw-trace] nextBlock: no more blocks after ' + blockIdx + ' in lesson ' + lessonIdx + ' — advance button found=' + !!advBtn + ', display before=' + (advBtn && advBtn.style.display));
       if (advBtn) {
         advBtn.style.display = '';
+        console.log('[dw-trace] nextBlock: advance button display now=' + JSON.stringify(advBtn.style.display) + ' (computed=' + window.getComputedStyle(advBtn).display + ')');
         window.scrollTo({ top: 0, behavior: 'smooth' });
         maybeShowGoDeeperTooltip(lessonIdx);
       }
@@ -3182,12 +3193,15 @@
      * that only happens on the follow-up click, via goNext().
      */
     completeLessonCta: function(lIdx) {
+      console.log('[dw-trace] completeLessonCta(' + lIdx + ') called');
       markLessonComplete(state.lessons[lIdx]);
       var isLast = lIdx >= state.lessons.length - 1;
       var btn = document.getElementById('adv-btn-' + lIdx);
+      console.log('[dw-trace] completeLessonCta: #adv-btn-' + lIdx + ' found=' + !!btn + ' isLast=' + isLast);
       if (btn) {
         btn.textContent = isLast ? 'Fertig →' : 'Nächste Lektion →';
         btn.onclick = function() { window.dwModule.goNext(lIdx); };
+        console.log('[dw-trace] completeLessonCta: button now says "' + btn.textContent + '", onclick reassigned to goNext(' + lIdx + ')');
       }
     },
 
@@ -3199,17 +3213,20 @@
      * user actions instead of one silent auto-chain.
      */
     goNext: function(lIdx) {
+      console.log('[dw-trace] goNext(' + lIdx + ') called — state.lessonIdx before=' + state.lessonIdx);
       var current = document.getElementById('lesson-' + lIdx);
       if (current) current.classList.remove('active');
 
       var nextIdx = lIdx + 1;
       if (nextIdx >= state.lessons.length) {
+        console.log('[dw-trace] goNext: lesson ' + lIdx + ' was the last lesson — calling complete() instead of advancing');
         this.complete();
         return;
       }
 
       state.lessonIdx = nextIdx;
       var nextScreen = document.getElementById('lesson-' + nextIdx);
+      console.log('[dw-trace] goNext: state.lessonIdx now=' + state.lessonIdx + ', #lesson-' + nextIdx + ' found=' + !!nextScreen);
       if (nextScreen) {
         nextScreen.classList.add('active');
         // Reset which step is active inside the new lesson
