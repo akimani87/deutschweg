@@ -859,7 +859,9 @@
         : '✗ ' + answer.join('') + ' (' + (r.audio || '') + ')';
       if (r.audio) speakText(r.audio, 'de-DE');
       checkBtn.style.display = 'none';
-      nxt.style.display = '';
+      // '' clears an inline override but does nothing against .dw-tiles-next's
+      // OWN display:none in its class rule — must set an explicit value.
+      nxt.style.display = 'block';
     }
 
     function next(id) {
@@ -953,7 +955,9 @@
         opts.forEach(function(b) { if (b.textContent === r.sentence) b.classList.add('correct'); });
       }
       if (r.audio || r.sentence) speakText(r.audio || r.sentence, 'de-DE');
-      el.querySelector('.dw-clock-next').style.display = '';
+      // '' clears an inline override but does nothing against .dw-clock-next's
+      // OWN display:none in its class rule — must set an explicit value.
+      el.querySelector('.dw-clock-next').style.display = 'block';
     }
 
     function next(id) {
@@ -1029,7 +1033,9 @@
       fb.textContent = correct ? '✓ Richtig! ' + r.answer : '✗ ' + r.answer + ' — hear it again:';
       speakText(r.audio, 'de-DE');
       chk.style.display = 'none';
-      nxt.style.display = '';
+      // '' clears an inline override but does nothing against .dw-listen-next's
+      // OWN display:none in its class rule — must set an explicit value.
+      nxt.style.display = 'block';
     }
 
     function next(id) {
