@@ -153,33 +153,58 @@
     finalizeBoot();
   }
 
+  // Per-topic check copy. Keyed by topic id, same pattern as topic.html's
+  // TOPIC_COMPLETION/TOPIC_VOCAB maps — each topic owns its own task
+  // framing, instruction list, and required-info keys (the keys matter:
+  // they're sent to the server and must match what the AI is asked to
+  // return in "communicated", see submitCheck below).
+  var TOPIC_CHECKS = {
+    '4bf7abfd-0147-4a83-b8c2-df60a263c24d': { // Über mich
+      title: 'Über mich — Independent check',
+      lead: 'Introduce yourself in German.',
+      include: ['your name', "where you're from", 'where you live'],
+      requiredInfo: [
+        { key: 'name', label: 'Name', prompt: 'their name' },
+        { key: 'origin', label: 'Origin', prompt: 'where they are from' },
+        { key: 'residence', label: 'Residence', prompt: 'where they live' }
+      ]
+    },
+    '5424452b-bf3b-4344-9cdd-035859c0aeff': { // Familie und Freunde
+      title: 'Familie und Freunde — Independent check',
+      lead: 'Introduce one family member or friend in German.',
+      include: ['who the person is', 'their name', 'where they live or come from'],
+      requiredInfo: [
+        { key: 'relationship', label: 'Who they are', prompt: 'who the person is (e.g. brother, friend)' },
+        { key: 'name', label: 'Name', prompt: 'their name' },
+        { key: 'location', label: 'Where they are from/live', prompt: 'where the person lives or comes from' }
+      ]
+    }
+  };
+  var DEFAULT_CHECK = TOPIC_CHECKS['4bf7abfd-0147-4a83-b8c2-df60a263c24d'];
+  var check = TOPIC_CHECKS[topicId] || DEFAULT_CHECK;
+  var REQUIRED_INFO = check.requiredInfo;
+
   function renderSignInRequired() {
     main.innerHTML =
       '<div class="eyebrow">Independent check</div>' +
-      '<h1>Über mich — Independent check</h1>' +
+      '<h1>' + escapeHtml(check.title) + '</h1>' +
       '<div class="signin-note">Please <a href="login.html">sign in</a> to take the independent check.</div>';
     finalizeBoot();
   }
 
-  // Title and instruction copy are the literal Über mich release copy —
-  // this page is scoped to Über mich only for now (no other topics yet),
-  // so nothing here is fetched/parameterized beyond the topic id needed
-  // to save the attempt and link back.
   function renderForm() {
     main.innerHTML =
       '<div class="eyebrow">Independent check</div>' +
-      '<h1>Über mich — Independent check</h1>' +
+      '<h1>' + escapeHtml(check.title) + '</h1>' +
       '<div class="instruction-card">' +
-        '<div class="instruction-lead">Introduce yourself in German.</div>' +
+        '<div class="instruction-lead">' + escapeHtml(check.lead) + '</div>' +
         '<div class="instruction-include">Include:</div>' +
         '<ul class="instruction-list">' +
-          '<li>your name</li>' +
-          '<li>where you’re from</li>' +
-          '<li>where you live</li>' +
+          check.include.map(function(i) { return '<li>' + escapeHtml(i) + '</li>'; }).join('') +
         '</ul>' +
         '<div class="instruction-note">Try without looking back at the lesson.</div>' +
       '</div>' +
-      '<textarea class="response-input" id="responseInput" placeholder="Type your introduction here…" autofocus></textarea>' +
+      '<textarea class="response-input" id="responseInput" placeholder="Type your answer here…" autofocus></textarea>' +
       '<div class="submit-row"><button type="button" class="submit-btn" id="submitBtn" disabled>Submit</button></div>';
 
     var input = document.getElementById('responseInput');
@@ -200,12 +225,6 @@
         '<a class="back-btn" href="topic.html?id=' + encodeURIComponent(topicId) + '">Back to topic</a>' +
       '</div>';
   }
-
-  var REQUIRED_INFO = [
-    { key: 'name', label: 'Name', prompt: 'their name' },
-    { key: 'origin', label: 'Origin', prompt: 'where they are from' },
-    { key: 'residence', label: 'Residence', prompt: 'where they live' }
-  ];
 
   // Teacher-style feedback, in the order requested: commend what went
   // well, show what was communicated, correct mistakes clearly, give a
@@ -229,7 +248,7 @@
     }).join('');
 
     var html = '<div class="eyebrow">Independent check</div>' +
-      '<h1>Über mich — Independent check</h1>' +
+      '<h1>' + escapeHtml(check.title) + '</h1>' +
       '<div class="fb-result ' + (isDemonstrated ? 'demonstrated' : 'needs-review') + '">' + (isDemonstrated ? 'Demonstrated' : 'Needs another look') + '</div>';
 
     if (fb.praise) html += '<div class="fb-praise">' + escapeHtml(fb.praise) + '</div>';
@@ -284,7 +303,10 @@
       var res = await fetch(API_BASE + '/api/topic-check/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: text, required_info: REQUIRED_INFO.map(function(i) { return i.prompt; }) })
+        body: JSON.stringify({
+          text: text,
+          required_info: REQUIRED_INFO.map(function(i) { return { key: i.key, prompt: i.prompt }; })
+        })
       });
       if (res.ok) feedback = await res.json();
     } catch (e) { /* feedback stays null — falls back below */ }

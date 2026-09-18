@@ -405,23 +405,30 @@ ${text.trim()}
 });
 
 // ── POST /api/topic-check/feedback ──────────────────────────────────────────
-// Evaluates a topic's Independent Check text response (currently only Über
-// mich's self-introduction). Deliberately NOT the Schreiben examiner rubric
-// above — this is a beginner's first unscaffolded check, not an exam, so the
-// philosophy is communication first, correction second, confidence
-// preserved: a learner who's understandable but imperfect still passes.
-// required_info describes the task given to the learner (Über mich: name /
-// origin / residence) — a param, not hardcoded, so a later topic's check can
-// reuse this endpoint with its own list.
+// Evaluates a topic's Independent Check text response — shared by every
+// topic's check (Über mich's self-introduction, Familie und Freunde's
+// introduce-someone-else, and any future topic). Deliberately NOT the
+// Schreiben examiner rubric above — this is a beginner's first unscaffolded
+// check, not an exam, so the philosophy is communication first, correction
+// second, confidence preserved: a learner who's understandable but
+// imperfect still passes.
+// required_info describes the task given to the learner: an array of
+// {key, prompt} — key must match the field name the client reads back off
+// "communicated" (see independent-check.html), prompt is the plain-English
+// description of what's required. A bare string is still accepted for
+// backward compatibility and treated as its own key and prompt.
 app.post('/api/topic-check/feedback', async (req, res) => {
   const { text, required_info } = req.body;
 
   if (!text || !text.trim()) {
     return res.status(400).json({ error: 'Please provide a response to evaluate.' });
   }
-  const requiredList = Array.isArray(required_info) && required_info.length
+  const requiredListRaw = Array.isArray(required_info) && required_info.length
     ? required_info
-    : ['name', 'where they are from', 'where they live'];
+    : [{ key: 'name', prompt: 'their name' }, { key: 'origin', prompt: 'where they are from' }, { key: 'residence', prompt: 'where they live' }];
+  const requiredList = requiredListRaw.map((r) =>
+    (r && typeof r === 'object') ? { key: String(r.key || r.prompt), prompt: String(r.prompt || r.key) } : { key: String(r), prompt: String(r) }
+  );
 
   if (!process.env.CLAUDE_API_KEY) {
     console.error('CLAUDE_API_KEY is not set in .env');
@@ -430,8 +437,8 @@ app.post('/api/topic-check/feedback', async (req, res) => {
 
   const prompt = `You are a warm, encouraging beginner (A1) German teacher reviewing a learner's very first independent self-introduction. They wrote this with no model answer, no sentence starters, and no hints — it's a confidence-building check, not an exam.
 
-REQUIRED INFORMATION the learner was asked to include:
-${requiredList.map((r) => `- ${r}`).join('\n')}
+REQUIRED INFORMATION the learner was asked to include — use EXACTLY these keys in the "communicated" object below, one boolean per key:
+${requiredList.map((r) => `- ${r.key}: ${r.prompt}`).join('\n')}
 
 YOUR PHILOSOPHY, in this exact order: communication first, correction second, confidence preserved.
 

@@ -304,25 +304,52 @@
   'use strict';
 
   // ── Curated topic vocabulary — small, fixed, lives here only. Not the
-  // global dictionary (decision: "Vocabulary must be curated"). ──
-  var VOCAB_WORDS = [
-    { de: 'der Name', en: 'name' },
-    { de: 'das Land', en: 'country' },
-    { de: 'die Stadt', en: 'city' },
-    { de: 'wohnen', en: 'to live (reside)' },
-    { de: 'kommen', en: 'to come' },
-    { de: 'heißen', en: 'to be called' }
-  ];
-  var VOCAB_PHRASES = [
-    { de: 'Ich heiße …', en: 'My name is …' },
-    { de: 'Mein Name ist …', en: 'My name is … (another common way to say it)' },
-    { de: 'Ich bin …', en: 'I am …' },
-    { de: 'Ich komme aus …', en: 'I come from …' },
-    { de: 'Ich wohne in …', en: 'I live in …' },
-    { de: 'Wie heißt du?', en: "What's your name? (informal)" },
-    { de: 'Woher kommst du?', en: 'Where are you from? (informal)' },
-    { de: 'Wo wohnst du?', en: 'Where do you live? (informal)' }
-  ];
+  // global dictionary (decision: "Vocabulary must be curated"). Keyed by
+  // topic id, same pattern as TOPIC_COMPLETION below, so each topic owns
+  // its own words/phrases without the others' panel changing.
+  var TOPIC_VOCAB = {
+    '4bf7abfd-0147-4a83-b8c2-df60a263c24d': { // Über mich
+      words: [
+        { de: 'der Name', en: 'name' },
+        { de: 'das Land', en: 'country' },
+        { de: 'die Stadt', en: 'city' },
+        { de: 'wohnen', en: 'to live (reside)' },
+        { de: 'kommen', en: 'to come' },
+        { de: 'heißen', en: 'to be called' }
+      ],
+      phrases: [
+        { de: 'Ich heiße …', en: 'My name is …' },
+        { de: 'Mein Name ist …', en: 'My name is … (another common way to say it)' },
+        { de: 'Ich bin …', en: 'I am …' },
+        { de: 'Ich komme aus …', en: 'I come from …' },
+        { de: 'Ich wohne in …', en: 'I live in …' },
+        { de: 'Wie heißt du?', en: "What's your name? (informal)" },
+        { de: 'Woher kommst du?', en: 'Where are you from? (informal)' },
+        { de: 'Wo wohnst du?', en: 'Where do you live? (informal)' }
+      ]
+    },
+    '5424452b-bf3b-4344-9cdd-035859c0aeff': { // Familie und Freunde
+      words: [
+        { de: 'die Mutter', en: 'mother' },
+        { de: 'der Vater', en: 'father' },
+        { de: 'die Eltern', en: 'parents' },
+        { de: 'die Schwester', en: 'sister' },
+        { de: 'der Bruder', en: 'brother' },
+        { de: 'das Kind / die Kinder', en: 'child / children' },
+        { de: 'die Großeltern', en: 'grandparents' },
+        { de: 'der Freund / die Freundin', en: 'friend' }
+      ],
+      phrases: [
+        { de: 'Das ist mein …', en: 'This is my … (der/das words)' },
+        { de: 'Das ist meine …', en: 'This is my … (die words)' },
+        { de: 'Das sind meine …', en: 'These are my … (plural)' },
+        { de: 'Ich habe einen Bruder.', en: 'I have a brother.' },
+        { de: 'Ich habe zwei Schwestern.', en: 'I have two sisters.' },
+        { de: 'Er ist mein …', en: 'He is my …' },
+        { de: 'Sie ist meine …', en: 'She is my …' }
+      ]
+    }
+  };
 
   // ── Topic completion pattern (product rule, applies to every topic) ────
   // Every completed topic ends in one achievement moment with exactly
@@ -338,7 +365,11 @@
   var TOPIC_COMPLETION = {
     '4bf7abfd-0147-4a83-b8c2-df60a263c24d': { // Über mich
       abilityStatement: "You can now introduce yourself, say where you're from, and say where you live.",
-      nextTopic: null // no second topic yet — falls back to "Back to dashboard"
+      nextTopic: { href: 'topic.html?id=5424452b-bf3b-4344-9cdd-035859c0aeff', label: 'Familie und Freunde' }
+    },
+    '5424452b-bf3b-4344-9cdd-035859c0aeff': { // Familie und Freunde
+      abilityStatement: 'You can now introduce a family member or friend and give simple information about them.',
+      nextTopic: null // no third topic yet — falls back to "Back to dashboard"
     }
   };
 
@@ -346,6 +377,16 @@
   // Nothing below is Über-mich-specific — every word comes from
   // state.topic (celebration) or TOPIC_COMPLETION[topic id] (ability
   // statement, next action) — so a future topic reuses this unchanged.
+  // Optional grammar Deep Dive, reachable from the practice row — not a
+  // topic_item, never required or gated. Absent for a topic (like Über
+  // mich) means no chip renders; this stays additive per-topic.
+  var TOPIC_DEEP_DIVE = {
+    '5424452b-bf3b-4344-9cdd-035859c0aeff': { // Familie und Freunde
+      href: './module.html?id=b2794b24-9e3a-4e42-83b0-223f3ec4628e&lesson=7',
+      label: 'Haben oder sein?'
+    }
+  };
+
   function renderTopicCompleteMoment(card, eyebrow, titleEl, metaEl, ctaEl) {
     var completion = TOPIC_COMPLETION[state.topic.id] || {};
     card.href = 'dashboard.html';
@@ -602,11 +643,13 @@
     var row = document.getElementById('practiceRow');
     var stepSix = state.items && state.items.length ? state.items[state.items.length - 1] : null;
     var writeHref = stepSix ? lessonHref(stepSix.lesson) : '#';
+    var deepDive = TOPIC_DEEP_DIVE[state.topic.id];
     row.innerHTML =
       '<span class="practice-chip" id="chipWords">Words &amp; phrases</span>' +
       '<span class="practice-chip" id="chipListening">Listening</span>' +
       '<a class="practice-chip" href="sprechen.html">Speaking</a>' +
-      '<a class="practice-chip" href="' + writeHref + '">Writing</a>';
+      '<a class="practice-chip" href="' + writeHref + '">Writing</a>' +
+      (deepDive ? '<a class="practice-chip" href="' + deepDive.href + '">📘 ' + escapeHtml(deepDive.label) + '</a>' : '');
     document.getElementById('chipWords').addEventListener('click', function() { toggleVocabPanel(); });
     document.getElementById('chipListening').addEventListener('click', function() { toggleVocabPanel(); });
   }
@@ -615,11 +658,12 @@
     var panel = document.getElementById('vocabPanel');
     if (panel.classList.contains('open')) { panel.classList.remove('open'); return; }
     if (!panel.dataset.built) {
+      var vocab = TOPIC_VOCAB[state.topic.id] || { words: [], phrases: [] };
       panel.innerHTML =
         '<h3>Words</h3>' +
-        VOCAB_WORDS.map(vocabRow).join('') +
+        vocab.words.map(vocabRow).join('') +
         '<h3>Phrases</h3>' +
-        VOCAB_PHRASES.map(vocabRow).join('');
+        vocab.phrases.map(vocabRow).join('');
       panel.dataset.built = '1';
     }
     panel.classList.add('open');
