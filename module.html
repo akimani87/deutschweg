@@ -2455,25 +2455,43 @@
   // Priority: A1 complete > 7-day streak > lesson 5 > first lesson. Each fires
   // at most once (session-guarded; counts/streaks naturally cross the
   // threshold only once anyway).
+  // "A1 complete" now means every visible foundation module AND every
+  // required lesson of every published A1 topic -- the same "visible
+  // foundation + visible topics" scope as dashboard.html's progress ring,
+  // not the old "every published modules row" definition. Legacy grammar
+  // modules stay is_published:false (hidden from the main path, still
+  // reachable directly) so they're correctly excluded from modIds already;
+  // topicLessonIds is unioned in on top so a learner isn't asked to finish
+  // modules nobody shows them, and IS credited for the topics they do see.
+  // Deep Dive lessons are never in topic_items, so they never count here.
   function checkA1Complete(uid) {
     if (!state.module || state.module.level !== 'A1') return Promise.resolve(false);
-    return dwSupabase.from('modules').select('id').eq('level', 'A1').eq('is_published', true)
-      .then(function(mr) {
-        var modIds = ((mr && mr.data) || []).map(function(m) { return m.id; });
-        if (!modIds.length) return false;
-        return dwSupabase.from('lessons').select('id').in('module_id', modIds).then(function(lr) {
-          var allIds = ((lr && lr.data) || []).map(function(l) { return l.id; });
-          if (!allIds.length) return false;
-          return dwSupabase.from('user_progress')
-            .select('lesson_id').eq('user_id', uid).eq('status', 'completed').in('lesson_id', allIds)
-            .then(function(pr) {
-              var done = {};
-              ((pr && pr.data) || []).forEach(function(r) { if (r.lesson_id) done[r.lesson_id] = true; });
-              return allIds.every(function(id) { return done[id]; });
-            });
-        });
-      })
-      .catch(function() { return false; });
+    return Promise.all([
+      dwSupabase.from('modules').select('id').eq('level', 'A1').eq('is_published', true),
+      dwSupabase.from('topics').select('id').eq('level', 'A1').eq('is_published', true)
+    ]).then(function(res) {
+      var modIds = ((res[0] && res[0].data) || []).map(function(m) { return m.id; });
+      var topicIds = ((res[1] && res[1].data) || []).map(function(t) { return t.id; });
+      var lessonsPromise = modIds.length
+        ? dwSupabase.from('lessons').select('id').in('module_id', modIds)
+        : Promise.resolve({ data: [] });
+      var topicItemsPromise = topicIds.length
+        ? dwSupabase.from('topic_items').select('lesson_id').in('topic_id', topicIds)
+        : Promise.resolve({ data: [] });
+      return Promise.all([lessonsPromise, topicItemsPromise]).then(function(res2) {
+        var moduleLessonIds = ((res2[0] && res2[0].data) || []).map(function(l) { return l.id; });
+        var topicLessonIds  = ((res2[1] && res2[1].data) || []).map(function(it) { return it.lesson_id; });
+        var allIds = moduleLessonIds.concat(topicLessonIds);
+        if (!allIds.length) return false;
+        return dwSupabase.from('user_progress')
+          .select('lesson_id').eq('user_id', uid).eq('status', 'completed').in('lesson_id', allIds)
+          .then(function(pr) {
+            var done = {};
+            ((pr && pr.data) || []).forEach(function(r) { if (r.lesson_id) done[r.lesson_id] = true; });
+            return allIds.every(function(id) { return done[id]; });
+          });
+      });
+    }).catch(function() { return false; });
   }
 
   function detectMilestone(lesson) {
@@ -2919,9 +2937,16 @@
 
   // After a module is completed, point profiles.letzte_modul_slug at the
   // *next* module in sequence so the dashboard's "Weiter lernen" card
-  // advances. Walks: same level → next order_index; if none, first module
-  // of the next CEFR level. Failures degrade silently — the dashboard's
-  // fallback (first A1) keeps the card sensible either way.
+  // advances. Walks: same level → next order_index; if none, first
+  // published TOPIC in the same level (its hidden host module id --
+  // dashboard.html's byId is taught to recognize these and link to
+  // topic.html instead of module.html, see loadTopicsSection); if no
+  // topic either, first module of the next CEFR level. Without the topic
+  // step, finishing the last visible foundation module (Numbers) would
+  // jump straight past Über mich/Familie und Freunde to A2 now that the
+  // legacy grammar modules between them are hidden -- this step is what
+  // keeps that from happening. Failures degrade silently — the
+  // dashboard's fallback (first A1) keeps the card sensible either way.
   function advanceLetzteModulSlug() {
     if (!state.user || !state.module) return;
     var cur = state.module;
@@ -2939,23 +2964,57 @@
           writeLetzteModulSlug(res.data.id);
           return;
         }
-        // No next module in this level — try the first of the next level.
-        var LEVELS = ['A1', 'A2', 'B1', 'B2'];
-        var idx = LEVELS.indexOf(cur.level);
-        if (idx === -1 || idx === LEVELS.length - 1) return; // top of the ladder
-        var nextLevel = LEVELS[idx + 1];
-
-        dwSupabase.from('modules')
+        // No next module in this level — try the first published topic.
+        dwSupabase.from('topics')
           .select('id')
-          .eq('level', nextLevel)
+          .eq('level', cur.level)
           .eq('is_published', true)
           .order('order_index', { ascending: true })
           .limit(1)
           .maybeSingle()
-          .then(function(r2) {
-            if (r2 && r2.data) writeLetzteModulSlug(r2.data.id);
+          .then(function(tr) {
+            if (tr && tr.data) {
+              dwSupabase.from('topic_items')
+                .select('lesson_id')
+                .eq('topic_id', tr.data.id)
+                .order('order_index', { ascending: true })
+                .limit(1)
+                .maybeSingle()
+                .then(function(ir) {
+                  var lessonId = ir && ir.data && ir.data.lesson_id;
+                  if (!lessonId) { advanceToNextLevel(cur.level); return; }
+                  dwSupabase.from('lessons').select('module_id').eq('id', lessonId).maybeSingle()
+                    .then(function(lr) {
+                      if (lr && lr.data && lr.data.module_id) writeLetzteModulSlug(lr.data.module_id);
+                      else advanceToNextLevel(cur.level);
+                    })
+                    .catch(function(){ advanceToNextLevel(cur.level); });
+                })
+                .catch(function(){ advanceToNextLevel(cur.level); });
+              return;
+            }
+            advanceToNextLevel(cur.level);
           })
-          .catch(function(){});
+          .catch(function(){ advanceToNextLevel(cur.level); });
+      })
+      .catch(function(){});
+  }
+
+  function advanceToNextLevel(fromLevel) {
+    var LEVELS = ['A1', 'A2', 'B1', 'B2'];
+    var idx = LEVELS.indexOf(fromLevel);
+    if (idx === -1 || idx === LEVELS.length - 1) return; // top of the ladder
+    var nextLevel = LEVELS[idx + 1];
+
+    dwSupabase.from('modules')
+      .select('id')
+      .eq('level', nextLevel)
+      .eq('is_published', true)
+      .order('order_index', { ascending: true })
+      .limit(1)
+      .maybeSingle()
+      .then(function(r2) {
+        if (r2 && r2.data) writeLetzteModulSlug(r2.data.id);
       })
       .catch(function(){});
   }
