@@ -1193,9 +1193,16 @@
         // A short set of "who would you say this to?" situations, each with
         // a tap-to-reveal answer — a self-check, not a graded quiz, bundled
         // onto one screen instead of one screen per situation.
-        // Data: { type, intro?, items:[{situation, answer, note?}] }
+        // Data: { type, intro?, prompt_suffix?, items:[{situation, answer, note?}] }
+        // prompt_suffix defaults to the original "— du or Sie?" (Über mich's
+        // formality check) so that lesson renders unchanged; pass '' or a
+        // different short prompt for a scenario-check on a different
+        // recognition task (e.g. "Wer ist das?" er/sie in Familie und
+        // Freunde) — the situation text itself is enough there.
         case 'scenario-check': {
           var scIntro = block.intro ? '<div class="lesson-sc-intro">' + escapeHtml(block.intro) + '</div>' : '';
+          var scSuffix = block.prompt_suffix !== undefined ? block.prompt_suffix : '— du or Sie?';
+          var scSuffixHtml = scSuffix ? ' <span class="lesson-sc-prompt">' + escapeHtml(scSuffix) + '</span>' : '';
           var scItems = (Array.isArray(block.items) ? block.items : []).map(function(item, ii) {
             var scId = 'sc-' + bi + '-' + ii + '-' + Math.random().toString(36).slice(2, 6);
             var scAnswer = escapeHtml(item && item.answer) + (item && item.note ? ' — ' + escapeHtml(item.note) : '');
@@ -1203,7 +1210,7 @@
                      '<button type="button" class="lesson-sc-q" onclick="' +
                        "var a=document.getElementById('" + scId + "');" +
                        "a.style.display=(a.style.display==='block'?'none':'block');" +
-                     '">' + escapeHtml(item && item.situation) + ' <span class="lesson-sc-prompt">— du or Sie?</span></button>' +
+                     '">' + escapeHtml(item && item.situation) + scSuffixHtml + '</button>' +
                      '<div class="lesson-sc-answer" id="' + scId + '" style="display:none;">' + scAnswer + '</div>' +
                    '</div>';
           }).join('');
