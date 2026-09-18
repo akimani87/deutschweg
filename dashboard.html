@@ -594,7 +594,7 @@
   <div class="course-header">
     <div class="course-eyebrow" id="dashEyebrow">GOETHE A1 · FULL COURSE</div>
     <h1 class="course-title">Your <span>Learning</span><br>Dashboard</h1>
-    <p class="course-sub" id="dashSub">13 modules covering every topic on the Goethe A1 exam. All modules are unlocked — work through them in order for the best results.</p>
+    <p class="course-sub" id="dashSub">Start with Pronunciation and Numbers, then work through real-life topics like Über mich and Familie und Freunde — each one teaches you German you can actually use.</p>
   </div>
 
   <!-- LEVEL TABS -->
@@ -627,10 +627,15 @@
   <!-- A1 LEVEL SECTION -->
   <div class="level-section" id="level-a1">
 
-  <!-- TOPICS — new bilingual topic-based path, additive: only published
-       topics appear here (none are, until a topic's is_published flips to
-       true), and the flat "A1 · MODULES 1–13" list below is completely
-       unaffected either way. -->
+  <!-- TOPICS — bilingual topic-based path, now the main A1 curriculum from
+       Uber mich onward. Only published topics appear here; the flat A1
+       modules list below now shows only the two foundation modules
+       (Pronunciation, Numbers) -- the 11 legacy grammar modules stay in the
+       modules table (still reachable by direct URL, still valid source
+       content for Deep Dives) but is_published:false keeps them out of
+       every listing/counting query, this one included. This section is
+       always placed right after Module 3 in the flat list via
+       placeA1StageThree() further down. -->
   <div class="topics-section" id="topicsSection" style="display:none;">
     <div class="topics-label">Your topics</div>
     <div class="topics-list" id="topicsList"></div>
@@ -646,8 +651,8 @@
       <div class="op-bar"><div class="op-fill" id="a1RingBar"></div></div>
     </div>
     <div class="op-stat">
-      <strong id="modDoneDisp">0/13</strong>
-      modules done
+      <strong id="modDoneDisp">0/4</strong>
+      stages done
     </div>
   </div>
 
@@ -656,27 +661,18 @@
     <div class="tip-icon">🎯</div>
     <div>
       <div class="tip-title">Recommended order</div>
-      <div class="tip-body">Start from Module 0 and go in sequence. Each module builds on the last. If you're preparing fast, prioritise Modules 7–12 — those cover the most exam-heavy grammar.</div>
+      <div class="tip-body">Start with Pronunciation, then Numbers — those are your foundation. From there, work through each topic in order. Every topic builds on what came before.</div>
     </div>
   </div>
 
   <!-- LEVEL DIVIDER -->
   <div class="section-divider">
     <div class="section-divider-line"></div>
-    <div class="section-divider-label sdl-a1">A1 · MODULES 1 – 13</div>
+    <div class="section-divider-label sdl-a1">A1 · YOUR PATH</div>
     <div class="section-divider-line"></div>
   </div>
 
   <div class="modules-list" data-level="A1"></div>
-
-  <!-- BOTTOM TIP -->
-  <div class="tip-box" style="margin-top:28px;">
-    <div class="tip-icon">💡</div>
-    <div>
-      <div class="tip-title">Exam tip — Modules 10, 11, 12 are worth the most points</div>
-      <div class="tip-body">Plurals appear in every Lesen task. Nicht/kein appears in every Schreiben task. Modal verbs are tested in every Sprechen section. If your exam is coming up, start here.</div>
-    </div>
-  </div>
 
   <!-- EXAM VAULT CTA -->
   <div style="margin-top:28px;">
@@ -934,8 +930,16 @@
   };
 
   // Section dividers — render the label *before* the card at this (level, order_index).
+  // A1-2 (not A1-1): Greetings (order_index 1) is now hidden from the main
+  // path (its content lives inside Über mich instead — see the grammar/
+  // topic-organisation decisions), so Pronunciation (order_index 2) is the
+  // actual first card rendered and is where "start here" belongs now.
+  // A1-5/9/11 keyed legacy grammar modules that are also hidden now, so
+  // those section labels simply never fire anymore -- left in place
+  // (harmless) rather than deleted, since un-hiding a module later would
+  // make them relevant again with no further change needed here.
   var SECTION_LABELS = {
-    'A1-1':  { text: 'FOUNDATION — START HERE',                       color: null      },
+    'A1-2':  { text: 'FOUNDATION — START HERE',                       color: null      },
     'A1-5':  { text: 'GRAMMAR CORE — CASES & STRUCTURE',              color: null      },
     'A1-9':  { text: 'VERBS & PRONOUNS',                              color: null      },
     'A1-11': { text: 'EXAM GRAMMAR — HIGH IMPACT',                    color: null      },
@@ -1175,6 +1179,17 @@
 
     function show(m) {
       if (!m) { card.style.display = 'none'; return; }
+      // __topicId marks a synthetic byId entry standing in for a topic's
+      // hidden host module (see loadAll()) -- link to the real topic page
+      // and use its own bilingual title instead of "Module N".
+      if (m.__topicId) {
+        card.href = './topic.html?id=' + m.__topicId;
+        titleEl.textContent = m.__topicTitleDe + ' — ' + m.__topicTitleEn;
+        metaEl.textContent  = m.level + ' · Topic';
+        ctaEl.textContent   = 'Continue to ' + m.__topicTitleDe;
+        card.style.display = '';
+        return;
+      }
       card.href = moduleHref(m);
       titleEl.textContent = m.title || 'Next module';
       metaEl.textContent  = m.level + ' · Module ' + (m.order_index || '');
@@ -1212,6 +1227,54 @@
 
   lists.forEach(renderLoading);
 
+  // Topics count toward "the A1 path" everywhere modules used to on their
+  // own -- progress ring, A1-complete milestone-equivalent totals, and the
+  // continue-card -- now that legacy grammar modules are hidden from the
+  // main path (topics carry that content instead). topicUnits holds one
+  // {id, level, order_index} entry per published topic; topicHostByModuleId
+  // maps each topic's hidden host module id (901/903-style) back to
+  // {topicId, title_de, title_en} so the continue-card can recognize one of
+  // those ids and link to topic.html instead of module.html. Both stay
+  // empty (harmless no-ops below) if this fetch fails for any reason.
+  var topicUnits = [];
+  var topicHostByModuleId = {};
+
+  function loadA1Topics() {
+    return dwSupabase.from('topics')
+      .select('id, level, title_de, title_en, order_index')
+      .eq('level', 'A1').eq('is_published', true)
+      .then(function(tRes) {
+        if (tRes.error || !tRes.data || !tRes.data.length) return;
+        topicUnits = tRes.data.map(function(t) { return { id: t.id, level: t.level, order_index: t.order_index }; });
+        var topicById = {};
+        tRes.data.forEach(function(t) { topicById[t.id] = t; });
+        var topicIds = tRes.data.map(function(t) { return t.id; });
+        return dwSupabase.from('topic_items')
+          .select('topic_id, lesson_id, lesson:lessons!lesson_id(module_id)')
+          .in('topic_id', topicIds)
+          .then(function(itRes) {
+            if (itRes.error || !itRes.data) return;
+            var itemsByTopic = {};
+            itRes.data.forEach(function(it) {
+              if (!itemsByTopic[it.topic_id]) itemsByTopic[it.topic_id] = [];
+              itemsByTopic[it.topic_id].push(it.lesson_id);
+              var hostModId = it.lesson && it.lesson.module_id;
+              if (hostModId && !topicHostByModuleId[hostModId]) {
+                var t = topicById[it.topic_id];
+                topicHostByModuleId[hostModId] = { topicId: t.id, level: t.level, title_de: t.title_de, title_en: t.title_en };
+              }
+            });
+            // Seed progressByMod with topic-scoped totals now (before any
+            // user_progress data exists) so anonymous/failed-progress runs
+            // still get a correct total for the progress ring's denominator.
+            Object.keys(itemsByTopic).forEach(function(topicId) {
+              progressByMod[topicId] = { completed: new Set(), total: itemsByTopic[topicId].length, lessonIds: itemsByTopic[topicId] };
+            });
+          });
+      })
+      .catch(function(e) { console.warn('[dashboard] A1 topics fetch failed (non-fatal):', e && e.message); });
+  }
+
   (function loadAll() {
     Promise.all([
       dwSupabase.from('modules')
@@ -1219,7 +1282,8 @@
         .eq('is_published', true)
         .order('level',       { ascending: true })
         .order('order_index', { ascending: true }),
-      dwSupabase.auth.getUser().catch(function(){ return { data: { user: null } }; })
+      dwSupabase.auth.getUser().catch(function(){ return { data: { user: null } }; }),
+      loadA1Topics()
     ]).then(function(arr) {
       var modRes = arr[0];
       var userRes = arr[1];
@@ -1249,12 +1313,25 @@
               progressByMod[l.module_id].total++;
             });
           }
+          // completedLessonIds: every lesson_id the user has completed,
+          // regardless of which module/topic hosts it -- used below to
+          // credit topic progress (progressByMod[topicId], keyed by topic
+          // id and scoped to exactly that topic's topic_items, NOT the
+          // hidden host module's full lesson count, which would wrongly
+          // include the optional Deep Dive lesson).
+          var completedLessonIds = {};
           if (!progRes.error && progRes.data) {
             progRes.data.forEach(function(r) {
+              if (r.lesson_id) completedLessonIds[r.lesson_id] = true;
               if (!progressByMod[r.module_id]) progressByMod[r.module_id] = { completed: new Set(), total: 0 };
               if (r.lesson_id) progressByMod[r.module_id].completed.add(r.lesson_id);
             });
           }
+          topicUnits.forEach(function(t) {
+            var p = progressByMod[t.id];
+            if (!p) return;
+            (p.lessonIds || []).forEach(function(lid) { if (completedLessonIds[lid]) p.completed.add(lid); });
+          });
         }).catch(function(e) {
           console.warn('[dashboard] progress fetch failed (rendering without):', e && e.message);
         });
@@ -1272,6 +1349,18 @@
           if (byLevel[m.level]) byLevel[m.level].push(m);
           byId[m.id] = m;
         });
+        // byId also gets one entry per topic's hidden host module id, so
+        // advanceLetzteModulSlug() (module.html) writing that id into
+        // letzte_modul_slug resolves to something here -- flagged with
+        // __topicId so renderContinueCard's show() below links to
+        // topic.html instead of module.html and uses the topic's own
+        // title. NOT added to byLevel -- the flat module list must stay
+        // module-only; topics render as their own cards via
+        // loadTopicsSection()/placeA1StageThree() further down the file.
+        Object.keys(topicHostByModuleId).forEach(function(hostModId) {
+          var th = topicHostByModuleId[hostModId];
+          byId[hostModId] = { id: hostModId, level: th.level, __topicId: th.topicId, __topicTitleDe: th.title_de, __topicTitleEn: th.title_en };
+        });
         lists.forEach(function(el) {
           var level = el.getAttribute('data-level');
           var items = byLevel[level] || [];
@@ -1288,7 +1377,9 @@
         // ── Progress banner — same Supabase data as the card chips.
         //    Runs whether or not the user is signed in (anonymous gets 0s
         //    with the encouraging hint, which matches the empty card chips).
-        updateBannerProgress(progressByMod, modRes.data || []);
+        //    topicUnits included so a completed topic counts here too, same
+        //    as a completed module always has.
+        updateBannerProgress(progressByMod, (modRes.data || []).concat(topicUnits));
 
         // ── Germany Readiness Bar (Phase 2) ─────────────────────────────
         // Per-level completion % = Σ completed lessons / Σ total lessons
@@ -1304,9 +1395,40 @@
           });
           return total === 0 ? 0 : Math.round(done / total * 100);
         }
-        var a1Pct = computeLevelPct(byLevel.A1, progressByMod);
+        // a1ProgressScope = visible foundation modules + visible practical
+        // topics -- the two kinds of thing that count as "the A1 path" now
+        // (see the grammar-organisation product decision this mirrors:
+        // topics teach German, hidden legacy modules don't count toward
+        // required completion anymore). byLevel.A1 itself stays
+        // module-only -- it's also used for flat-list rendering and
+        // firstA1(), neither of which should grow topic entries.
+        var a1ProgressScope = (byLevel.A1 || []).concat(topicUnits);
+        var a1Pct = computeLevelPct(a1ProgressScope, progressByMod);
         var a2Pct = computeLevelPct(byLevel.A2, progressByMod);
         var b1Pct = computeLevelPct(byLevel.B1, progressByMod);
+
+        // ── Overall A1 Progress card (pctDisp / a1RingBar / modDoneDisp) ──
+        // Real fix for the "dashboard doesn't move after finishing a
+        // module" bug: these three elements used to be driven by
+        // dw_mod_<n>_done localStorage keys that nothing sets anymore.
+        // a1Pct above is already the correct Σcompleted/Σtotal lesson
+        // percentage for A1 — "modules done" counts modules AND topics
+        // where every one of their lessons is complete (a topic's Deep
+        // Dive lesson is never part of that count -- see loadA1Topics).
+        var a1ModulesDone = a1ProgressScope.filter(function(m) {
+          var p = progressByMod[m.id];
+          return p && p.total > 0 && p.completed.size === p.total;
+        }).length;
+        var pctDispEl = document.getElementById('pctDisp');
+        var ringBarEl = document.getElementById('a1RingBar');
+        var modDoneEl = document.getElementById('modDoneDisp');
+        var ringEl    = document.querySelector('.op-ring');
+        if (pctDispEl) pctDispEl.textContent = a1Pct + '%';
+        if (ringBarEl) ringBarEl.style.width = a1Pct + '%';
+        if (modDoneEl) modDoneEl.textContent = a1ModulesDone + '/' + a1ProgressScope.length;
+        // Same colors as .op-ring's own CSS default (#3B82F6 filled /
+        // #E5E7EB unfilled) — just made dynamic, not a new color choice.
+        if (ringEl) ringEl.style.background = 'conic-gradient(#3B82F6 ' + a1Pct + '%, #E5E7EB 0%)';
 
         // Render bar in the dashboard welcome section
         var dashBar = document.getElementById('dash-readiness-bar');
@@ -1553,25 +1675,14 @@ document.addEventListener('DOMContentLoaded', function() {
   // 0 for anonymous users or transient errors so the badge never blanks.
   refreshXpFromSupabase();
 
-  // Read per-module completion from localStorage
-  var done = 0;
-  var cards = document.querySelectorAll('.module-card');
-  for (var i = 0; i <= 12; i++) {
-    if (localStorage.getItem('dw_mod_' + i + '_done') === '1') {
-      done++;
-      var card = cards[i];
-      if (card) {
-        var badge = card.querySelector('.mc-badge');
-        if (badge) { badge.textContent = 'DONE'; badge.classList.remove('badge-unlocked'); badge.classList.add('badge-done'); }
-        card.style.borderColor = 'rgba(201,168,76,0.25)';
-      }
-    }
-  }
-
-  var pct = Math.round((done / 13) * 100);
-  document.getElementById('pctDisp').textContent = pct + '%';
-  document.getElementById('a1RingBar').style.width = pct + '%';
-  document.getElementById('modDoneDisp').textContent = done + '/13';
+  // Overall A1 Progress (pctDisp / a1RingBar / modDoneDisp) is populated
+  // from real Supabase data once it loads — see the afterProgress.then()
+  // callback below, right where a1Pct is computed. This used to read
+  // dw_mod_<n>_done from localStorage, a mechanism nothing has written to
+  // since the app moved to Supabase-backed progress (updateBannerProgress
+  // already documents this) — it also ran before .module-card elements
+  // existed yet, so it never worked at all. Left the three elements at
+  // their loading-state defaults ("0%", "0/—") until the real update runs.
 
   // Progress-banner: Modules-done / % complete are driven by Supabase
   // (updateBannerProgress, called from the modules-loader IIFE once
@@ -1600,20 +1711,19 @@ document.addEventListener('DOMContentLoaded', function() {
     if (lvEl) lvEl.textContent = levelLabel;
   })();
 
-  var ring = document.querySelector('.op-ring');
-  if (ring) {
-    ring.style.background = 'conic-gradient(var(--gold) ' + pct + '%, rgba(255,255,255,0.06) 0%)';
-  }
+  // .op-ring's conic-gradient fill is set from real data in the
+  // afterProgress.then() callback below (it used the now-removed
+  // localStorage-driven `pct` here before — see the note there).
 
-  // Intercept module card clicks — open in overlay iframe
-  cards.forEach(function(card) {
-    card.addEventListener('click', function(e) {
-      e.preventDefault();
-      var href = card.getAttribute('href');
-      var title = card.querySelector('.mc-title').textContent;
-      openModule(href, title);
-    });
-  });
+  // Note: a "cards.forEach(...) — intercept module card clicks, open in
+  // overlay iframe" block used to live here. It referenced
+  // document.querySelectorAll('.module-card') at a point in initDashboard()
+  // that runs before loadAll() has rendered any cards into the DOM, so it
+  // only ever iterated an empty list — openModule()/the #moduleOverlay
+  // iframe have never actually been reachable. Removed rather than fixed:
+  // module cards already navigate correctly as plain links to module.html
+  // (see moduleHref()/renderCard()), which is the real, working behavior
+  // every user has always gotten.
   } // end initDashboard
 });
 
@@ -1628,7 +1738,7 @@ function openModule(url, title) {
 var LEVEL_META = {
   a1: {
     eyebrow: 'GOETHE A1 · FULL COURSE',
-    sub: '13 modules covering every topic on the Goethe A1 exam. Work through them in order for the best results.'
+    sub: 'Start with Pronunciation and Numbers, then work through real-life topics like Über mich and Familie und Freunde — each one teaches you German you can actually use.'
   },
   a2: {
     eyebrow: 'GOETHE A2 · FULL COURSE',
