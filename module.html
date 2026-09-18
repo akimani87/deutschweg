@@ -172,6 +172,23 @@
   .lesson-example .de { display:block; font-weight:700; color:#1e3a5f; font-size:15px; }
   .lesson-example .en { display:block; color:#6b7280; font-size:13px; margin-top:2px; }
   .lesson-example-audio { margin-top:8px; }
+
+  /* ── Grammar highlighting — reusable teaching rule ────────────────────────
+     .dw-change marks the exact word/form a grammar point is teaching (mein
+     -> meine, ein -> einen, habe -> hat, etc.) so a beginner can see "what
+     changed" at a glance. Used two ways: (1) already existing structured
+     fields (pattern-table's r.change, dialogue's line.change) that this
+     class already wrapped with zero styling until now; (2) a new optional
+     `highlight` string on example/example-set items, matched against one
+     exact word in the German sentence by wrapGermanWords() below. Amber is
+     deliberately the ONE accent this file's lesson-* palette doesn't
+     already use for something else (blue=example, green=tip, orange=
+     warning, red=mistake) so "notice this" never collides with an existing
+     meaning. Bold+color+a soft background, not a loud box — one word, not
+     a whole highlighted sentence. .dw-subject/.dw-verb stay unstyled on
+     purpose: one clear highlighted target per example, not three colors
+     competing for attention. */
+  .dw-change { font-weight:800; color:#B45309; background:#FEF3C7; border-radius:4px; padding:0 4px; }
   .lesson-example-set-label { margin-bottom:10px; }
 
   /* ── scenario-check (tap-to-reveal situational self-check) ── */
@@ -1107,14 +1124,28 @@
 
   // Tap-to-translate: wrap each German word in a tappable .dw-word span while
   // keeping surrounding punctuation/whitespace intact and HTML-escaped.
-  function wrapGermanWords(text) {
+  // Optional `highlight` (exact-match, case-sensitive since German nouns
+  // capitalize) marks the ONE word this example is teaching a beginner to
+  // notice — wraps it in .dw-change inside the existing .dw-word span, so
+  // tap-to-translate keeps working and the highlight is layered on top, not
+  // a separate mechanism. Only ever the first exact match: one target per
+  // example, never the whole sentence highlighted.
+  function wrapGermanWords(text, highlight) {
     var s = String(text == null ? '' : text);
+    var hl = highlight ? String(highlight) : '';
+    var hlUsed = false;
     return s.split(/(\s+)/).map(function(tok) {
       if (tok === '' || /^\s+$/.test(tok)) return escapeHtml(tok);
       var m = tok.match(/^([^A-Za-zÄÖÜäöüß]*)([A-Za-zÄÖÜäöüß][A-Za-zÄÖÜäöüß\-]*)([^A-Za-zÄÖÜäöüß]*)$/);
       if (!m) return escapeHtml(tok);
+      var word = m[2];
+      var isTarget = !hlUsed && hl && word === hl;
+      if (isTarget) hlUsed = true;
+      var wordHtml = isTarget
+        ? '<span class="dw-change">' + escapeHtml(word) + '</span>'
+        : escapeHtml(word);
       return escapeHtml(m[1]) +
-        '<span class="dw-word" data-word="' + escapeHtml(m[2]) + '">' + escapeHtml(m[2]) + '</span>' +
+        '<span class="dw-word" data-word="' + escapeHtml(word) + '">' + wordHtml + '</span>' +
         escapeHtml(m[3]);
     }).join('');
   }
@@ -1162,7 +1193,7 @@
           return '<div class="lesson-text">' + escapeHtml(block.content) + '</div>';
         case 'example':
           return '<div class="lesson-example">' +
-                   '<span class="de">' + wrapGermanWords(block.german)  + '</span>' +
+                   '<span class="de">' + wrapGermanWords(block.german, block.highlight)  + '</span>' +
                    '<span class="en">' + escapeHtml(block.english) + '</span>' +
                  '</div>';
 
@@ -1171,7 +1202,9 @@
         // one Weiter click per example, with an optional lead-in label
         // (replacing a separate 'text' block before them) and an optional
         // per-item "Listen and repeat once" audio button for key phrases.
-        // Data: { type, label?, items:[{german, english, audio?}] }
+        // Data: { type, label?, items:[{german, english, audio?, highlight?}] }
+        // highlight: the one exact word in `german` (case-sensitive) this
+        // example is teaching the learner to notice — see wrapGermanWords().
         case 'example-set': {
           var esLabel = block.label ? '<div class="lesson-text lesson-example-set-label">' + escapeHtml(block.label) + '</div>' : '';
           var esItems = (Array.isArray(block.items) ? block.items : []).map(function(item) {
@@ -1181,7 +1214,7 @@
               esAudioBtn = '<button class="audio-btn lesson-example-audio" onclick="speakText(\'' + jsEs + '\')">🔊 Listen and repeat once</button>';
             }
             return '<div class="lesson-example">' +
-                     '<span class="de">' + wrapGermanWords(item && item.german) + '</span>' +
+                     '<span class="de">' + wrapGermanWords(item && item.german, item && item.highlight) + '</span>' +
                      '<span class="en">' + escapeHtml(item && item.english) + '</span>' +
                      esAudioBtn +
                    '</div>';
