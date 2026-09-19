@@ -166,6 +166,14 @@
   }
   .practice-chip:hover{background:#F3F4F6; border-color:#D1D5DB;}
 
+  /* ── Prior-learning credit note — migration-safety requirement 6: shown
+     only when this topic has a Deep Dive with a reliable legacy-module
+     mapping AND the signed-in learner already completed that module. ── */
+  .prior-credit-note{
+    font-size:12.5px; color:#059669; background:#ECFDF5; border:1px solid #A7F3D0;
+    border-radius:10px; padding:9px 14px; margin-top:10px; line-height:1.5;
+  }
+
   /* ── Words & phrases / Listening panel (shared by both shortcuts) ── */
   .vocab-panel{
     display:none; background:#fff; border:1px solid #E5E7EB; border-radius:14px;
@@ -273,6 +281,7 @@
   <!-- Tier C: Practice this topic -->
   <div class="tier-label">Practice this topic</div>
   <div class="practice-row" id="practiceRow"></div>
+  <div class="prior-credit-note" id="priorCreditNote" style="display:none;"></div>
   <div class="vocab-panel" id="vocabPanel"></div>
 </div>
 
@@ -417,6 +426,18 @@
     }
   };
 
+  // Prior-learning credit (migration-safety requirement 6): where a legacy
+  // grammar module maps reliably onto one of this topic's Deep Dives, a
+  // learner who already completed that module gets a "previously
+  // practised" note next to the Deep Dive chip -- never used to mark the
+  // topic itself complete (topic_items only ever reference this topic's
+  // own fresh lessons, so that's structurally impossible anyway; this is
+  // purely an informational credit on the optional Deep Dive).
+  var DEEP_DIVE_PRIOR_CREDIT = {
+    '5424452b-bf3b-4344-9cdd-035859c0aeff': { legacyModuleId: '3add9ce7-f7e4-479f-8899-b37a98bb1dfb', legacyModuleTitle: 'Haben & Sein' }, // Familie und Freunde
+    '73b70585-2459-4c0e-a7d0-8009e97eb12c': { legacyModuleId: '5a50e5c7-3abf-45cb-a0fc-bb0df894f7f7', legacyModuleTitle: 'Der, Die, Das' }   // Dinge im Alltag
+  };
+
   function renderTopicCompleteMoment(card, eyebrow, titleEl, metaEl, ctaEl) {
     var completion = TOPIC_COMPLETION[state.topic.id] || {};
     card.href = 'dashboard.html';
@@ -482,7 +503,7 @@
     return './module.html?id=' + lesson.module_id + '&lesson=' + lesson.order_index + '&topic=' + topicId;
   }
 
-  var state = { topic: null, items: [], user: null, completedLessonIds: {}, topicProgress: null, latestCheck: null };
+  var state = { topic: null, items: [], user: null, completedLessonIds: {}, topicProgress: null, latestCheck: null, priorCredit: false };
 
   loadTopic(topicId);
 
@@ -526,12 +547,26 @@
             .eq('user_id', user.id).eq('topic_id', id).order('completed_at', { ascending: false }).limit(1).maybeSingle();
           if (!checkRes.error) state.latestCheck = checkRes.data || null;
 
+          // Prior-learning credit (migration-safety requirement 6): only
+          // ever an informational note on this topic's optional Deep Dive,
+          // never a way to mark the topic itself complete -- see
+          // DEEP_DIVE_PRIOR_CREDIT's comment above for why that's
+          // structurally impossible here anyway.
+          var priorCreditMap = DEEP_DIVE_PRIOR_CREDIT[id];
+          if (priorCreditMap) {
+            var legacyRes = await dwSupabase.from('user_progress').select('id')
+              .eq('user_id', user.id).eq('module_id', priorCreditMap.legacyModuleId)
+              .is('lesson_id', null).eq('status', 'completed').limit(1).maybeSingle();
+            if (!legacyRes.error && legacyRes.data) state.priorCredit = true;
+          }
+
           checkTopicCompletion();
         }
       } catch (authErr) {
         console.warn('[topic.html] auth/progress fetch failed (continuing as anonymous):', authErr && authErr.message);
       }
 
+      renderPracticeRow(); // re-render: state.priorCredit may have just been set above
       renderContinueCard();
       renderPathList();
       renderCheckCard();
@@ -682,6 +717,15 @@
       (deepDive ? '<a class="practice-chip" href="' + deepDive.href + '">📘 ' + escapeHtml(deepDive.label) + '</a>' : '');
     document.getElementById('chipWords').addEventListener('click', function() { toggleVocabPanel(); });
     document.getElementById('chipListening').addEventListener('click', function() { toggleVocabPanel(); });
+
+    var noteEl = document.getElementById('priorCreditNote');
+    var creditInfo = DEEP_DIVE_PRIOR_CREDIT[state.topic.id];
+    if (noteEl && deepDive && creditInfo && state.priorCredit) {
+      noteEl.textContent = '✓ You already covered this in ' + creditInfo.legacyModuleTitle + ' — the Deep Dive above is optional review.';
+      noteEl.style.display = '';
+    } else if (noteEl) {
+      noteEl.style.display = 'none';
+    }
   }
 
   function toggleVocabPanel() {

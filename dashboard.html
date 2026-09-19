@@ -308,6 +308,36 @@
   .tip-title{font-size:13px;font-weight:700;color:#1D4ED8;margin-bottom:4px;}
   .tip-body{font-size:13px;color:#4B5563;line-height:1.75;}
 
+  /* ── A1 MIGRATION NOTICE — one-time, shown only to a learner with real
+     progress in a now-hidden legacy module. Deliberately its own card
+     (not .tip-box) so it reads as "something changed," not ongoing advice. ── */
+  .migration-notice{
+    background:#EFF6FF;border:1px solid #BFDBFE;border-radius:16px;
+    padding:18px 20px;margin-bottom:14px;display:none;
+  }
+  .migration-notice-title{font-size:15px;font-weight:800;color:#1D4ED8;margin-bottom:8px;line-height:1.3;}
+  .migration-notice-body{font-size:13.5px;color:#374151;line-height:1.7;margin-bottom:14px;}
+  .migration-notice-btn{
+    background:#3B82F6;color:#fff;border:none;border-radius:50px;
+    padding:11px 22px;font-size:13.5px;font-weight:800;cursor:pointer;font-family:inherit;
+    transition:background .15s;
+  }
+  .migration-notice-btn:hover{background:#2563EB;}
+
+  /* ── PREVIOUS MODULES — legacy achievement, kept out of the main path on
+     purpose. Muted styling (grey, not the blue/gold of the active path)
+     so it reads as history, not something to do next. ── */
+  .prev-modules-note{font-size:12.5px;color:#9CA3AF;margin:10px 0 12px;line-height:1.6;}
+  .prev-module-card{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    background:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;
+    padding:12px 16px;margin-bottom:8px;text-decoration:none;color:inherit;
+    transition:border-color .15s;
+  }
+  .prev-module-card:hover{border-color:#D1D5DB;}
+  .prev-module-title{font-size:13.5px;font-weight:700;color:#4B5563;}
+  .prev-module-progress{font-size:12px;color:#9CA3AF;font-weight:600;white-space:nowrap;}
+
   @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
   @media(max-width:480px){
     .main{padding:24px 16px 120px;}
@@ -506,6 +536,16 @@
     <div class="dash-goal" id="dashGoal">Today's goal: complete your next lesson 🎯</div>
   </div>
 
+  <!-- A1 MIGRATION NOTICE — shown once, only to a signed-in learner who has
+       real progress in a now-hidden legacy module (see LEGACY_MODULE_IDS /
+       maybeShowMigrationNotice() further down). Dismissing it writes
+       profiles.a1_migration_notice_seen = true so it never reappears. -->
+  <div class="migration-notice" id="migrationNotice">
+    <div class="migration-notice-title">A1 has a new learning path.</div>
+    <div class="migration-notice-body">We've reorganised A1 to make learning easier step by step. Your completed lessons and XP are still saved. Some older grammar modules are now used inside topics and Deep Dives.</div>
+    <button type="button" class="migration-notice-btn" id="migrationNoticeBtn">Continue learning</button>
+  </div>
+
   <!-- WEITER LERNEN — primary continue card, populated from profiles.letzte_modul_slug -->
   <a class="continue-card" id="continueCard" href="#" style="display:none;">
     <div>
@@ -673,6 +713,20 @@
   </div>
 
   <div class="modules-list" data-level="A1"></div>
+
+  <!-- PREVIOUS MODULES — legacy achievement, secondary and muted on
+       purpose. Only shown (JS-populated, see renderPreviousModulesA1())
+       when the signed-in user actually has progress in a hidden legacy
+       module -- empty/no-progress users never see this section at all. -->
+  <div class="previous-modules-section" id="previousModulesSection" style="display:none;">
+    <div class="section-divider" style="margin-top:28px;">
+      <div class="section-divider-line"></div>
+      <div class="section-divider-label" style="color:#9CA3AF;background:rgba(156,163,175,0.08);border-color:rgba(156,163,175,0.2);">YOUR PREVIOUS PROGRESS</div>
+      <div class="section-divider-line"></div>
+    </div>
+    <div class="prev-modules-note">These modules aren't part of the new A1 path, but nothing was lost — your progress is saved and you can still open them anytime.</div>
+    <div id="previousModulesList"></div>
+  </div>
 
   <!-- EXAM VAULT CTA -->
   <div style="margin-top:28px;">
@@ -1125,6 +1179,90 @@
   // Shape: { [moduleId]: { completed: Set<lesson_id>, total: number } }
   var progressByMod = {};
 
+  // The 11 A1 modules hidden from the main path on 2026-09-18 (Greetings +
+  // the 10 grammar-named modules) when foundations+topics replaced the flat
+  // 13-module list. Never deleted, still reachable directly, still real
+  // source content for a future Deep Dive/Grammar Help page -- this list
+  // exists only so the dashboard can (a) detect a learner has real history
+  // there (-> migration notice) and (b) surface that history in its own
+  // secondary "Previous progress" section instead of silently dropping it.
+  var LEGACY_MODULE_IDS = [
+    '709ce228-d723-4453-aacb-55c26b618bc9', // Greetings, Introductions & Social Scripts
+    '3add9ce7-f7e4-479f-8899-b37a98bb1dfb', // Haben & Sein
+    '5a50e5c7-3abf-45cb-a0fc-bb0df894f7f7', // Der, Die, Das
+    '2acd86d3-bacd-4de0-ba8e-d6ec54090c3a', // Personal Pronouns
+    '84ae6334-3998-4ca1-a6d3-86b1734ad311', // Present Tense
+    '0c6c2633-a0e7-45d6-881d-abe7bc1a4703', // Sentence Structure & Word Order
+    '04b0b81e-55fd-4354-9e16-883991cb17c3', // Akkusativ Case
+    '90b2f3ee-4344-41b6-a145-b54706172581', // The Dative Case
+    '3bbee574-13f3-4bb9-b865-12a1f20bed6a', // Plural Forms of Nouns
+    '69cd3a5d-7949-4771-9d68-1abb3214330c', // Nicht or Kein?
+    'deb5e6ea-4150-41a9-b889-4960a32fe045'  // Modal Verbs
+  ];
+
+  // Shown once, only to a signed-in learner with at least one completed
+  // lesson in a legacy module -- a brand new learner never saw the old flat
+  // structure, so they never see this. profileRow may be null (fetch
+  // failed / column doesn't exist yet because the migration hasn't been
+  // run) -- fails silently either way, never blocks the rest of the page.
+  function maybeShowMigrationNotice(user, profileRow) {
+    if (!user || !profileRow || profileRow.a1_migration_notice_seen) return;
+    var hasLegacyProgress = LEGACY_MODULE_IDS.some(function(id) {
+      var p = progressByMod[id];
+      return p && p.completed.size > 0;
+    });
+    if (!hasLegacyProgress) return;
+    var el = document.getElementById('migrationNotice');
+    if (!el) return;
+    // .migration-notice's own class rule sets display:none (its default,
+    // pre-JS state) -- clearing an inline override with '' does nothing
+    // against a class-level rule, so this must be an explicit value.
+    el.style.display = 'block';
+    var btn = document.getElementById('migrationNoticeBtn');
+    if (btn) btn.addEventListener('click', function() {
+      el.style.display = 'none';
+      dwSupabase.from('profiles').update({ a1_migration_notice_seen: true }).eq('id', user.id)
+        .then(function(r) { if (r.error) console.warn('[dashboard] a1_migration_notice_seen write failed:', r.error.message); })
+        .catch(function() {});
+    });
+  }
+
+  // Secondary, muted "Previous progress" list -- only the legacy modules
+  // this specific user has any completed lessons in, never the full list of
+  // 11 (a learner who never touched Akkusativ shouldn't see it mentioned).
+  // Deliberately reuses progressByMod (already fetched, unfiltered by
+  // is_published) rather than a new progress query; only fetches the
+  // matching modules' titles, since that select IS is_published-filtered
+  // upstream in loadAll() and would otherwise miss these entirely.
+  function renderPreviousModulesA1() {
+    var touchedIds = LEGACY_MODULE_IDS.filter(function(id) {
+      var p = progressByMod[id];
+      return p && p.completed.size > 0;
+    });
+    if (!touchedIds.length) return;
+    dwSupabase.from('modules').select('id, title, order_index').in('id', touchedIds)
+      .then(function(res) {
+        if (res.error || !res.data || !res.data.length) return;
+        var section = document.getElementById('previousModulesSection');
+        var list = document.getElementById('previousModulesList');
+        if (!section || !list) return;
+        var html = res.data.filter(function(m) {
+          return !!progressByMod[m.id]; // defensive: skip anything the id-filtered query returns that we somehow have no progress for
+        }).map(function(m) {
+          var p = progressByMod[m.id];
+          var chip = (p.completed.size >= p.total && p.total > 0) ? '✓ ' + p.completed.size + '/' + p.total : p.completed.size + '/' + p.total;
+          return '<a class="prev-module-card" href="./module.html?id=' + m.id + '">' +
+            '<span class="prev-module-title">' + escapeHtml(m.title || 'Untitled') + '</span>' +
+            '<span class="prev-module-progress">' + escapeHtml(chip) + '</span>' +
+          '</a>';
+        }).join('');
+        if (!html) return;
+        list.innerHTML = html;
+        section.style.display = '';
+      })
+      .catch(function(e) { console.warn('[dashboard] previous-modules fetch failed (non-fatal):', e && e.message); });
+  }
+
   // Lesson-weighted banner update. Replaces the old localStorage-flag math
   // (which never moved because the modern lesson flow writes to Supabase,
   // not to dw_mod_<n>_done keys). Pulls from the same progressByMod map the
@@ -1373,6 +1511,28 @@
         //    saved slug fall back to the first A1 module so the dashboard
         //    always has a clear next step.
         renderContinueCard(byId, byLevel, user);
+
+        // ── Legacy-module history: migration notice + "Previous progress"
+        //    section. Both read progressByMod, which is already fully
+        //    populated by this point (built earlier in this same
+        //    afterProgress chain from an unfiltered lessons/user_progress
+        //    fetch, so it has legacy-module data even though modRes itself
+        //    is is_published-filtered). A dedicated, separate profile fetch
+        //    for a1_migration_notice_seen -- deliberately NOT folded into
+        //    renderContinueCard's letzte_modul_slug query above, so that if
+        //    the 0026 migration hasn't been run yet and this column doesn't
+        //    exist, the resulting query error only silently skips the
+        //    notice instead of also breaking the continue-card's slug
+        //    lookup.
+        if (user) {
+          renderPreviousModulesA1();
+          dwSupabase.from('profiles').select('a1_migration_notice_seen').eq('id', user.id).maybeSingle()
+            .then(function(res) {
+              if (res.error) { console.warn('[dashboard] a1_migration_notice_seen fetch failed (non-fatal):', res.error.message); return; }
+              maybeShowMigrationNotice(user, res.data);
+            })
+            .catch(function(e) { console.warn('[dashboard] a1_migration_notice_seen fetch threw (non-fatal):', e && e.message); });
+        }
 
         // ── Progress banner — same Supabase data as the card chips.
         //    Runs whether or not the user is signed in (anonymous gets 0s
