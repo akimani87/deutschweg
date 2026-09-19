@@ -379,6 +379,24 @@
         { de: 'Wo ist …?', en: 'Where is …?' },
         { de: 'Wo sind …?', en: 'Where are …?' }
       ]
+    },
+    '5967e95d-bbe5-469c-a1be-21c70664e558': { // Mein Tag und meine Zeit
+      words: [
+        { de: 'aufstehen', en: 'to get up' },
+        { de: 'frühstücken', en: 'to have breakfast' },
+        { de: 'arbeiten', en: 'to work' },
+        { de: 'lernen', en: 'to learn / study' },
+        { de: 'essen', en: 'to eat' },
+        { de: 'schlafen', en: 'to sleep' },
+        { de: 'Pause machen', en: 'to take a break' },
+        { de: 'morgens / mittags / abends', en: 'in the morning / at midday / in the evening' }
+      ],
+      phrases: [
+        { de: 'Um wie viel Uhr …?', en: 'At what time …?' },
+        { de: 'Ich arbeite um 8 Uhr.', en: 'I work at 8 o’clock.' },
+        { de: 'Ich arbeite. Du arbeitest. Er arbeitet.', en: 'I/you/he work(s).' },
+        { de: 'Morgens trinke ich Kaffee.', en: 'In the morning, I drink coffee.' }
+      ]
     }
   };
 
@@ -404,7 +422,11 @@
     },
     '73b70585-2459-4c0e-a7d0-8009e97eb12c': { // Dinge im Alltag
       abilityStatement: 'You can now name common everyday objects and say what you have or need.',
-      nextTopic: null // no fourth topic yet — falls back to "Back to dashboard"
+      nextTopic: { href: 'topic.html?id=5967e95d-bbe5-469c-a1be-21c70664e558', label: 'Mein Tag und meine Zeit' }
+    },
+    '5967e95d-bbe5-469c-a1be-21c70664e558': { // Mein Tag und meine Zeit
+      abilityStatement: 'You can now describe a simple daily routine and say when things happen.',
+      nextTopic: null // no fifth topic yet — falls back to "Back to dashboard"
     }
   };
 
@@ -423,6 +445,10 @@
     '73b70585-2459-4c0e-a7d0-8009e97eb12c': { // Dinge im Alltag
       href: './module.html?id=71b5f8b6-29dc-4e3d-93da-b7a3bf14c992&lesson=7',
       label: 'Der, die oder das?'
+    },
+    '5967e95d-bbe5-469c-a1be-21c70664e558': { // Mein Tag und meine Zeit
+      href: './module.html?id=aa5d0b1c-5e07-408c-93f2-b29f8e62e090&lesson=7',
+      label: 'How German verbs change'
     }
   };
 
@@ -435,7 +461,8 @@
   // purely an informational credit on the optional Deep Dive).
   var DEEP_DIVE_PRIOR_CREDIT = {
     '5424452b-bf3b-4344-9cdd-035859c0aeff': { legacyModuleId: '3add9ce7-f7e4-479f-8899-b37a98bb1dfb', legacyModuleTitle: 'Haben & Sein' }, // Familie und Freunde
-    '73b70585-2459-4c0e-a7d0-8009e97eb12c': { legacyModuleId: '5a50e5c7-3abf-45cb-a0fc-bb0df894f7f7', legacyModuleTitle: 'Der, Die, Das' }   // Dinge im Alltag
+    '73b70585-2459-4c0e-a7d0-8009e97eb12c': { legacyModuleId: '5a50e5c7-3abf-45cb-a0fc-bb0df894f7f7', legacyModuleTitle: 'Der, Die, Das' },  // Dinge im Alltag
+    '5967e95d-bbe5-469c-a1be-21c70664e558': { legacyModuleId: '84ae6334-3998-4ca1-a6d3-86b1734ad311', legacyModuleTitle: 'Present Tense' }    // Mein Tag und meine Zeit
   };
 
   function renderTopicCompleteMoment(card, eyebrow, titleEl, metaEl, ctaEl) {
