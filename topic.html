@@ -397,6 +397,31 @@
         { de: 'Ich arbeite. Du arbeitest. Er arbeitet.', en: 'I/you/he work(s).' },
         { de: 'Morgens trinke ich Kaffee.', en: 'In the morning, I drink coffee.' }
       ]
+    },
+    '7290d8e4-e995-4892-983d-acc0b147f80e': { // Essen und Einkaufen
+      words: [
+        { de: 'das Wasser', en: 'water' },
+        { de: 'der Kaffee', en: 'coffee' },
+        { de: 'der Tee', en: 'tea' },
+        { de: 'die Milch', en: 'milk' },
+        { de: 'der Apfel / die Äpfel', en: 'apple / apples' },
+        { de: 'die Banane / die Bananen', en: 'banana / bananas' },
+        { de: 'der Käse', en: 'cheese' },
+        { de: 'das Brot', en: 'bread' },
+        { de: 'der Reis', en: 'rice' },
+        { de: 'das Fleisch', en: 'meat' },
+        { de: 'die Flasche', en: 'bottle' },
+        { de: 'die Tasse', en: 'cup' }
+      ],
+      phrases: [
+        { de: 'Ich möchte …', en: 'I would like …' },
+        { de: 'Ich brauche …', en: 'I need …' },
+        { de: 'Ich kaufe …', en: 'I buy …' },
+        { de: 'Wie viel kostet das?', en: 'How much does that cost?' },
+        { de: 'Das kostet … Euro.', en: 'That costs … euros.' },
+        { de: 'Was möchten Sie?', en: 'What would you like? (formal, shop)' },
+        { de: 'Sonst noch etwas?', en: 'Anything else?' }
+      ]
     }
   };
 
@@ -426,7 +451,11 @@
     },
     '5967e95d-bbe5-469c-a1be-21c70664e558': { // Mein Tag und meine Zeit
       abilityStatement: 'You can now describe a simple daily routine and say when things happen.',
-      nextTopic: null // no fifth topic yet — falls back to "Back to dashboard"
+      nextTopic: { href: 'topic.html?id=7290d8e4-e995-4892-983d-acc0b147f80e', label: 'Essen und Einkaufen' }
+    },
+    '7290d8e4-e995-4892-983d-acc0b147f80e': { // Essen und Einkaufen
+      abilityStatement: 'You can now ask for simple food and shopping items, understand basic prices, and make a simple purchase.',
+      nextTopic: null // no sixth topic yet — falls back to "Back to dashboard"
     }
   };
 
@@ -449,7 +478,11 @@
     '5967e95d-bbe5-469c-a1be-21c70664e558': { // Mein Tag und meine Zeit
       href: './module.html?id=aa5d0b1c-5e07-408c-93f2-b29f8e62e090&lesson=7',
       label: 'How German verbs change'
-    }
+    },
+    '7290d8e4-e995-4892-983d-acc0b147f80e': [ // Essen und Einkaufen — two Deep Dives, first topic with a pair
+      { href: './module.html?id=ea3723d2-06cb-495c-b2b3-10f0fd858722&lesson=7', label: 'Why "einen"? — Akkusativ' },
+      { href: './module.html?id=ea3723d2-06cb-495c-b2b3-10f0fd858722&lesson=8', label: 'Modalverben' }
+    ]
   };
 
   // Prior-learning credit (migration-safety requirement 6): where a legacy
@@ -462,7 +495,11 @@
   var DEEP_DIVE_PRIOR_CREDIT = {
     '5424452b-bf3b-4344-9cdd-035859c0aeff': { legacyModuleId: '3add9ce7-f7e4-479f-8899-b37a98bb1dfb', legacyModuleTitle: 'Haben & Sein' }, // Familie und Freunde
     '73b70585-2459-4c0e-a7d0-8009e97eb12c': { legacyModuleId: '5a50e5c7-3abf-45cb-a0fc-bb0df894f7f7', legacyModuleTitle: 'Der, Die, Das' },  // Dinge im Alltag
-    '5967e95d-bbe5-469c-a1be-21c70664e558': { legacyModuleId: '84ae6334-3998-4ca1-a6d3-86b1734ad311', legacyModuleTitle: 'Present Tense' }    // Mein Tag und meine Zeit
+    '5967e95d-bbe5-469c-a1be-21c70664e558': { legacyModuleId: '84ae6334-3998-4ca1-a6d3-86b1734ad311', legacyModuleTitle: 'Present Tense' },   // Mein Tag und meine Zeit
+    '7290d8e4-e995-4892-983d-acc0b147f80e': [ // Essen und Einkaufen — one legacy module per Deep Dive, same index alignment as TOPIC_DEEP_DIVE above
+      { legacyModuleId: '04b0b81e-55fd-4354-9e16-883991cb17c3', legacyModuleTitle: 'Akkusativ Case' },
+      { legacyModuleId: 'deb5e6ea-4150-41a9-b889-4960a32fe045', legacyModuleTitle: 'Modal Verbs' }
+    ]
   };
 
   function renderTopicCompleteMoment(card, eyebrow, titleEl, metaEl, ctaEl) {
@@ -530,7 +567,7 @@
     return './module.html?id=' + lesson.module_id + '&lesson=' + lesson.order_index + '&topic=' + topicId;
   }
 
-  var state = { topic: null, items: [], user: null, completedLessonIds: {}, topicProgress: null, latestCheck: null, priorCredit: false };
+  var state = { topic: null, items: [], user: null, completedLessonIds: {}, topicProgress: null, latestCheck: null, priorCredit: {} };
 
   loadTopic(topicId);
 
@@ -578,13 +615,18 @@
           // ever an informational note on this topic's optional Deep Dive,
           // never a way to mark the topic itself complete -- see
           // DEEP_DIVE_PRIOR_CREDIT's comment above for why that's
-          // structurally impossible here anyway.
-          var priorCreditMap = DEEP_DIVE_PRIOR_CREDIT[id];
-          if (priorCreditMap) {
+          // structurally impossible here anyway. A topic may map to more
+          // than one legacy module (one per Deep Dive, e.g. Essen und
+          // Einkaufen's Akkusativ + Modalverben pair) -- normalized to an
+          // array here so a single-object entry (every earlier topic)
+          // behaves exactly as before, just wrapped.
+          var priorCreditRaw = DEEP_DIVE_PRIOR_CREDIT[id];
+          var priorCreditList = priorCreditRaw ? (Array.isArray(priorCreditRaw) ? priorCreditRaw : [priorCreditRaw]) : [];
+          for (var pc = 0; pc < priorCreditList.length; pc++) {
             var legacyRes = await dwSupabase.from('user_progress').select('id')
-              .eq('user_id', user.id).eq('module_id', priorCreditMap.legacyModuleId)
+              .eq('user_id', user.id).eq('module_id', priorCreditList[pc].legacyModuleId)
               .is('lesson_id', null).eq('status', 'completed').limit(1).maybeSingle();
-            if (!legacyRes.error && legacyRes.data) state.priorCredit = true;
+            if (!legacyRes.error && legacyRes.data) state.priorCredit[priorCreditList[pc].legacyModuleId] = true;
           }
 
           checkTopicCompletion();
@@ -735,20 +777,36 @@
     var row = document.getElementById('practiceRow');
     var stepSix = state.items && state.items.length ? state.items[state.items.length - 1] : null;
     var writeHref = stepSix ? lessonHref(stepSix.lesson) : '#';
-    var deepDive = TOPIC_DEEP_DIVE[state.topic.id];
+    // A topic may offer more than one Deep Dive chip (e.g. Essen und
+    // Einkaufen's Akkusativ + Modalverben pair) -- normalized to an array
+    // so a single-object entry (every earlier topic) renders exactly one
+    // chip, same as before.
+    var deepDiveRaw = TOPIC_DEEP_DIVE[state.topic.id];
+    var deepDiveList = deepDiveRaw ? (Array.isArray(deepDiveRaw) ? deepDiveRaw : [deepDiveRaw]) : [];
     row.innerHTML =
       '<span class="practice-chip" id="chipWords">Words &amp; phrases</span>' +
       '<span class="practice-chip" id="chipListening">Listening</span>' +
       '<a class="practice-chip" href="sprechen.html">Speaking</a>' +
       '<a class="practice-chip" href="' + writeHref + '">Writing</a>' +
-      (deepDive ? '<a class="practice-chip" href="' + deepDive.href + '">📘 ' + escapeHtml(deepDive.label) + '</a>' : '');
+      deepDiveList.map(function(dd) {
+        return '<a class="practice-chip" href="' + dd.href + '">📘 ' + escapeHtml(dd.label) + '</a>';
+      }).join('');
     document.getElementById('chipWords').addEventListener('click', function() { toggleVocabPanel(); });
     document.getElementById('chipListening').addEventListener('click', function() { toggleVocabPanel(); });
 
     var noteEl = document.getElementById('priorCreditNote');
-    var creditInfo = DEEP_DIVE_PRIOR_CREDIT[state.topic.id];
-    if (noteEl && deepDive && creditInfo && state.priorCredit) {
-      noteEl.textContent = '✓ You already covered this in ' + creditInfo.legacyModuleTitle + ' — the Deep Dive above is optional review.';
+    var creditRaw = DEEP_DIVE_PRIOR_CREDIT[state.topic.id];
+    var creditList = creditRaw ? (Array.isArray(creditRaw) ? creditRaw : [creditRaw]) : [];
+    var noteLines = [];
+    for (var ci = 0; ci < creditList.length; ci++) {
+      var credit = creditList[ci];
+      if (!credit || !state.priorCredit[credit.legacyModuleId]) continue;
+      var dd = deepDiveList[ci];
+      var ddLabel = dd ? ' — the "' + escapeHtml(dd.label) + '" Deep Dive above is optional review.' : ' — the Deep Dive above is optional review.';
+      noteLines.push('✓ You already covered this in ' + escapeHtml(credit.legacyModuleTitle) + ddLabel);
+    }
+    if (noteEl && noteLines.length) {
+      noteEl.innerHTML = noteLines.join('<br>');
       noteEl.style.display = '';
     } else if (noteEl) {
       noteEl.style.display = 'none';

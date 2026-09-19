@@ -297,6 +297,7 @@
   .lesson-vocab-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(110px,1fr)); gap:10px; margin:12px 0; }
   .lesson-vg-cell { text-align:center; border-radius:12px; padding:12px 8px; border:1px solid #E5E7EB; background:#F8FAFC; cursor:pointer; transition:background .15s; }
   .lesson-vg-cell:hover, .lesson-vg-cell:active { background:#F1F5F9; }
+  .lesson-vg-icon { font-size:26px; line-height:1; margin-bottom:4px; }
   .lesson-vg-art { font-size:11px; font-weight:700; letter-spacing:0.5px; margin-bottom:2px; color:#6B7280; }
   .lesson-vg-word { font-size:14px; font-weight:700; color:#1F2937; overflow-wrap:anywhere; }
   .lesson-vg-en { font-size:11px; color:#6B7280; margin-top:2px; }
@@ -1550,7 +1551,13 @@
         // ── vocab-grid ─────────────────────────────────────────────────────
         // A responsive grid of tap-to-hear vocabulary cards, optionally
         // color-coded by grammatical gender.
-        // Data: { type, label?, items:[{article?, word, translation?}] }
+        // Data: { type, label?, items:[{article?, word, translation?, icon?}] }
+        // Optional per-item `icon` (a single emoji) supports meaning for
+        // topics like Essen und Einkaufen where a small visual alongside the
+        // German word helps recognition -- always shown together with the
+        // word, never replacing it. Omit `icon` when no good one exists
+        // (falls back to the existing text-only card) rather than forcing a
+        // weak visual, per the topic's icon rule.
         case 'vocab-grid': {
           // Optional label lets a short lead-in explanation share this same
           // screen instead of needing its own preceding 'text' block/Weiter.
@@ -1558,10 +1565,12 @@
           var vgItems = (Array.isArray(block.items) ? block.items : []).map(function(item) {
             var vgArticle = (item && item.article) || '';
             var vgWord    = (item && item.word) || '';
+            var vgIcon    = (item && item.icon) || '';
             var vgFull    = String((vgArticle + ' ' + vgWord)).trim();
             var jsFull    = vgFull.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
             var vgGenderClass = { der:' lesson-vg-der', die:' lesson-vg-die', das:' lesson-vg-das' }[String(vgArticle).toLowerCase()] || '';
             return '<div class="lesson-vg-cell' + vgGenderClass + '" onclick="speakText(\'' + jsFull + '\')">' +
+              (vgIcon ? '<div class="lesson-vg-icon">' + escapeHtml(vgIcon) + '</div>' : '') +
               (vgArticle ? '<div class="lesson-vg-art">' + escapeHtml(vgArticle) + '</div>' : '') +
               '<div class="lesson-vg-word">' + escapeHtml(vgWord) + '</div>' +
               (item && item.translation ? '<div class="lesson-vg-en">' + escapeHtml(item.translation) + '</div>' : '') +
