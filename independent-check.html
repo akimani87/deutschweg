@@ -53,6 +53,36 @@
   .instruction-card.supported{background:#EFF6FF; border-color:#BFDBFE;}
   .instruction-length{font-size:13px;color:#6B7280;margin-bottom:10px;}
 
+  /* ── Scene — a small static route diagram + given directions, shown as
+     situational context for Unterwegs's check only (see hasScene). Same
+     visual language as module.html's street-diagram block, but fixed,
+     non-interactive markup (this page has no reason to duplicate that
+     block's generic renderer for one always-the-same scenario). ── */
+  .scene-wrap{
+    position:relative; width:100%; max-width:320px; margin:0 auto 14px;
+    background:#F8FAFC; border:1px solid #E5E7EB; border-radius:14px; overflow:hidden;
+  }
+  .scene-svg{display:block; width:100%; height:auto;}
+  .scene-marker{
+    position:absolute; transform:translate(-50%,-50%);
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+  }
+  .scene-marker-icon{
+    width:32px; height:32px; border-radius:50%; background:#fff;
+    border:2px solid #CBD5E1; display:flex; align-items:center; justify-content:center;
+    font-size:16px; box-shadow:0 1px 3px rgba(0,0,0,.08);
+  }
+  .scene-marker.start .scene-marker-icon{border-color:#3B82F6;}
+  .scene-marker.dest .scene-marker-icon{border-color:#059669;}
+  .scene-marker-label{
+    font-size:10px; font-weight:700; color:#374151; background:#fff;
+    padding:1px 5px; border-radius:6px; white-space:nowrap;
+  }
+  .scene-desc{
+    font-size:13.5px; color:#374151; line-height:1.6; margin-bottom:14px;
+    background:#F9FAFB; border-left:3px solid #3B82F6; border-radius:0 8px 8px 0; padding:10px 12px;
+  }
+
   /* ── Supported-writing help panel — collapsed by default so the task,
      writing area and submit stay visible together on mobile without
      scrolling past a wall of vocabulary first. Three small, single-purpose
@@ -326,6 +356,35 @@
         { key: 'day_or_time', label: 'Day or time given', prompt: 'communicates a day or time (e.g. am Samstag, am Sonntag, um 18 Uhr)' },
         { key: 'invitation', label: 'Functions as an invitation or plan', prompt: 'the reply reads as an invitation or a simple plan, not just a statement (e.g. Wollen wir …?, Hast du Zeit?, or a clear proposal)' }
       ]
+    },
+    'd1241d34-da19-43a1-a86a-588fa70f2216': { // Unterwegs
+      title: 'Find your way',
+      lead: 'You are visiting a German town and need to reach the train station.',
+      include: ['a way to ask a stranger for directions', 'the destination made clear (der Bahnhof)', 'the route you understood, in your own words'],
+      approxLength: '2-3 sentences',
+      hint: 'Start with Entschuldigung, wie komme ich zum Bahnhof?, then repeat the route back: geradeaus, dann rechts …',
+      vocab: [
+        { de: 'Entschuldigung, wo ist …?', en: 'Excuse me, where is …?' },
+        { de: 'Wie komme ich zum/zur …?', en: 'How do I get to …?' },
+        { de: 'geradeaus / links / rechts', en: 'straight ahead / left / right' },
+        { de: 'der Bahnhof', en: 'train station' }
+      ],
+      // hasScene: this check shows a small static route diagram + given
+      // directions as the situation's context (see renderScene) -- the
+      // ONLY topic whose check needs this. Everything else about the flow
+      // (one textarea, one POST to /api/topic-check/feedback, one stored
+      // row) is completely unchanged -- the existing single-text-response
+      // infrastructure just gets a scene to respond to instead of only a
+      // written prompt, which is the smallest safe way to support this
+      // topic's own "interpret a route, then respond" outcome without a
+      // new assessment engine.
+      hasScene: true,
+      sceneDescription: 'Ein Fremder sagt: „Gehen Sie geradeaus. Dann rechts. Der Bahnhof ist dort.“',
+      requiredInfo: [
+        { key: 'asks_directions', label: 'Asks for directions', prompt: 'produces an understandable way of asking for directions (e.g. Entschuldigung, wie komme ich zum Bahnhof? or Wo ist der Bahnhof?)' },
+        { key: 'destination_named', label: 'Destination is clear', prompt: 'makes clear the destination is der Bahnhof (the train station)' },
+        { key: 'route_understood', label: 'Route understood', prompt: 'shows understanding of the given route by repeating at least one correct step back (geradeaus, dann rechts, or similar)' }
+      ]
     }
   };
   // No silent fallback to a DIFFERENT topic's task -- this used to default
@@ -417,6 +476,25 @@
     });
   }
 
+  // Fixed, non-interactive route diagram + given directions — only ever
+  // rendered when check.hasScene is true (Unterwegs today). One scenario,
+  // hand-authored rather than data-driven since there's exactly one of it;
+  // see the CSS comment above for why this doesn't reuse module.html's
+  // generic street-diagram renderer.
+  function renderScene() {
+    if (!check.hasScene) return '';
+    return '<div class="scene-wrap">' +
+        '<svg class="scene-svg" viewBox="0 0 300 180" role="img" aria-label="' + escapeHtml(check.sceneDescription || '') + '">' +
+          '<line x1="20" y1="140" x2="180" y2="140" stroke="#CBD5E1" stroke-width="9" stroke-linecap="round"/>' +
+          '<line x1="180" y1="140" x2="180" y2="30" stroke="#CBD5E1" stroke-width="9" stroke-linecap="round"/>' +
+          '<polyline points="20,140 180,140 180,30" fill="none" stroke="#3B82F6" stroke-width="3.5" stroke-dasharray="2,7" stroke-linecap="round"/>' +
+        '</svg>' +
+        '<div class="scene-marker start" style="left:6.7%;top:77.8%;"><span class="scene-marker-icon">📍</span><span class="scene-marker-label">Start</span></div>' +
+        '<div class="scene-marker dest" style="left:60%;top:16.7%;"><span class="scene-marker-icon">🚉</span><span class="scene-marker-label">Bahnhof</span></div>' +
+      '</div>' +
+      (check.sceneDescription ? '<div class="scene-desc">' + escapeHtml(check.sceneDescription) + '</div>' : '');
+  }
+
   function toggleHelp() {
     var panel = document.getElementById('helpPanel');
     var btn = document.getElementById('helpToggle');
@@ -465,6 +543,7 @@
       '<div class="eyebrow' + (isSupported ? ' supported' : '') + '">' + escapeHtml(eyebrow) + '</div>' +
       '<h1>' + escapeHtml(displayTitle()) + '</h1>' +
       intro +
+      renderScene() +
       '<div class="instruction-card' + (isSupported ? ' supported' : '') + '">' +
         '<div class="instruction-lead">' + escapeHtml(check.lead) + '</div>' +
         (check.approxLength ? '<div class="instruction-length">About ' + escapeHtml(check.approxLength) + '.</div>' : '') +

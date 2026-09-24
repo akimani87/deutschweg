@@ -470,6 +470,28 @@
         { de: 'Wollen wir …?', en: 'Shall we …?' },
         { de: 'Ja, gerne!', en: 'Yes, gladly!' }
       ]
+    },
+    'd1241d34-da19-43a1-a86a-588fa70f2216': { // Unterwegs
+      words: [
+        { de: 'der Bahnhof', en: 'train station' },
+        { de: 'die Bushaltestelle', en: 'bus stop' },
+        { de: 'der Supermarkt', en: 'supermarket' },
+        { de: 'die Apotheke', en: 'pharmacy' },
+        { de: 'das Krankenhaus', en: 'hospital' },
+        { de: 'links / rechts / geradeaus', en: 'left / right / straight ahead' },
+        { de: 'der Bus / die Bahn / der Zug', en: 'bus / train-tram / train' },
+        { de: 'das Gleis', en: 'platform' },
+        { de: 'die Fahrkarte', en: 'ticket' }
+      ],
+      phrases: [
+        { de: 'Wo ist …?', en: 'Where is …?' },
+        { de: 'Wie komme ich zum/zur …?', en: 'How do I get to …?' },
+        { de: 'Gehen Sie geradeaus.', en: 'Go straight ahead.' },
+        { de: 'Wann fährt der Bus?', en: 'When does the bus leave?' },
+        { de: 'Welches Gleis?', en: 'Which platform?' },
+        { de: 'Ich möchte eine Fahrkarte nach …', en: 'I would like a ticket to …' },
+        { de: 'Einfach oder hin und zurück?', en: 'One-way or return?' }
+      ]
     }
   };
 
@@ -515,6 +537,11 @@
       lead: 'A friend asks if you want to do something this weekend — reply without help.',
       task: 'A friend asks if you want to do something this weekend — write your reply.',
       include: ['an activity you suggest', 'a preference or what you\'d like to do', 'a day or time', 'an invitation or simple plan']
+    },
+    'd1241d34-da19-43a1-a86a-588fa70f2216': { // Unterwegs
+      lead: 'You need to reach the train station — ask for directions without help.',
+      task: 'You need to reach the train station — write how you\'d ask for directions.',
+      include: ['a way to ask for directions', 'the destination made clear', 'the route you understood']
     }
   };
 
@@ -552,7 +579,11 @@
     },
     'effee44c-94f2-4f53-8dbc-42473e2c1b73': { // Freizeit und Pläne
       abilityStatement: 'You can now talk about your hobbies, invite a friend, and make simple plans in German.',
-      nextTopic: null // Unterwegs doesn't exist yet — falls back to "Back to dashboard"
+      nextTopic: { href: 'topic.html?id=d1241d34-da19-43a1-a86a-588fa70f2216', label: 'Unterwegs' }
+    },
+    'd1241d34-da19-43a1-a86a-588fa70f2216': { // Unterwegs
+      abilityStatement: 'You can now ask for directions, understand simple public transport information, and find your way around a German town.',
+      nextTopic: null // Wohnen doesn't exist yet — falls back to "Back to dashboard"
     }
   };
 
@@ -583,7 +614,11 @@
     'effee44c-94f2-4f53-8dbc-42473e2c1b73': [ // Freizeit und Pläne — two Deep Dives
       { href: './module.html?id=bf3371c1-de3e-462e-b7b1-d99c01109f35&lesson=7', label: 'Können oder wollen?' },
       { href: './module.html?id=bf3371c1-de3e-462e-b7b1-d99c01109f35&lesson=8', label: 'Gern, lieber oder am liebsten?' }
-    ]
+    ],
+    'd1241d34-da19-43a1-a86a-588fa70f2216': { // Unterwegs
+      href: './module.html?id=fc1849fb-fd01-48c3-a687-a5fed983211d&lesson=7',
+      label: 'Zum, zur oder mit dem?'
+    }
   };
 
   // Prior-learning credit (migration-safety requirement 6): where a legacy
@@ -608,7 +643,8 @@
     // (audited: the only related content is an A2 comparative/superlative
     // module, a different grammar point) -- a single object, not an
     // array, so it only ever aligns to index 0 and index 1 gets no note.
-    'effee44c-94f2-4f53-8dbc-42473e2c1b73': { legacyModuleId: 'deb5e6ea-4150-41a9-b889-4960a32fe045', legacyModuleTitle: 'Modal Verbs' }
+    'effee44c-94f2-4f53-8dbc-42473e2c1b73': { legacyModuleId: 'deb5e6ea-4150-41a9-b889-4960a32fe045', legacyModuleTitle: 'Modal Verbs' },
+    'd1241d34-da19-43a1-a86a-588fa70f2216': { legacyModuleId: '90b2f3ee-4344-41b6-a145-b54706172581', legacyModuleTitle: 'The Dative Case' } // Unterwegs
   };
 
   function renderTopicCompleteMoment(card, eyebrow, titleEl, metaEl, ctaEl) {
