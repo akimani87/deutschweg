@@ -357,6 +357,88 @@
   }
   .dw-gf-done.show { display:block; }
 
+  /* ── street-diagram: simple reusable SVG street layout (Unterwegs) ──
+     Fixed 5-slot L-shaped layout (start → mid1 → corner → mid2 → end) —
+     no coordinate authoring needed, just name which slot each landmark
+     sits at. Streets/route are plain SVG lines; start/destination/
+     landmarks are real HTML buttons absolutely-positioned over the SVG
+     (keyboard-focusable, reliably tappable on mobile — unlike raw SVG
+     click targets). The text description is always visibly rendered,
+     not just an aria-label, so the route is understandable without
+     parsing the diagram at all. */
+  .dw-street { margin:14px 0; }
+  .dw-street-label { font-size:15px; font-weight:700; color:#1F2937; margin-bottom:10px; }
+  .dw-street-names { font-size:11.5px; color:#6B7280; margin:-4px 0 10px; }
+  .dw-street-wrap {
+    position:relative; width:100%; max-width:360px; margin:0 auto;
+    background:#F8FAFC; border:1px solid #E5E7EB; border-radius:14px; overflow:hidden;
+  }
+  .dw-street-svg { display:block; width:100%; height:auto; }
+  .dw-street-marker {
+    position:absolute; transform:translate(-50%,-50%);
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+    background:none; border:none; padding:0; cursor:default; font-family:inherit;
+  }
+  .dw-street-marker-icon {
+    width:34px; height:34px; border-radius:50%; background:#fff;
+    border:2px solid #CBD5E1; display:flex; align-items:center; justify-content:center;
+    font-size:17px; box-shadow:0 1px 3px rgba(0,0,0,.08);
+  }
+  .dw-street-marker-label {
+    font-size:10.5px; font-weight:700; color:#374151; background:#fff;
+    padding:1px 5px; border-radius:6px; white-space:nowrap;
+  }
+  .dw-street-marker.start .dw-street-marker-icon { border-color:#3B82F6; }
+  .dw-street-marker.dest .dw-street-marker-icon { border-color:#059669; }
+  .dw-street-marker.hidden-dest .dw-street-marker-icon { border-color:#9CA3AF; font-size:18px; }
+  /* Tappable landmark/destination variants — real <button>s, not <div>s */
+  button.dw-street-marker { cursor:pointer; }
+  button.dw-street-marker:hover .dw-street-marker-icon { border-color:#3B82F6; }
+  button.dw-street-marker.correct .dw-street-marker-icon { border-color:#16A34A; background:#F0FDF4; }
+  button.dw-street-marker.wrong .dw-street-marker-icon { border-color:#DC2626; background:#FEF2F2; }
+  button.dw-street-marker:disabled { cursor:default; }
+  .dw-street-desc {
+    font-size:13.5px; color:#374151; line-height:1.6; margin-top:10px;
+    background:#F9FAFB; border-left:3px solid #3B82F6; border-radius:0 8px 8px 0; padding:10px 12px;
+  }
+  .dw-street-prompt { font-size:14.5px; font-weight:700; color:#1F2937; margin:10px 0 8px; }
+  .dw-street-choices { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  .dw-street-choice-btn {
+    background:#fff; border:2px solid #E5E7EB; border-radius:20px;
+    padding:8px 16px; font-size:13.5px; font-weight:700; cursor:pointer;
+    color:#1F2937; font-family:inherit; transition:all .15s;
+  }
+  .dw-street-choice-btn:hover:not(:disabled) { border-color:#3B82F6; }
+  .dw-street-choice-btn.correct { border-color:#16A34A; background:#F0FDF4; color:#166534; }
+  .dw-street-choice-btn.wrong { border-color:#DC2626; background:#FEF2F2; color:#991B1B; }
+  .dw-street-fb { font-size:13px; color:#B45309; margin-top:8px; display:none; }
+  .dw-street-fb.show { display:block; }
+
+  /* ── direction-arrows: hear/read a direction, pick the matching arrow ── */
+  .dw-dir { margin:14px 0; }
+  .dw-dir-prompt {
+    font-size:15px; font-weight:700; color:#1F2937; margin-bottom:12px;
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  }
+  .dw-dir-audio-btn {
+    background:#EFF6FF; border:1px solid #DBEAFE; border-radius:50px;
+    padding:6px 14px; font-size:13px; font-weight:700; color:#1D4ED8; cursor:pointer; font-family:inherit;
+  }
+  .dw-dir-options { display:flex; flex-wrap:wrap; gap:10px; }
+  .dw-dir-opt {
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    background:#fff; border:2px solid #E5E7EB; border-radius:14px;
+    padding:14px 18px; font-size:12.5px; font-weight:700; color:#374151;
+    cursor:pointer; font-family:inherit; min-width:72px; transition:all .15s;
+  }
+  .dw-dir-opt-icon { font-size:26px; line-height:1; }
+  .dw-dir-opt:hover:not(:disabled) { border-color:#3B82F6; }
+  .dw-dir-opt.correct { border-color:#16A34A; background:#F0FDF4; color:#166534; }
+  .dw-dir-opt.wrong { border-color:#DC2626; background:#FEF2F2; color:#991B1B; }
+  .dw-dir-opt:disabled { cursor:default; }
+  .dw-dir-fb { font-size:13px; color:#B45309; margin-top:10px; display:none; }
+  .dw-dir-fb.show { display:block; }
+
   /* ── NEW BLOCK TYPES (Modul 3+) ─────────────────────── */
 
   /* pattern-table — mobile-first: stack vertically, side-by-side on wider screens */
@@ -1201,6 +1283,98 @@
     }
     return { pick: pick };
   }());
+
+  // ── dwStreetDiagram: street-diagram controller (Unterwegs) ──────────────
+  // Two independent tap interactions on the same fixed 5-slot diagram:
+  // 'identify' (tap the landmark matching a prompt) and 'destination'
+  // (tap a destination choice pill; the diagram's own hidden end-marker
+  // reveals on a correct pick). Neither gates lesson advance — same
+  // category as dwGapFill/scenario-check, the learner's own Weiter
+  // button is always available regardless.
+  var dwStreetDiagram = (function() {
+    function getData(el) {
+      try { return JSON.parse(el.getAttribute('data-street') || '{}'); } catch (e) { return {}; }
+    }
+    function pickLandmark(id, label) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var data = getData(el);
+      var isCorrect = String(label) === String(data.target);
+      var btn = el.querySelector('[data-marker-label="' + label + '"]');
+      var fb = el.querySelector('.dw-street-fb');
+      if (isCorrect) {
+        el.querySelectorAll('button.dw-street-marker').forEach(function(b) { b.disabled = true; });
+        if (btn) btn.classList.add('correct');
+        if (fb) {
+          var article = data.targetArticle ? data.targetArticle + ' ' : '';
+          fb.textContent = '✓ Richtig! Das ist ' + article + data.target + '.';
+          fb.classList.add('show');
+        }
+      } else {
+        if (btn) {
+          btn.classList.add('wrong');
+          setTimeout(function() { btn.classList.remove('wrong'); }, 700);
+        }
+        if (fb) { fb.textContent = 'Nicht ganz — versuch es noch einmal.'; fb.classList.add('show'); }
+      }
+    }
+    function pickDestination(id, idx) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var data = getData(el);
+      var options = Array.isArray(data.options) ? data.options : [];
+      var chosen = options[idx];
+      var isCorrect = String(chosen) === String(data.answer);
+      el.querySelectorAll('.dw-street-choice-btn').forEach(function(b, i) {
+        b.disabled = true;
+        if (String(options[i]) === String(data.answer)) b.classList.add('correct');
+        else if (i === idx) b.classList.add('wrong');
+      });
+      if (isCorrect) {
+        var hidden = el.querySelector('.dw-street-marker.hidden-dest');
+        if (hidden) {
+          hidden.classList.remove('hidden-dest');
+          hidden.classList.add('dest');
+          var iconEl = hidden.querySelector('.dw-street-marker-icon');
+          var labelEl = hidden.querySelector('.dw-street-marker-label');
+          if (iconEl && data.answerIcon) iconEl.textContent = data.answerIcon;
+          if (labelEl) labelEl.textContent = data.answer;
+        }
+      }
+      var fb = el.querySelector('.dw-street-fb');
+      if (fb) {
+        fb.textContent = isCorrect ? ('✓ Richtig! ' + data.answer) : ('✗ Nicht ganz — die richtige Antwort ist ' + data.answer + '.');
+        fb.classList.add('show');
+      }
+    }
+    return { pickLandmark: pickLandmark, pickDestination: pickDestination };
+  }());
+
+  // ── dwDirectionArrows: hear/read a direction, pick the matching arrow ───
+  var dwDirectionArrows = (function() {
+    function getData(el) {
+      try { return JSON.parse(el.getAttribute('data-dir') || '{}'); } catch (e) { return {}; }
+    }
+    function pick(id, idx) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var data = getData(el);
+      var options = Array.isArray(data.options) ? data.options : [];
+      var chosen = options[idx];
+      var isCorrect = !!(chosen && String(chosen.label) === String(data.answer));
+      el.querySelectorAll('.dw-dir-opt').forEach(function(b, i) {
+        b.disabled = true;
+        if (options[i] && String(options[i].label) === String(data.answer)) b.classList.add('correct');
+        else if (i === idx) b.classList.add('wrong');
+      });
+      var fb = el.querySelector('.dw-dir-fb');
+      if (fb) {
+        fb.textContent = isCorrect ? '✓ Richtig!' : '✗ Nicht ganz — die richtige Antwort ist ' + data.answer + '.';
+        fb.classList.add('show');
+      }
+    }
+    return { pick: pick };
+  }());
 </script>
 
 <script>
@@ -1742,6 +1916,143 @@
           '</div>';
         }
 
+        // ── street-diagram ───────────────────────────────────────────────
+        // Simple reusable street layout for Unterwegs (Sec II) — a fixed
+        // 5-slot L-shaped route (start → … → end), no coordinate authoring
+        // needed. `points[i]` (i = 0..4) is either null (unused slot, e.g.
+        // the bare corner) or { label, icon, role? }; role:'start'/
+        // 'destination' marks the two ends. Landmarks/start/destination
+        // render as real HTML buttons over a plain SVG road, not SVG click
+        // targets — reliable on mobile, keyboard-focusable. `description`
+        // is always shown as visible text (not just an aria-label), so the
+        // route is understandable without parsing the diagram at all.
+        // Data: { type, label?, points:[...5], streetNames?:[h,v],
+        //         route?:bool, description,
+        //         interactive?: 'identify'|'destination',
+        //         prompt?, target?, targetArticle?  (identify: label to tap,
+        //         optional der/die/das for a grammatically correct "✓ Das
+        //         ist die Apotheke." confirmation),
+        //         options?, answer? (destination: choice pills) }
+        case 'street-diagram': {
+          var sdId = 'sd-' + Math.random().toString(36).slice(2, 7);
+          var SD_SLOTS = [ { x: 20, y: 190 }, { x: 110, y: 190 }, { x: 230, y: 190 }, { x: 230, y: 110 }, { x: 230, y: 30 } ];
+          var sdPoints = Array.isArray(block.points) ? block.points : [];
+          var sdStreetNames = Array.isArray(block.streetNames) ? block.streetNames : [];
+          var sdInteractive = block.interactive || '';
+          var sdStartIdx = -1, sdDestIdx = -1;
+          sdPoints.forEach(function(p, i) {
+            if (p && p.role === 'start') sdStartIdx = i;
+            if (p && p.role === 'destination') sdDestIdx = i;
+          });
+
+          var sdStreetsHtml =
+            '<line x1="20" y1="190" x2="230" y2="190" stroke="#CBD5E1" stroke-width="10" stroke-linecap="round"/>' +
+            '<line x1="230" y1="190" x2="230" y2="30" stroke="#CBD5E1" stroke-width="10" stroke-linecap="round"/>';
+          // Street names are NOT drawn on the road itself — landmarks can
+          // occupy any of the 5 fixed slots along it, so any fixed label
+          // position risks sitting under a marker. A caption row below the
+          // label (built further down) shows them instead, collision-free.
+          var sdStreetLabelsHtml = '';
+          var sdStreetCaption = sdStreetNames.filter(Boolean).length
+            ? '<div class="dw-street-names">' + sdStreetNames.filter(Boolean).map(escapeHtml).join(' → ') + '</div>'
+            : '';
+
+          var sdRouteHtml = '';
+          if ((block.route || sdInteractive === 'destination') && sdStartIdx !== -1 && sdDestIdx !== -1) {
+            var sdLo = Math.min(sdStartIdx, sdDestIdx), sdHi = Math.max(sdStartIdx, sdDestIdx);
+            var sdRoutePts = [];
+            for (var sdRi = sdLo; sdRi <= sdHi; sdRi++) sdRoutePts.push(SD_SLOTS[sdRi].x + ',' + SD_SLOTS[sdRi].y);
+            sdRouteHtml = '<polyline points="' + sdRoutePts.join(' ') + '" fill="none" stroke="#3B82F6" stroke-width="4" stroke-dasharray="2,8" stroke-linecap="round"/>';
+          }
+
+          var sdMarkersHtml = sdPoints.map(function(p, i) {
+            if (!p) return '';
+            var pos = SD_SLOTS[i];
+            var leftPct = (pos.x / 340 * 100).toFixed(1);
+            var topPct = (pos.y / 240 * 100).toFixed(1);
+            var posStyle = 'left:' + leftPct + '%;top:' + topPct + '%;';
+            var isHiddenDest = (sdInteractive === 'destination' && p.role === 'destination');
+            var roleClass = p.role === 'start' ? ' start' : (p.role === 'destination' ? (isHiddenDest ? ' hidden-dest' : ' dest') : '');
+            var dispIcon = isHiddenDest ? '❓' : (p.icon || '📍');
+            var dispLabel = isHiddenDest ? '?' : (p.label || '');
+            var isTappable = sdInteractive === 'identify' && p.label;
+            if (isTappable) {
+              var jsLabel = String(p.label).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+              return '<button type="button" class="dw-street-marker' + roleClass + '" style="' + posStyle + '"' +
+                ' data-marker-label="' + escapeHtml(p.label) + '"' +
+                ' onclick="dwStreetDiagram.pickLandmark(\'' + sdId + '\',\'' + jsLabel + '\')">' +
+                '<span class="dw-street-marker-icon">' + escapeHtml(dispIcon) + '</span>' +
+                '<span class="dw-street-marker-label">' + escapeHtml(dispLabel) + '</span>' +
+              '</button>';
+            }
+            return '<div class="dw-street-marker' + roleClass + '" style="' + posStyle + '">' +
+              '<span class="dw-street-marker-icon">' + escapeHtml(dispIcon) + '</span>' +
+              '<span class="dw-street-marker-label">' + escapeHtml(dispLabel) + '</span>' +
+            '</div>';
+          }).join('');
+
+          var sdLabelHtml = block.label ? '<div class="dw-street-label">' + escapeHtml(block.label) + '</div>' : '';
+          var sdDescHtml = block.description ? '<div class="dw-street-desc">' + escapeHtml(block.description) + '</div>' : '';
+          var sdPromptHtml = (block.prompt && sdInteractive !== 'destination') ? '<div class="dw-street-prompt">' + escapeHtml(block.prompt) + '</div>' : '';
+
+          var sdChoicesHtml = '';
+          var sdOptions = Array.isArray(block.options) ? block.options : [];
+          if (sdInteractive === 'destination') {
+            sdChoicesHtml = (block.prompt ? '<div class="dw-street-prompt">' + escapeHtml(block.prompt) + '</div>' : '') +
+              '<div class="dw-street-choices">' + sdOptions.map(function(opt, oi) {
+                return '<button type="button" class="dw-street-choice-btn" onclick="dwStreetDiagram.pickDestination(\'' + sdId + '\',' + oi + ')">' + escapeHtml(opt) + '</button>';
+              }).join('') + '</div>';
+          }
+
+          var sdDataAttr = JSON.stringify({
+            target: block.target || '',
+            targetArticle: block.targetArticle || '',
+            options: sdOptions,
+            answer: block.answer || '',
+            answerIcon: (sdDestIdx !== -1 && sdPoints[sdDestIdx]) ? (sdPoints[sdDestIdx].icon || '') : ''
+          }).replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+          return '<div class="dw-street" id="' + sdId + '" data-street="' + sdDataAttr + '">' +
+            sdLabelHtml + sdStreetCaption +
+            '<div class="dw-street-wrap">' +
+              '<svg class="dw-street-svg" viewBox="0 0 340 240" role="img" aria-label="' + escapeHtml(block.description || 'Street diagram') + '">' +
+                sdStreetsHtml + sdStreetLabelsHtml + sdRouteHtml +
+              '</svg>' +
+              sdMarkersHtml +
+            '</div>' +
+            sdDescHtml + sdPromptHtml + sdChoicesHtml +
+            '<div class="dw-street-fb"></div>' +
+          '</div>';
+        }
+
+        // ── direction-arrows ────────────────────────────────────────────────
+        // Hear or read a short direction, pick the matching arrow. Not in
+        // INTERACTIVE_TYPES — advances via the lesson's normal Continue
+        // button, same as gap-fill/scenario-check.
+        // Data: { type, prompt?, audio?, options:[{label, icon}], answer }
+        case 'direction-arrows': {
+          var daId = 'da-' + Math.random().toString(36).slice(2, 7);
+          var daOptions = Array.isArray(block.options) ? block.options : [];
+          var daDataAttr = JSON.stringify({ options: daOptions, answer: block.answer || '' })
+            .replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+          var daAudioText = block.audio || block.prompt || '';
+          var jsDaAudio = String(daAudioText).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+          var daPromptHtml = '<div class="dw-dir-prompt">' +
+            (block.prompt ? '<span>' + escapeHtml(block.prompt) + '</span>' : '') +
+            (daAudioText ? '<button type="button" class="dw-dir-audio-btn" onclick="speakText(\'' + jsDaAudio + '\',\'de-DE\')">🔊 Listen</button>' : '') +
+          '</div>';
+          var daOptsHtml = '<div class="dw-dir-options">' + daOptions.map(function(o, oi) {
+            return '<button type="button" class="dw-dir-opt" onclick="dwDirectionArrows.pick(\'' + daId + '\',' + oi + ')">' +
+              '<span class="dw-dir-opt-icon">' + escapeHtml((o && o.icon) || '') + '</span>' +
+              '<span>' + escapeHtml((o && o.label) || '') + '</span>' +
+            '</button>';
+          }).join('') + '</div>';
+          return '<div class="dw-dir" id="' + daId + '" data-dir="' + daDataAttr + '">' +
+            daPromptHtml + daOptsHtml +
+            '<div class="dw-dir-fb"></div>' +
+          '</div>';
+        }
+
         default:
           return '';
       }
@@ -2076,7 +2387,8 @@
         'pattern-table':1, 'tile-assembly':1, 'clock-quiz':1,
         'listening-input':1, 'dialogue':1,
         'rule-card':1, 'comparison-table':1, 'pathway-card':1,
-        'common-mistake':1, 'recap':1, 'vocab-grid':1, 'gap-fill':1
+        'common-mistake':1, 'recap':1, 'vocab-grid':1, 'gap-fill':1,
+        'street-diagram':1, 'direction-arrows':1
       };
       var hasNewBlocks = Array.isArray(lesson.content_json) && lesson.content_json.some(function(b) {
         return NEW_BLOCK_TYPES[b && b.type];
