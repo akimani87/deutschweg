@@ -3282,6 +3282,20 @@
 
   // Compute and persist a quiz score for this lesson; award 10 XP for a
   // first-time completion. Triggers module-completion check at the end.
+  // Mirrors state.xp into every on-screen XP counter. Called from the
+  // increment_xp RPC success callbacks below — those resolve asynchronously,
+  // and the module-complete screen (complete(), below) can already be
+  // showing by the time the module-bonus RPC finishes (it's a longer
+  // select-then-insert-then-rpc chain than the per-lesson award), so
+  // xpEarnedFinal needs the same live update xpDisp already gets, not just
+  // a one-time read at complete()-time.
+  function syncXpDisplays() {
+    var xpDispEl = document.getElementById('xpDisp');
+    if (xpDispEl) xpDispEl.textContent = '⚡ ' + state.xp + ' XP';
+    var xpFinalEl = document.getElementById('xpEarnedFinal');
+    if (xpFinalEl) xpFinalEl.textContent = state.xp;
+  }
+
   function markLessonComplete(lesson) {
     if (!state.user) {
       console.log('[progress] complete skipped — anonymous (no user)');
@@ -3333,8 +3347,26 @@
       bumpPalStreak().then(function() { onPalLessonFinished(lesson); });
 
       dwSupabase.rpc('increment_xp', { uid: state.user.id, amt: 10 }).then(function(r) {
-        if (r.error) console.error('[progress] +10 XP FAILED', r.error);
-        else         console.log('[progress] ✓ +10 XP, total=' + r.data);
+        if (r.error) {
+          console.error('[progress] +10 XP FAILED', r.error);
+        } else {
+          console.log('[progress] ✓ +10 XP, total=' + r.data);
+          // state.xp is the "XP earned" counter shown in the header (xpDisp)
+          // and on the module-complete screen (xpEarnedFinal) — it used to
+          // only increment from legacy lesson_exercises quiz answers
+          // (XP_PER_CORRECT, below), never from this RPC-based award. Every
+          // topic-hosted module has zero lesson_exercises rows (they use
+          // content_json blocks instead), so state.xp silently stayed 0 for
+          // the whole session on every topic, regardless of how much real,
+          // persisted XP this call just awarded — hence "0 XP earned" on
+          // completion even though profiles.xp was correct the whole time.
+          // This mirrors it into the same session counter the display
+          // already reads, so both surfaces show the real amount. Only
+          // reached when the RPC actually ran (guarded by the
+          // already-completed check above), so this can't double-count.
+          state.xp += 10;
+          syncXpDisplays();
+        }
         checkModuleCompletion();
       });
     });
@@ -3407,8 +3439,18 @@
           console.log('[progress] ✓ module-completion saved', res.data && res.data[0]);
           state.moduleAwarded = true;
           dwSupabase.rpc('increment_xp', { uid: state.user.id, amt: 50 }).then(function(r) {
-            if (r.error) console.error('[progress] +50 XP module bonus FAILED', r.error);
-            else         console.log('[progress] 🎉 Module complete — +50 XP, total=' + r.data);
+            if (r.error) {
+              console.error('[progress] +50 XP module bonus FAILED', r.error);
+            } else {
+              console.log('[progress] 🎉 Module complete — +50 XP, total=' + r.data);
+              // See the matching comment on the +10 per-lesson award above —
+              // same fix, same reason: mirror the real award into the
+              // session display counter. Only reached once per module (this
+              // whole branch is behind the SELECT-then-INSERT existence
+              // check a few lines up), so this can't double-count either.
+              state.xp += 50;
+              syncXpDisplays();
+            }
           });
           advanceLetzteModulSlug();
         });
