@@ -115,6 +115,25 @@
     padding:14px 16px; margin:4px 0 8px; font-size:13.5px; font-weight:700; color:#059669;
   }
 
+  /* ── Supported writing card — shown once the six-step path is done,
+     ABOVE the independent-check card (never gated by it, per "Teach →
+     Guided → Supported → Independent"). Blue, not the check-card's amber
+     — reads as "an invitation to practise", not "the serious test". ── */
+  .write-card{
+    background:#EFF6FF; border:1.5px solid #BFDBFE; border-radius:16px;
+    padding:20px 22px; margin:4px 0 8px;
+  }
+  .write-card-eyebrow{font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#1D4ED8;margin-bottom:8px;}
+  .write-card-title{font-size:16px;font-weight:700;color:#1F2937;margin-bottom:6px;line-height:1.4;}
+  .write-card-body{font-size:13.5px;color:#374151;margin-bottom:16px;line-height:1.6;}
+  .write-card-btn{
+    display:inline-flex;align-items:center;gap:8px;
+    background:#3B82F6;color:#fff;border:none;border-radius:50px;
+    padding:12px 24px;font-size:14px;font-weight:800;letter-spacing:0.2px;
+    text-decoration:none; cursor:pointer;font-family:inherit;transition:background .15s, transform .15s;
+  }
+  .write-card-btn:hover{background:#2563EB;transform:translateY(-1px);}
+
   /* ── Tier B: Your path ── */
   .tier-label{font-size:11px;font-weight:700;letter-spacing:1.5px;color:#9CA3AF;text-transform:uppercase;margin:28px 0 10px;}
   .tier-label:first-of-type{margin-top:8px;}
@@ -254,18 +273,24 @@
   <div id="pathBanner"></div>
   <div class="path-list" id="pathList"></div>
 
+  <!-- Supported writing — shown once all six steps are done, above the
+       independent check. Never forces the check; the learner may start,
+       practise more, or return later (see renderWriteCard). -->
+  <div class="write-card" id="writeCard" style="display:none;">
+    <div class="write-card-eyebrow">Your final practice</div>
+    <div class="write-card-title" id="writeCardTitle"></div>
+    <div class="write-card-body">Try writing in German. You can use the word bank, ask AI Pal for a hint, and receive feedback on your answer.</div>
+    <a class="write-card-btn" id="writeCardBtn" href="#">Start writing →</a>
+  </div>
+
   <!-- Independent check — a distinct final card, separate from Step 6 and
        from the guided continue-card above. Only shown once all six steps
        are done. -->
   <div class="check-card" id="checkCard" style="display:none;">
     <div class="check-card-eyebrow">Independent check</div>
-    <div class="check-card-body">Introduce yourself without help.</div>
+    <div class="check-card-body" id="checkCardBody"></div>
     <div class="check-card-include">Include:</div>
-    <ul class="check-card-list">
-      <li>your name</li>
-      <li>where you're from</li>
-      <li>where you live</li>
-    </ul>
+    <ul class="check-card-list" id="checkCardList"></ul>
     <div class="check-card-note">No sentence starters this time.</div>
     <button type="button" class="check-card-btn" id="startCheckBtn">Start check</button>
   </div>
@@ -425,6 +450,46 @@
     }
   };
 
+  // ── Independent-check preview (fixes a real bug: this card's HTML used to
+  // be static markup hardcoded to Über mich's task -- "Introduce yourself
+  // without help" -- shown on every topic's page regardless of which topic
+  // you were on. Mirrors independent-check.html's TOPIC_CHECKS lead/include
+  // fields exactly (duplicated on purpose, same precedent as TOPIC_VOCAB
+  // above being its own small curated copy, not a shared import -- this
+  // page can't reach into that page's JS scope, they're separate loads).
+  // Keep these two in sync by hand when a topic's check task changes.
+  // `task`: a help-neutral phrasing of the same task, for the Supported
+  // Writing card (renderWriteCard) — `lead`'s "…without help" framing
+  // belongs only to the independent check, never to the writing invite
+  // that's explicitly offering word-bank/hint/AI-Pal support.
+  var TOPIC_CHECK_PREVIEW = {
+    '4bf7abfd-0147-4a83-b8c2-df60a263c24d': { // Über mich
+      lead: 'Introduce yourself without help.',
+      task: 'Introduce yourself in German.',
+      include: ['your name', "where you're from", 'where you live']
+    },
+    '5424452b-bf3b-4344-9cdd-035859c0aeff': { // Familie und Freunde
+      lead: 'Introduce one family member or friend without help.',
+      task: 'Introduce one family member or friend in German.',
+      include: ['who the person is', 'their name', 'where they live or come from']
+    },
+    '73b70585-2459-4c0e-a7d0-8009e97eb12c': { // Dinge im Alltag
+      lead: 'Describe three everyday things around you without help.',
+      task: 'Describe three everyday things around you in German.',
+      include: ['what at least three things are', 'at least one thing you have or need']
+    },
+    '5967e95d-bbe5-469c-a1be-21c70664e558': { // Mein Tag und meine Zeit
+      lead: 'Tell us about a normal day without help.',
+      task: 'Tell us about a normal day in German.',
+      include: ['at least three activities', 'at least two times', 'at least one part of the day']
+    },
+    '7290d8e4-e995-4892-983d-acc0b147f80e': { // Essen und Einkaufen
+      lead: 'You are buying three things in a shop — say what you would like.',
+      task: 'You are buying three things in a shop — write what you would like.',
+      include: ['at least three items', 'at least one quantity or number', 'the price of one item']
+    }
+  };
+
   // ── Topic completion pattern (product rule, applies to every topic) ────
   // Every completed topic ends in one achievement moment with exactly
   // three parts: (1) celebrate, (2) tell the learner what they can now
@@ -564,7 +629,16 @@
   if (typeof dwSupabase === 'undefined') { showError('Connection error', 'Supabase client failed to load. Refresh the page.'); return; }
 
   function lessonHref(lesson) {
-    return './module.html?id=' + lesson.module_id + '&lesson=' + lesson.order_index + '&topic=' + topicId;
+    // topicLastStep names which lesson order_index is this topic's 6th
+    // (final required) step -- module.html uses it to show a "guided path
+    // complete, try writing" transition instead of silently continuing
+    // into an optional Deep Dive lesson. Harmless on every other lesson's
+    // link since module.html only acts on it when it matches the CURRENT
+    // lesson being completed.
+    var lastItem = state.items.length ? state.items[state.items.length - 1] : null;
+    var topicLastStep = (lastItem && lastItem.lesson) ? lastItem.lesson.order_index : '';
+    return './module.html?id=' + lesson.module_id + '&lesson=' + lesson.order_index + '&topic=' + topicId +
+      (topicLastStep !== '' ? '&topicLastStep=' + topicLastStep : '');
   }
 
   var state = { topic: null, items: [], user: null, completedLessonIds: {}, topicProgress: null, latestCheck: null, priorCredit: {} };
@@ -638,6 +712,7 @@
       renderPracticeRow(); // re-render: state.priorCredit may have just been set above
       renderContinueCard();
       renderPathList();
+      renderWriteCard();
       renderCheckCard();
       renderStatusPanel();
       finalizeBoot();
@@ -718,8 +793,40 @@
     if (!state.user || !allStepsDone()) { card.style.display = 'none'; done.style.display = 'none'; return; }
     if (checkPassed()) { card.style.display = 'none'; done.style.display = 'flex'; return; }
     card.style.display = ''; done.style.display = 'none';
+
+    // Populate from this topic's own preview -- this card's copy used to
+    // be static HTML hardcoded to Über mich's task, shown unchanged on
+    // every topic's page. Falls back to Über mich's preview only if a
+    // future topic is missing an entry here (should never happen once
+    // every topic is kept in sync, same caveat as TOPIC_CHECKS itself).
+    var preview = TOPIC_CHECK_PREVIEW[state.topic.id] || TOPIC_CHECK_PREVIEW['4bf7abfd-0147-4a83-b8c2-df60a263c24d'];
+    var bodyEl = document.getElementById('checkCardBody');
+    var listEl = document.getElementById('checkCardList');
+    if (bodyEl) bodyEl.textContent = preview.lead;
+    if (listEl) listEl.innerHTML = preview.include.map(function(i) { return '<li>' + escapeHtml(i) + '</li>'; }).join('');
+
     var btn = document.getElementById('startCheckBtn');
     if (btn) btn.textContent = state.latestCheck ? 'Try again' : 'Start check';
+  }
+
+  // Supported writing — shown as soon as the six-step path is done,
+  // ABOVE the independent-check card, and never gated by it (per "do not
+  // force a strict independent check before moving to the next topic").
+  // Always reachable again even after the independent check is
+  // demonstrated -- unlike checkCard/checkCardDone, this has no "done"
+  // state of its own (supported writing stays ungated, repeatable
+  // practice, not a tracked pass/fail — see independent-check.html's
+  // ?mode=supported, which deliberately doesn't write a
+  // topic_performance_checks row).
+  function renderWriteCard() {
+    var card = document.getElementById('writeCard');
+    if (!state.user || !allStepsDone()) { card.style.display = 'none'; return; }
+    var preview = TOPIC_CHECK_PREVIEW[state.topic.id] || TOPIC_CHECK_PREVIEW['4bf7abfd-0147-4a83-b8c2-df60a263c24d'];
+    var titleEl = document.getElementById('writeCardTitle');
+    var btn = document.getElementById('writeCardBtn');
+    if (titleEl) titleEl.textContent = preview.task;
+    if (btn) btn.href = 'independent-check.html?topic=' + encodeURIComponent(state.topic.id) + '&mode=supported';
+    card.style.display = '';
   }
 
   function renderPathList() {

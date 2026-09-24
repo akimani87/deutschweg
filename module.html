@@ -326,6 +326,37 @@
   }
   .dw-wp-example-label { font-weight:700; color:#6B7280; }
 
+  /* ── gap-fill: Lückentext — shared word bank + several fill-in-the-blank
+     sentences, filled by tapping a bank word into the next open blank ── */
+  .dw-gapfill { margin:14px 0; }
+  .dw-gf-label { font-size:15px; font-weight:700; color:#1F2937; margin-bottom:10px; }
+  .dw-gf-bank { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  .dw-gf-chip {
+    background:#fff; border:2px solid #E5E7EB; border-radius:20px;
+    padding:8px 16px; font-size:14px; font-weight:700; cursor:pointer;
+    transition:all .15s; color:#1F2937; font-family:inherit;
+  }
+  .dw-gf-chip:hover:not(:disabled) { border-color:#3B82F6; color:#2563EB; }
+  .dw-gf-chip:disabled { opacity:.4; cursor:default; }
+  .dw-gf-sentence {
+    font-size:15px; line-height:1.8; padding:10px 0; border-bottom:1px solid #F1F5F9;
+  }
+  .dw-gf-sentence:last-of-type { border-bottom:none; }
+  .dw-gf-blank {
+    display:inline-block; min-width:56px; text-align:center; border-bottom:2px dashed #9CA3AF;
+    color:#9CA3AF; font-weight:700; padding:0 2px;
+  }
+  .dw-gf-blank.correct { border-bottom-style:solid; }
+  .dw-gf-fb {
+    font-size:13px; color:#B45309; margin-top:4px; display:none;
+  }
+  .dw-gf-fb.show { display:block; }
+  .dw-gf-done {
+    margin-top:12px; background:#F0FDF4; border:1px solid #BBF7D0; border-radius:10px;
+    padding:10px 14px; font-size:13.5px; color:#166534; font-weight:700; display:none;
+  }
+  .dw-gf-done.show { display:block; }
+
   /* ── NEW BLOCK TYPES (Modul 3+) ─────────────────────── */
 
   /* pattern-table — mobile-first: stack vertically, side-by-side on wider screens */
@@ -715,6 +746,25 @@
         <button class="btn btn-outline" onclick="dwModule.restart()">Review module</button>
       </div>
     </div>
+
+    <!-- Template for the "guided path complete" screen shown after a topic's
+         6th (final required) step -- see topicLastStepParam / showTopicPathComplete().
+         Cloned per-lesson at call time since its links depend on which
+         lesson index just finished; kept out of normal document flow. -->
+    <template id="topicStepCompleteTpl">
+      <div class="card">
+        <div class="complete-wrap active" style="padding:32px 8px;">
+          <div class="complete-icon">🎉</div>
+          <div class="complete-title">Guided path complete!</div>
+          <div class="complete-sub">You've finished all 6 steps. Ready to try writing about it yourself? A word bank, hints, and AI Pal are all there if you want them.</div>
+          <div class="complete-actions">
+            <a class="btn btn-primary" data-role="write-link">Try Supported Writing →</a>
+            <button class="btn btn-outline" type="button" data-role="continue-btn">Continue with optional practice</button>
+            <a class="btn btn-outline" data-role="topic-link">Back to topic</a>
+          </div>
+        </div>
+      </div>
+    </template>
   </div>
 </div>
 
@@ -1090,6 +1140,66 @@
       if (btn) btn.style.display = 'none';
     }
     return { reveal: reveal };
+  }());
+
+  // ── dwGapFill: Lückentext controller ────────────────────────────────────
+  // A shared word bank (tappable chips) fills several sentences' blanks, one
+  // at a time in document order — tapping a chip always targets the first
+  // not-yet-correct blank. Chips stay reusable (not consumed) since the same
+  // word (e.g. "ein") may be the right answer for more than one sentence.
+  // Not in INTERACTIVE_TYPES: like write-prompt/scenario-check, the learner
+  // advances via the lesson's own Weiter button whenever they're ready —
+  // this block doesn't gate or auto-advance.
+  var dwGapFill = (function() {
+    function getData(el) {
+      try { return JSON.parse(el.getAttribute('data-gapfill') || '{}'); } catch (e) { return {}; }
+    }
+    function getFilled(el) {
+      try { return JSON.parse(el.getAttribute('data-filled') || '[]'); } catch (e) { return []; }
+    }
+    function firstOpenIdx(filled, total) {
+      for (var i = 0; i < total; i++) { if (!filled[i]) return i; }
+      return -1;
+    }
+    function pick(id, bankIdx) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var data = getData(el);
+      var sentences = Array.isArray(data.sentences) ? data.sentences : [];
+      var bank = Array.isArray(data.bank) ? data.bank : [];
+      var word = bank[bankIdx];
+      if (word === undefined) return;
+
+      var filled = getFilled(el);
+      var target = firstOpenIdx(filled, sentences.length);
+      if (target === -1) return; // already all correct
+
+      var s = sentences[target];
+      var blankEl = el.querySelector('[data-blank="' + target + '"]');
+      var fbEl = el.querySelector('[data-fb="' + target + '"]');
+      var isCorrect = String(word).trim() === String(s.answer).trim();
+
+      if (isCorrect) {
+        if (blankEl) {
+          blankEl.textContent = s.answer;
+          blankEl.classList.add('correct', 'dw-change');
+        }
+        if (fbEl) { fbEl.textContent = ''; fbEl.classList.remove('show'); }
+        filled[target] = true;
+        el.setAttribute('data-filled', JSON.stringify(filled));
+        if (firstOpenIdx(filled, sentences.length) === -1) {
+          var done = el.querySelector('.dw-gf-done');
+          // '' clears an inline override but does nothing against
+          // .dw-gf-done's OWN display:none in its class rule — must add the
+          // 'show' class instead.
+          if (done) done.classList.add('show');
+        }
+      } else if (fbEl) {
+        fbEl.textContent = s.explain || ('Not quite — try a different word for this gap.');
+        fbEl.classList.add('show');
+      }
+    }
+    return { pick: pick };
   }());
 </script>
 
@@ -1603,6 +1713,35 @@
           '</div>';
         }
 
+        // ── gap-fill ───────────────────────────────────────────────────────
+        // Lückentext: a shared word bank fills several sentences' blanks, one
+        // at a time (see dwGapFill). Not in INTERACTIVE_TYPES — the learner
+        // advances via the lesson's normal Continue button whenever ready.
+        // Data: { type, label?, bank:[word,...], sentences:[{before, answer, after, explain?}] }
+        case 'gap-fill': {
+          var gfId = 'gf-' + Math.random().toString(36).slice(2, 7);
+          var gfBank = Array.isArray(block.bank) ? block.bank : [];
+          var gfSentences = Array.isArray(block.sentences) ? block.sentences : [];
+          var gfDataAttr = JSON.stringify({ bank: gfBank, sentences: gfSentences })
+            .replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+          var gfLabel = block.label ? '<div class="dw-gf-label">' + escapeHtml(block.label) + '</div>' : '';
+          var gfBankHtml = '<div class="dw-gf-bank">' + gfBank.map(function(w, i) {
+            return '<button type="button" class="dw-gf-chip" onclick="dwGapFill.pick(\'' + gfId + '\',' + i + ')">' + escapeHtml(w) + '</button>';
+          }).join('') + '</div>';
+          var gfSentencesHtml = gfSentences.map(function(s, i) {
+            return '<div class="dw-gf-sentence">' +
+              escapeHtml(s.before || '') +
+              '<span class="dw-gf-blank" data-blank="' + i + '">___</span>' +
+              escapeHtml(s.after || '') +
+              '<div class="dw-gf-fb" data-fb="' + i + '"></div>' +
+            '</div>';
+          }).join('');
+          return '<div class="dw-gapfill" id="' + gfId + '" data-gapfill="' + gfDataAttr + '" data-filled="[]">' +
+            gfLabel + gfBankHtml + gfSentencesHtml +
+            '<div class="dw-gf-done">✓ All filled in — well done!</div>' +
+          '</div>';
+        }
+
         default:
           return '';
       }
@@ -1675,6 +1814,16 @@
     var completeSub = document.getElementById('completeSub');
     if (completeSub) completeSub.textContent = "Great work — you've finished the guided path. Head back to see what's next.";
   }
+
+  // Optional: ?topicLastStep=<order_index>, alongside ?topic=. Names which
+  // lesson is the topic's 6th (final required) step -- topic.html's step-6
+  // link alone carries this. Every topic's hidden module also holds 1-2
+  // optional Deep Dive lessons AFTER the 6 required ones, so "last lesson
+  // in the module" (used above for the module-complete screen) is the
+  // wrong signal here: without this, finishing step 6 silently continues
+  // into Deep Dive 1 with no invitation to try writing at all -- see
+  // completeLessonCta's use of this below.
+  var topicLastStepParam = topicParam ? params.get('topicLastStep') : null;
 
   // SEO: the 6 Über mich lessons now have real public pages at clean URLs
   // (scripts/generate-seo-pages.js) — this hidden module was never meant
@@ -1927,7 +2076,7 @@
         'pattern-table':1, 'tile-assembly':1, 'clock-quiz':1,
         'listening-input':1, 'dialogue':1,
         'rule-card':1, 'comparison-table':1, 'pathway-card':1,
-        'common-mistake':1, 'recap':1, 'vocab-grid':1
+        'common-mistake':1, 'recap':1, 'vocab-grid':1, 'gap-fill':1
       };
       var hasNewBlocks = Array.isArray(lesson.content_json) && lesson.content_json.some(function(b) {
         return NEW_BLOCK_TYPES[b && b.type];
@@ -1972,10 +2121,20 @@
       // (state.completedIds is restored from the DB before lessons are built).
       var isLastLesson = idx >= state.lessons.length - 1;
       var alreadyDone  = !!state.completedIds[lesson.id];
+      // This lesson is the topic's 6th (final required) step -- see
+      // topicLastStepParam above. Distinct from isLastLesson, which is the
+      // module's last lesson (usually an optional Deep Dive, 1-2 lessons
+      // later) -- reopening the real step-6 lesson must keep offering the
+      // guided-path-complete transition, not silently fall through to
+      // "Nächste Lektion →" into the Deep Dive.
+      var isTopicLastStep = !!(topicLastStepParam && String(lesson.order_index) === String(topicLastStepParam));
       var nextLabel, nextOnclick;
       if (exercises.length > 0) {
         nextLabel   = 'Start Quiz →';
         nextOnclick = 'dwModule.advance(' + idx + ', 0)';
+      } else if (alreadyDone && isTopicLastStep) {
+        nextLabel   = 'Continue →';
+        nextOnclick = 'dwModule.showTopicPathComplete(' + idx + ')';
       } else if (alreadyDone) {
         nextLabel   = isLastLesson ? 'Fertig →' : 'Nächste Lektion →';
         nextOnclick = 'dwModule.goNext(' + idx + ')';
@@ -3311,13 +3470,60 @@
       console.log('[dw-trace] completeLessonCta(' + lIdx + ') called');
       markLessonComplete(state.lessons[lIdx]);
       var isLast = lIdx >= state.lessons.length - 1;
+      var lesson = state.lessons[lIdx];
+      var isTopicLastStep = !!(topicLastStepParam && lesson && String(lesson.order_index) === String(topicLastStepParam));
       var btn = document.getElementById('adv-btn-' + lIdx);
-      console.log('[dw-trace] completeLessonCta: #adv-btn-' + lIdx + ' found=' + !!btn + ' isLast=' + isLast);
+      console.log('[dw-trace] completeLessonCta: #adv-btn-' + lIdx + ' found=' + !!btn + ' isLast=' + isLast + ' isTopicLastStep=' + isTopicLastStep);
       if (btn) {
-        btn.textContent = isLast ? 'Fertig →' : 'Nächste Lektion →';
-        btn.onclick = function() { window.dwModule.goNext(lIdx); };
-        console.log('[dw-trace] completeLessonCta: button now says "' + btn.textContent + '", onclick reassigned to goNext(' + lIdx + ')');
+        if (isTopicLastStep) {
+          btn.textContent = 'Continue →';
+          btn.onclick = function() { window.dwModule.showTopicPathComplete(lIdx); };
+        } else {
+          btn.textContent = isLast ? 'Fertig →' : 'Nächste Lektion →';
+          btn.onclick = function() { window.dwModule.goNext(lIdx); };
+        }
+        console.log('[dw-trace] completeLessonCta: button now says "' + btn.textContent + '"');
       }
+      if (isTopicLastStep) this.showTopicPathComplete(lIdx);
+    },
+
+    /**
+     * Shown once instead of "Nächste Lektion →" when lIdx is the topic's
+     * 6th (final required) step -- see topicLastStepParam. Swaps the
+     * lesson's content step for a distinct "guided path complete" screen
+     * (cloned from #topicStepCompleteTpl) inviting Supported Writing,
+     * with the option to continue into the module's optional Deep Dive
+     * lessons instead, or go straight back to the topic home. Does not
+     * write any progress itself -- markLessonComplete() already ran in
+     * completeLessonCta() before this is called.
+     */
+    showTopicPathComplete: function(lIdx) {
+      var screen = document.getElementById('lesson-' + lIdx);
+      if (!screen) return;
+      var contentStep = document.getElementById('s-' + lIdx + '-content');
+      if (contentStep) contentStep.classList.remove('active');
+
+      var stepId = 's-' + lIdx + '-topicdone';
+      var step = document.getElementById(stepId);
+      if (!step) {
+        var tpl = document.getElementById('topicStepCompleteTpl');
+        step = document.createElement('div');
+        step.className = 'step';
+        step.id = stepId;
+        if (tpl) {
+          var frag = tpl.content.cloneNode(true);
+          var writeLink = frag.querySelector('[data-role="write-link"]');
+          var topicLink = frag.querySelector('[data-role="topic-link"]');
+          var continueBtn = frag.querySelector('[data-role="continue-btn"]');
+          if (writeLink) writeLink.href = 'independent-check.html?topic=' + encodeURIComponent(topicParam) + '&mode=supported';
+          if (topicLink) topicLink.href = './topic.html?id=' + encodeURIComponent(topicParam);
+          if (continueBtn) continueBtn.onclick = function() { window.dwModule.goNext(lIdx); };
+          step.appendChild(frag);
+        }
+        screen.appendChild(step);
+      }
+      step.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     },
 
     /**

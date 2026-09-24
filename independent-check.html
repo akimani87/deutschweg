@@ -37,6 +37,7 @@
 
   .main{max-width:560px;margin:0 auto;padding:40px 24px 80px;}
   .eyebrow{font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#B45309;margin-bottom:10px;}
+  .eyebrow.supported{color:#1D4ED8;}
   h1{font-size:24px;font-weight:800;margin:0 0 22px;color:#1F2937;letter-spacing:-0.3px;}
 
   /* ── Instruction card — deliberately contains no example German, no
@@ -49,6 +50,55 @@
   .instruction-include{font-size:14px;color:#374151;margin-bottom:2px;}
   .instruction-list{margin:0 0 12px;padding-left:20px;font-size:14px;color:#374151;line-height:1.7;}
   .instruction-note{font-size:13px;color:#92400E;font-weight:600;}
+  .instruction-card.supported{background:#EFF6FF; border-color:#BFDBFE;}
+  .instruction-length{font-size:13px;color:#6B7280;margin-bottom:10px;}
+
+  /* ── Supported-writing help panel — collapsed by default so the task,
+     writing area and submit stay visible together on mobile without
+     scrolling past a wall of vocabulary first. Three small, single-purpose
+     tools, not one big dictionary dump. ── */
+  .help-toggle{
+    display:inline-flex; align-items:center; gap:6px;
+    background:none; border:1px solid #E5E7EB; border-radius:50px;
+    padding:8px 16px; font-size:13px; font-weight:700; color:#374151;
+    cursor:pointer; font-family:inherit; margin-bottom:16px;
+  }
+  .help-toggle:hover{background:#F9FAFB;}
+  .help-panel{display:none; margin-bottom:20px;}
+  .help-panel.open{display:block;}
+  .help-section{
+    background:#F9FAFB; border:1px solid #E5E7EB; border-radius:14px;
+    padding:16px 18px; margin-bottom:12px;
+  }
+  .help-section-label{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#6B7280;margin-bottom:10px;}
+  .vocab-chips{display:flex; flex-wrap:wrap; gap:8px;}
+  .vocab-chip{
+    display:inline-flex; align-items:center; gap:6px;
+    background:#fff; border:1px solid #E5E7EB; border-radius:20px;
+    padding:7px 12px; font-size:13px; cursor:pointer; font-family:inherit;
+  }
+  .vocab-chip:hover{border-color:#93C5FD;}
+  .vocab-chip .de{font-weight:700; color:#1F2937;}
+  .vocab-chip .en{color:#9CA3AF;}
+  .hint-reveal-btn{
+    background:none; border:none; color:#3B82F6; font-weight:700; font-size:13.5px;
+    cursor:pointer; font-family:inherit; padding:0;
+  }
+  .hint-text{font-size:14px; color:#374151; line-height:1.6; margin-top:8px; display:none;}
+  .hint-text.show{display:block;}
+  .aipal-help-btn{
+    display:inline-flex; align-items:center; gap:8px;
+    background:#fff; border:1.5px solid #3B82F6; color:#3B82F6;
+    border-radius:50px; padding:9px 18px; font-size:13.5px; font-weight:700;
+    cursor:pointer; font-family:inherit;
+  }
+  .aipal-help-btn:hover{background:#EFF6FF;}
+
+  .supported-badge{
+    display:inline-block; font-size:11px; font-weight:800; letter-spacing:1px;
+    text-transform:uppercase; color:#1D4ED8; background:#EFF6FF; border:1px solid #BFDBFE;
+    border-radius:20px; padding:4px 12px; margin-bottom:12px;
+  }
 
   .response-input{
     width:100%; min-height:180px; border:1.5px solid #E5E7EB; border-radius:14px;
@@ -109,7 +159,7 @@
 
   .fb-missing{background:#FEF2F2;border:1px solid #FCA5A5;border-radius:12px;padding:16px 18px;font-size:14px;color:#7F1D1D;line-height:1.6;margin-bottom:24px;}
 
-  .fb-actions{display:flex;gap:10px;margin-top:8px;}
+  .fb-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;}
   .fb-retry-btn{
     background:#F9FAFB;border:1.5px solid #D1D5DB;border-radius:50px;color:#1F2937;
     padding:12px 22px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;
@@ -158,11 +208,27 @@
   // framing, instruction list, and required-info keys (the keys matter:
   // they're sent to the server and must match what the AI is asked to
   // return in "communicated", see submitCheck below).
+  // approxLength/hint/vocab are used only by ?mode=supported (see
+  // renderForm) — the independent check stays exactly as it always was:
+  // just the task, no length guide, no hint, no vocab panel, no AI Pal.
+  // vocab is a small curated subset (not the full TOPIC_VOCAB list on
+  // topic.html — intentionally smaller here, this is a nudge, not a
+  // dictionary) duplicated on purpose, same as topic.html's own copy is
+  // separate from the global dictionary.
   var TOPIC_CHECKS = {
     '4bf7abfd-0147-4a83-b8c2-df60a263c24d': { // Über mich
       title: 'Über mich — Independent check',
       lead: 'Introduce yourself in German.',
       include: ['your name', "where you're from", 'where you live'],
+      approxLength: '2-3 sentences',
+      hint: 'Start with Ich heiße … or Mein Name ist …, then Ich komme aus … and Ich wohne in …',
+      vocab: [
+        { de: 'Ich heiße …', en: 'My name is …' },
+        { de: 'Ich komme aus …', en: 'I come from …' },
+        { de: 'Ich wohne in …', en: 'I live in …' },
+        { de: 'der Name', en: 'name' },
+        { de: 'die Stadt', en: 'city' }
+      ],
       requiredInfo: [
         { key: 'name', label: 'Name', prompt: 'their name' },
         { key: 'origin', label: 'Origin', prompt: 'where they are from' },
@@ -173,6 +239,15 @@
       title: 'Familie und Freunde — Independent check',
       lead: 'Introduce one family member or friend in German.',
       include: ['who the person is', 'their name', 'where they live or come from'],
+      approxLength: '2-3 sentences',
+      hint: 'Start with Das ist mein/meine …, then say their name, then where they live or come from.',
+      vocab: [
+        { de: 'Das ist mein …', en: 'This is my … (der/das words)' },
+        { de: 'Das ist meine …', en: 'This is my … (die words)' },
+        { de: 'der Bruder', en: 'brother' },
+        { de: 'die Schwester', en: 'sister' },
+        { de: 'der Freund / die Freundin', en: 'friend' }
+      ],
       requiredInfo: [
         { key: 'relationship', label: 'Who they are', prompt: 'who the person is (e.g. brother, friend)' },
         { key: 'name', label: 'Name', prompt: 'their name' },
@@ -183,6 +258,15 @@
       title: 'Dinge im Alltag — Independent check',
       lead: 'Describe three everyday things around you in German.',
       include: ['what at least three things are', 'at least one thing you have or need'],
+      approxLength: '3-4 sentences',
+      hint: 'Name each thing with Das ist ein/eine …, then say one you have or need with Ich habe … or Ich brauche …',
+      vocab: [
+        { de: 'das Handy', en: 'phone' },
+        { de: 'der Schlüssel', en: 'key' },
+        { de: 'die Tasche', en: 'bag' },
+        { de: 'Ich habe …', en: 'I have …' },
+        { de: 'Ich brauche …', en: 'I need …' }
+      ],
       requiredInfo: [
         { key: 'three_things', label: 'Three things named', prompt: 'names what at least three different everyday objects are (e.g. Das ist ein/eine …)' },
         { key: 'have_or_need', label: 'Have or need', prompt: 'says at least one thing they have or need (Ich habe … / Ich brauche …)' }
@@ -192,6 +276,14 @@
       title: 'My typical day',
       lead: 'Tell us about a normal day in German.',
       include: ['at least three activities', 'at least two times', 'at least one part of the day (morgens, mittags, abends …)'],
+      approxLength: '3-4 sentences',
+      hint: 'Pick 3 activities (aufstehen, arbeiten, lernen …), give a time for two of them, and use morgens/mittags/abends for at least one.',
+      vocab: [
+        { de: 'aufstehen', en: 'to get up' },
+        { de: 'arbeiten', en: 'to work' },
+        { de: 'Um wie viel Uhr …?', en: 'At what time …?' },
+        { de: 'morgens / abends', en: 'in the morning / in the evening' }
+      ],
       requiredInfo: [
         { key: 'three_activities', label: 'Three activities named', prompt: 'names at least three different daily activities (e.g. aufstehen, arbeiten, lernen, essen, schlafen)' },
         { key: 'two_times', label: 'Two times given', prompt: 'gives at least two specific times (e.g. um 8 Uhr, um 22 Uhr)' },
@@ -202,6 +294,14 @@
       title: 'Buy three things',
       lead: 'You are buying three things in a shop. Say what you would like.',
       include: ['at least three items', 'at least one quantity or number', 'the price of one item (ask or state it)'],
+      approxLength: '2-3 sentences',
+      hint: 'Start with Ich möchte …, name your items with a number for at least one (e.g. zwei Äpfel), then ask Wie viel kostet …?',
+      vocab: [
+        { de: 'Ich möchte …', en: 'I would like …' },
+        { de: 'der Kaffee', en: 'coffee' },
+        { de: 'das Brot', en: 'bread' },
+        { de: 'Wie viel kostet das?', en: 'How much does that cost?' }
+      ],
       requiredInfo: [
         { key: 'three_items', label: 'Three items named', prompt: 'names at least three different food or shopping items (e.g. Kaffee, Brot, Äpfel)' },
         { key: 'quantity', label: 'Quantity or number used', prompt: 'uses at least one quantity or number (e.g. zwei Äpfel, eine Flasche)' },
@@ -209,30 +309,153 @@
       ]
     }
   };
-  var DEFAULT_CHECK = TOPIC_CHECKS['4bf7abfd-0147-4a83-b8c2-df60a263c24d'];
-  var check = TOPIC_CHECKS[topicId] || DEFAULT_CHECK;
-  var REQUIRED_INFO = check.requiredInfo;
+  // No silent fallback to a DIFFERENT topic's task -- this used to default
+  // an unrecognized topicId to Über mich's check with no indication
+  // anything was wrong, which is exactly the "copied task" bug class this
+  // page must never produce. An unrecognized id now shows an explicit
+  // "not available" state (renderError below) instead of guessing.
+  var check = TOPIC_CHECKS[topicId] || null;
+  var REQUIRED_INFO = check ? check.requiredInfo : [];
+
+  // ?mode=supported — the bridge stage between guided lessons and the
+  // independent check: word bank, hint, and AI Pal are available; nothing
+  // is graded as a pass/fail or written to topic_performance_checks (see
+  // submitCheck). Any other/missing value is the original, unchanged
+  // independent check.
+  var mode = params.get('mode') === 'supported' ? 'supported' : 'independent';
+
+  // Several topics' check.title already ends in "— Independent check"
+  // (others, like "My typical day" or "Buy three things", don't) -- strip
+  // that suffix in supported mode so the heading doesn't contradict the
+  // "Your final practice" eyebrow sitting right above it. A title with no
+  // such suffix is shown as-is either way.
+  function displayTitle() {
+    if (mode !== 'supported') return check.title;
+    return check.title.replace(/\s*—\s*Independent check\s*$/i, '');
+  }
 
   function renderSignInRequired() {
     main.innerHTML =
-      '<div class="eyebrow">Independent check</div>' +
-      '<h1>' + escapeHtml(check.title) + '</h1>' +
-      '<div class="signin-note">Please <a href="login.html">sign in</a> to take the independent check.</div>';
+      '<div class="eyebrow' + (mode === 'supported' ? ' supported' : '') + '">' + (mode === 'supported' ? 'Your final practice' : 'Independent check') + '</div>' +
+      '<h1>' + escapeHtml(displayTitle()) + '</h1>' +
+      '<div class="signin-note">Please <a href="login.html">sign in</a> to ' + (mode === 'supported' ? 'try this' : 'take the independent check') + '.</div>';
     finalizeBoot();
   }
 
+  // speakText — copied from topic.html so the word-bank chips here can use
+  // the same TTS pipeline (backend /api/tts, browser speechSynthesis
+  // fallback). This page has no other audio need, so it's the only place
+  // this small utility lives here.
+  var _currentAudio = null;
+  function speakText(text) {
+    if (!text) return;
+    if (_currentAudio) { _currentAudio.pause(); try { URL.revokeObjectURL(_currentAudio.src); } catch(_) {} _currentAudio = null; }
+    fetch(API_BASE + '/api/tts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: String(text) }) })
+      .then(function(r) { if (!r.ok) throw new Error('TTS ' + r.status); return r.blob(); })
+      .then(function(blob) {
+        var url = URL.createObjectURL(blob);
+        var audio = new Audio(url);
+        _currentAudio = audio;
+        audio.onended = function() { URL.revokeObjectURL(url); if (_currentAudio === audio) _currentAudio = null; };
+        audio.play();
+      })
+      .catch(function() {
+        if (typeof window.speechSynthesis !== 'undefined') {
+          window.speechSynthesis.cancel();
+          var u = new SpeechSynthesisUtterance(String(text));
+          u.lang = 'de-DE'; u.rate = 0.85;
+          window.speechSynthesis.speak(u);
+        }
+      });
+  }
+  window.__checkSpeak = speakText; // reachable from inline onclick
+
+  // AI Pal is only ever loaded here for ?mode=supported, and only once the
+  // learner actually asks for it — module.html's floating bubble has no
+  // place on the independent check, which stays deliberately hint-free.
+  var aiPalLoading = null;
+  function ensureAiPal() {
+    if (window.DWPal) return Promise.resolve();
+    if (aiPalLoading) return aiPalLoading;
+    aiPalLoading = new Promise(function(resolve) {
+      var s = document.createElement('script');
+      s.src = './ai-pal-widget.js';
+      s.onload = function() { resolve(); };
+      s.onerror = function() { resolve(); }; // best-effort — button just won't do anything if this fails
+      document.body.appendChild(s);
+    });
+    return aiPalLoading;
+  }
+  function askAiPal() {
+    ensureAiPal().then(function() {
+      if (!window.DWPal) return;
+      // seedLesson grounds the next /api/aipal reply in this exact task —
+      // same mechanism module.html's "Go Deeper" prompt already uses, just
+      // pointed at the writing task instead of a finished lesson's rule
+      // text. AI Pal's own reply style (short, example-first, never a full
+      // paragraph) is unchanged — nothing here asks it to write the answer.
+      window.DWPal.seedLesson(check.title + ' — supported writing', check.lead + ' Help with a word, an article, or a small next step — don\'t write the full answer for them.');
+    });
+  }
+
+  function toggleHelp() {
+    var panel = document.getElementById('helpPanel');
+    var btn = document.getElementById('helpToggle');
+    if (!panel || !btn) return;
+    var open = panel.classList.toggle('open');
+    btn.textContent = open ? 'Hide help ▴' : 'Show help (word bank, hint, AI Pal) ▾';
+  }
+  function revealHint() {
+    var t = document.getElementById('hintText');
+    var b = document.getElementById('hintBtn');
+    if (t) t.classList.add('show');
+    if (b) b.style.display = 'none';
+  }
+
   function renderForm() {
+    var isSupported = mode === 'supported';
+    var eyebrow = isSupported ? 'Your final practice' : 'Independent check';
+    var intro = isSupported
+      ? '<div class="instruction-length">Try writing in German. You can use the word bank, ask AI Pal for a hint, and receive feedback on your answer.</div>'
+      : '';
+
+    var helpPanelHtml = '';
+    if (isSupported) {
+      var vocab = Array.isArray(check.vocab) ? check.vocab : [];
+      var vocabHtml = vocab.map(function(v) {
+        var jsText = String(v.de).replace(/…/g, '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        return '<button type="button" class="vocab-chip" onclick="window.__checkSpeak(\'' + jsText + '\')">' +
+          '<span class="de">' + escapeHtml(v.de) + '</span><span class="en">' + escapeHtml(v.en) + '</span> 🔊' +
+        '</button>';
+      }).join('');
+      helpPanelHtml =
+        '<button type="button" class="help-toggle" id="helpToggle">Show help (word bank, hint, AI Pal) ▾</button>' +
+        '<div class="help-panel" id="helpPanel">' +
+          (vocab.length ? '<div class="help-section"><div class="help-section-label">Word bank</div><div class="vocab-chips">' + vocabHtml + '</div></div>' : '') +
+          (check.hint ? '<div class="help-section"><div class="help-section-label">Hint</div>' +
+            '<button type="button" class="hint-reveal-btn" id="hintBtn" onclick="window.__checkRevealHint()">Show a hint</button>' +
+            '<div class="hint-text" id="hintText">' + escapeHtml(check.hint) + '</div>' +
+          '</div>' : '') +
+          '<div class="help-section"><div class="help-section-label">Ask AI Pal</div>' +
+            '<button type="button" class="aipal-help-btn" onclick="window.__checkAskAiPal()">💬 Ask AI Pal for a hint</button>' +
+          '</div>' +
+        '</div>';
+    }
+
     main.innerHTML =
-      '<div class="eyebrow">Independent check</div>' +
-      '<h1>' + escapeHtml(check.title) + '</h1>' +
-      '<div class="instruction-card">' +
+      '<div class="eyebrow' + (isSupported ? ' supported' : '') + '">' + escapeHtml(eyebrow) + '</div>' +
+      '<h1>' + escapeHtml(displayTitle()) + '</h1>' +
+      intro +
+      '<div class="instruction-card' + (isSupported ? ' supported' : '') + '">' +
         '<div class="instruction-lead">' + escapeHtml(check.lead) + '</div>' +
+        (check.approxLength ? '<div class="instruction-length">About ' + escapeHtml(check.approxLength) + '.</div>' : '') +
         '<div class="instruction-include">Include:</div>' +
         '<ul class="instruction-list">' +
           check.include.map(function(i) { return '<li>' + escapeHtml(i) + '</li>'; }).join('') +
         '</ul>' +
-        '<div class="instruction-note">Try without looking back at the lesson.</div>' +
+        (isSupported ? '' : '<div class="instruction-note">Try without looking back at the lesson.</div>') +
       '</div>' +
+      helpPanelHtml +
       '<textarea class="response-input" id="responseInput" placeholder="Type your answer here…" autofocus></textarea>' +
       '<div class="submit-row"><button type="button" class="submit-btn" id="submitBtn" disabled>Submit</button></div>';
 
@@ -242,6 +465,10 @@
       btn.disabled = input.value.trim().length === 0;
     });
     btn.addEventListener('click', submitCheck);
+    var helpToggle = document.getElementById('helpToggle');
+    if (helpToggle) helpToggle.addEventListener('click', toggleHelp);
+    window.__checkRevealHint = revealHint;
+    window.__checkAskAiPal = askAiPal;
     finalizeBoot();
   }
 
@@ -255,11 +482,34 @@
       '</div>';
   }
 
+  // Supported writing's feedback-generation-failed fallback — deliberately
+  // NOT renderDone()'s "Saved" copy, since a supported attempt is never
+  // written anywhere (see submitCheck).
+  function renderSupportedFallback() {
+    main.innerHTML =
+      '<div class="done-panel">' +
+        '<div class="done-icon">⚠️</div>' +
+        '<div class="done-title">Could not get feedback</div>' +
+        '<div class="done-sub">Something went wrong generating feedback. Your writing wasn\'t saved — feel free to try again.</div>' +
+        '<div class="fb-actions" style="justify-content:center;">' +
+          '<button type="button" class="fb-retry-btn" id="retryBtn">Try again</button>' +
+          '<a class="back-btn" href="topic.html?id=' + encodeURIComponent(topicId) + '">Back to topic</a>' +
+        '</div>' +
+      '</div>';
+    var retryBtn = document.getElementById('retryBtn');
+    if (retryBtn) retryBtn.addEventListener('click', renderForm);
+  }
+
   // Teacher-style feedback, in the order requested: commend what went
   // well, show what was communicated, correct mistakes clearly, give a
   // clean corrected version — then, only for needs_review, say what's
-  // missing and invite another attempt.
+  // missing and invite another attempt. Shared by both modes; supported
+  // writing shows a neutral "Supported practice" badge instead of a
+  // pass/fail result (see product principle: supported writing is graded
+  // as practice, never a demonstrated/needs-review verdict), and offers a
+  // path on to the real independent check instead of just "Back to topic".
   function renderFeedback(fb) {
+    var isSupported = mode === 'supported';
     var isDemonstrated = fb.result === 'demonstrated';
 
     var communicatedHtml = REQUIRED_INFO.map(function(info) {
@@ -276,9 +526,14 @@
       '</div>';
     }).join('');
 
-    var html = '<div class="eyebrow">Independent check</div>' +
-      '<h1>' + escapeHtml(check.title) + '</h1>' +
-      '<div class="fb-result ' + (isDemonstrated ? 'demonstrated' : 'needs-review') + '">' + (isDemonstrated ? 'Demonstrated' : 'Needs another look') + '</div>';
+    var html = '<div class="eyebrow' + (isSupported ? ' supported' : '') + '">' + (isSupported ? 'Your final practice' : 'Independent check') + '</div>' +
+      '<h1>' + escapeHtml(displayTitle()) + '</h1>';
+
+    if (isSupported) {
+      html += '<div class="supported-badge">Supported practice</div>';
+    } else {
+      html += '<div class="fb-result ' + (isDemonstrated ? 'demonstrated' : 'needs-review') + '">' + (isDemonstrated ? 'Demonstrated' : 'Needs another look') + '</div>';
+    }
 
     if (fb.praise) html += '<div class="fb-praise">' + escapeHtml(fb.praise) + '</div>';
 
@@ -292,12 +547,18 @@
       html += '<div class="fb-block"><div class="fb-label">Correct version</div><div class="fb-corrected-box">' + escapeHtml(fb.corrected_version) + '</div></div>';
     }
 
-    if (!isDemonstrated && fb.missing_note) {
+    if (!isSupported && !isDemonstrated && fb.missing_note) {
       html += '<div class="fb-missing">' + escapeHtml(fb.missing_note) + '</div>';
     }
 
     html += '<div class="fb-actions">';
-    if (!isDemonstrated) html += '<button type="button" class="fb-retry-btn" id="retryBtn">Try again</button>';
+    // Supported writing always offers another attempt (it's practice, not
+    // a pass/fail gate); the independent check only offers retry when it
+    // wasn't demonstrated.
+    if (isSupported || !isDemonstrated) html += '<button type="button" class="fb-retry-btn" id="retryBtn">Try again</button>';
+    if (isSupported) {
+      html += '<a class="back-btn" href="independent-check.html?topic=' + encodeURIComponent(topicId) + '">Try independent check →</a>';
+    }
     html += '<a class="back-btn" href="topic.html?id=' + encodeURIComponent(topicId) + '">Back to topic</a>';
     html += '</div>';
 
@@ -320,6 +581,7 @@
   var API_BASE = 'https://deutschweg.onrender.com';
 
   async function submitCheck() {
+    var isSupported = mode === 'supported';
     var input = document.getElementById('responseInput');
     var btn = document.getElementById('submitBtn');
     var text = input.value.trim();
@@ -340,12 +602,24 @@
       if (res.ok) feedback = await res.json();
     } catch (e) { /* feedback stays null — falls back below */ }
 
+    var gotFeedback = feedback && (feedback.result === 'demonstrated' || feedback.result === 'needs_review');
+
+    // Supported writing is graded as practice, never a tracked pass/fail —
+    // nothing is written to topic_performance_checks here (see product
+    // principle: only a genuine independent attempt belongs in that
+    // table). If feedback generation failed, the writing simply wasn't
+    // saved anywhere; the learner can just try again.
+    if (isSupported) {
+      if (gotFeedback) renderFeedback(feedback);
+      else renderSupportedFallback();
+      return;
+    }
+
     // result is only ever 'demonstrated' when the AI evaluation actually
     // said so; if evaluation failed outright, this falls back to the
     // original honest default — 'attempted', never invented as
     // 'demonstrated' — and the raw response is still saved either way.
-    var result = feedback && (feedback.result === 'demonstrated' || feedback.result === 'needs_review')
-      ? feedback.result : 'attempted';
+    var result = gotFeedback ? feedback.result : 'attempted';
     var payload = { user_id: user.id, topic_id: topicId, result: result, note: text, completed_at: new Date().toISOString() };
     var ins = await dwSupabase.from('topic_performance_checks').insert(payload);
     if (ins.error) {
@@ -356,7 +630,7 @@
       return;
     }
 
-    if (feedback && (feedback.result === 'demonstrated' || feedback.result === 'needs_review')) {
+    if (gotFeedback) {
       renderFeedback(feedback);
     } else {
       renderDone("Saved — we couldn't generate feedback right now, but your attempt is recorded.");
@@ -366,6 +640,14 @@
   (async function init() {
     if (!topicId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(topicId)) {
       renderError('No valid topic specified.');
+      return;
+    }
+    // An unrecognized topic id (e.g. a stale link, or a future topic this
+    // page hasn't been updated for yet) shows an explicit "not available"
+    // state -- never a silent fallback to a different topic's task. See
+    // the removal of the old DEFAULT_CHECK fallback above.
+    if (!check) {
+      renderError("This topic's check isn't available yet.");
       return;
     }
     if (typeof dwSupabase === 'undefined') { renderError('Connection error. Refresh the page.'); return; }
