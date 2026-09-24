@@ -307,6 +307,25 @@
         { key: 'quantity', label: 'Quantity or number used', prompt: 'uses at least one quantity or number (e.g. zwei Äpfel, eine Flasche)' },
         { key: 'price', label: 'Price asked or stated', prompt: 'asks the price of an item (Wie viel kostet …?) or states a price' }
       ]
+    },
+    'effee44c-94f2-4f53-8dbc-42473e2c1b73': { // Freizeit und Pläne
+      title: 'Make weekend plans',
+      lead: "A friend asks whether you want to do something together this weekend. Write a short German reply.",
+      include: ['an activity you suggest', 'a preference or what you’d like to do', 'a day or time', 'an invitation or simple plan'],
+      approxLength: '2-3 sentences',
+      hint: 'Suggest an activity (schwimmen, ins Kino gehen …), say gern/lieber/am liebsten, add a day (Samstag/Sonntag), then ask Hast du Zeit? or Wollen wir …?',
+      vocab: [
+        { de: 'Ich möchte …', en: 'I would like …' },
+        { de: 'Am liebsten …', en: 'Most of all, I …' },
+        { de: 'Wollen wir …?', en: 'Shall we …?' },
+        { de: 'der Samstag / der Sonntag', en: 'Saturday / Sunday' }
+      ],
+      requiredInfo: [
+        { key: 'activity', label: 'Activity suggested', prompt: 'suggests an understandable activity (e.g. schwimmen gehen, ins Kino gehen, Fußball spielen)' },
+        { key: 'preference', label: 'Preference or intention expressed', prompt: 'expresses a preference or intention — gern, lieber, am liebsten, möchte, or will' },
+        { key: 'day_or_time', label: 'Day or time given', prompt: 'communicates a day or time (e.g. am Samstag, am Sonntag, um 18 Uhr)' },
+        { key: 'invitation', label: 'Functions as an invitation or plan', prompt: 'the reply reads as an invitation or a simple plan, not just a statement (e.g. Wollen wir …?, Hast du Zeit?, or a clear proposal)' }
+      ]
     }
   };
   // No silent fallback to a DIFFERENT topic's task -- this used to default

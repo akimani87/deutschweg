@@ -447,6 +447,29 @@
         { de: 'Was möchten Sie?', en: 'What would you like? (formal, shop)' },
         { de: 'Sonst noch etwas?', en: 'Anything else?' }
       ]
+    },
+    'effee44c-94f2-4f53-8dbc-42473e2c1b73': { // Freizeit und Pläne
+      words: [
+        { de: 'lesen', en: 'to read' },
+        { de: 'schwimmen', en: 'to swim' },
+        { de: 'tanzen', en: 'to dance' },
+        { de: 'kochen', en: 'to cook' },
+        { de: 'Musik hören', en: 'to listen to music' },
+        { de: 'Filme schauen', en: 'to watch films' },
+        { de: 'Fußball spielen', en: 'to play football' },
+        { de: 'spazieren gehen', en: 'to go for a walk' },
+        { de: 'Freunde treffen', en: 'to meet friends' },
+        { de: 'der Samstag / der Sonntag', en: 'Saturday / Sunday' }
+      ],
+      phrases: [
+        { de: 'Ich … gern.', en: 'I like …-ing.' },
+        { de: 'Ich … lieber.', en: 'I prefer …-ing.' },
+        { de: 'Am liebsten …', en: 'Most of all, I …' },
+        { de: 'Ich kann …', en: 'I can …' },
+        { de: 'Hast du am Samstag Zeit?', en: 'Are you free on Saturday?' },
+        { de: 'Wollen wir …?', en: 'Shall we …?' },
+        { de: 'Ja, gerne!', en: 'Yes, gladly!' }
+      ]
     }
   };
 
@@ -487,6 +510,11 @@
       lead: 'You are buying three things in a shop — say what you would like.',
       task: 'You are buying three things in a shop — write what you would like.',
       include: ['at least three items', 'at least one quantity or number', 'the price of one item']
+    },
+    'effee44c-94f2-4f53-8dbc-42473e2c1b73': { // Freizeit und Pläne
+      lead: 'A friend asks if you want to do something this weekend — reply without help.',
+      task: 'A friend asks if you want to do something this weekend — write your reply.',
+      include: ['an activity you suggest', 'a preference or what you\'d like to do', 'a day or time', 'an invitation or simple plan']
     }
   };
 
@@ -520,7 +548,11 @@
     },
     '7290d8e4-e995-4892-983d-acc0b147f80e': { // Essen und Einkaufen
       abilityStatement: 'You can now ask for simple food and shopping items, understand basic prices, and make a simple purchase.',
-      nextTopic: null // no sixth topic yet — falls back to "Back to dashboard"
+      nextTopic: { href: 'topic.html?id=effee44c-94f2-4f53-8dbc-42473e2c1b73', label: 'Freizeit und Pläne' }
+    },
+    'effee44c-94f2-4f53-8dbc-42473e2c1b73': { // Freizeit und Pläne
+      abilityStatement: 'You can now talk about your hobbies, invite a friend, and make simple plans in German.',
+      nextTopic: null // Unterwegs doesn't exist yet — falls back to "Back to dashboard"
     }
   };
 
@@ -547,6 +579,10 @@
     '7290d8e4-e995-4892-983d-acc0b147f80e': [ // Essen und Einkaufen — two Deep Dives, first topic with a pair
       { href: './module.html?id=ea3723d2-06cb-495c-b2b3-10f0fd858722&lesson=7', label: 'Why "einen"? — Akkusativ' },
       { href: './module.html?id=ea3723d2-06cb-495c-b2b3-10f0fd858722&lesson=8', label: 'Modalverben' }
+    ],
+    'effee44c-94f2-4f53-8dbc-42473e2c1b73': [ // Freizeit und Pläne — two Deep Dives
+      { href: './module.html?id=bf3371c1-de3e-462e-b7b1-d99c01109f35&lesson=7', label: 'Können oder wollen?' },
+      { href: './module.html?id=bf3371c1-de3e-462e-b7b1-d99c01109f35&lesson=8', label: 'Gern, lieber oder am liebsten?' }
     ]
   };
 
@@ -564,7 +600,15 @@
     '7290d8e4-e995-4892-983d-acc0b147f80e': [ // Essen und Einkaufen — one legacy module per Deep Dive, same index alignment as TOPIC_DEEP_DIVE above
       { legacyModuleId: '04b0b81e-55fd-4354-9e16-883991cb17c3', legacyModuleTitle: 'Akkusativ Case' },
       { legacyModuleId: 'deb5e6ea-4150-41a9-b889-4960a32fe045', legacyModuleTitle: 'Modal Verbs' }
-    ]
+    ],
+    // Freizeit und Pläne — only Deep Dive A (index 0, "Können oder
+    // wollen?") has a real legacy source (the same Modal Verbs module
+    // Essen und Einkaufen already credits — both genuinely draw on it).
+    // Deep Dive B (gern/lieber/am liebsten) has no A1 legacy equivalent
+    // (audited: the only related content is an A2 comparative/superlative
+    // module, a different grammar point) -- a single object, not an
+    // array, so it only ever aligns to index 0 and index 1 gets no note.
+    'effee44c-94f2-4f53-8dbc-42473e2c1b73': { legacyModuleId: 'deb5e6ea-4150-41a9-b889-4960a32fe045', legacyModuleTitle: 'Modal Verbs' }
   };
 
   function renderTopicCompleteMoment(card, eyebrow, titleEl, metaEl, ctaEl) {
