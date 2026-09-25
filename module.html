@@ -439,6 +439,54 @@
   .dw-dir-fb { font-size:13px; color:#B45309; margin-top:10px; display:none; }
   .dw-dir-fb.show { display:block; }
 
+  /* ── room-diagram: furniture-relative location (Wohnen L3) ── — same
+     technique as dw-street above (SVG for the fixed anchor shape, absolutely-
+     positioned HTML marker buttons for objects — reliable on mobile, unlike
+     raw SVG click targets). 'ghost' markers (interactive:'locate' mode) are
+     faint candidate positions for one object; a normal marker is always
+     exactly where the sentence places it. */
+  .dw-room { margin:14px 0; }
+  .dw-room-label { font-size:15px; font-weight:700; color:#1F2937; margin-bottom:10px; }
+  .dw-room-wrap {
+    position:relative; width:100%; max-width:340px; margin:0 auto;
+    background:#F8FAFC; border:1px solid #E5E7EB; border-radius:14px; overflow:hidden;
+  }
+  .dw-room-svg { display:block; width:100%; height:auto; }
+  .dw-room-marker {
+    position:absolute; transform:translate(-50%,-50%);
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+    background:none; border:none; padding:0; cursor:default; font-family:inherit;
+  }
+  .dw-room-marker-icon {
+    width:32px; height:32px; border-radius:50%; background:#fff;
+    border:2px solid #CBD5E1; display:flex; align-items:center; justify-content:center;
+    font-size:16px; box-shadow:0 1px 3px rgba(0,0,0,.08);
+  }
+  .dw-room-marker-label {
+    font-size:10.5px; font-weight:700; color:#374151; background:#fff;
+    padding:1px 5px; border-radius:6px; white-space:nowrap;
+  }
+  button.dw-room-marker { cursor:pointer; }
+  button.dw-room-marker.ghost .dw-room-marker-icon { border-style:dashed; opacity:.55; }
+  button.dw-room-marker:hover .dw-room-marker-icon { border-color:#3B82F6; }
+  button.dw-room-marker.correct .dw-room-marker-icon { border-color:#16A34A; background:#F0FDF4; opacity:1; }
+  button.dw-room-marker.wrong .dw-room-marker-icon { border-color:#DC2626; background:#FEF2F2; }
+  button.dw-room-marker:disabled { cursor:default; }
+  .dw-room-desc {
+    font-size:13.5px; color:#374151; line-height:1.6; margin-top:10px;
+    background:#F9FAFB; border-left:3px solid #3B82F6; border-radius:0 8px 8px 0; padding:10px 12px;
+  }
+  .dw-room-prompt {
+    font-size:14.5px; font-weight:700; color:#1F2937; margin:10px 0 8px;
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  }
+  .dw-room-audio-btn {
+    background:#EFF6FF; border:1px solid #DBEAFE; border-radius:50px;
+    padding:6px 14px; font-size:13px; font-weight:700; color:#1D4ED8; cursor:pointer; font-family:inherit;
+  }
+  .dw-room-fb { font-size:13px; color:#B45309; margin-top:8px; display:none; }
+  .dw-room-fb.show { display:block; }
+
   /* ── NEW BLOCK TYPES (Modul 3+) ─────────────────────── */
 
   /* pattern-table — mobile-first: stack vertically, side-by-side on wider screens */
@@ -1375,6 +1423,54 @@
     }
     return { pick: pick };
   }());
+
+  // ── dwRoomDiagram: furniture-relative location (Wohnen L3) ──────────────
+  // 'identify' mode: several objects are shown at their real (correct)
+  // slots; tap the one matching data.target (an item label) — mirrors
+  // dwStreetDiagram.pickLandmark exactly. 'locate' mode: one object is
+  // shown as faint "ghost" candidates at several slots (on/under/next-to);
+  // tap the slot matching data.answer (a position key, not a label) — this
+  // is the "listen to a sentence, choose the matching picture" step, done
+  // as one diagram with selectable positions rather than several full
+  // diagrams side by side (simpler, and just as clear on mobile).
+  var dwRoomDiagram = (function() {
+    function getData(el) {
+      try { return JSON.parse(el.getAttribute('data-room') || '{}'); } catch (e) { return {}; }
+    }
+    function pickLandmark(id, label) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var data = getData(el);
+      var isCorrect = String(label) === String(data.target);
+      var btn = el.querySelector('[data-marker-label="' + label + '"]');
+      var fb = el.querySelector('.dw-room-fb');
+      if (isCorrect) {
+        el.querySelectorAll('button.dw-room-marker').forEach(function(b) { b.disabled = true; });
+        if (btn) btn.classList.add('correct');
+        if (fb) { fb.textContent = '✓ Richtig!'; fb.classList.add('show'); }
+      } else {
+        if (btn) { btn.classList.add('wrong'); setTimeout(function() { btn.classList.remove('wrong'); }, 700); }
+        if (fb) { fb.textContent = 'Nicht ganz — versuch es noch einmal.'; fb.classList.add('show'); }
+      }
+    }
+    function pickPosition(id, pos) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var data = getData(el);
+      var isCorrect = String(pos) === String(data.answer);
+      var btn = el.querySelector('[data-marker-pos="' + pos + '"]');
+      var fb = el.querySelector('.dw-room-fb');
+      if (isCorrect) {
+        el.querySelectorAll('button.dw-room-marker').forEach(function(b) { b.disabled = true; });
+        if (btn) { btn.classList.add('correct'); btn.classList.remove('ghost'); }
+        if (fb) { fb.textContent = '✓ Richtig! ' + (data.answerSentence || ''); fb.classList.add('show'); }
+      } else {
+        if (btn) { btn.classList.add('wrong'); setTimeout(function() { btn.classList.remove('wrong'); }, 700); }
+        if (fb) { fb.textContent = 'Nicht ganz — hör noch einmal und versuch es erneut.'; fb.classList.add('show'); }
+      }
+    }
+    return { pickLandmark: pickLandmark, pickPosition: pickPosition };
+  }());
 </script>
 
 <script>
@@ -2050,6 +2146,109 @@
           return '<div class="dw-dir" id="' + daId + '" data-dir="' + daDataAttr + '">' +
             daPromptHtml + daOptsHtml +
             '<div class="dw-dir-fb"></div>' +
+          '</div>';
+        }
+
+        // ── room-diagram ──────────────────────────────────────────────────
+        // Simple reusable room layout for Wohnen (Sec II) — a fixed anchor
+        // piece of furniture (table or bed), drawn as plain SVG shapes, with
+        // objects positioned at 3 fixed slots relative to it: 'on', 'under',
+        // 'next-to'. No coordinate authoring needed, same approach as
+        // street-diagram's fixed slots. Three ways to use it:
+        //  1. Plain display (no `interactive`) — items sit at their real
+        //     slots, paired with `description` — a teaching example.
+        //  2. interactive:'identify' — several items at their real slots;
+        //     tap the one named in `prompt`/`target`.
+        //  3. interactive:'locate' — ONE `object` shown as faint candidate
+        //     markers at every slot in `positions`; tap the slot matching
+        //     the spoken/written sentence (`audio`/`prompt`) — this is the
+        //     "listen to a sentence, choose the matching picture" step, as
+        //     one diagram with selectable positions instead of several full
+        //     diagrams (simpler, just as clear on mobile).
+        // Data: { type, label?, anchor:'table'|'bed',
+        //         items?:[{icon,label,position}], description?,
+        //         interactive?:'identify'|'locate', prompt?, audio?,
+        //         target?, object?:{icon,label}, positions?:[...],
+        //         answer?, answerSentence? }
+        case 'room-diagram': {
+          var rdId = 'rd-' + Math.random().toString(36).slice(2, 7);
+          var RD_ANCHORS = {
+            table: {
+              svg: '<line x1="70" y1="115" x2="230" y2="115" stroke="#CBD5E1" stroke-width="8" stroke-linecap="round"/>' +
+                   '<line x1="85" y1="115" x2="85" y2="175" stroke="#CBD5E1" stroke-width="6" stroke-linecap="round"/>' +
+                   '<line x1="215" y1="115" x2="215" y2="175" stroke="#CBD5E1" stroke-width="6" stroke-linecap="round"/>',
+              slots: { on: { x: 150, y: 88 }, under: { x: 150, y: 148 }, 'next-to': { x: 262, y: 118 } }
+            },
+            bed: {
+              svg: '<rect x="60" y="100" width="180" height="65" rx="8" fill="#E2E8F0" stroke="#CBD5E1" stroke-width="2"/>' +
+                   '<line x1="60" y1="80" x2="60" y2="165" stroke="#CBD5E1" stroke-width="8" stroke-linecap="round"/>',
+              slots: { on: { x: 150, y: 132 }, under: { x: 150, y: 188 }, 'next-to': { x: 265, y: 135 } }
+            }
+          };
+          var rdAnchor = RD_ANCHORS[block.anchor] || RD_ANCHORS.table;
+          var rdInteractive = block.interactive || '';
+          var rdItems = Array.isArray(block.items) ? block.items : [];
+
+          function rdMarkerHtml(icon, label, slotKey, extraClass, tappable, dataAttr, dataVal) {
+            var slot = rdAnchor.slots[slotKey];
+            if (!slot) return '';
+            var leftPct = (slot.x / 300 * 100).toFixed(1);
+            var topPct = (slot.y / 200 * 100).toFixed(1);
+            var posStyle = 'left:' + leftPct + '%;top:' + topPct + '%;';
+            var cls = 'dw-room-marker' + (extraClass ? ' ' + extraClass : '');
+            var inner = '<span class="dw-room-marker-icon">' + escapeHtml(icon || '') + '</span>' +
+              (label ? '<span class="dw-room-marker-label">' + escapeHtml(label) + '</span>' : '');
+            if (tappable) {
+              return '<button type="button" class="' + cls + '" style="' + posStyle + '"' +
+                ' data-marker-' + dataAttr + '="' + escapeHtml(String(dataVal)) + '"' +
+                ' onclick="dwRoomDiagram.' + (dataAttr === 'label' ? "pickLandmark('" + rdId + "','" + String(dataVal).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + "')" : "pickPosition('" + rdId + "','" + dataVal + "')") + '">' +
+                inner + '</button>';
+            }
+            return '<div class="' + cls + '" style="' + posStyle + '">' + inner + '</div>';
+          }
+
+          // (the anchor itself has no icon marker — it's the drawn SVG
+          // shape; anchorLabel, if given, is folded into description text
+          // instead of a marker, keeping the diagram uncluttered.)
+          var rdMarkersHtml = '';
+          if (rdInteractive === 'locate') {
+            var rdObj = block.object || {};
+            var rdPositions = Array.isArray(block.positions) ? block.positions : Object.keys(rdAnchor.slots);
+            rdMarkersHtml = rdPositions.map(function(posKey) {
+              return rdMarkerHtml(rdObj.icon, rdObj.label, posKey, 'ghost', true, 'pos', posKey);
+            }).join('');
+          } else {
+            rdMarkersHtml = rdItems.map(function(it) {
+              var tappable = rdInteractive === 'identify' && it.label;
+              return rdMarkerHtml(it.icon, it.label, it.position, '', tappable, 'label', it.label);
+            }).join('');
+          }
+
+          var rdLabelHtml = block.label ? '<div class="dw-room-label">' + escapeHtml(block.label) + '</div>' : '';
+          var rdDescHtml = block.description ? '<div class="dw-room-desc">' + escapeHtml(block.description) + '</div>' : '';
+          var rdAudioText = block.audio || '';
+          var jsRdAudio = String(rdAudioText).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+          var rdPromptHtml = block.prompt ? '<div class="dw-room-prompt">' +
+            '<span>' + escapeHtml(block.prompt) + '</span>' +
+            (rdAudioText ? '<button type="button" class="dw-room-audio-btn" onclick="speakText(\'' + jsRdAudio + '\',\'de-DE\')">🔊 Listen</button>' : '') +
+          '</div>' : '';
+
+          var rdDataAttr = JSON.stringify({
+            target: block.target || '',
+            answer: block.answer || '',
+            answerSentence: block.answerSentence || ''
+          }).replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+          return '<div class="dw-room" id="' + rdId + '" data-room="' + rdDataAttr + '">' +
+            rdLabelHtml + rdPromptHtml +
+            '<div class="dw-room-wrap">' +
+              '<svg class="dw-room-svg" viewBox="0 0 300 200" role="img" aria-label="' + escapeHtml(block.description || 'Room diagram') + '">' +
+                rdAnchor.svg +
+              '</svg>' +
+              rdMarkersHtml +
+            '</div>' +
+            rdDescHtml +
+            '<div class="dw-room-fb"></div>' +
           '</div>';
         }
 
