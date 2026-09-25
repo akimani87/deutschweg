@@ -533,6 +533,26 @@
         { de: 'Können Sie mir bitte helfen?', en: 'Can you please help me?' },
         { de: 'Ich möchte … (Ziel)', en: 'I would like to … (goal)' }
       ]
+    },
+    'bda483ce-7f24-4c4a-bf02-10886b3e6f12': { // Gesundheit und Probleme
+      words: [
+        { de: 'krank / gesund / müde', en: 'ill / healthy / tired' },
+        { de: 'der Kopf / der Bauch / der Rücken', en: 'head / stomach / back' },
+        { de: 'die Kopfschmerzen', en: 'headache' },
+        { de: 'das Fieber / der Husten', en: 'fever / cough' },
+        { de: 'der Termin', en: 'appointment' },
+        { de: 'die Arztpraxis', en: "doctor's practice" },
+        { de: 'das Medikament / die Tablette', en: 'medication / tablet' },
+        { de: 'die Hilfe', en: 'help' }
+      ],
+      phrases: [
+        { de: 'Mir geht es nicht gut.', en: "I'm not feeling well." },
+        { de: 'Ich habe … / Mein … tut weh.', en: 'I have … / My … hurts.' },
+        { de: 'Ich möchte einen Termin vereinbaren.', en: 'I would like to make an appointment.' },
+        { de: 'Seit wann? — Seit gestern.', en: 'Since when? — Since yesterday.' },
+        { de: 'Haben Sie etwas gegen …?', en: 'Do you have something for …?' },
+        { de: 'Ich bin heute krank.', en: "I'm ill today." }
+      ]
     }
   };
 
@@ -593,6 +613,11 @@
       lead: 'A new acquaintance wants to know what you do — tell them without help.',
       task: 'A new acquaintance wants to know what you do — write a short message about it.',
       include: ['your current work/Ausbildung/study/job-search situation', 'where you work or study, if applicable', 'one schedule detail', 'one goal']
+    },
+    'bda483ce-7f24-4c4a-bf02-10886b3e6f12': { // Gesundheit und Probleme
+      lead: "You're not feeling well and want a doctor's appointment — ask without help.",
+      task: "You're not feeling well and want a doctor's appointment — write a short message asking for one.",
+      include: ['that you are not feeling well', 'one or two symptoms', 'a request for an appointment', 'a suggested day or time']
     }
   };
 
@@ -642,7 +667,11 @@
     },
     '73114c16-31a2-42d0-bf8e-457335ac0288': { // Arbeit und Lernen
       abilityStatement: 'You can now talk about your work or studies, describe your schedule, and explain a simple goal in German.',
-      nextTopic: null // Gesundheit und Probleme doesn't exist yet — falls back to "Back to dashboard"
+      nextTopic: { href: 'topic.html?id=bda483ce-7f24-4c4a-bf02-10886b3e6f12', label: 'Gesundheit und Probleme' }
+    },
+    'bda483ce-7f24-4c4a-bf02-10886b3e6f12': { // Gesundheit und Probleme
+      abilityStatement: 'You can now describe simple symptoms, make a doctor’s appointment, and ask for help in German.',
+      nextTopic: null // Erlebnisse und Pläne doesn't exist yet — falls back to "Back to dashboard"
     }
   };
 
@@ -685,6 +714,10 @@
     '73114c16-31a2-42d0-bf8e-457335ac0288': [ // Arbeit und Lernen — two Deep Dives
       { href: './module.html?id=1d5cf76b-9776-4676-bf3e-049831405580&lesson=7', label: 'Als, bei oder in?' },
       { href: './module.html?id=1d5cf76b-9776-4676-bf3e-049831405580&lesson=8', label: 'Müssen und können' }
+    ],
+    'bda483ce-7f24-4c4a-bf02-10886b3e6f12': [ // Gesundheit und Probleme — two Deep Dives
+      { href: './module.html?id=74349aa3-69e3-49aa-a064-b7a97b4eac81&lesson=7', label: 'Mir tut … weh oder ich habe …?' },
+      { href: './module.html?id=74349aa3-69e3-49aa-a064-b7a97b4eac81&lesson=8', label: 'Du solltest …' }
     ]
   };
 
@@ -726,6 +759,15 @@
     // Dativ); Deep Dive B (müssen/können) draws on the same legacy Modal
     // Verbs module Essen und Einkaufen/Freizeit already credit.
     '73114c16-31a2-42d0-bf8e-457335ac0288': [
+      { legacyModuleId: '90b2f3ee-4344-41b6-a145-b54706172581', legacyModuleTitle: 'The Dative Case' },
+      { legacyModuleId: 'deb5e6ea-4150-41a9-b889-4960a32fe045', legacyModuleTitle: 'Modal Verbs' }
+    ],
+    // Gesundheit und Probleme — Deep Dive A (mir tut … weh) draws on the
+    // same legacy Dative module every prior Dativ-adjacent Deep Dive
+    // credits (mir is a Dativ pronoun); Deep Dive B (solltest/sollten)
+    // draws on the same legacy Modal Verbs module (sollen is a modal verb,
+    // same family as müssen/können).
+    'bda483ce-7f24-4c4a-bf02-10886b3e6f12': [
       { legacyModuleId: '90b2f3ee-4344-41b6-a145-b54706172581', legacyModuleTitle: 'The Dative Case' },
       { legacyModuleId: 'deb5e6ea-4150-41a9-b889-4960a32fe045', legacyModuleTitle: 'Modal Verbs' }
     ]

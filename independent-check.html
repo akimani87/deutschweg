@@ -423,6 +423,25 @@
         { key: 'schedule_detail', label: 'A schedule detail', prompt: 'gives one detail about their working or study day or schedule (e.g. a time, a shift, a day they have class or a course) — if not currently working or studying, a detail about when they study German or look for work instead is fine too' },
         { key: 'goal', label: 'A future goal', prompt: 'states one simple future goal, typically with möchte + an infinitive (e.g. Ich möchte … arbeiten/machen/bestehen)' }
       ]
+    },
+    'bda483ce-7f24-4c4a-bf02-10886b3e6f12': { // Gesundheit und Probleme
+      title: 'Make a doctor’s appointment',
+      lead: "You are not feeling well and want to make an appointment at a doctor's office.",
+      include: ['say that you are not feeling well', 'describe one or two simple symptoms', 'ask for an appointment', 'suggest a suitable day or time'],
+      approxLength: '3-4 sentences',
+      hint: 'Start with Mir geht es nicht gut, name a symptom with Ich habe … or Mein … tut weh, then ask Ich möchte einen Termin vereinbaren and suggest a day or time.',
+      vocab: [
+        { de: 'Mir geht es nicht gut.', en: "I'm not feeling well." },
+        { de: 'Ich habe Kopfschmerzen.', en: 'I have a headache.' },
+        { de: 'Ich möchte einen Termin vereinbaren.', en: 'I would like to make an appointment.' },
+        { de: 'Passt Ihnen … ?', en: 'Does … work for you?' }
+      ],
+      requiredInfo: [
+        { key: 'not_feeling_well', label: 'Not feeling well stated', prompt: 'clearly says they are not feeling well (e.g. Mir geht es nicht gut, Ich bin krank)' },
+        { key: 'symptom', label: 'A symptom described', prompt: 'describes at least one understandable symptom (e.g. Ich habe Kopfschmerzen/Fieber/Husten, or Mein … tut weh)' },
+        { key: 'appointment_request', label: 'Appointment requested', prompt: 'clearly asks for a doctor’s appointment (e.g. Ich möchte einen Termin vereinbaren, Ich brauche einen Termin)' },
+        { key: 'day_or_time', label: 'Day or time suggested', prompt: 'suggests or mentions a day or time (e.g. morgen, Montag, um zehn Uhr)' }
+      ]
     }
   };
   // No silent fallback to a DIFFERENT topic's task -- this used to default
