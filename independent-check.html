@@ -404,6 +404,25 @@
         { key: 'feature', label: 'A feature described', prompt: 'describes one feature they like, using a simple adjective (e.g. groß, klein, hell, ruhig, schön) or es gibt' },
         { key: 'object_location', label: 'Location of an object', prompt: 'says where one piece of furniture or everyday object is, using in/auf/unter/neben (e.g. Der Tisch ist im Wohnzimmer, or Die Lampe steht auf dem Tisch)' }
       ]
+    },
+    '73114c16-31a2-42d0-bf8e-457335ac0288': { // Arbeit und Lernen
+      title: 'Tell someone about your work or studies',
+      lead: 'A new acquaintance wants to know what you currently do and what you plan to do.',
+      include: ['your current work, Ausbildung, studies, or job-search situation', 'where you work, study, or learn, if applicable', 'one typical work/study day or schedule detail', 'one simple future goal'],
+      approxLength: '3-4 sentences',
+      hint: 'Start with Ich arbeite als … / Ich mache eine Ausbildung / Ich studiere / Ich lerne Deutsch / Ich suche Arbeit, add where and one schedule detail, then finish with Ich möchte …',
+      vocab: [
+        { de: 'Ich arbeite als …', en: 'I work as …' },
+        { de: 'Ich mache eine Ausbildung.', en: 'I am doing vocational training.' },
+        { de: 'Ich suche Arbeit.', en: "I'm looking for work." },
+        { de: 'Ich möchte …', en: 'I would like …' }
+      ],
+      requiredInfo: [
+        { key: 'situation', label: 'Current situation', prompt: 'says what they currently do — working, doing Ausbildung, studying, learning German, or looking for work' },
+        { key: 'where', label: 'Where, if applicable', prompt: 'says where they work, study, or learn (e.g. bei einer Firma, in einer Schule, an der Universität) — if they are currently looking for work instead, saying so counts too, since there is no workplace yet' },
+        { key: 'schedule_detail', label: 'A schedule detail', prompt: 'gives one detail about their working or study day or schedule (e.g. a time, a shift, a day they have class or a course) — if not currently working or studying, a detail about when they study German or look for work instead is fine too' },
+        { key: 'goal', label: 'A future goal', prompt: 'states one simple future goal, typically with möchte + an infinitive (e.g. Ich möchte … arbeiten/machen/bestehen)' }
+      ]
     }
   };
   // No silent fallback to a DIFFERENT topic's task -- this used to default

@@ -513,6 +513,26 @@
         { de: 'Die Heizung funktioniert nicht.', en: 'The heating isn’t working.' },
         { de: 'Können Sie mir bitte helfen?', en: 'Can you please help me?' }
       ]
+    },
+    '73114c16-31a2-42d0-bf8e-457335ac0288': { // Arbeit und Lernen
+      words: [
+        { de: 'der Lehrer / die Lehrerin', en: 'teacher' },
+        { de: 'der Arzt / die Ärztin', en: 'doctor' },
+        { de: 'der Student / die Studentin', en: 'university student' },
+        { de: 'arbeitslos', en: 'unemployed' },
+        { de: 'die Ausbildung', en: 'vocational training' },
+        { de: 'die Universität', en: 'university' },
+        { de: 'die Prüfung', en: 'examination' },
+        { de: 'die Arbeitszeit / die Pause', en: 'working hours / break' }
+      ],
+      phrases: [
+        { de: 'Was machst du beruflich?', en: 'What do you do for work?' },
+        { de: 'Ich arbeite als … / bei … / in …', en: 'I work as … / for … / in …' },
+        { de: 'Ich mache eine Ausbildung.', en: 'I am doing vocational training.' },
+        { de: 'Ich arbeite von 8 bis 16 Uhr.', en: 'I work from 8 to 4.' },
+        { de: 'Können Sie mir bitte helfen?', en: 'Can you please help me?' },
+        { de: 'Ich möchte … (Ziel)', en: 'I would like to … (goal)' }
+      ]
     }
   };
 
@@ -568,6 +588,11 @@
       lead: 'A friend wants to know about your home — describe it without help.',
       task: 'A friend wants to know about your home — write a short message describing it.',
       include: ['house or apartment', 'at least two rooms', 'one feature you like', 'where one piece of furniture or object is']
+    },
+    '73114c16-31a2-42d0-bf8e-457335ac0288': { // Arbeit und Lernen
+      lead: 'A new acquaintance wants to know what you do — tell them without help.',
+      task: 'A new acquaintance wants to know what you do — write a short message about it.',
+      include: ['your current work/Ausbildung/study/job-search situation', 'where you work or study, if applicable', 'one schedule detail', 'one goal']
     }
   };
 
@@ -613,7 +638,11 @@
     },
     '20d6becf-9db1-4829-bbd8-e1021b779c61': { // Wohnen
       abilityStatement: 'You can now describe your home, talk about rooms and furniture, and understand simple housing information in German.',
-      nextTopic: null // Arbeit und Lernen doesn't exist yet — falls back to "Back to dashboard"
+      nextTopic: { href: 'topic.html?id=73114c16-31a2-42d0-bf8e-457335ac0288', label: 'Arbeit und Lernen' }
+    },
+    '73114c16-31a2-42d0-bf8e-457335ac0288': { // Arbeit und Lernen
+      abilityStatement: 'You can now talk about your work or studies, describe your schedule, and explain a simple goal in German.',
+      nextTopic: null // Gesundheit und Probleme doesn't exist yet — falls back to "Back to dashboard"
     }
   };
 
@@ -652,6 +681,10 @@
     '20d6becf-9db1-4829-bbd8-e1021b779c61': [ // Wohnen — two Deep Dives
       { href: './module.html?id=49b03a17-9070-4bb8-8440-5334a67f6d74&lesson=7', label: 'Wo? — in, auf, neben und unter' },
       { href: './module.html?id=49b03a17-9070-4bb8-8440-5334a67f6d74&lesson=8', label: 'Es gibt oder ich habe?' }
+    ],
+    '73114c16-31a2-42d0-bf8e-457335ac0288': [ // Arbeit und Lernen — two Deep Dives
+      { href: './module.html?id=1d5cf76b-9776-4676-bf3e-049831405580&lesson=7', label: 'Als, bei oder in?' },
+      { href: './module.html?id=1d5cf76b-9776-4676-bf3e-049831405580&lesson=8', label: 'Müssen und können' }
     ]
   };
 
@@ -687,6 +720,14 @@
     '20d6becf-9db1-4829-bbd8-e1021b779c61': [
       { legacyModuleId: '90b2f3ee-4344-41b6-a145-b54706172581', legacyModuleTitle: 'The Dative Case' },
       { legacyModuleId: '04b0b81e-55fd-4354-9e16-883991cb17c3', legacyModuleTitle: 'Akkusativ Case' }
+    ],
+    // Arbeit und Lernen — Deep Dive A (als/bei/in) draws on the same legacy
+    // Dative module Unterwegs/Wohnen already credit (bei/in both take
+    // Dativ); Deep Dive B (müssen/können) draws on the same legacy Modal
+    // Verbs module Essen und Einkaufen/Freizeit already credit.
+    '73114c16-31a2-42d0-bf8e-457335ac0288': [
+      { legacyModuleId: '90b2f3ee-4344-41b6-a145-b54706172581', legacyModuleTitle: 'The Dative Case' },
+      { legacyModuleId: 'deb5e6ea-4150-41a9-b889-4960a32fe045', legacyModuleTitle: 'Modal Verbs' }
     ]
   };
 
