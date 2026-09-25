@@ -492,6 +492,27 @@
         { de: 'Ich möchte eine Fahrkarte nach …', en: 'I would like a ticket to …' },
         { de: 'Einfach oder hin und zurück?', en: 'One-way or return?' }
       ]
+    },
+    '20d6becf-9db1-4829-bbd8-e1021b779c61': { // Wohnen
+      words: [
+        { de: 'das Haus / die Wohnung', en: 'house / apartment' },
+        { de: 'die Küche', en: 'kitchen' },
+        { de: 'das Bad', en: 'bathroom' },
+        { de: 'das Wohnzimmer', en: 'living room' },
+        { de: 'das Schlafzimmer', en: 'bedroom' },
+        { de: 'der Tisch / der Stuhl', en: 'table / chair' },
+        { de: 'das Bett / das Sofa', en: 'bed / sofa' },
+        { de: 'die Miete', en: 'rent' },
+        { de: 'groß / klein / hell / dunkel', en: 'big / small / bright / dark' }
+      ],
+      phrases: [
+        { de: 'Ich wohne in …', en: 'I live in …' },
+        { de: 'Es gibt …', en: 'There is / There are …' },
+        { de: 'Das Buch liegt auf dem Tisch.', en: 'The book is on the table.' },
+        { de: 'Die Wohnung ist … m² und kostet … € pro Monat.', en: 'The apartment is … m² and costs … € per month.' },
+        { de: 'Die Heizung funktioniert nicht.', en: 'The heating isn’t working.' },
+        { de: 'Können Sie mir bitte helfen?', en: 'Can you please help me?' }
+      ]
     }
   };
 
@@ -542,6 +563,11 @@
       lead: 'You need to reach the train station — ask for directions without help.',
       task: 'You need to reach the train station — write how you\'d ask for directions.',
       include: ['a way to ask for directions', 'the destination made clear', 'the route you understood']
+    },
+    '20d6becf-9db1-4829-bbd8-e1021b779c61': { // Wohnen
+      lead: 'A friend wants to know about your home — describe it without help.',
+      task: 'A friend wants to know about your home — write a short message describing it.',
+      include: ['house or apartment', 'at least two rooms', 'one feature you like', 'where one piece of furniture or object is']
     }
   };
 
@@ -583,7 +609,11 @@
     },
     'd1241d34-da19-43a1-a86a-588fa70f2216': { // Unterwegs
       abilityStatement: 'You can now ask for directions, understand simple public transport information, and find your way around a German town.',
-      nextTopic: null // Wohnen doesn't exist yet — falls back to "Back to dashboard"
+      nextTopic: { href: 'topic.html?id=20d6becf-9db1-4829-bbd8-e1021b779c61', label: 'Wohnen' }
+    },
+    '20d6becf-9db1-4829-bbd8-e1021b779c61': { // Wohnen
+      abilityStatement: 'You can now describe your home, talk about rooms and furniture, and understand simple housing information in German.',
+      nextTopic: null // Arbeit und Lernen doesn't exist yet — falls back to "Back to dashboard"
     }
   };
 
@@ -618,7 +648,11 @@
     'd1241d34-da19-43a1-a86a-588fa70f2216': { // Unterwegs
       href: './module.html?id=fc1849fb-fd01-48c3-a687-a5fed983211d&lesson=7',
       label: 'Zum, zur oder mit dem?'
-    }
+    },
+    '20d6becf-9db1-4829-bbd8-e1021b779c61': [ // Wohnen — two Deep Dives
+      { href: './module.html?id=49b03a17-9070-4bb8-8440-5334a67f6d74&lesson=7', label: 'Wo? — in, auf, neben und unter' },
+      { href: './module.html?id=49b03a17-9070-4bb8-8440-5334a67f6d74&lesson=8', label: 'Es gibt oder ich habe?' }
+    ]
   };
 
   // Prior-learning credit (migration-safety requirement 6): where a legacy
@@ -644,7 +678,16 @@
     // module, a different grammar point) -- a single object, not an
     // array, so it only ever aligns to index 0 and index 1 gets no note.
     'effee44c-94f2-4f53-8dbc-42473e2c1b73': { legacyModuleId: 'deb5e6ea-4150-41a9-b889-4960a32fe045', legacyModuleTitle: 'Modal Verbs' },
-    'd1241d34-da19-43a1-a86a-588fa70f2216': { legacyModuleId: '90b2f3ee-4344-41b6-a145-b54706172581', legacyModuleTitle: 'The Dative Case' } // Unterwegs
+    'd1241d34-da19-43a1-a86a-588fa70f2216': { legacyModuleId: '90b2f3ee-4344-41b6-a145-b54706172581', legacyModuleTitle: 'The Dative Case' }, // Unterwegs
+    // Wohnen — two Deep Dives, same index alignment as TOPIC_DEEP_DIVE above.
+    // Deep Dive A (location/Dativ) draws on the same legacy Dative module
+    // Unterwegs already credits; Deep Dive B (es gibt/Akkusativ) draws on
+    // the same legacy Akkusativ module Essen und Einkaufen already credits
+    // — both genuinely overlap with those modules' grammar points.
+    '20d6becf-9db1-4829-bbd8-e1021b779c61': [
+      { legacyModuleId: '90b2f3ee-4344-41b6-a145-b54706172581', legacyModuleTitle: 'The Dative Case' },
+      { legacyModuleId: '04b0b81e-55fd-4354-9e16-883991cb17c3', legacyModuleTitle: 'Akkusativ Case' }
+    ]
   };
 
   function renderTopicCompleteMoment(card, eyebrow, titleEl, metaEl, ctaEl) {

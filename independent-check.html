@@ -385,6 +385,25 @@
         { key: 'destination_named', label: 'Destination is clear', prompt: 'makes clear the destination is der Bahnhof (the train station)' },
         { key: 'route_understood', label: 'Route understood', prompt: 'shows understanding of the given route by repeating at least one correct step back (geradeaus, dann rechts, or similar)' }
       ]
+    },
+    '20d6becf-9db1-4829-bbd8-e1021b779c61': { // Wohnen
+      title: 'Describe your home',
+      lead: 'A friend wants to know about your home. Write a short German message describing it.',
+      include: ['house or apartment', 'at least two rooms', 'one feature you like', 'where one piece of furniture or object is'],
+      approxLength: '3-4 sentences',
+      hint: 'Start with Ich wohne in …, name two rooms with Es gibt …, add an adjective (klein, hell, ruhig …), then say where something is with auf/unter/neben.',
+      vocab: [
+        { de: 'Ich wohne in …', en: 'I live in …' },
+        { de: 'Es gibt …', en: 'There is / There are …' },
+        { de: 'die Küche / das Wohnzimmer', en: 'kitchen / living room' },
+        { de: 'auf dem Tisch', en: 'on the table' }
+      ],
+      requiredInfo: [
+        { key: 'home_type', label: 'Type of home', prompt: 'says whether they live in a house or apartment (Haus or Wohnung)' },
+        { key: 'two_rooms', label: 'Two rooms mentioned', prompt: 'names at least two different rooms (e.g. Küche, Wohnzimmer, Schlafzimmer, Bad)' },
+        { key: 'feature', label: 'A feature described', prompt: 'describes one feature they like, using a simple adjective (e.g. groß, klein, hell, ruhig, schön) or es gibt' },
+        { key: 'object_location', label: 'Location of an object', prompt: 'says where one piece of furniture or everyday object is, using in/auf/unter/neben (e.g. Der Tisch ist im Wohnzimmer, or Die Lampe steht auf dem Tisch)' }
+      ]
     }
   };
   // No silent fallback to a DIFFERENT topic's task -- this used to default
