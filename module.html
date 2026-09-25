@@ -487,6 +487,25 @@
   .dw-room-fb { font-size:13px; color:#B45309; margin-top:8px; display:none; }
   .dw-room-fb.show { display:block; }
 
+  /* ── schedule: lightweight vertical day-timeline (Arbeit und Lernen L4) ──
+     Pure display, no tap targets — comprehension exercises referencing it
+     are separate blocks (scenario-check/gap-fill), same separation as
+     room-diagram's plain display mode. */
+  .dw-schedule { margin:14px 0; }
+  .dw-schedule-label { font-size:15px; font-weight:700; color:#1F2937; margin-bottom:10px; }
+  .dw-schedule-row { display:flex; gap:12px; }
+  .dw-schedule-time {
+    flex:0 0 64px; font-size:12.5px; font-weight:700; color:#3B82F6;
+    font-variant-numeric:tabular-nums; padding-top:1px;
+  }
+  .dw-schedule-rail { display:flex; flex-direction:column; align-items:center; flex:0 0 auto; }
+  .dw-schedule-dot { width:9px; height:9px; border-radius:50%; background:#3B82F6; flex:0 0 auto; margin-top:4px; }
+  .dw-schedule-line { width:2px; flex:1 1 auto; background:#DBEAFE; min-height:18px; }
+  .dw-schedule-row:last-child .dw-schedule-line { display:none; }
+  .dw-schedule-body { flex:1 1 auto; padding-bottom:16px; }
+  .dw-schedule-activity { font-size:14.5px; font-weight:600; color:#1F2937; display:flex; align-items:center; gap:6px; }
+  .dw-schedule-note { font-size:12.5px; color:#6B7280; margin-top:2px; }
+
   /* ── NEW BLOCK TYPES (Modul 3+) ─────────────────────── */
 
   /* pattern-table — mobile-first: stack vertically, side-by-side on wider screens */
@@ -2250,6 +2269,33 @@
             rdDescHtml +
             '<div class="dw-room-fb"></div>' +
           '</div>';
+        }
+
+        // ── schedule ─────────────────────────────────────────────────────
+        // Lightweight vertical day-timeline (Arbeit und Lernen L4) — pure
+        // display, no tap targets. A simple dot-and-line rail (CSS only,
+        // no SVG needed) connects each time block, same "reusable, mobile-
+        // first, no new dependency" spirit as room-diagram/street-diagram.
+        // Comprehension exercises about the schedule are separate blocks
+        // (scenario-check/gap-fill) placed after it.
+        // Data: { type, label?, blocks:[{time, activity, icon?, note?}] }
+        case 'schedule': {
+          var schLabel = block.label ? '<div class="dw-schedule-label">' + escapeHtml(block.label) + '</div>' : '';
+          var schBlocks = Array.isArray(block.blocks) ? block.blocks : [];
+          var schRows = schBlocks.map(function(row) {
+            return '<div class="dw-schedule-row">' +
+              '<div class="dw-schedule-time">' + escapeHtml(row.time || '') + '</div>' +
+              '<div class="dw-schedule-rail"><div class="dw-schedule-dot"></div><div class="dw-schedule-line"></div></div>' +
+              '<div class="dw-schedule-body">' +
+                '<div class="dw-schedule-activity">' +
+                  (row.icon ? '<span>' + escapeHtml(row.icon) + '</span>' : '') +
+                  '<span>' + escapeHtml(row.activity || '') + '</span>' +
+                '</div>' +
+                (row.note ? '<div class="dw-schedule-note">' + escapeHtml(row.note) + '</div>' : '') +
+              '</div>' +
+            '</div>';
+          }).join('');
+          return '<div class="dw-schedule">' + schLabel + schRows + '</div>';
         }
 
         default:
