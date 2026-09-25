@@ -506,6 +506,50 @@
   .dw-schedule-activity { font-size:14.5px; font-weight:600; color:#1F2937; display:flex; align-items:center; gap:6px; }
   .dw-schedule-note { font-size:12.5px; color:#6B7280; margin-top:2px; }
 
+  /* ── body-diagram: labelled SVG body silhouette (Gesundheit L2) ── — same
+     technique as room-diagram/street-diagram above (SVG for the fixed
+     silhouette shape, absolutely-positioned HTML marker buttons for body
+     parts — reliable on mobile, unlike raw SVG click targets). */
+  .dw-body { margin:14px 0; }
+  .dw-body-label { font-size:15px; font-weight:700; color:#1F2937; margin-bottom:10px; }
+  .dw-body-wrap {
+    position:relative; width:100%; max-width:260px; margin:0 auto;
+    background:#F8FAFC; border:1px solid #E5E7EB; border-radius:14px; overflow:hidden;
+  }
+  .dw-body-svg { display:block; width:100%; height:auto; }
+  .dw-body-marker {
+    position:absolute; transform:translate(-50%,-50%);
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+    background:none; border:none; padding:0; cursor:default; font-family:inherit;
+  }
+  .dw-body-marker-dot {
+    width:14px; height:14px; border-radius:50%; background:#fff;
+    border:2px solid #3B82F6; box-shadow:0 1px 3px rgba(0,0,0,.08);
+  }
+  .dw-body-marker-label {
+    font-size:10.5px; font-weight:700; color:#374151; background:#fff;
+    padding:1px 5px; border-radius:6px; white-space:nowrap; margin-top:1px;
+  }
+  button.dw-body-marker { cursor:pointer; }
+  button.dw-body-marker:hover .dw-body-marker-dot { border-color:#1D4ED8; }
+  button.dw-body-marker.correct .dw-body-marker-dot { border-color:#16A34A; background:#F0FDF4; }
+  button.dw-body-marker.wrong .dw-body-marker-dot { border-color:#DC2626; background:#FEF2F2; }
+  button.dw-body-marker:disabled { cursor:default; }
+  .dw-body-prompt {
+    font-size:14.5px; font-weight:700; color:#1F2937; margin:10px 0 8px;
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  }
+  .dw-body-audio-btn {
+    background:#EFF6FF; border:1px solid #DBEAFE; border-radius:50px;
+    padding:6px 14px; font-size:13px; font-weight:700; color:#1D4ED8; cursor:pointer; font-family:inherit;
+  }
+  .dw-body-desc {
+    font-size:13.5px; color:#374151; line-height:1.6; margin-top:10px;
+    background:#F9FAFB; border-left:3px solid #3B82F6; border-radius:0 8px 8px 0; padding:10px 12px;
+  }
+  .dw-body-fb { font-size:13px; color:#B45309; margin-top:8px; display:none; }
+  .dw-body-fb.show { display:block; }
+
   /* ── NEW BLOCK TYPES (Modul 3+) ─────────────────────── */
 
   /* pattern-table — mobile-first: stack vertically, side-by-side on wider screens */
@@ -1490,6 +1534,33 @@
     }
     return { pickLandmark: pickLandmark, pickPosition: pickPosition };
   }());
+
+  // ── dwBodyDiagram: labelled body silhouette, tap-to-identify (Gesundheit
+  // L2) ── mirrors dwStreetDiagram.pickLandmark exactly — several body-part
+  // markers shown at their real (fixed, anatomical) slots; tap the one
+  // matching data.target.
+  var dwBodyDiagram = (function() {
+    function getData(el) {
+      try { return JSON.parse(el.getAttribute('data-body') || '{}'); } catch (e) { return {}; }
+    }
+    function pick(id, key) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var data = getData(el);
+      var isCorrect = String(key) === String(data.target);
+      var btn = el.querySelector('[data-marker-key="' + key + '"]');
+      var fb = el.querySelector('.dw-body-fb');
+      if (isCorrect) {
+        el.querySelectorAll('button.dw-body-marker').forEach(function(b) { b.disabled = true; });
+        if (btn) btn.classList.add('correct');
+        if (fb) { fb.textContent = '✓ Richtig!'; fb.classList.add('show'); }
+      } else {
+        if (btn) { btn.classList.add('wrong'); setTimeout(function() { btn.classList.remove('wrong'); }, 700); }
+        if (fb) { fb.textContent = 'Nicht ganz — versuch es noch einmal.'; fb.classList.add('show'); }
+      }
+    }
+    return { pick: pick };
+  }());
 </script>
 
 <script>
@@ -2296,6 +2367,89 @@
             '</div>';
           }).join('');
           return '<div class="dw-schedule">' + schLabel + schRows + '</div>';
+        }
+
+        // ── body-diagram ────────────────────────────────────────────────
+        // Labelled SVG body silhouette for Gesundheit und Probleme (Sec II)
+        // — a fixed front-facing outline (plain SVG shapes, same "no
+        // coordinate authoring" approach as room-diagram/street-diagram)
+        // with 7 fixed marker slots at real anatomical positions: kopf,
+        // hals, bauch, arm, bein, hand, fuss. (der Rücken isn't included as
+        // a marker — it isn't visible from the front — it's taught via
+        // vocabulary/audio only, not misrepresented on this view.)
+        // Two ways to use it:
+        //  1. Plain display (no `interactive`) — `parts` markers shown at
+        //     their real slots, a teaching reference.
+        //  2. interactive:'identify' — tap the part matching `prompt`/
+        //     `target` (a slot key) — the "listen to a symptom, identify
+        //     the body area" exercise.
+        // Data: { type, label?, parts:[{key,label,icon?}], description?,
+        //         interactive?:'identify', prompt?, audio?, target? }
+        case 'body-diagram': {
+          var bdId = 'bd-' + Math.random().toString(36).slice(2, 7);
+          var BD_SLOTS = {
+            kopf:  { x: 100, y: 35 },
+            hals:  { x: 100, y: 62 },
+            bauch: { x: 100, y: 112 },
+            arm:   { x: 168, y: 130 },
+            bein:  { x: 76,  y: 222 },
+            hand:  { x: 168, y: 182 },
+            fuss:  { x: 72,  y: 302 }
+          };
+          var BD_SILHOUETTE =
+            '<circle cx="100" cy="35" r="24" fill="#E2E8F0" stroke="#CBD5E1" stroke-width="2"/>' +
+            '<rect x="92" y="57" width="16" height="14" fill="#E2E8F0"/>' +
+            '<rect x="68" y="70" width="64" height="95" rx="22" fill="#E2E8F0" stroke="#CBD5E1" stroke-width="2"/>' +
+            '<line x1="68" y1="85" x2="35" y2="175" stroke="#E2E8F0" stroke-width="14" stroke-linecap="round"/>' +
+            '<line x1="132" y1="85" x2="165" y2="175" stroke="#E2E8F0" stroke-width="14" stroke-linecap="round"/>' +
+            '<line x1="85" y1="160" x2="78" y2="295" stroke="#E2E8F0" stroke-width="16" stroke-linecap="round"/>' +
+            '<line x1="115" y1="160" x2="122" y2="295" stroke="#E2E8F0" stroke-width="16" stroke-linecap="round"/>' +
+            '<circle cx="35" cy="180" r="10" fill="#E2E8F0" stroke="#CBD5E1" stroke-width="2"/>' +
+            '<circle cx="165" cy="180" r="10" fill="#E2E8F0" stroke="#CBD5E1" stroke-width="2"/>' +
+            '<ellipse cx="72" cy="300" rx="14" ry="8" fill="#E2E8F0" stroke="#CBD5E1" stroke-width="2"/>' +
+            '<ellipse cx="128" cy="300" rx="14" ry="8" fill="#E2E8F0" stroke="#CBD5E1" stroke-width="2"/>';
+
+          var bdInteractive = block.interactive || '';
+          var bdParts = Array.isArray(block.parts) ? block.parts : [];
+          var bdMarkersHtml = bdParts.map(function(p) {
+            var slot = BD_SLOTS[p.key];
+            if (!slot) return '';
+            var leftPct = (slot.x / 200 * 100).toFixed(1);
+            var topPct = (slot.y / 320 * 100).toFixed(1);
+            var posStyle = 'left:' + leftPct + '%;top:' + topPct + '%;';
+            var inner = '<span class="dw-body-marker-dot"></span>' +
+              '<span class="dw-body-marker-label">' + escapeHtml((p.icon ? p.icon + ' ' : '') + (p.label || '')) + '</span>';
+            if (bdInteractive === 'identify') {
+              return '<button type="button" class="dw-body-marker" style="' + posStyle + '"' +
+                ' data-marker-key="' + escapeHtml(p.key) + '"' +
+                ' onclick="dwBodyDiagram.pick(\'' + bdId + '\',\'' + p.key + '\')">' + inner + '</button>';
+            }
+            return '<div class="dw-body-marker" style="' + posStyle + '">' + inner + '</div>';
+          }).join('');
+
+          var bdLabelHtml = block.label ? '<div class="dw-body-label">' + escapeHtml(block.label) + '</div>' : '';
+          var bdDescHtml = block.description ? '<div class="dw-body-desc">' + escapeHtml(block.description) + '</div>' : '';
+          var bdAudioText = block.audio || '';
+          var jsBdAudio = String(bdAudioText).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+          var bdPromptHtml = block.prompt ? '<div class="dw-body-prompt">' +
+            '<span>' + escapeHtml(block.prompt) + '</span>' +
+            (bdAudioText ? '<button type="button" class="dw-body-audio-btn" onclick="speakText(\'' + jsBdAudio + '\',\'de-DE\')">🔊 Listen</button>' : '') +
+          '</div>' : '';
+
+          var bdDataAttr = JSON.stringify({ target: block.target || '' })
+            .replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+          return '<div class="dw-body" id="' + bdId + '" data-body="' + bdDataAttr + '">' +
+            bdLabelHtml + bdPromptHtml +
+            '<div class="dw-body-wrap">' +
+              '<svg class="dw-body-svg" viewBox="0 0 200 320" role="img" aria-label="' + escapeHtml(block.description || 'Labelled body diagram') + '">' +
+                BD_SILHOUETTE +
+              '</svg>' +
+              bdMarkersHtml +
+            '</div>' +
+            bdDescHtml +
+            '<div class="dw-body-fb"></div>' +
+          '</div>';
         }
 
         default:
