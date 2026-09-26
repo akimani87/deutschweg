@@ -553,6 +553,23 @@
         { de: 'Haben Sie etwas gegen …?', en: 'Do you have something for …?' },
         { de: 'Ich bin heute krank.', en: "I'm ill today." }
       ]
+    },
+    'ccb688a7-b462-452f-8e58-8a487e1b0063': { // Erlebnisse und Pläne
+      words: [
+        { de: 'gestern / heute / morgen', en: 'yesterday / today / tomorrow' },
+        { de: 'letzte Woche / nächste Woche', en: 'last week / next week' },
+        { de: 'am Wochenende', en: 'at the weekend' },
+        { de: 'zuerst / dann / danach', en: 'first / then / afterwards' },
+        { de: 'schön / interessant / langweilig', en: 'nice / interesting / boring' }
+      ],
+      phrases: [
+        { de: 'Was hast du gestern gemacht?', en: 'What did you do yesterday?' },
+        { de: 'Ich habe … gelernt/gearbeitet/gespielt.', en: 'I learned/worked/played …' },
+        { de: 'Ich bin nach Berlin gefahren.', en: 'I went to Berlin.' },
+        { de: 'Es war schön.', en: 'It was nice.' },
+        { de: 'Morgen lerne ich Deutsch.', en: 'Tomorrow I will learn German.' },
+        { de: 'Ich möchte … / Ich will …', en: 'I would like … / I want …' }
+      ]
     }
   };
 
@@ -618,6 +635,11 @@
       lead: "You're not feeling well and want a doctor's appointment — ask without help.",
       task: "You're not feeling well and want a doctor's appointment — write a short message asking for one.",
       include: ['that you are not feeling well', 'one or two symptoms', 'a request for an appointment', 'a suggested day or time']
+    },
+    'ccb688a7-b462-452f-8e58-8a487e1b0063': { // Erlebnisse und Pläne
+      lead: 'A friend asks about your weekend and your plans — reply without help.',
+      task: 'A friend asks about your weekend and your plans — write a short reply.',
+      include: ['at least two things you did last weekend', 'how one of them was', 'a plan for next weekend', 'a relevant time expression']
     }
   };
 
@@ -671,7 +693,15 @@
     },
     'bda483ce-7f24-4c4a-bf02-10886b3e6f12': { // Gesundheit und Probleme
       abilityStatement: 'You can now describe simple symptoms, make a doctor’s appointment, and ask for help in German.',
-      nextTopic: null // Erlebnisse und Pläne doesn't exist yet — falls back to "Back to dashboard"
+      nextTopic: { href: 'topic.html?id=ccb688a7-b462-452f-8e58-8a487e1b0063', label: 'Erlebnisse und Pläne' }
+    },
+    'ccb688a7-b462-452f-8e58-8a487e1b0063': { // Erlebnisse und Pläne — the final planned A1 topic. No next
+      // topic exists yet, and none should be invented here — this
+      // correctly falls back to "Back to dashboard" (renderTopicCompleteMoment's
+      // existing default), not a new "A1 complete!"/certification screen,
+      // per the brief's explicit "do not invent a new certification" instruction.
+      abilityStatement: 'You can now talk about recent experiences and explain simple future plans in German.',
+      nextTopic: null
     }
   };
 
@@ -718,6 +748,10 @@
     'bda483ce-7f24-4c4a-bf02-10886b3e6f12': [ // Gesundheit und Probleme — two Deep Dives
       { href: './module.html?id=74349aa3-69e3-49aa-a064-b7a97b4eac81&lesson=7', label: 'Mir tut … weh oder ich habe …?' },
       { href: './module.html?id=74349aa3-69e3-49aa-a064-b7a97b4eac81&lesson=8', label: 'Du solltest …' }
+    ],
+    'ccb688a7-b462-452f-8e58-8a487e1b0063': [ // Erlebnisse und Pläne — two Deep Dives
+      { href: './module.html?id=aacd4217-b24b-406d-b396-03fad40bafc9&lesson=7', label: 'Perfekt — haben oder sein?' },
+      { href: './module.html?id=aacd4217-b24b-406d-b396-03fad40bafc9&lesson=8', label: 'Gestern, heute oder morgen?' }
     ]
   };
 
@@ -770,6 +804,15 @@
     'bda483ce-7f24-4c4a-bf02-10886b3e6f12': [
       { legacyModuleId: '90b2f3ee-4344-41b6-a145-b54706172581', legacyModuleTitle: 'The Dative Case' },
       { legacyModuleId: 'deb5e6ea-4150-41a9-b889-4960a32fe045', legacyModuleTitle: 'Modal Verbs' }
+    ],
+    // Erlebnisse und Pläne — Deep Dive A (Perfekt haben/sein) draws directly
+    // on the legacy Haben & Sein module (the same conjugations, now used as
+    // helper verbs); Deep Dive B (gestern/heute/morgen) draws on the legacy
+    // Present Tense module (the same conjugation used for current AND
+    // future meaning here).
+    'ccb688a7-b462-452f-8e58-8a487e1b0063': [
+      { legacyModuleId: '3add9ce7-f7e4-479f-8899-b37a98bb1dfb', legacyModuleTitle: 'Haben & Sein' },
+      { legacyModuleId: '84ae6334-3998-4ca1-a6d3-86b1734ad311', legacyModuleTitle: 'Present Tense' }
     ]
   };
 

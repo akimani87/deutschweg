@@ -442,6 +442,25 @@
         { key: 'appointment_request', label: 'Appointment requested', prompt: 'clearly asks for a doctor’s appointment (e.g. Ich möchte einen Termin vereinbaren, Ich brauche einen Termin)' },
         { key: 'day_or_time', label: 'Day or time suggested', prompt: 'suggests or mentions a day or time (e.g. morgen, Montag, um zehn Uhr)' }
       ]
+    },
+    'ccb688a7-b462-452f-8e58-8a487e1b0063': { // Erlebnisse und Pläne
+      title: 'My weekend and my plans',
+      lead: 'A friend asks what you did last weekend and what you plan to do next weekend.',
+      include: ['describe at least two completed activities', 'say how one experience was', 'describe at least one future plan', 'include a relevant time expression'],
+      approxLength: '3-4 sentences',
+      hint: 'Start with Am Wochenende habe ich …, add a second activity, say Es war … , then Nächstes Wochenende möchte ich ….',
+      vocab: [
+        { de: 'Ich habe … gemacht.', en: 'I did …' },
+        { de: 'Ich bin … gefahren/gegangen.', en: 'I went …' },
+        { de: 'Es war schön/toll/interessant.', en: 'It was nice/great/interesting.' },
+        { de: 'Ich möchte … / Ich will …', en: 'I would like … / I want …' }
+      ],
+      requiredInfo: [
+        { key: 'two_activities', label: 'Two activities described', prompt: 'describes at least two understandable completed activities using the Perfekt (e.g. Ich habe … gemacht/gekocht/gelernt, or Ich bin … gefahren/gegangen)' },
+        { key: 'experience_description', label: 'How one experience was', prompt: 'says how at least one of those activities or the day was, understandably (e.g. Es war schön/interessant/toll/langweilig)' },
+        { key: 'future_plan', label: 'A future plan described', prompt: 'describes at least one understandable plan for the future, typically with morgen/nächste Woche/nächstes Wochenende + present tense, or möchte/will + infinitive' },
+        { key: 'time_expression', label: 'A relevant time expression used', prompt: 'uses at least one relevant time expression connected to either the past activity or the future plan (e.g. am Wochenende, gestern, nächstes Wochenende, am Samstag)' }
+      ]
     }
   };
   // No silent fallback to a DIFFERENT topic's task -- this used to default
