@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<!-- DW SEO INJECT -->
+<meta name="title" content="DeutschWeg — Your First German Words">
+<meta name="description" content="Learn your first three German phrases in two minutes — free, no sign-up needed. Hallo, Ich heiße, Guten Morgen. Then start the full free A1 course.">
+<meta name="robots" content="index, follow">
+<meta name="language" content="English">
+<meta name="author" content="DeutschWeg">
+<link rel="canonical" href="https://deutschweg.de/erstes-deutsch">
+<!-- /DW SEO INJECT -->
+
+<title>DeutschWeg — Your First German Words</title>
+<link rel="stylesheet" href="deutschweg-theme.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
+<style>
+  body{
+    min-height:100vh;
+    background:var(--bg);
+    color:var(--dark);
+    opacity:0;
+    transition:opacity .25s ease;
+    display:flex;flex-direction:column;
+  }
+  body.ready{opacity:1;}
+
+  .ed-header{
+    padding:18px 24px;
+    background:#fff;
+    border-bottom:1px solid var(--border);
+    display:flex;align-items:center;justify-content:space-between;
+    flex-shrink:0;
+  }
+  .ed-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+  .ed-logo-icon{
+    width:32px;height:32px;background:var(--blue);
+    border-radius:9px;display:flex;align-items:center;justify-content:center;
+    color:#fff;font-size:16px;font-weight:800;
+  }
+  .ed-logo-text{font-size:17px;font-weight:800;color:var(--dark);letter-spacing:-0.3px;}
+  .ed-logo-text span{color:var(--blue);}
+  .ed-step-pill{
+    font-size:11px;font-weight:700;letter-spacing:1.2px;
+    color:var(--blue);text-transform:uppercase;
+    background:var(--blue-light);border:1px solid var(--blue-mid);
+    padding:5px 12px;border-radius:20px;
+  }
+
+  .ed-progress{height:3px;background:var(--border);position:relative;flex-shrink:0;}
+  .ed-progress-fill{height:100%;background:var(--blue);transition:width .4s ease;width:25%;}
+
+  .ed-main{
+    flex:1;display:flex;align-items:flex-start;justify-content:center;
+    padding:40px 20px 120px;
+  }
+  .card{
+    width:100%;max-width:480px;
+    background:#fff;border:1px solid var(--border);
+    border-radius:var(--radius-lg);box-shadow:var(--shadow-md);
+    padding:36px 28px;
+  }
+  .ed-eyebrow{
+    font-size:11px;font-weight:700;color:var(--blue);
+    text-transform:uppercase;letter-spacing:2px;margin-bottom:12px;
+  }
+  .ed-h1{font-size:26px;font-weight:800;color:var(--dark);line-height:1.25;letter-spacing:-0.4px;margin-bottom:10px;}
+  .ed-lead{font-size:15px;color:var(--mid);line-height:1.65;margin-bottom:24px;}
+
+  /* ── the big German word/phrase itself ── */
+  .ed-phrase-card{
+    background:var(--blue-light);border:1px solid var(--blue-mid);
+    border-radius:var(--radius-md);padding:26px 22px;margin-bottom:20px;
+    text-align:center;
+  }
+  .ed-phrase-de{font-size:32px;font-weight:800;color:var(--dark);letter-spacing:-0.5px;margin-bottom:6px;}
+  .ed-phrase-en{font-size:15px;color:var(--mid);margin-bottom:16px;}
+  .ed-listen-btn{
+    display:inline-flex;align-items:center;gap:8px;
+    background:#fff;border:1.5px solid var(--blue);color:var(--blue);
+    border-radius:50px;padding:10px 20px;font-size:14px;font-weight:700;
+    cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;
+    transition:all .15s ease;
+  }
+  .ed-listen-btn:hover{background:var(--blue);color:#fff;}
+  .ed-listen-btn.speaking{background:var(--blue);color:#fff;}
+
+  .btn{
+    font-family:'Plus Jakarta Sans',sans-serif;
+    padding:14px 22px;border-radius:var(--radius-sm);
+    font-size:15px;font-weight:700;
+    border:none;cursor:pointer;text-decoration:none;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    transition:all .18s ease;width:100%;
+  }
+  .btn-primary{background:var(--blue);color:#fff;box-shadow:0 4px 14px rgba(59,130,246,0.3);}
+  .btn-primary:hover{background:var(--blue-dark);transform:translateY(-1px);}
+  .btn-primary:disabled{opacity:0.45;cursor:default;box-shadow:none;transform:none;}
+
+  .skip-link{
+    display:block;text-align:center;margin-top:14px;
+    font-size:13px;color:var(--light);
+    text-decoration:underline;text-underline-offset:3px;
+    background:none;border:none;cursor:pointer;
+    font-family:inherit;width:100%;padding:8px;
+  }
+  .skip-link:hover{color:var(--mid);}
+
+  /* ── quiz / interaction ── */
+  .ed-question{
+    margin-top:6px;padding:18px;
+    background:#F9FAFB;border:1px solid var(--border);
+    border-radius:var(--radius-md);margin-bottom:20px;
+  }
+  .ed-q{font-size:15px;font-weight:700;color:var(--dark);margin-bottom:14px;line-height:1.4;}
+  .ed-opts{display:flex;flex-direction:column;gap:8px;}
+  .ed-opt{
+    padding:13px 16px;background:#fff;
+    border:1.5px solid var(--border);border-radius:var(--radius-sm);
+    font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;
+    color:var(--dark);cursor:pointer;text-align:left;
+    transition:all .15s ease;
+  }
+  .ed-opt:hover:not(:disabled){border-color:var(--blue);background:var(--blue-light);}
+  .ed-opt:disabled{cursor:default;}
+  .ed-opt.correct{border-color:var(--green);background:var(--green-light);color:#065f46;}
+  .ed-opt.wrong{border-color:var(--red);background:var(--red-light);color:#991b1b;}
+
+  .ed-feedback{
+    margin-top:12px;padding:13px 16px;border-radius:var(--radius-sm);
+    font-size:13.5px;line-height:1.6;display:none;
+  }
+  .ed-feedback.show{display:block;}
+  .ed-feedback.ok{background:var(--green-light);border:1px solid var(--green-border);color:#065f46;}
+  .ed-feedback.no{background:#FFFBEB;border:1px solid #FDE68A;color:#92400E;}
+
+  /* ── step 2: name-in-sentence, purely client-side, never saved ── */
+  .ed-name-input{
+    width:100%;padding:14px 16px;background:#fff;
+    border:1.5px solid var(--border);border-radius:var(--radius-md);
+    font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;color:var(--dark);
+    margin-bottom:6px;outline:none;transition:border-color .15s, box-shadow .15s;
+  }
+  .ed-name-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,0.15);}
+  .ed-name-hint{font-size:12px;color:var(--light);margin-bottom:18px;}
+
+  /* ── end screen ── */
+  .ed-success-icon{
+    width:80px;height:80px;border-radius:50%;
+    background:var(--green-light);border:2px solid var(--green-border);
+    display:flex;align-items:center;justify-content:center;
+    font-size:38px;margin:0 auto 18px;
+    animation:pop .6s cubic-bezier(0.175,0.885,0.32,1.275) both;
+  }
+  .ed-learned-list{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px 18px;margin:18px 0 24px;}
+  .ed-learned-row{display:flex;align-items:center;gap:10px;font-size:14.5px;font-weight:600;color:var(--dark);padding:6px 0;}
+  .ed-learned-row .en{font-weight:400;color:var(--mid);}
+
+  .screen{display:none;animation:fadeUp .4s ease both;}
+  .screen.active{display:block;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes pop{from{opacity:0;transform:scale(0.5)}to{opacity:1;transform:scale(1)}}
+
+  @media(max-width:480px){
+    .ed-header{padding:14px 18px;}
+    .ed-main{padding:24px 14px 100px;}
+    .card{padding:28px 20px;border-radius:var(--radius-md);}
+    .ed-h1{font-size:22px;}
+    .ed-phrase-de{font-size:27px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="ed-header">
+  <a href="index.html" class="ed-logo">
+    <div class="ed-logo-icon">D</div>
+    <span class="ed-logo-text">Deutsch<span>Weg</span></span>
+  </a>
+  <span class="ed-step-pill" id="stepPill">Step 1 of 3</span>
+</header>
+
+<div class="ed-progress"><div class="ed-progress-fill" id="progressFill"></div></div>
+
+<main class="ed-main">
+  <div class="card">
+
+    <!-- ── STEP 1 — HALLO! ── -->
+    <section class="screen active" id="screen-1">
+      <div class="ed-eyebrow">Your first word</div>
+      <h1 class="ed-h1">Let's learn some German — right now.</h1>
+      <p class="ed-lead">No sign-up needed for this bit. Two minutes, three phrases.</p>
+
+      <div class="ed-phrase-card">
+        <div class="ed-phrase-de">Hallo!</div>
+        <div class="ed-phrase-en">Hello!</div>
+        <button type="button" class="ed-listen-btn" id="listenBtn1" onclick="speakCard(this,'Hallo')">🔊 Listen</button>
+      </div>
+
+      <div class="ed-question">
+        <div class="ed-q">Someone greets you on the street. Which word did they use?</div>
+        <div class="ed-opts" id="qOpts1">
+          <button class="ed-opt" onclick="answerQuiz(this,true,1)">Hallo</button>
+          <button class="ed-opt" onclick="answerQuiz(this,false,1)">Tschüss</button>
+          <button class="ed-opt" onclick="answerQuiz(this,false,1)">Danke</button>
+        </div>
+        <div class="ed-feedback" id="qFb1"></div>
+      </div>
+
+      <button class="btn btn-primary" id="next1" onclick="goToScreen(2)" disabled>Continue →</button>
+    </section>
+
+    <!-- ── STEP 2 — ICH HEISSE ... ── -->
+    <section class="screen" id="screen-2">
+      <div class="ed-eyebrow">Your second phrase</div>
+      <h1 class="ed-h1">Now say who you are.</h1>
+      <p class="ed-lead">This stays on your screen only — we're not saving it anywhere.</p>
+
+      <div class="ed-phrase-card">
+        <div class="ed-phrase-de">Ich heiße …</div>
+        <div class="ed-phrase-en">My name is …</div>
+        <button type="button" class="ed-listen-btn" id="listenBtn2" onclick="speakCard(this,'Ich heiße')">🔊 Listen</button>
+      </div>
+
+      <input type="text" id="nameInput" class="ed-name-input" placeholder="Type any name (optional)" maxlength="30" autocomplete="off" oninput="updateNameSentence()">
+      <div class="ed-name-hint">Not saved anywhere — just for this page.</div>
+
+      <div class="ed-phrase-card" style="margin-top:0;">
+        <div class="ed-phrase-de" id="nameSentence">Ich heiße Amina.</div>
+        <div class="ed-phrase-en">My name is Amina.</div>
+        <button type="button" class="ed-listen-btn" id="listenBtn2b" onclick="speakCard(this, document.getElementById('nameSentence').textContent)">🔊 Listen</button>
+      </div>
+
+      <button class="btn btn-primary" onclick="goToScreen(3)" style="margin-top:6px;">Continue →</button>
+    </section>
+
+    <!-- ── STEP 3 — GUTEN MORGEN! ── -->
+    <section class="screen" id="screen-3">
+      <div class="ed-eyebrow">Your third phrase</div>
+      <h1 class="ed-h1">Say it at the right time of day.</h1>
+      <p class="ed-lead">Germans greet each other differently depending on the time.</p>
+
+      <div class="ed-phrase-card">
+        <div class="ed-phrase-de">Guten Morgen!</div>
+        <div class="ed-phrase-en">Good morning!</div>
+        <button type="button" class="ed-listen-btn" id="listenBtn3a" onclick="speakCard(this,'Guten Morgen')">🔊 Listen</button>
+      </div>
+      <div class="ed-phrase-card">
+        <div class="ed-phrase-de">Guten Abend!</div>
+        <div class="ed-phrase-en">Good evening!</div>
+        <button type="button" class="ed-listen-btn" id="listenBtn3b" onclick="speakCard(this,'Guten Abend')">🔊 Listen</button>
+      </div>
+
+      <div class="ed-question">
+        <div class="ed-q">It's 8 a.m. and you're meeting a neighbour for the first time today. What do you say?</div>
+        <div class="ed-opts" id="qOpts3">
+          <button class="ed-opt" onclick="answerQuiz(this,true,3)">Guten Morgen!</button>
+          <button class="ed-opt" onclick="answerQuiz(this,false,3)">Guten Abend!</button>
+        </div>
+        <div class="ed-feedback" id="qFb3"></div>
+      </div>
+
+      <button class="btn btn-primary" id="next3" onclick="finish()" disabled>See what you've learned →</button>
+    </section>
+
+    <!-- ── END ── -->
+    <section class="screen" id="screen-4">
+      <div class="ed-success-icon">🎉</div>
+      <div class="ed-eyebrow" style="text-align:center;">Nice work</div>
+      <h1 class="ed-h1" style="text-align:center;">You've already learned your first German phrases!</h1>
+      <p class="ed-lead" style="text-align:center;">Three real, useful expressions — in about two minutes.</p>
+
+      <div class="ed-learned-list">
+        <div class="ed-learned-row"><span>👋</span><span>Hallo!</span><span class="en">— Hello!</span></div>
+        <div class="ed-learned-row"><span>🙋</span><span>Ich heiße …</span><span class="en">— My name is …</span></div>
+        <div class="ed-learned-row"><span>☀️</span><span>Guten Morgen!</span><span class="en">— Good morning!</span></div>
+      </div>
+
+      <a class="btn btn-primary" id="startA1Btn" href="signup.html">Start learning A1 →</a>
+      <button class="skip-link" onclick="goToScreen(1); resetQuiz();">↺ Try it again</button>
+    </section>
+
+  </div>
+</main>
+
+<script>
+(function() {
+  'use strict';
+
+  // ── Speech (identical pattern to onboarding.html's mini-lesson step —
+  // same browser speechSynthesis pipeline, no new audio engine) ──────────
+  var synth = window.speechSynthesis;
+  var deVoice = null;
+  var speechUnlocked = false;
+
+  function loadVoices() {
+    if (!synth) return;
+    try {
+      var voices = synth.getVoices() || [];
+      deVoice = voices.find(function(v){ return /^de(-|_)/i.test(v.lang); })
+             || voices.find(function(v){ return /^de/i.test(v.lang); })
+             || null;
+    } catch(e) {}
+  }
+  if (synth) {
+    try {
+      loadVoices();
+      if (synth.onvoiceschanged !== undefined) synth.onvoiceschanged = loadVoices;
+    } catch(e) {}
+  }
+  function unlockSpeech() {
+    if (speechUnlocked || !synth) return;
+    try {
+      var silent = new SpeechSynthesisUtterance('');
+      silent.volume = 0;
+      synth.speak(silent);
+      speechUnlocked = true;
+    } catch(e) {}
+  }
+  document.addEventListener('touchstart', unlockSpeech, { once: true, passive: true });
+  document.addEventListener('click',      unlockSpeech, { once: true });
+
+  function speakDE(text) {
+    if (!synth) return null;
+    try {
+      if (!deVoice) loadVoices();
+      synth.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = 'de-DE'; u.rate = 0.85; u.pitch = 1.0; u.volume = 1.0;
+      if (deVoice) u.voice = deVoice;
+      synth.speak(u);
+      return u;
+    } catch(e) { return null; }
+  }
+
+  window.speakCard = function(btn, text) {
+    unlockSpeech();
+    document.querySelectorAll('.ed-listen-btn').forEach(function(b){ b.classList.remove('speaking'); });
+    btn.classList.add('speaking');
+    var u = speakDE(text);
+    if (u) {
+      u.onend   = function(){ btn.classList.remove('speaking'); };
+      u.onerror = function(){ btn.classList.remove('speaking'); };
+    } else {
+      setTimeout(function(){ btn.classList.remove('speaking'); }, 1200);
+    }
+  };
+
+  // ── Screen routing ──────────────────────────────────────────────────────
+  var TOTAL_STEPS = 3; // step pill/progress only count the 3 teaching steps
+  window.goToScreen = function(n) {
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    var next = document.getElementById('screen-' + n);
+    if (next) next.classList.add('active');
+    var shown = Math.min(n, TOTAL_STEPS);
+    document.getElementById('progressFill').style.width = Math.round((shown / TOTAL_STEPS) * 100) + '%';
+    document.getElementById('stepPill').textContent = n <= TOTAL_STEPS ? ('Step ' + n + ' of ' + TOTAL_STEPS) : 'Done';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // ── Recognition questions (steps 1 and 3) ───────────────────────────────
+  var QUIZ_TEXT = {
+    1: { ok: 'Genau! Hallo means hello — casual and friendly.', no: 'Not quite — Hallo is the word for hello. Tschüss means goodbye and Danke means thank you.' },
+    3: { ok: 'Richtig! In the morning, Germans say Guten Morgen.', no: 'Not quite — in the morning you say Guten Morgen. Guten Abend is for the evening.' }
+  };
+  window.answerQuiz = function(btn, isCorrect, step) {
+    var opts = document.getElementById('qOpts' + step).querySelectorAll('.ed-opt');
+    var fb = document.getElementById('qFb' + step);
+    opts.forEach(function(o){ o.disabled = true; });
+    btn.classList.add(isCorrect ? 'correct' : 'wrong');
+    fb.className = 'ed-feedback show ' + (isCorrect ? 'ok' : 'no');
+    fb.textContent = isCorrect ? QUIZ_TEXT[step].ok : QUIZ_TEXT[step].no;
+    var nextBtn = document.getElementById('next' + step);
+    if (nextBtn) nextBtn.disabled = false;
+  };
+
+  window.resetQuiz = function() {
+    document.querySelectorAll('.ed-opt').forEach(function(o) { o.disabled = false; o.classList.remove('correct', 'wrong'); });
+    document.querySelectorAll('.ed-feedback').forEach(function(f) { f.classList.remove('show'); f.textContent = ''; });
+    document.getElementById('next1').disabled = true;
+    document.getElementById('next3').disabled = true;
+    var nameInput = document.getElementById('nameInput');
+    if (nameInput) { nameInput.value = ''; updateNameSentence(); }
+  };
+
+  // ── Step 2: name-in-sentence — purely client-side, never sent or saved
+  // anywhere, matches the brief's "do not require personal information to
+  // be saved merely to complete this exercise." ──────────────────────────
+  window.updateNameSentence = function() {
+    var input = document.getElementById('nameInput');
+    var name = (input && input.value || '').trim();
+    var display = name || 'Amina';
+    document.getElementById('nameSentence').textContent = 'Ich heiße ' + display + '.';
+    var enLine = document.getElementById('nameSentence').nextElementSibling;
+    if (enLine) enLine.textContent = 'My name is ' + display + '.';
+  };
+
+  // ── Finish → end screen. Signed-in visitors go straight back into their
+  // real A1 path; anonymous visitors go to signup (which already lands
+  // them in onboarding → their first real lesson on its own — Erstes
+  // Deutsch itself writes nothing, so there's no "place" to preserve). ──
+  window.finish = function() {
+    goToScreen(4);
+    // Flag this session as having already seen the first-greeting content
+    // here (Hallo/Guten Morgen), so onboarding.html's own Begrüßung
+    // mini-lesson can skip itself for this visitor instead of repeating
+    // near-identical material right after signup. sessionStorage only —
+    // nothing saved server-side, matching "don't require saving personal
+    // info to complete this exercise."
+    try { sessionStorage.setItem('dw_erstes_deutsch_done', '1'); } catch(e) {}
+    var btn = document.getElementById('startA1Btn');
+    if (typeof dwSupabase === 'undefined') return;
+    dwSupabase.auth.getUser().then(function(res) {
+      var user = res && res.data && res.data.user;
+      if (user) { btn.href = 'dashboard.html'; btn.textContent = 'Continue to your A1 path →'; }
+    }).catch(function(){});
+  };
+
+  document.addEventListener('DOMContentLoaded', function() {
+    document.body.classList.add('ready');
+  });
+})();
+</script>
+<script src="./cookie-banner.js"></script>
+</body>
+</html>

@@ -723,14 +723,29 @@
     placeShowStage('result');
   }
 
+  // Advance to the Mini-Lektion (Begrüßung: Hallo/Guten Tag/Auf Wiedersehen)
+  // — unless this visitor already did Erstes Deutsch (erstes-deutsch.html's
+  // homepage teaser, which covers very similar first-greeting content) in
+  // this same browser session, in which case skip straight to finishing —
+  // repeating near-identical beginner material right after signup is
+  // exactly what the brief asks to avoid. sessionStorage (not a DB write)
+  // is enough: the flag only needs to survive the one signup→onboarding
+  // hop, not persist across visits.
+  function goToMiniLessonOrSkip() {
+    var alreadyDone = false;
+    try { alreadyDone = sessionStorage.getItem('dw_erstes_deutsch_done') === '1'; } catch(e) {}
+    if (alreadyDone) { finishOnboarding(); return; }
+    goToScreen(4);
+  }
+
   // Accept the recommended level → write + advance to Mini-Lektion.
   window.placeAccept = function() {
-    setAktuellesLevel(placeState.recommended, function() { goToScreen(4); });
+    setAktuellesLevel(placeState.recommended, goToMiniLessonOrSkip);
   };
 
   // Direct picker (or "Choose a different level" from the result screen).
   window.pickLevel = function(level) {
-    setAktuellesLevel(level, function() { goToScreen(4); });
+    setAktuellesLevel(level, goToMiniLessonOrSkip);
   };
 
   // Single write path for aktuelles_level — never blocks the user on a DB error.

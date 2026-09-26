@@ -584,7 +584,7 @@
     <a class="help-card" href="ai-pal.html">
       <span class="help-icon">😊</span>
       <span class="help-title">AI Pal</span>
-      <span class="help-sub">Practice German in a friendly chat</span>
+      <span class="help-sub">Need help? Ask Pal to explain a word or sentence.</span>
     </a>
     <a class="help-card" href="ai-tutor.html">
       <span class="help-icon">👩‍🏫</span>
@@ -1119,7 +1119,7 @@
       '<a class="module-card" href="' + href + '"' + cardStyle + '>' +
         '<div class="mc-icon"' + iconStyle + '>' + escapeHtml(icon) + '</div>' +
         '<div class="mc-body">' +
-          '<div class="mc-num"' + numStyle + '>' + escapeHtml(m.level) + ' · MODULE ' + (m.order_index || '') + '</div>' +
+          '<div class="mc-num"' + numStyle + '>' + escapeHtml(m.level) + ' · MODULE ' + (m.__visibleNum || m.order_index || '') + '</div>' +
           '<div class="mc-title">' + escapeHtml(m.title || 'Untitled') + '</div>' +
           outcomeLine +
           barHtml +
@@ -1330,8 +1330,8 @@
       }
       card.href = moduleHref(m);
       titleEl.textContent = m.title || 'Next module';
-      metaEl.textContent  = m.level + ' · Module ' + (m.order_index || '');
-      ctaEl.textContent   = 'Continue to Module ' + (m.order_index || '');
+      metaEl.textContent  = m.level + ' · Module ' + (m.__visibleNum || m.order_index || '');
+      ctaEl.textContent   = 'Continue to Module ' + (m.__visibleNum || m.order_index || '');
       card.style.display = '';
     }
 
@@ -1486,6 +1486,25 @@
         (modRes.data || []).forEach(function(m) {
           if (byLevel[m.level]) byLevel[m.level].push(m);
           byId[m.id] = m;
+        });
+        // __visibleNum: this module's 1-based position among this level's
+        // *visible* (published) modules — NOT the same as order_index once
+        // any earlier module in that level is hidden. A1 currently hides
+        // order_index 1 (Greetings, folded into Über mich) and 4-13 (the
+        // legacy grammar modules, folded into topics), so its first visible
+        // module (Pronunciation, order_index 2) must read as "Module 1", not
+        // "Module 2" — showing the raw order_index here is exactly what
+        // produced the reported "Continue to Module 2" / "0 modules done"
+        // contradiction for a brand-new learner who hadn't done anything
+        // yet. A2/B1/B2 have no gaps today, so this is a no-op there
+        // (__visibleNum === order_index), but computing it this way is
+        // self-healing if a module is ever hidden from the start of any
+        // level in the future. Used only for the user-facing "Module N"
+        // text (renderCard, renderContinueCard) — routing keys (SPECIAL_HREFS,
+        // SECTION_LABELS) intentionally keep using the real order_index,
+        // since those identify specific DB rows, not display position.
+        Object.keys(byLevel).forEach(function(lvl) {
+          byLevel[lvl].forEach(function(m, i) { m.__visibleNum = i + 1; });
         });
         // byId also gets one entry per topic's hidden host module id, so
         // advanceLetzteModulSlug() (module.html) writing that id into

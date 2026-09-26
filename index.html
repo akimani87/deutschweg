@@ -121,7 +121,15 @@ section{padding:96px 0;}
 .hero-bullet{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--mid);line-height:1.5;}
 .hero-bullet-check{color:var(--green);font-weight:700;flex-shrink:0;margin-top:1px;}
 
-.hero-btns{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:36px;}
+.hero-btns{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
+.hero-secondary-link{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:14px;font-weight:600;color:var(--mid);
+  text-decoration:none;margin-bottom:22px;
+}
+.hero-secondary-link:hover{color:var(--blue);}
+.hero-secondary-link .arrow{transition:transform .15s ease;}
+.hero-secondary-link:hover .arrow{transform:translateX(3px);}
 .hero-trust{display:flex;align-items:center;gap:14px;}
 .trust-avs{display:flex;}
 .trust-av{
@@ -682,8 +690,8 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
 .hc-privacy{font-size:11px;color:var(--light);line-height:1.5;margin-top:6px;}
 
 @media(max-width:480px){
-  .hc-fab{right:14px;bottom:14px;width:52px;height:52px;font-size:22px;}
-  .hc-panel{right:10px;left:10px;bottom:78px;width:auto;border-radius:14px;}
+  .hc-fab{right:18px;bottom:20px;width:52px;height:52px;font-size:22px;}
+  .hc-panel{right:10px;left:10px;bottom:84px;width:auto;border-radius:14px;}
 }
 </style>
 </head>
@@ -718,6 +726,7 @@ footer{background:#111827;padding:60px 0 0;color:#9CA3AF;}
         <div class="hero-btns">
           <a href="signup.html" class="btn-primary btn-large">Start A1 Free →</a>
         </div>
+        <a href="erstes-deutsch.html" class="hero-secondary-link">Or try 3 German words free, no sign-up <span class="arrow">→</span></a>
         <div class="hero-bullets">
           <div class="hero-bullet"><span class="hero-bullet-check">✓</span>Free A1 Foundation</div>
           <div class="hero-bullet"><span class="hero-bullet-check">✓</span>Interactive practice</div>
