@@ -1146,7 +1146,8 @@
       '<a class="practice-chip" href="' + writeHref + '">Writing</a>' +
       deepDiveList.map(function(dd) {
         return '<a class="practice-chip" href="' + dd.href + '">📘 ' + escapeHtml(dd.label) + '</a>';
-      }).join('');
+      }).join('') +
+      '<a class="practice-chip" href="grammar-help.html">📚 Grammar Help</a>';
     document.getElementById('chipWords').addEventListener('click', function() { toggleVocabPanel(); });
     document.getElementById('chipListening').addEventListener('click', function() { toggleVocabPanel(); });
 

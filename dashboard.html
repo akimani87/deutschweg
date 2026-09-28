@@ -580,7 +580,7 @@
 
   <!-- NEED HELP? -->
   <div class="quick-section-label">Need help?</div>
-  <div class="quick-grid quick-grid-2">
+  <div class="quick-grid quick-grid-3">
     <a class="help-card" href="ai-pal.html">
       <span class="help-icon">😊</span>
       <span class="help-title">AI Pal</span>
@@ -590,6 +590,11 @@
       <span class="help-icon">👩‍🏫</span>
       <span class="help-title">AI Tutor</span>
       <span class="help-sub">Ask questions and get explanations.</span>
+    </a>
+    <a class="help-card" href="grammar-help.html">
+      <span class="help-icon">📚</span>
+      <span class="help-title">Grammar Help</span>
+      <span class="help-sub">Optional grammar explanations and practice, organized by topic.</span>
     </a>
   </div>
 
@@ -993,7 +998,7 @@
   // (harmless) rather than deleted, since un-hiding a module later would
   // make them relevant again with no further change needed here.
   var SECTION_LABELS = {
-    'A1-2':  { text: 'FOUNDATION — START HERE',                       color: null      },
+    'A1-2':  { text: 'FOUNDATIONS — START HERE',                      color: null      },
     'A1-5':  { text: 'GRAMMAR CORE — CASES & STRUCTURE',              color: null      },
     'A1-9':  { text: 'VERBS & PRONOUNS',                              color: null      },
     'A1-11': { text: 'EXAM GRAMMAR — HIGH IMPACT',                    color: null      },
@@ -1119,7 +1124,7 @@
       '<a class="module-card" href="' + href + '"' + cardStyle + '>' +
         '<div class="mc-icon"' + iconStyle + '>' + escapeHtml(icon) + '</div>' +
         '<div class="mc-body">' +
-          '<div class="mc-num"' + numStyle + '>' + escapeHtml(m.level) + ' · MODULE ' + (m.__visibleNum || m.order_index || '') + '</div>' +
+          '<div class="mc-num"' + numStyle + '>' + escapeHtml(m.level) + ' · ' + (m.level === 'A1' ? 'STAGE' : 'MODULE') + ' ' + (m.__visibleNum || m.order_index || '') + '</div>' +
           '<div class="mc-title">' + escapeHtml(m.title || 'Untitled') + '</div>' +
           outcomeLine +
           barHtml +
@@ -1323,15 +1328,16 @@
       if (m.__topicId) {
         card.href = './topic.html?id=' + m.__topicId;
         titleEl.textContent = m.__topicTitleDe + ' — ' + m.__topicTitleEn;
-        metaEl.textContent  = m.level + ' · Topic';
+        metaEl.textContent  = m.level + ' · Learning Journey';
         ctaEl.textContent   = 'Continue to ' + m.__topicTitleDe;
         card.style.display = '';
         return;
       }
+      var unitWord = m.level === 'A1' ? 'Stage' : 'Module';
       card.href = moduleHref(m);
       titleEl.textContent = m.title || 'Next module';
-      metaEl.textContent  = m.level + ' · Module ' + (m.__visibleNum || m.order_index || '');
-      ctaEl.textContent   = 'Continue to Module ' + (m.__visibleNum || m.order_index || '');
+      metaEl.textContent  = m.level + ' · ' + unitWord + ' ' + (m.__visibleNum || m.order_index || '');
+      ctaEl.textContent   = 'Continue to ' + unitWord + ' ' + (m.__visibleNum || m.order_index || '');
       card.style.display = '';
     }
 
@@ -1729,7 +1735,7 @@ function placeA1StageThree(html, attemptsLeft) {
       '<a class="module-card" href="./topic.html?id=' + t.id + '">' +
         '<div class="mc-icon">' + escapeHtml(icon) + '</div>' +
         '<div class="mc-body">' +
-          '<div class="mc-num">' + escapeHtml(t.level) + ' · TOPIC</div>' +
+          '<div class="mc-num">' + escapeHtml(t.level) + ' · LEARNING JOURNEY</div>' +
           '<div class="mc-title">' + escapeHtml(t.title_de) + ' — ' + escapeHtml(t.title_en) + '</div>' +
           (t.outcome_line ? '<div class="mc-outcome">' + escapeHtml(t.outcome_line) + '</div>' : '') +
           barHtml +
@@ -1756,8 +1762,9 @@ function placeA1StageThree(html, attemptsLeft) {
 
       dwSupabase.auth.getUser().catch(function(){ return { data: { user: null } }; }).then(function(userRes) {
         var user = userRes && userRes.data && userRes.data.user;
+        var LEARNING_JOURNEYS_LABEL = '<div class="sec-label">LEARNING JOURNEYS</div>';
         if (!user) {
-          placeA1StageThree(topics.map(function(t) { return renderTopicCard(t, null); }).join(''), 20);
+          placeA1StageThree(LEARNING_JOURNEYS_LABEL + topics.map(function(t) { return renderTopicCard(t, null); }).join(''), 20);
           return;
         }
         var topicIds = topics.map(function(t) { return t.id; });
@@ -1777,7 +1784,7 @@ function placeA1StageThree(html, attemptsLeft) {
             progressPromise.then(function(progRes) {
               var completedIds = {};
               (progRes.data || []).forEach(function(r) { completedIds[r.lesson_id] = true; });
-              var html = topics.map(function(t) {
+              var html = LEARNING_JOURNEYS_LABEL + topics.map(function(t) {
                 var lessonIds = itemsByTopic[t.id] || [];
                 var completed = lessonIds.filter(function(id) { return completedIds[id]; }).length;
                 return renderTopicCard(t, { total: lessonIds.length, completed: completed });

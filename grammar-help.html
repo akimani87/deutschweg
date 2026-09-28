@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- DW SEO INJECT -->
+<meta name="title" content="DeutschWeg — Grammar Help">
+<meta name="description" content="Optional grammar explanations and practice, organized by topic. Not required for your A1 Learning Path.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="language" content="English">
+<meta name="author" content="DeutschWeg">
+<!-- /DW SEO INJECT -->
+
+<title>DeutschWeg — Grammar Help</title>
+<link rel="stylesheet" href="deutschweg-theme.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
+<style>
+  /* Top-nav and bottom-nav copied verbatim from topic.html/dashboard.html
+     so this page reads as a continuation of the app, not a bolt-on. */
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:'DM Sans',system-ui,sans-serif;
+    background:#fff;color:#1F2937;
+    min-height:100vh;
+    opacity:0;transition:opacity 0.25s ease;
+  }
+  body.ready{opacity:1;}
+
+  .top-nav{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 24px; height:58px;
+    border-bottom:1px solid #E5E7EB; background:#fff;
+    position:sticky;top:0;z-index:50;
+  }
+  .logo{display:flex;align-items:center;gap:9px;text-decoration:none;color:#1F2937;}
+  .logo-icon{width:32px;height:32px;background:#3B82F6;border-radius:9px;display:flex;align-items:center;justify-content:center;color:white;font-size:16px;font-weight:800;flex-shrink:0;}
+  .logo-text{font-size:17px;font-weight:800;color:#1F2937;letter-spacing:-0.3px;}
+  .logo-text span{color:#3B82F6;}
+  .back-btn{font-size:13px;font-weight:600;color:#6B7280;text-decoration:none;}
+  .back-btn:hover{color:#3B82F6;}
+
+  .main{max-width:680px;margin:0 auto;padding:36px 24px 120px;}
+
+  .gh-eyebrow{font-size:11px;font-weight:700;letter-spacing:2px;color:#3B82F6;margin-bottom:8px;text-transform:uppercase;}
+  .gh-title{font-size:26px;font-weight:800;margin:0 0 10px;color:#1F2937;letter-spacing:-0.3px;}
+  .gh-intro{font-size:14px;color:#4B5563;line-height:1.65;margin:0 0 28px;}
+  .gh-intro strong{color:#1F2937;}
+
+  .gh-category{margin-bottom:26px;}
+  .gh-category-title{font-size:14px;font-weight:800;color:#1F2937;margin-bottom:10px;}
+
+  .gh-card{
+    display:flex;align-items:center;justify-content:space-between;gap:14px;
+    background:#fff;border:1px solid #E5E7EB;border-radius:14px;
+    padding:14px 16px;margin-bottom:8px;
+    text-decoration:none;transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease;
+  }
+  .gh-card:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,0.06);border-color:#DBEAFE;}
+  .gh-card-body{min-width:0;}
+  .gh-card-title{font-size:14px;font-weight:700;color:#1F2937;margin-bottom:2px;}
+  .gh-card-sub{font-size:12px;color:#9CA3AF;}
+  .gh-card-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+  .gh-card-progress{font-size:11px;font-weight:700;color:#3B82F6;background:#EFF6FF;border-radius:20px;padding:3px 9px;white-space:nowrap;}
+  .gh-card-arrow{color:#9CA3AF;font-size:16px;}
+
+  .bottom-nav{
+    position:fixed;bottom:0;left:0;right:0;
+    background:#fff; border-top:1px solid #DBEAFE;
+    display:flex;justify-content:space-around;padding:10px 0 18px;z-index:100;
+    box-shadow:0 -4px 20px rgba(0,0,0,0.06);
+    overflow-x:hidden;
+  }
+  .nav-item{
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+    cursor:pointer;padding:6px 8px;border-radius:10px;flex:1;min-width:0;
+    transition:all 0.2s;border:none;background:none;color:#9CA3AF;
+    text-decoration:none;
+  }
+  .nav-item:hover,.nav-item.active{color:#3B82F6;}
+  .nav-icon{font-size:20px;}
+  .nav-label{font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;}
+</style>
+</head>
+<body>
+
+<div class="top-nav">
+  <a href="dashboard.html" class="logo">
+    <div class="logo-icon">D</div>
+    <span class="logo-text">Deutsch<span>Weg</span></span>
+  </a>
+  <a href="dashboard.html" class="back-btn">← Dashboard</a>
+</div>
+
+<div class="main">
+  <div class="gh-eyebrow">A1 · Optional</div>
+  <h1 class="gh-title">Grammar Help</h1>
+  <p class="gh-intro"><strong>Not part of your required A1 Learning Path.</strong> Your Learning Journeys already teach you everything you need — these are the original, fuller grammar explanations behind them, here if you ever want to go deeper on a specific point.</p>
+
+  <div id="ghCategories"></div>
+</div>
+
+<nav class="bottom-nav">
+  <a class="nav-item" href="dashboard.html">
+    <span class="nav-icon">🏠</span>
+    <span class="nav-label">Learn</span>
+  </a>
+  <a class="nav-item" href="hoerverstehen.html">
+    <span class="nav-icon">🎧</span>
+    <span class="nav-label">Hören</span>
+  </a>
+  <a class="nav-item" href="sprechen.html">
+    <span class="nav-icon">🎤</span>
+    <span class="nav-label">Sprechen</span>
+  </a>
+  <a class="nav-item" href="exam-vault.html">
+    <span class="nav-icon">📝</span>
+    <span class="nav-label">Exams</span>
+  </a>
+  <a class="nav-item" href="ai.html">
+    <span class="nav-icon">💬</span>
+    <span class="nav-label">AI</span>
+  </a>
+</nav>
+
+<script>
+(function() {
+  'use strict';
+
+  function escapeHtml(s) {
+    if (s === null || s === undefined) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  // Exact legacy module ids verified in the A1 Curriculum Reorganisation
+  // Audit (same ids as dashboard.html's LEGACY_MODULE_IDS / module.html's
+  // completeScreenTitle() list). Greetings & Social Scripts is deliberately
+  // excluded here -- per approval, it stays archived for the learners who
+  // already have progress there (dashboard's "Your previous progress"
+  // section), but isn't presented as a grammar category.
+  var CATEGORIES = [
+    {
+      title: 'Nouns & Articles',
+      modules: [
+        { id: '5a50e5c7-3abf-45cb-a0fc-bb0df894f7f7', title: 'Der, Die, Das', sub: '6 lessons — gender & articles' },
+        { id: '3bbee574-13f3-4bb9-b865-12a1f20bed6a', title: 'Plural Forms of Nouns', sub: '6 lessons — how plurals work' }
+      ]
+    },
+    {
+      title: 'Pronouns',
+      modules: [
+        { id: '2acd86d3-bacd-4de0-ba8e-d6ec54090c3a', title: 'Personal Pronouns', sub: '6 lessons — ich, du, er/sie/es …' }
+      ]
+    },
+    {
+      title: 'Verbs',
+      modules: [
+        { id: '3add9ce7-f7e4-479f-8899-b37a98bb1dfb', title: 'Haben & Sein', sub: '6 lessons — the two core verbs' },
+        { id: '84ae6334-3998-4ca1-a6d3-86b1734ad311', title: 'Present Tense', sub: '6 lessons — regular & irregular verbs' },
+        { id: 'deb5e6ea-4150-41a9-b889-4960a32fe045', title: 'Modal Verbs', sub: '6 lessons — können, müssen, wollen …' }
+      ]
+    },
+    {
+      title: 'Sentence Structure',
+      modules: [
+        { id: '0c6c2633-a0e7-45d6-881d-abe7bc1a4703', title: 'Sentence Structure & Word Order', sub: '7 lessons — where words go' }
+      ]
+    },
+    {
+      title: 'Cases',
+      modules: [
+        { id: '04b0b81e-55fd-4354-9e16-883991cb17c3', title: 'Akkusativ Case', sub: '6 lessons — direct objects' },
+        { id: '90b2f3ee-4344-41b6-a145-b54706172581', title: 'The Dative Case', sub: '7 lessons — indirect objects' }
+      ]
+    },
+    {
+      title: 'Negation',
+      modules: [
+        { id: '69cd3a5d-7949-4771-9d68-1abb3214330c', title: 'Nicht or Kein?', sub: '6 lessons — saying what something isn\'t' }
+      ]
+    }
+  ];
+
+  function render(progressByMod) {
+    var el = document.getElementById('ghCategories');
+    el.innerHTML = CATEGORIES.map(function(cat) {
+      var cards = cat.modules.map(function(m) {
+        var p = progressByMod[m.id];
+        var progressChip = '';
+        if (p && p.total > 0 && p.completed > 0) {
+          var allDone = p.completed >= p.total;
+          progressChip = '<span class="gh-card-progress">' + (allDone ? '✓ ' : '') + p.completed + '/' + p.total + '</span>';
+        }
+        return (
+          '<a class="gh-card" href="./module.html?id=' + m.id + '">' +
+            '<div class="gh-card-body">' +
+              '<div class="gh-card-title">' + escapeHtml(m.title) + '</div>' +
+              '<div class="gh-card-sub">' + escapeHtml(m.sub) + '</div>' +
+            '</div>' +
+            '<div class="gh-card-right">' + progressChip + '<span class="gh-card-arrow">→</span></div>' +
+          '</a>'
+        );
+      }).join('');
+      return (
+        '<div class="gh-category">' +
+          '<div class="gh-category-title">' + escapeHtml(cat.title) + '</div>' +
+          cards +
+        '</div>'
+      );
+    }).join('');
+    document.body.classList.add('ready');
+  }
+
+  // Progress chips are a nice-to-have, not required for the page to work --
+  // best-effort, fails silently to an empty progressByMod (page still
+  // renders every category/link either way).
+  if (typeof dwSupabase === 'undefined') { render({}); return; }
+
+  var allModuleIds = [];
+  CATEGORIES.forEach(function(cat) { cat.modules.forEach(function(m) { allModuleIds.push(m.id); }); });
+
+  dwSupabase.auth.getUser().catch(function(){ return { data: { user: null } }; }).then(function(userRes) {
+    var user = userRes && userRes.data && userRes.data.user;
+    if (!user) { render({}); return; }
+    Promise.all([
+      dwSupabase.from('lessons').select('id, module_id').in('module_id', allModuleIds),
+      dwSupabase.from('user_progress').select('module_id, lesson_id').eq('user_id', user.id).eq('status', 'completed').in('module_id', allModuleIds)
+    ]).then(function(res) {
+      var progressByMod = {};
+      var lessonsRes = res[0], progRes = res[1];
+      if (!lessonsRes.error && lessonsRes.data) {
+        lessonsRes.data.forEach(function(l) {
+          if (!progressByMod[l.module_id]) progressByMod[l.module_id] = { completed: 0, total: 0 };
+          progressByMod[l.module_id].total++;
+        });
+      }
+      if (!progRes.error && progRes.data) {
+        progRes.data.forEach(function(r) {
+          if (!r.lesson_id) return; // skip the module-level completion sentinel row
+          if (!progressByMod[r.module_id]) progressByMod[r.module_id] = { completed: 0, total: 0 };
+          progressByMod[r.module_id].completed++;
+        });
+      }
+      render(progressByMod);
+    }).catch(function() { render({}); });
+  });
+})();
+</script>
+</body>
+</html>

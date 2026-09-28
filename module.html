@@ -1584,6 +1584,7 @@
     consecutiveWrong: 0, // running count of wrong answers in a row (AI Pal struggle detection)
     struggleShownLesson: {}, // lessonId -> true once AI Pal has stepped in this lesson
     wordBank: {},        // lower(german word) -> { word_id, correct_count, confidence_level }
+    topicTitleDe: null,  // set when ?topic= is present — the Learning Journey's title_de, for the header pill
   };
 
   function escapeHtml(s) {
@@ -2591,6 +2592,20 @@
         return;
       }
 
+      // 1b. Topic title, when this module is hosting a Learning Journey
+      // (?topic=<uuid> present) -- used by the header pill in render() and
+      // updateProgress() to show the journey's real name instead of this
+      // hidden host module's raw order_index. Best-effort: on failure the
+      // header falls back to the pre-existing "Module N" text.
+      if (topicParam) {
+        try {
+          var topicRes = await dwSupabase.from('topics').select('title_de').eq('id', topicParam).maybeSingle();
+          if (topicRes && topicRes.data) state.topicTitleDe = topicRes.data.title_de;
+        } catch (topicErr) {
+          console.warn('[module.html] topic title fetch failed (header falls back to Module N):', topicErr && topicErr.message);
+        }
+      }
+
       // 2. Lessons
       // lernziel_intro / lernziel_completion power the outcome + completion
       // boxes on each lesson; nullable in the schema → rendered only when
@@ -2726,12 +2741,68 @@
     }
   }
 
+  // Header pill text. For a Learning Journey's hidden host module
+  // (?topic= present + its title loaded), show the journey's real name and
+  // the current lesson's position among its 6 required steps instead of
+  // this module's raw order_index (which is a high, meaningless internal
+  // number like 917 -- see LEGACY_MODULE_IDS-era dashboard.html for the
+  // same "MODULE N" fix already applied there). Falls back to the
+  // pre-existing "Module N" text for every non-topic module, and for a
+  // topic's own optional Deep Dive lessons (order_index 7-8, outside the
+  // 6 required topic_items).
+  function modTagText() {
+    var m = state.module;
+    if (topicParam && state.topicTitleDe) {
+      var lesson   = state.lessons[state.lessonIdx];
+      var lessonNo = lesson ? lesson.order_index : null;
+      if (lessonNo >= 1 && lessonNo <= 6) {
+        return (m.level || '') + ' · ' + state.topicTitleDe + ' · Lesson ' + lessonNo + ' of 6';
+      }
+      return (m.level || '') + ' · ' + state.topicTitleDe + ' · Deep Dive';
+    }
+    return (m.level || '') + ' · Module ' + (m.order_index || '');
+  }
+
+  // The 11 A1 modules hidden from the main path (Greetings + the 10
+  // grammar-named modules) when foundations+topics replaced the flat
+  // 13-module list -- same list as dashboard.html's LEGACY_MODULE_IDS,
+  // duplicated here (each page is self-contained, no shared JS module) so
+  // completeScreenTitle() below can recognize one without a schema change.
+  var LEGACY_MODULE_IDS = [
+    '709ce228-d723-4453-aacb-55c26b618bc9', // Greetings, Introductions & Social Scripts
+    '3add9ce7-f7e4-479f-8899-b37a98bb1dfb', // Haben & Sein
+    '5a50e5c7-3abf-45cb-a0fc-bb0df894f7f7', // Der, Die, Das
+    '2acd86d3-bacd-4de0-ba8e-d6ec54090c3a', // Personal Pronouns
+    '84ae6334-3998-4ca1-a6d3-86b1734ad311', // Present Tense
+    '0c6c2633-a0e7-45d6-881d-abe7bc1a4703', // Sentence Structure & Word Order
+    '04b0b81e-55fd-4354-9e16-883991cb17c3', // Akkusativ Case
+    '90b2f3ee-4344-41b6-a145-b54706172581', // The Dative Case
+    '3bbee574-13f3-4bb9-b865-12a1f20bed6a', // Plural Forms of Nouns
+    '69cd3a5d-7949-4771-9d68-1abb3214330c', // Nicht or Kein?
+    'deb5e6ea-4150-41a9-b889-4960a32fe045'  // Modal Verbs
+  ];
+
+  // Completion-screen headline, conditional on what kind of module this is.
+  // Everything else about #completeScreen (icon, sub, XP badge, actions) is
+  // unchanged -- only this text varies:
+  //   - topic-hosted (?topic= present)      -> "Journey complete!"
+  //   - a Foundation module (A1, non-topic, // not in LEGACY_MODULE_IDS)
+  //                                          -> "Stage complete!"
+  //   - a legacy grammar / Grammar Help module -> "Grammar Help complete!"
+  //   - everything else (A2/B1/B2 modules)  -> unchanged "Module complete!"
+  function completeScreenTitle() {
+    var m = state.module;
+    if (topicParam) return 'Journey complete!';
+    if (m && LEGACY_MODULE_IDS.indexOf(m.id) !== -1) return 'Grammar Help complete!';
+    if (m && m.level === 'A1') return 'Stage complete!';
+    return 'Module complete!';
+  }
+
   // ── Render ──────────────────────────────────────────────────────────────
   function render() {
     var m = state.module;
     document.title = (m.title || 'Module') + ' — DeutschWeg';
-    document.getElementById('modTag').textContent =
-      (m.level || '') + ' · Module ' + (m.order_index || '');
+    document.getElementById('modTag').textContent = modTagText();
 
     // Build progress dots — clickable, jump to any lesson
     var dotRow = document.getElementById('dotRow');
@@ -3587,6 +3658,8 @@
     var pct = Math.round((state.lessonIdx / totalLessons) * 100);
     document.getElementById('progFill').style.width = pct + '%';
     document.getElementById('xpDisp').textContent = '⚡ ' + state.xp + ' XP';
+    var modTagEl = document.getElementById('modTag');
+    if (modTagEl) modTagEl.textContent = modTagText();
 
     state.lessons.forEach(function(lesson, i) {
       var d = document.getElementById('dot-' + i);
@@ -4373,6 +4446,8 @@
       document.getElementById('lessonContainer').style.display = 'none';
       var done = document.getElementById('completeScreen');
       done.classList.add('active');
+      var titleEl = done.querySelector('.complete-title');
+      if (titleEl) titleEl.textContent = completeScreenTitle();
       document.getElementById('xpEarnedFinal').textContent = state.xp;
       window.scrollTo({ top: 0, behavior: 'smooth' });
     },
