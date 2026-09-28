@@ -1006,6 +1006,16 @@
   <h1 class="exam-title" id="examTitle">Loading…</h1>
   <p class="exam-sub" id="examSub">Goethe-format A1 practice with auto-grading. Pick an exam and take it like the real thing.</p>
 
+  <!-- Entry point to the A1 Exam Vault marketing/offer page
+       (a1-exam-vault-offer.html) -- shown only at A1 (toggled in load(),
+       since level pills navigate via a real URL change, not in-place JS).
+       This links OUT to the offer page; it never replaces this page,
+       which stays the actual exam product. -->
+  <a href="a1-exam-vault-offer.html" id="a1OfferBanner" style="display:none; align-items:center; justify-content:space-between; gap:12px; background:var(--blue-light,#EFF6FF); border:1px solid var(--blue-mid,#DBEAFE); border-radius:12px; padding:12px 16px; margin-bottom:20px; text-decoration:none;">
+    <span style="font-size:13.5px; font-weight:700; color:#1D4ED8;">🎯 Want a full 60-day A1 exam prep plan? See what's in A1 Exam Vault</span>
+    <span style="font-size:13px; font-weight:700; color:#1D4ED8; flex-shrink:0;">Learn more →</span>
+  </a>
+
   <!-- Practice by Skill vs. Complete Mock Exam (combined-mock-exam-
        architecture-review.md, Phase 3). Combined mode hides the level +
        section pills below (navigation is fully automatic once started —
@@ -5004,6 +5014,8 @@
     wirePills(currentLevel, currentSection);
     wireExtraPills(currentLevel);
     el('examEyebrow').textContent = currentLevel + ' · Exam Vault';
+    var offerBanner = el('a1OfferBanner');
+    if (offerBanner) offerBanner.style.display = currentLevel === 'A1' ? 'flex' : 'none';
 
     // Direct-URL / back-button / bookmark access to an already-locked
     // section (Part 3) — the pill-click guard below only covers in-page
