@@ -1845,26 +1845,51 @@ async function validateMockExamSprechenAccess(verifiedUserId, mockExamAttemptId)
 const SPRECHEN_LANGS = { english: 'English', arabic: 'Arabic', french: 'French', portuguese: 'Portuguese' };
 function sprechenLang(v) { return SPRECHEN_LANGS[String(v || '').toLowerCase()] ? String(v).toLowerCase() : 'english'; }
 
-const SPRECHEN_TOPIC_SYSTEM_PROMPT = `You are generating Goethe A1 Sprechen exam topics for international learners preparing for the German exam.
+// Teil 1 field pool (Goethe-format-correct, brief-specified): a real A1
+// self-intro draws from these seven, never all seven every time — rotating
+// which subset (and order) gets asked is what makes back-to-back sessions
+// not feel identical. Teil 2's topic pool is likewise brief-specified.
+const SPRECHEN_PART1_FIELDS = ['Name', 'Alter', 'Land / Herkunft', 'Wohnort', 'Sprache', 'Beruf / Ausbildung', 'Hobby'];
+const SPRECHEN_PART2_TOPICS = ['Essen', 'Einkaufen', 'Freizeit', 'Wohnen', 'Stadt', 'Familie', 'Arbeit', 'Uhrzeit / Termine'];
 
-Generate exactly 3 topics following the official Goethe A1 Sprechen format:
+// Builds the topic-generation system prompt fresh per call so it can name
+// what NOT to repeat. `recent` is { part1:[...], part2:[...], part3:[...] }
+// of up to 5 recently-generated topic_texts per part (see
+// getRecentSprechenTopics) — empty arrays are fine, they just produce no
+// avoid-list. Live production data (checked 2026-09-28) showed the model
+// drifting back into picture-description and joint-planning wording even
+// with a one-line "don't do this" rule, so the ban below is stated
+// explicitly and repeated per-part rather than once at the end.
+function buildSprechenTopicSystemPrompt(recent) {
+  recent = recent || {};
+  function avoidBlock(label, items) {
+    if (!items || !items.length) return '';
+    return `\nRecently used ${label} — do not repeat these or anything very similar:\n${items.map(function(t) { return '- ' + t; }).join('\n')}\n`;
+  }
+  return `You are generating Goethe A1 Sprechen exam topics for international learners preparing for the German exam.
+
+Generate exactly 3 parts following the official Goethe-Zertifikat A1: Start Deutsch 1 Sprechen format. This format is word-card Q&A and simple requests — it is NEVER picture description and NEVER joint/shared planning. An older Goethe exam format used those two activities; that is not this exam and you must never generate them.
 
 Part 1 — Sich vorstellen (introduce yourself)
-Generate a natural self-introduction prompt.
-Example: "Stellen Sie sich vor — sagen Sie Ihren Namen, woher Sie kommen und was Sie arbeiten."
-
-Part 2 — Bild beschreiben (describe a picture)
-Generate a simple everyday scene relevant to life in Germany.
-Example: "Beschreiben Sie das Bild — was sehen Sie?"
-
-Part 3 — Gemeinsam planen (plan together)
-Generate a simple planning task the examiner and learner do together.
-Example: "Sie möchten zusammen kochen. Was brauchen Sie?"
-
+The candidate can be asked about any of these seven fields: ${SPRECHEN_PART1_FIELDS.join(', ')}.
+Pick 4-5 of these seven, in a varied order — do not pick the same combination every time.
+Example: "Stellen Sie sich vor — sagen Sie Ihren Namen, Ihr Alter, Ihre Sprache und Ihr Hobby."
+${avoidBlock('Part 1 phrasings', recent.part1)}
+Part 2 — Um Informationen bitten und Informationen geben
+Pick ONE topic from this list: ${SPRECHEN_PART2_TOPICS.join(', ')}. Generate two short word cards for that topic. The examiner presents each word card separately; for each card the candidate must ASK one relevant question, and the examiner answers briefly, then asks one simple related question back so the candidate also gives information. This is a question-asking exercise. Do not describe a picture, do not say "Bild" or "Foto" or "was sehen Sie".
+Example theme: "Essen" — cards: "Frühstück", "Lieblingsessen".
+${avoidBlock('Part 2 topics/cards', recent.part2)}
+Part 3 — Bitten formulieren und darauf reagieren
+Generate two simple everyday request cards — an object or situation (e.g. Wasser, Fenster öffnen, ein Stift, die Speisekarte). For each card the candidate must formulate ONE polite request and react to the examiner's response. This is a request-and-react exercise. Do not write a joint-planning task — never "planen Sie zusammen", "organisieren Sie gemeinsam", or any scenario where the candidate and examiner plan an event together.
+Example cards: "Wasser", "Fenster öffnen".
+${avoidBlock('Part 3 situations', recent.part3)}
 Rules:
 - All topics must be genuine A1 level — simple vocabulary only
 - Topics must be relevant to international learners preparing to move to Germany (work, study, family, visa)
-- Part 3 must feel like a natural conversation not an interrogation
+- NEVER generate picture description
+- NEVER generate joint/shared planning
+- Part 2 and Part 3 must each contain exactly two short card prompts
+- Vary wording, topic, and cards from anything listed above as "recently used"
 - Return only valid JSON:
 
 {
@@ -1877,7 +1902,7 @@ Rules:
   },
   "part2": {
     "topic": "",
-    "image_description": "",
+    "cards": ["", ""],
     "instructions_english": "",
     "instructions_arabic": "",
     "instructions_french": "",
@@ -1885,12 +1910,14 @@ Rules:
   },
   "part3": {
     "topic": "",
+    "cards": ["", ""],
     "instructions_english": "",
     "instructions_arabic": "",
     "instructions_french": "",
     "instructions_portuguese": ""
   }
 }`;
+}
 
 function parseJsonLoose(raw) {
   try { return JSON.parse(String(raw).replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '')); }
@@ -1917,7 +1944,7 @@ async function callClaudeJSON(systemPrompt, userMsg, maxTokens) {
   return parseJsonLoose(data?.content?.[0]?.text?.trim() ?? '');
 }
 
-// ── Reviewed A1 Sprechen topic fallback ─────────────────────────────────
+// ── Reviewed A1 Sprechen topic fallbacks ────────────────────────────────
 // Root cause of the intermittent 502s (confirmed by direct reproduction,
 // 2026-07-14): at max_tokens:1600, the 4-language x 3-part JSON output
 // regularly hits the token ceiling mid-string (stop_reason: "max_tokens"),
@@ -1926,32 +1953,70 @@ async function callClaudeJSON(systemPrompt, userMsg, maxTokens) {
 // markdown-fence issue, not a network problem — parseJsonLoose() and the
 // shape check were correctly rejecting genuinely broken output the whole
 // time. Fix: retry once with a larger budget + an explicit brevity
-// instruction, then fall back to this hand-reviewed, genuinely A1-level
-// topic set so a learner is never blocked by a generation hiccup.
-const SPRECHEN_TOPIC_FALLBACK = {
-  part1: {
-    topic: 'Stellen Sie sich vor — sagen Sie Ihren Namen, wie alt Sie sind, woher Sie kommen, wo Sie wohnen, was Sie arbeiten oder lernen, und was Ihre Hobbys sind.',
-    instructions_english: 'Introduce yourself. Talk about your name, age, where you come from, where you live, your job or studies, and your hobbies.',
-    instructions_arabic: 'قدّم نفسك. تحدث عن اسمك، عمرك، من أين أنت، أين تسكن، عملك أو دراستك، وهواياتك.',
-    instructions_french: "Présentez-vous. Parlez de votre nom, âge, d'où vous venez, où vous habitez, votre travail ou vos études, et vos loisirs.",
-    instructions_portuguese: 'Apresente-se. Fale sobre seu nome, idade, de onde você vem, onde mora, seu trabalho ou estudos, e seus hobbies.',
+// instruction, then fall back to one of these hand-reviewed, genuinely
+// A1-level topic sets so a learner is never blocked by a generation hiccup.
+//
+// Two variants (picked at random in generateSprechenTopicsWithFallback) so
+// that two fallback hits in a row — rare, but possible — don't show the
+// exact same session. Also fixes a real content bug found 2026-09-28: the
+// Arabic/French/Portuguese Part 2/3 instructions here had never been
+// updated off an OLDER Goethe format and were literally describing picture
+// description ("Look at the picture and describe...") and joint planning
+// ("Plan a birthday dinner together...") — the exact two things this exam
+// format doesn't have. Only the English strings were ever correct. All four
+// languages now describe the real ask-a-question / make-a-request tasks.
+const SPRECHEN_TOPIC_FALLBACKS = [
+  {
+    part1: {
+      topic: 'Stellen Sie sich vor — sagen Sie Ihren Namen, wie alt Sie sind, woher Sie kommen, wo Sie wohnen, was Sie arbeiten oder lernen, und was Ihre Hobbys sind.',
+      instructions_english: 'Introduce yourself. Talk about your name, age, where you come from, where you live, your job or studies, and your hobbies.',
+      instructions_arabic: 'قدّم نفسك. تحدث عن اسمك، عمرك، من أين أنت، أين تسكن، عملك أو دراستك، وهواياتك.',
+      instructions_french: "Présentez-vous. Parlez de votre nom, âge, d'où vous venez, où vous habitez, votre travail ou vos études, et vos loisirs.",
+      instructions_portuguese: 'Apresente-se. Fale sobre seu nome, idade, de onde você vem, onde mora, seu trabalho ou estudos, e seus hobbies.',
+    },
+    part2: {
+      topic: 'Thema: Essen. Bitten Sie um Informationen und geben Sie Informationen.',
+      cards: ['Frühstück', 'Lieblingsessen'],
+      instructions_english: 'Ask one question for each word card. Listen to the answer and then answer one short question from the examiner.',
+      instructions_arabic: 'اطرح سؤالاً واحداً لكل بطاقة كلمة. استمع إلى الإجابة، ثم أجب عن سؤال قصير من الممتحن.',
+      instructions_french: "Posez une question pour chaque carte-mot. Écoutez la réponse, puis répondez à une courte question de l'examinateur.",
+      instructions_portuguese: 'Faça uma pergunta para cada cartão de palavra. Ouça a resposta e depois responda a uma pergunta curta do examinador.',
+    },
+    part3: {
+      topic: 'Formulieren Sie Bitten und reagieren Sie auf die Antwort.',
+      cards: ['Wasser', 'Fenster öffnen'],
+      instructions_english: 'Make one polite request for each card and respond naturally when the examiner answers.',
+      instructions_arabic: 'قدّم طلباً مهذباً واحداً لكل بطاقة، ورُدّ بشكل طبيعي عندما يجيب الممتحن.',
+      instructions_french: "Faites une demande polie pour chaque carte et réagissez naturellement à la réponse de l'examinateur.",
+      instructions_portuguese: 'Faça um pedido educado para cada cartão e responda naturalmente quando o examinador responder.',
+    },
   },
-  part2: {
-    topic: 'Beschreiben Sie das Bild — Sie sehen eine Szene in einem Supermarkt. Was sehen Sie? Wer ist da? Was passiert?',
-    image_description: 'A busy supermarket scene: a woman pushing a shopping cart, a man checking items on a shelf, a cashier at the checkout counter, and price signs on the shelves.',
-    instructions_english: 'Look at the picture and describe what you see. Where are the people? What are they doing?',
-    instructions_arabic: 'انظر إلى الصورة وصف ما تراه. أين الناس؟ ماذا يفعلون؟',
-    instructions_french: "Regardez l'image et décrivez ce que vous voyez. Où sont les personnes ? Que font-elles ?",
-    instructions_portuguese: 'Olhe para a imagem e descreva o que você vê. Onde estão as pessoas? O que elas estão fazendo?',
+  {
+    part1: {
+      topic: 'Stellen Sie sich vor — sagen Sie Ihren Namen, wo Sie wohnen, was Sie arbeiten und welche Sprachen Sie sprechen.',
+      instructions_english: 'Introduce yourself. Talk about your name, where you live, your job, and which languages you speak.',
+      instructions_arabic: 'قدّم نفسك. تحدث عن اسمك، أين تسكن، عملك، واللغات التي تتحدثها.',
+      instructions_french: 'Présentez-vous. Parlez de votre nom, où vous habitez, votre travail, et les langues que vous parlez.',
+      instructions_portuguese: 'Apresente-se. Fale sobre seu nome, onde mora, seu trabalho, e os idiomas que fala.',
+    },
+    part2: {
+      topic: 'Thema: Einkaufen. Bitten Sie um Informationen und geben Sie Informationen.',
+      cards: ['Im Supermarkt', 'Kleidung kaufen'],
+      instructions_english: 'Ask one question for each word card. Listen to the answer and then answer one short question from the examiner.',
+      instructions_arabic: 'اطرح سؤالاً واحداً لكل بطاقة كلمة. استمع إلى الإجابة، ثم أجب عن سؤال قصير من الممتحن.',
+      instructions_french: "Posez une question pour chaque carte-mot. Écoutez la réponse, puis répondez à une courte question de l'examinateur.",
+      instructions_portuguese: 'Faça uma pergunta para cada cartão de palavra. Ouça a resposta e depois responda a uma pergunta curta do examinador.',
+    },
+    part3: {
+      topic: 'Formulieren Sie Bitten und reagieren Sie auf die Antwort.',
+      cards: ['ein Stift', 'die Speisekarte'],
+      instructions_english: 'Make one polite request for each card and respond naturally when the examiner answers.',
+      instructions_arabic: 'قدّم طلباً مهذباً واحداً لكل بطاقة، ورُدّ بشكل طبيعي عندما يجيب الممتحن.',
+      instructions_french: "Faites une demande polie pour chaque carte et réagissez naturellement à la réponse de l'examinateur.",
+      instructions_portuguese: 'Faça um pedido educado para cada cartão e responda naturalmente quando o examinador responder.',
+    },
   },
-  part3: {
-    topic: 'Sie möchten zusammen ein Geburtstagsessen planen. Wo möchten Sie essen — zu Hause oder im Restaurant? Was gibt es zu essen und zu trinken? Um wie viel Uhr treffen Sie sich?',
-    instructions_english: 'Plan a birthday dinner together with the examiner. Decide where to eat, what food and drinks to have, and what time to meet.',
-    instructions_arabic: 'خطط لعشاء عيد ميلاد مع الممتحن. قرّرا أين ستأكلان، وما هو الطعام والشراب، وفي أي وقت ستلتقيان.',
-    instructions_french: "Planifiez ensemble un dîner d'anniversaire avec l'examinateur. Décidez où manger, quels plats et boissons choisir, et à quelle heure vous retrouver.",
-    instructions_portuguese: 'Planeje um jantar de aniversário junto com o examinador. Decidam onde comer, quais comidas e bebidas ter, e que horas se encontrar.',
-  },
-};
+];
 
 function sprechenTopicsValid(topics) {
   if (!topics || typeof topics !== 'object') return false;
@@ -1971,10 +2036,36 @@ function classifySprechenTopicFailure(err, topics) {
   return 'unknown';
 }
 
-async function generateSprechenTopicsWithFallback() {
+// Reads the last few generated topics per part so the generation prompt can
+// be told what not to repeat. `sprechen_topics` has no user_id column — it's
+// level-scoped only — so this is a global recency window, not per-learner;
+// that's the right scope here since the goal is "don't show the same thing
+// twice in a row to whoever's next," not per-user history. Best-effort: an
+// empty/failed read just means no avoid-list gets added, it never blocks
+// generation.
+async function getRecentSprechenTopics(level) {
+  const empty = { part1: [], part2: [], part3: [] };
+  if (!supabaseAdmin) return empty;
+  try {
+    const { data } = await supabaseAdmin
+      .from('sprechen_topics').select('part, topic_text')
+      .eq('level', level).order('created_at', { ascending: false }).limit(24);
+    const out = { part1: [], part2: [], part3: [] };
+    (data || []).forEach((row) => {
+      const key = 'part' + row.part;
+      if (out[key] && out[key].length < 5 && row.topic_text) out[key].push(row.topic_text);
+    });
+    return out;
+  } catch (_) { return empty; }
+}
+
+async function generateSprechenTopicsWithFallback(level) {
+  const recent = await getRecentSprechenTopics(level);
+  const systemPrompt = buildSprechenTopicSystemPrompt(recent);
+
   let topics = null, failure1 = null;
   try {
-    topics = await callClaudeJSON(SPRECHEN_TOPIC_SYSTEM_PROMPT, 'Generate the 3 A1 Sprechen topics now.', 1600);
+    topics = await callClaudeJSON(systemPrompt, 'Generate the 3 A1 Sprechen topics now.', 1600);
   } catch (err) { failure1 = classifySprechenTopicFailure(err, null); }
   if (sprechenTopicsValid(topics)) return { topics, source: 'generated' };
   if (!failure1) failure1 = classifySprechenTopicFailure(null, topics);
@@ -1983,7 +2074,7 @@ async function generateSprechenTopicsWithFallback() {
   let failure2 = null;
   try {
     topics = await callClaudeJSON(
-      SPRECHEN_TOPIC_SYSTEM_PROMPT,
+      systemPrompt,
       'Generate the 3 A1 Sprechen topics now. Return ONLY the JSON object — no markdown fences, no commentary before or after. Keep every field concise so the full response fits comfortably within the token budget.',
       2400
     );
@@ -1991,8 +2082,9 @@ async function generateSprechenTopicsWithFallback() {
   if (sprechenTopicsValid(topics)) return { topics, source: 'generated_retry' };
   if (!failure2) failure2 = classifySprechenTopicFailure(null, topics);
 
-  console.error(`[/api/sprechen/topics] both attempts failed (attempt1=${failure1}, attempt2=${failure2}) — serving reviewed fallback topic`);
-  return { topics: SPRECHEN_TOPIC_FALLBACK, source: 'fallback' };
+  console.error(`[/api/sprechen/topics] both attempts failed (attempt1=${failure1}, attempt2=${failure2}) — serving a reviewed fallback topic`);
+  const fallback = SPRECHEN_TOPIC_FALLBACKS[Math.floor(Math.random() * SPRECHEN_TOPIC_FALLBACKS.length)];
+  return { topics: fallback, source: 'fallback' };
 }
 
 // ── Part 2: POST /api/sprechen/topics/generate ─────────────────────────────
@@ -2001,7 +2093,7 @@ app.post('/api/sprechen/topics/generate', async (req, res) => {
   if (!process.env.CLAUDE_API_KEY) return res.status(500).json({ error: 'API key not configured.' });
   console.log(`[/api/sprechen/topics] generate level=${level}`);
   try {
-    const { topics, source } = await generateSprechenTopicsWithFallback();
+    const { topics, source } = await generateSprechenTopicsWithFallback(level);
     // Persist (best-effort) — one row per part. Skipped for the fallback,
     // since it's static reviewed content, not a new generation worth
     // logging into the topics pool.
@@ -2011,7 +2103,14 @@ app.post('/api/sprechen/topics/generate', async (req, res) => {
         { level, part: 2, topic_text: topics.part2.topic || '', example_image_url: null, instructions: topics.part2 },
         { level, part: 3, topic_text: topics.part3.topic || '', instructions: topics.part3 },
       ];
-      supabaseAdmin.from('sprechen_topics').insert(rows).then(function(){}, function(){});
+      // Awaited (not fire-and-forget) so a session started moments after
+      // this one reliably sees it in getRecentSprechenTopics()'s avoid-list
+      // — with the old fire-and-forget write, two nearly-simultaneous
+      // generate calls could both read the topics table before either had
+      // written, so neither's "avoid recently used" list saw the other.
+      // Still best-effort: a failed write just means slightly weaker
+      // rotation next time, never blocks the response.
+      try { await supabaseAdmin.from('sprechen_topics').insert(rows); } catch (_) {}
     }
     // `source` is diagnostic only (generated / generated_retry / fallback)
     // — the client already ignores unknown fields, never used to gate
@@ -3148,8 +3247,10 @@ const SPRECHEN_MAX_MS = 15 * 60 * 1000;
 function buildExaminerPrompt(topics) {
   const t = topics || {};
   const p1 = (t.part1 && t.part1.topic) || 'Stellen Sie sich vor — Name, Herkunft, Beruf.';
-  const p2 = (t.part2 && t.part2.topic) || 'Beschreiben Sie das Bild — was sehen Sie?';
-  const p3 = (t.part3 && t.part3.topic) || 'Planen Sie etwas zusammen.';
+  const p2 = (t.part2 && t.part2.topic) || 'Bitten Sie um Informationen und geben Sie Informationen.';
+  const p2cards = (t.part2 && Array.isArray(t.part2.cards) ? t.part2.cards : ['Frühstück', 'Lieblingsessen']).slice(0, 2).join(', ');
+  const p3 = (t.part3 && t.part3.topic) || 'Formulieren Sie Bitten und reagieren Sie.';
+  const p3cards = (t.part3 && Array.isArray(t.part3.cards) ? t.part3.cards : ['Wasser', 'Fenster öffnen']).slice(0, 2).join(', ');
   return `You are a Goethe A1 German exam examiner conducting an official speaking test.
 
 Your role:
@@ -3161,12 +3262,40 @@ Your role:
 - Speak clearly and at a measured pace suitable for beginners
 - If the candidate struggles, gently repeat or rephrase in simpler German
 - Never correct grammar mid-sentence — let the candidate finish
-- React naturally like a real examiner would
+
+Pacing, one exam turn at a time:
+- Ask ONE thing at a time — never stack two questions in the same turn
+- After you ask something, stop and wait. Give the candidate real time to
+  answer before you speak again; do not jump in early or fill silence for them
+- Never answer your own question for the candidate, even partially — if they
+  say nothing useful, wait, then gently repeat or simplify the same question
+- Keep your own turns short (1-2 sentences). This is an exam simulation, not
+  a lesson — save any longer explanation or teaching for after the session,
+  never mid-exam
+- Stay inside the current part until it is genuinely done. Do not skip ahead,
+  blend parts together, or jump back to an earlier part
+- Move to the next part only once the current one is complete, with a short,
+  natural spoken transition (e.g. "Gut, das war Teil 1. Jetzt kommt Teil 2.")
+  — never an abrupt, unannounced switch
 
 Session structure:
 Part 1 — Sich vorstellen: ${p1}
-Part 2 — Bild beschreiben: ${p2}
-Part 3 — Gemeinsam planen: ${p3}
+Ask about these one at a time, not all at once — wait for an answer before
+moving to the next item.
+
+Part 2 — Um Informationen bitten und Informationen geben: ${p2}
+Word cards, one at a time: ${p2cards}
+Present one card. Ask the candidate to formulate a relevant question about
+it. Answer briefly, then ask one simple related question back so the
+candidate also gives information. Only then present the next card. This is
+a question-asking exercise — never ask the candidate to describe a picture.
+
+Part 3 — Bitten formulieren und darauf reagieren: ${p3}
+Request cards, one at a time: ${p3cards}
+Present one card. Ask the candidate to make a polite request about it.
+Respond naturally so the candidate can react to your response. Only then
+present the next card. This is a request-and-react exercise — never turn it
+into planning something together with the candidate.
 
 Begin the session warmly in German. Introduce yourself as the examiner and start Part 1.`;
 }
