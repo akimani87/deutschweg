@@ -29,7 +29,7 @@
 <link rel="stylesheet" href="./deutschweg-theme.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./supabase-config.js"></script>
-<script src="./paywall.js?v=4"></script>
+<script src="./paywall.js?v=5"></script>
 <script src="./scoring-config.js?v=1"></script>
 <script src="./taxonomy.js?v=1"></script>
 <style>
@@ -1754,7 +1754,63 @@
   // Shared by both entry paths — a fresh "Start Mock Exam" click (below)
   // and an automatic refresh-restore (bootstrapExamVault below) — so the
   // UI/state setup can never drift between the two.
+  // ── A1 Exam Vault gate — the real check ─────────────────────────
+  // Checked against the entitlement system (never localStorage/UI state):
+  // A1's Learning Journeys/Foundations/Deep Dives/Grammar Help are
+  // untouched by this (none of that lives on this page) — this only gates
+  // this page's own A1 mock exams, the paid A1 Exam Vault product. Unlike
+  // A2/B1/B2 (inline unlock card), an unpaid A1 visitor is redirected to
+  // the marketing/offer page — the intended entry point whether they're
+  // signed out or signed in but haven't bought it (hasAccess() already
+  // resolves false for an anonymous user, so both cases collapse here).
+  //
+  // Two call sites, not one: the obvious one is load()'s standalone
+  // Practice-by-Skill entry. The one that was actually missing this check
+  // in production is establishCombinedMockExamState() below — Complete
+  // Mock Exam mode has its own restore path (restoreCombinedMockExamIfMarked(),
+  // triggered on every page load from a sessionStorage marker, before
+  // load() ever runs) that called straight into real exam content with no
+  // gate at all. Gating establishCombinedMockExamState() itself — the one
+  // function both the fresh-start (startCombinedMockExam) and restore
+  // paths funnel through — closes both at once instead of patching each
+  // call site separately.
+  function gateA1ExamVaultAccess(onAllowed) {
+    // Fail closed if paywall.js hasn't loaded the functions this needs — a
+    // browser with a stale cached copy from before this gate existed would
+    // otherwise throw here (examVaultKeyForLevel is not a function) and,
+    // depending on the caller, that uncaught throw could abort mid-way
+    // through in an inconsistent state instead of cleanly redirecting.
+    // paywall.js is cache-busted (?v=5) specifically because of this, but
+    // this check is the actual safety net if a stale copy is ever served
+    // anyway (CDN edge cache, service worker, etc.).
+    if (!window.dwPaywall || typeof window.dwPaywall.examVaultKeyForLevel !== 'function' || typeof window.dwPaywall.hasAccess !== 'function') {
+      console.warn('[A1 Exam Vault gate] paywall.js missing expected functions (stale cache?) — failing closed');
+      window.location.href = 'a1-exam-vault-offer.html';
+      return;
+    }
+    dwSupabase.auth.getUser().catch(function () { return { data: { user: null } }; })
+      .then(function (authRes) {
+        var user = authRes && authRes.data && authRes.data.user;
+        var evKey = window.dwPaywall.examVaultKeyForLevel('A1');
+        return window.dwPaywall.hasAccess(user, evKey).then(function (ok) {
+          if (ok) { onAllowed(); return; }
+          window.location.href = 'a1-exam-vault-offer.html';
+        });
+      })
+      .catch(function () {
+        window.location.href = 'a1-exam-vault-offer.html';
+      });
+  }
+
   function establishCombinedMockExamState(level, set, attempt) {
+    if (level === 'A1') {
+      gateA1ExamVaultAccess(function () { establishCombinedMockExamStateInner(level, set, attempt); });
+      return;
+    }
+    establishCombinedMockExamStateInner(level, set, attempt);
+  }
+
+  function establishCombinedMockExamStateInner(level, set, attempt) {
     currentLevel = level;
     currentMockExamSet = set;
     currentMockExamActiveSections = activeMockExamSections(set);
@@ -5054,26 +5110,11 @@
 
     // ── A1 Exam Vault gate ────────────────────────────────────────
     // A1's Learning Journeys/Foundations/Deep Dives/Grammar Help stay free
-    // (unaffected — none of that lives on this page). This page's own A1
-    // mock exams are the paid A1 Exam Vault product, and — unlike A2/B1/B2
-    // below, which show an inline unlock card — an unpaid A1 visitor is
-    // redirected straight to the marketing/offer page (a1-exam-vault-
-    // offer.html), which is the intended entry point for both "not signed
-    // in" and "signed in but hasn't bought it" (hasAccess() already
-    // resolves false for an anonymous user, so both cases collapse to the
-    // same redirect with no extra branching needed here). This is a real
-    // navigation, not just a client-side UI swap — direct-URL access gets
-    // exactly the same check on every load, not only nav-link clicks.
+    // (unaffected — none of that lives on this page). See gateA1ExamVaultAccess()
+    // for the real check — this is the standalone Practice-by-Skill entry
+    // point into it; establishCombinedMockExamState() below is the other one.
     if (currentLevel === 'A1') {
-      var evKey = window.dwPaywall ? window.dwPaywall.examVaultKeyForLevel('A1') : null;
-      dwSupabase.auth.getUser().catch(function () { return { data: { user: null } }; })
-        .then(function (authRes) {
-          var user = authRes && authRes.data && authRes.data.user;
-          return window.dwPaywall.hasAccess(user, evKey).then(function (ok) {
-            if (ok) { fetchExams(); return; }
-            window.location.href = 'a1-exam-vault-offer.html';
-          });
-        });
+      gateA1ExamVaultAccess(fetchExams);
       return;
     }
 
