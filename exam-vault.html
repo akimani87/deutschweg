@@ -3650,10 +3650,17 @@
     setFormDisabled(true);
     show('gradingState');
 
-    fetch(API_BASE + '/api/exam-grade', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(ans)
+    // /api/exam-grade now requires a verified session (server-side auth +
+    // entitlement check, closing the paywall-bypass the audit flagged) — an
+    // anonymous learner gets a clear "please sign in" 401 from the server
+    // instead of silently being graded for free. Reuses dwFreshAccessToken(),
+    // already shipped for the Sprechen-feedback retry call above.
+    dwFreshAccessToken().then(function (token) {
+      return fetch(API_BASE + '/api/exam-grade', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (token || '') },
+        body:    JSON.stringify(ans)
+      });
     })
       .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
       .then(function (res) {
@@ -5045,12 +5052,35 @@
       ? 'Goethe-format Hören practice. Each Teil plays a fixed number of times, then moves on automatically — no replays, no clock.'
       : 'Goethe-format Lesen practice. Answer all questions to enable submit; auto-grading is instant.';
 
+    // ── A1 Exam Vault gate ────────────────────────────────────────
+    // A1's Learning Journeys/Foundations/Deep Dives/Grammar Help stay free
+    // (unaffected — none of that lives on this page). This page's own A1
+    // mock exams are the paid A1 Exam Vault product, and — unlike A2/B1/B2
+    // below, which show an inline unlock card — an unpaid A1 visitor is
+    // redirected straight to the marketing/offer page (a1-exam-vault-
+    // offer.html), which is the intended entry point for both "not signed
+    // in" and "signed in but hasn't bought it" (hasAccess() already
+    // resolves false for an anonymous user, so both cases collapse to the
+    // same redirect with no extra branching needed here). This is a real
+    // navigation, not just a client-side UI swap — direct-URL access gets
+    // exactly the same check on every load, not only nav-link clicks.
+    if (currentLevel === 'A1') {
+      var evKey = window.dwPaywall ? window.dwPaywall.examVaultKeyForLevel('A1') : null;
+      dwSupabase.auth.getUser().catch(function () { return { data: { user: null } }; })
+        .then(function (authRes) {
+          var user = authRes && authRes.data && authRes.data.user;
+          return window.dwPaywall.hasAccess(user, evKey).then(function (ok) {
+            if (ok) { fetchExams(); return; }
+            window.location.href = 'a1-exam-vault-offer.html';
+          });
+        });
+      return;
+    }
+
     // ── Paywall gate (A2/B1/B2) ──────────────────────────────────
     // Exam Vault had no gate at all — reachable for free via direct URL
     // (?level=A2/B1/B2). Gated on the same {level}_module entitlement
-    // that unlocks the lesson modules (one purchase covers both). A1 is
-    // always free — moduleKeyForLevel returns null for A1, so this is a
-    // no-op on the free level.
+    // that unlocks the lesson modules (one purchase covers both).
     var pwKey = window.dwPaywall ? window.dwPaywall.moduleKeyForLevel(currentLevel) : null;
     if (!pwKey) { fetchExams(); return; }
     dwSupabase.auth.getUser().catch(function () { return { data: { user: null } }; })

@@ -325,6 +325,16 @@
 <script>
 var API_BASE = 'https://deutschweg.onrender.com';
 
+// /api/score now requires a verified session (server-side auth +
+// entitlement check) — mirrors sprechen.html's getFreshAccessToken() /
+// exam-vault.html's dwFreshAccessToken() for this one authenticated call.
+function getFreshAccessToken() {
+  if (typeof window.dwSupabase === 'undefined') return Promise.resolve(null);
+  return window.dwSupabase.auth.getSession().then(function (res) {
+    return (res && res.data && res.data.session && res.data.session.access_token) || null;
+  }).catch(function () { return null; });
+}
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function esc(str) {
   return String(str)
@@ -554,9 +564,10 @@ async function scoreWriting() {
   setLoading(true);
 
   try {
+    var accessToken = await getFreshAccessToken();
     var response = await fetch(API_BASE + '/api/score', {
       method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (accessToken || '') },
       body:    JSON.stringify({ text: ta.value.trim(), level: level }),
     });
 

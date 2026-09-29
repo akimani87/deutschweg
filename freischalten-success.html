@@ -50,6 +50,7 @@
     letter-spacing: 1.5px; text-transform: uppercase;
     padding: 4px 14px; border-radius: 50px; margin-bottom: 16px;
   }
+  .badge-a1 { background: #ECFEFF; color: #0E7490; border: 1px solid #A5F3FC; }
   .badge-a2 { background: #F5F3FF; color: #5B21B6; border: 1px solid #DDD6FE; }
   .badge-b1 { background: var(--blue-light); color: var(--blue); border: 1px solid var(--blue-mid); }
   .badge-b2 { background: #FDF2F8; color: #9D174D; border: 1px solid #FBCFE8; }
@@ -106,6 +107,12 @@
   var level  = params.get('level') || 'a2';
 
   var LEVEL_INFO = {
+    a1: {
+      name: 'A1 Exam Vault',
+      badgeClass: 'badge-a1',
+      desc: 'Your A1 Exam Vault is unlocked for the next 60 days. Your free A1 Learning Journeys are unaffected — this is exam-day readiness on top.',
+      firstModuleUrl: '/exam-vault.html?level=A1', // already has its own query string -- see the href-building fix below
+    },
     a2: {
       name: 'A2 — Grundstufe',
       badgeClass: 'badge-a2',
@@ -126,7 +133,7 @@
     },
   };
 
-  var PRODUCT_KEYS = { a2: 'a2_module', b1: 'b1_module', b2: 'b2_module' };
+  var PRODUCT_KEYS = { a1: 'a1_exam_vault', a2: 'a2_module', b1: 'b1_module', b2: 'b2_module' };
   var info = LEVEL_INFO[level] || LEVEL_INFO.a2;
   var productKey = PRODUCT_KEYS[level] || 'a2_module';
   var content = document.getElementById('successContent');
@@ -153,7 +160,11 @@
           '</div>' +
         '</div>' : ''
       ) +
-      '<a class="success-btn" href="' + info.firstModuleUrl + '?level=' + level + '">Start ' + level.toUpperCase() + ' →</a>';
+      // a1's firstModuleUrl already carries its own ?level=A1 (exam-vault.html
+      // expects an uppercase level) -- don't append a second, conflicting
+      // ?level= query string onto it. Every other entry's firstModuleUrl has
+      // no query string of its own, so this is unchanged for them.
+      '<a class="success-btn" href="' + info.firstModuleUrl + (info.firstModuleUrl.indexOf('?') !== -1 ? '' : '?level=' + level) + '">Start ' + level.toUpperCase() + ' →</a>';
   }
 
   if (typeof dwSupabase === 'undefined') { showSuccess(false); return; }

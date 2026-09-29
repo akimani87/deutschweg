@@ -76,14 +76,23 @@ app.get('/', (req, res) => {
 //   LEMONSQUEEZY_VARIANT_A2      variant ID for A2 product
 //   LEMONSQUEEZY_VARIANT_B1      variant ID for B1 product
 //   LEMONSQUEEZY_VARIANT_B2      variant ID for B2 product
+//   LEMONSQUEEZY_VARIANT_A1      variant ID for the A1 Exam Vault product —
+//                                NOT YET SET. No product/variant has been
+//                                created in Lemon Squeezy for this yet; until
+//                                LEMONSQUEEZY_VARIANT_A1 is set, /api/checkout-
+//                                url?level=a1 400s exactly like any other
+//                                unconfigured level already does below. See
+//                                the A1 Exam Vault access-gate task report
+//                                for the exact external setup steps needed.
 // ═══════════════════════════════════════════════════════════════════════════
 
 const LS_VARIANT_MAP = {
+  a1: process.env.LEMONSQUEEZY_VARIANT_A1,
   a2: process.env.LEMONSQUEEZY_VARIANT_A2,
   b1: process.env.LEMONSQUEEZY_VARIANT_B1,
   b2: process.env.LEMONSQUEEZY_VARIANT_B2,
 };
-const LS_PRODUCT_KEYS = { a2: 'a2_module', b1: 'b1_module', b2: 'b2_module' };
+const LS_PRODUCT_KEYS = { a1: 'a1_exam_vault', a2: 'a2_module', b1: 'b1_module', b2: 'b2_module' };
 
 // ── GET /api/checkout-url ────────────────────────────────────────────────────
 // Returns a Lemon Squeezy checkout URL for the requested level.
@@ -168,6 +177,54 @@ app.post('/api/webhooks/lemonsqueezy', async (req, res) => {
   // ── 3. Handle events ──────────────────────────────────────────────────────
   try {
     if (eventName === 'order_created' && attrs.status === 'paid') {
+      // A1 Exam Vault expires 60 days after purchase (unlike every other
+      // product here, which is permanent) — so unlike the insert-if-not-
+      // exists dedup below, a genuine repurchase after expiry must actually
+      // refresh access, not silently no-op. But duplicate delivery of the
+      // *same* order must still be a true no-op — computing a fresh
+      // "now + 60 days" on every delivery would otherwise push expiry
+      // further out each time Lemon Squeezy retries the same webhook.
+      // Distinguish the two by order_id: same order_id as the existing row
+      // → already processed, skip; different (or no existing row) → a real
+      // new purchase/renewal, refresh expires_at.
+      const EXPIRING_PRODUCTS = { a1_exam_vault: 60 }; // productKey -> access days
+      if (EXPIRING_PRODUCTS[productKey]) {
+        const { data: existingExpiring } = await supabaseAdmin
+          .from('entitlements').select('id, order_id')
+          .eq('user_id', userId).eq('product_key', productKey).maybeSingle();
+
+        if (existingExpiring && existingExpiring.order_id === orderId) {
+          console.log(`[LS webhook] order_created — already processed this exact order for ${productKey}, skipping`);
+          return res.status(200).json({ received: true, action: 'already_granted' });
+        }
+
+        const days = EXPIRING_PRODUCTS[productKey];
+        const expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+        async function upsertExpiring(withExpiry) {
+          return supabaseAdmin.from('entitlements').upsert(
+            withExpiry
+              ? { user_id: userId, product_key: productKey, source: 'lemonsqueezy', order_id: orderId, expires_at: expiresAt }
+              : { user_id: userId, product_key: productKey, source: 'lemonsqueezy', order_id: orderId },
+            { onConflict: 'user_id,product_key' }
+          );
+        }
+        let { error: upErr } = await upsertExpiring(true);
+        if (upErr && String(upErr.message || '').indexOf('expires_at') !== -1) {
+          // expires_at column not applied yet (pending migration 0027) —
+          // still grant access (permanently, until the migration lands and
+          // a future purchase sets a real expiry), never block a real paid
+          // order on a pending schema change.
+          console.warn('[LS webhook] expires_at column missing — granting without expiry until migration 0027 is applied');
+          ({ error: upErr } = await upsertExpiring(false));
+        }
+        if (upErr) {
+          console.error('[LS webhook] upsert error:', upErr.message);
+          return res.status(500).json({ error: 'DB write failed.' });
+        }
+        console.log(`[LS webhook] ✓ GRANTED/RENEWED ${productKey} to user=${userId} order=${orderId} expires=${expiresAt}`);
+        return res.status(200).json({ received: true, action: 'granted', productKey, userId, expiresAt });
+      }
+
       // Idempotency: check if we already processed this order
       const { data: existing } = await supabaseAdmin
         .from('entitlements')
@@ -230,8 +287,115 @@ app.post('/api/webhooks/lemonsqueezy', async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════════════════════
+// AI-grading endpoint protection (/api/score, /api/exam-grade)
+// ═══════════════════════════════════════════════════════════════════════════
+// Audit finding: both endpoints previously accepted any request with no
+// identity check, no entitlement check, and no rate limit — a direct
+// bypass of the frontend paywall (exam-vault.html/exam-whisperer.html only
+// ever gated in the UI) and an unbounded Claude API cost exposure. This
+// section closes that: every grading request must carry a verified
+// Supabase session, must own the entitlement for a paid level, and is
+// rate-limited per user. Declared as `function` (hoisted) so it can be
+// used here even though it's physically defined after these declarations
+// in file-read order... actually it's defined right here, above both
+// routes, so this note is just for anyone who moves things around later.
+
+// ── Auth ─────────────────────────────────────────────────────────────────
+// Reuses the exact verification path already proven for the Sprechen HTTP
+// endpoints (requireSprechenAuth/verifySupabaseToken, defined further down
+// this file) — a real function declaration, so it's hoisted and callable
+// here despite appearing later in the file. Never trusts a client-supplied
+// user_id; identity always comes from the verified bearer token.
+
+// ── Entitlement ──────────────────────────────────────────────────────────
+// Server-side mirror of paywall.js's product-key rules (moduleKeyForLevel /
+// whispererKeyForLevel / examVaultKeyForLevel) — that file remains the
+// single source of truth for pricing/copy; this just re-derives the same
+// keys so the server can check entitlements itself instead of trusting the
+// frontend gate.
+//
+// A1 Exam Vault access-gate update: /api/exam-grade is exam-vault.html's
+// own Schreiben grading (never called from the free Learning Journeys —
+// those use the separate /api/topic-check/feedback endpoint), so A1 now
+// requires the a1_exam_vault entitlement here, same as any other level
+// requires its module entitlement. Exam Whisperer (whispererProductKeyForLevel)
+// is a distinct, separate product not in scope for this change — A1 stays
+// free there, unchanged.
+function examGradeProductKeyForLevel(level) {
+  const lvl = String(level || '').toUpperCase();
+  if (lvl === 'A1') return 'a1_exam_vault'; // the paid A1 exam-prep product
+  return lvl.toLowerCase() + '_module'; // a2_module / b1_module / b2_module — same key that unlocks the lesson modules
+}
+function whispererProductKeyForLevel(level) {
+  const lvl = String(level || '').toUpperCase();
+  if (lvl === 'A1') return null; // free — no entitlement required
+  return 'examwhisperer_' + lvl.toLowerCase(); // examwhisperer_a2 / _b1 / _b2 — a separate SKU from the module unlock
+}
+
+// Fails closed (false) on any DB error or missing config — same posture as
+// paywall.js's client-side hasAccess(): pretending access is denied is a
+// softer failure mode than accidentally granting paid content. Expiry-aware
+// (a1_exam_vault is the only product with a non-null expires_at today —
+// every other product's row has expires_at:null, so this is a no-op change
+// in behavior for them).
+async function userHasEntitlement(userId, productKey) {
+  if (!productKey) return true; // free product
+  if (!supabaseAdmin || !userId) return false;
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('entitlements').select('id, expires_at')
+      .eq('user_id', userId).eq('product_key', productKey).limit(1);
+    if (error) {
+      // expires_at may not exist yet (pending migration 0027) — retry
+      // without it so every other product's check keeps working while
+      // that migration is pending.
+      if (String(error.message || '').indexOf('expires_at') !== -1) {
+        const fb = await supabaseAdmin.from('entitlements').select('id')
+          .eq('user_id', userId).eq('product_key', productKey).limit(1);
+        if (fb.error) { console.warn('[entitlement] read failed:', fb.error.message); return false; }
+        return Array.isArray(fb.data) && fb.data.length > 0;
+      }
+      console.warn('[entitlement] read failed:', error.message); return false;
+    }
+    const row = Array.isArray(data) && data[0];
+    if (!row) return false;
+    if (row.expires_at && new Date(row.expires_at).getTime() < Date.now()) return false; // expired
+    return true;
+  } catch (err) {
+    console.warn('[entitlement] read threw:', err.message);
+    return false;
+  }
+}
+
+// ── Rate limit ───────────────────────────────────────────────────────────
+// Simple in-memory, per-user, fixed-window counter — a cost-abuse guard,
+// not a precise distributed limiter. Single Node process; state resets on
+// deploy/restart, which is acceptable for this purpose (per the brief:
+// "a simple, reliable protection is enough for launch"). 20 requests / 10
+// minutes is generous for a real learner retrying a submission or grading
+// several tasks in one sitting, while still shutting down scripted spam.
+const GRADE_RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+const GRADE_RATE_LIMIT_MAX = 20;
+const gradeRateLimitState = new Map(); // verifiedUserId -> { count, windowStart }
+
+function gradeRateLimit(req, res, next) {
+  const userId = req.verifiedUserId;
+  const now = Date.now();
+  const entry = gradeRateLimitState.get(userId);
+  if (!entry || now - entry.windowStart >= GRADE_RATE_LIMIT_WINDOW_MS) {
+    gradeRateLimitState.set(userId, { count: 1, windowStart: now });
+    return next();
+  }
+  if (entry.count >= GRADE_RATE_LIMIT_MAX) {
+    return res.status(429).json({ error: 'Too many grading requests. Please wait a few minutes and try again.' });
+  }
+  entry.count++;
+  next();
+}
+
 // ── POST /api/score ─────────────────────────────────────────────────────────
-app.post('/api/score', async (req, res) => {
+app.post('/api/score', requireSprechenAuth, gradeRateLimit, async (req, res) => {
   const { text, level } = req.body;
 
   // --- Validate request ---
@@ -241,6 +405,12 @@ app.post('/api/score', async (req, res) => {
   const validLevels = ['A1', 'A2', 'B1'];
   if (!validLevels.includes(level)) {
     return res.status(400).json({ error: 'Invalid exam level. Use A1, A2, or B1.' });
+  }
+
+  // --- Entitlement check (server-side, never trusts the frontend gate) ---
+  const scoreProductKey = whispererProductKeyForLevel(level);
+  if (!(await userHasEntitlement(req.verifiedUserId, scoreProductKey))) {
+    return res.status(403).json({ error: 'This level requires Exam Whisperer to be unlocked.' });
   }
 
   // --- Check API key is configured ---
@@ -2962,11 +3132,20 @@ async function scoreFormFill(examId, submittedValues) {
   };
 }
 
-app.post('/api/exam-grade', async (req, res) => {
+app.post('/api/exam-grade', requireSprechenAuth, gradeRateLimit, async (req, res) => {
   const { level, task1, examId, task2, task3, task4, isTimeoutSubmit } = req.body || {};
   const VALID_LEVELS = ['A1', 'A2', 'B1', 'B2'];
   const safeLevel = VALID_LEVELS.indexOf(level) !== -1 ? level : 'A1';
   const isTimeout  = isTimeoutSubmit === true;
+
+  // --- Entitlement check (server-side, never trusts the frontend gate) ---
+  // Same {level}_module key that unlocks the lesson modules for that level —
+  // exam-vault.html's own comment already documents "one purchase covers
+  // both," this just enforces it where it was previously only a UI gate.
+  const examGradeProductKey = examGradeProductKeyForLevel(safeLevel);
+  if (!(await userHasEntitlement(req.verifiedUserId, examGradeProductKey))) {
+    return res.status(403).json({ error: 'This level requires an unlock to grade Schreiben.' });
+  }
 
   if (!isTimeout) {
     // Manual submission — completely unaffected by this change. The

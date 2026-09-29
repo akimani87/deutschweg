@@ -80,6 +80,21 @@
       description:  'AI scoring for B2 Schreiben',
       ctaLabel:     'Unlock',
       placeholder:  '/freischalten/examwhisperer-b2'
+    },
+    // A1 Exam Vault — the paid exam-preparation product. Distinct from
+    // a1_module (which doesn't exist — the A1 Learning Path stays free,
+    // see moduleKeyForLevel below) and from A1 Exam Whisperer (also free,
+    // whispererKeyForLevel below) -- this is its own product on its own
+    // key, expiring 60 days after purchase (enforced in hasAccess() below
+    // and server-side; expires_at is set at grant time, not here).
+    a1_exam_vault: {
+      level:        'A1',
+      kind:         'examvault',
+      title:        'Unlock A1 Exam Vault',
+      price:        29,
+      description:  '60 days of A1 exam preparation — 10 mock exam sets, Complete Mock Exam mode, 10 Schreiben evaluations, 10 Sprechen sessions, and more',
+      ctaLabel:     'Unlock',
+      placeholder:  '/freischalten/index.html?level=a1'
     }
   };
 
@@ -103,12 +118,21 @@
     if (lvl === 'A1') return null;                 // A1 whisperer is also free
     return 'examwhisperer_' + lvl.toLowerCase();
   }
+  // A1 Exam Vault is the only level with this product today — the A1
+  // Learning Path stays free (moduleKeyForLevel above), and no A2/B1/B2
+  // Exam Vault product exists (or is in scope) yet, so every other level
+  // returns null here deliberately.
+  function examVaultKeyForLevel(level) {
+    var lvl = String(level || '').toUpperCase();
+    if (lvl === 'A1') return 'a1_exam_vault';
+    return null;
+  }
 
   // ── Access check ───────────────────────────────────────────────────────────
   // Returns a Promise<boolean>.
   //   - Free products (null key, A1) → true
   //   - Anonymous (no user) → false (caller decides whether to bounce to signup)
-  //   - Otherwise: existence of a row in entitlements.
+  //   - Otherwise: existence of a row in entitlements, not expired.
   //
   // RLS: with the standard "user can read own entitlements" policy, an
   // anonymous client can't read this table at all (which is the desired
@@ -121,18 +145,35 @@
 
     return window.dwSupabase
       .from('entitlements')
-      .select('id', { head: false, count: 'exact' })
+      .select('id, expires_at', { head: false, count: 'exact' })
       .eq('user_id',     user.id)
       .eq('product_key', productKey)
       .limit(1)
       .then(function(res) {
         if (res.error) {
+          // expires_at may not exist yet on this database (pending
+          // migration 0027) — retry without it so every other product's
+          // access check keeps working exactly as before while that
+          // migration is pending. Once it's applied this branch never
+          // fires again.
+          if (String(res.error.message || '').indexOf('expires_at') !== -1) {
+            return window.dwSupabase
+              .from('entitlements').select('id', { head: false, count: 'exact' })
+              .eq('user_id', user.id).eq('product_key', productKey).limit(1)
+              .then(function(fallback) {
+                if (fallback.error) { console.warn('[paywall] entitlement read failed:', fallback.error.message); return false; }
+                return Array.isArray(fallback.data) && fallback.data.length > 0;
+              });
+          }
           console.warn('[paywall] entitlement read failed:', res.error.message);
           // Fail closed: pretend they don't have access. The unlock screen is
           // a softer failure mode than accidentally giving away paid content.
           return false;
         }
-        return Array.isArray(res.data) && res.data.length > 0;
+        var row = Array.isArray(res.data) && res.data[0];
+        if (!row) return false;
+        if (row.expires_at && new Date(row.expires_at).getTime() < Date.now()) return false; // expired
+        return true;
       })
       .catch(function(e) {
         console.warn('[paywall] entitlement read threw:', e && e.message);
@@ -217,6 +258,7 @@
     hasAccess:           hasAccess,
     moduleKeyForLevel:   moduleKeyForLevel,
     whispererKeyForLevel: whispererKeyForLevel,
+    examVaultKeyForLevel: examVaultKeyForLevel,
     renderUnlockScreen:  renderUnlockScreen,
     gate:                gate
   };

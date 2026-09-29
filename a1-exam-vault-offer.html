@@ -28,6 +28,12 @@
 <title>A1 Exam Vault — Deutschweg</title>
 <link rel="stylesheet" href="deutschweg-theme.css">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Needed to make the €29 CTAs entitlement-aware (logged out -> signup,
+     logged in + unpaid -> checkout, already entitled -> Open Exam Vault)
+     instead of always pointing at signup.html. -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
+<script src="./paywall.js?v=4"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
@@ -529,7 +535,7 @@ footer{background:#111827;padding:32px 0;color:#9CA3AF;}
         <li>Speaking phrase bank</li>
       </ul>
       <div class="offer-btn-wrap">
-        <a href="signup.html" class="btn-primary">Start my A1 preparation →</a>
+        <a href="signup.html" class="btn-primary" id="offerCta">Start my A1 preparation →</a>
       </div>
       <div class="offer-note">Learning Journeys stay free either way — Exam Vault is exam preparation on top.</div>
     </div>
@@ -550,7 +556,7 @@ footer{background:#111827;padding:32px 0;color:#9CA3AF;}
   <div class="wrap">
     <div class="section-h">Your exam date is already fixed.<br>Now decide how you will prepare.</div>
     <p class="cta-p">Stop guessing. Find your weak areas. Follow a focused plan.</p>
-    <a href="signup.html" class="btn-white">Start my A1 preparation — €29</a>
+    <a href="signup.html" class="btn-white" id="finalCta">Start my A1 preparation — €29</a>
   </div>
 </section>
 
@@ -568,6 +574,45 @@ footer{background:#111827;padding:32px 0;color:#9CA3AF;}
 <script>
   document.getElementById('footer-year').textContent = new Date().getFullYear();
   document.body.classList.add('ready');
+
+  // ── Entitlement-aware purchase CTAs ─────────────────────────────────────
+  // Both €29 buttons start as static "Start my A1 preparation" -> signup.html
+  // (safe default while this resolves, and correct for a genuinely logged-
+  // out visitor). Swapped in place once we know the real state:
+  //   - logged in, unpaid  -> real checkout (freischalten), same label
+  //   - logged in, already entitled -> "Open Exam Vault", never a second
+  //     purchase button
+  // Never blocks page render -- this only ever upgrades the two buttons
+  // after the page is already fully visible.
+  (function () {
+    var FREISCHALTEN_URL = '/freischalten/index.html?level=a1';
+    var ctas = [document.getElementById('offerCta'), document.getElementById('finalCta')].filter(Boolean);
+    if (!ctas.length) return;
+    if (typeof dwSupabase === 'undefined' || !window.dwPaywall) return; // static signup.html default stands
+
+    dwSupabase.auth.getUser().catch(function () { return { data: { user: null } }; })
+      .then(function (authRes) {
+        var user = authRes && authRes.data && authRes.data.user;
+        if (!user) {
+          // Logged out -> signup, then straight back into the real
+          // purchase flow afterward (signup.html already honors return_to).
+          var returnTo = encodeURIComponent(FREISCHALTEN_URL);
+          ctas.forEach(function (a) { a.href = 'signup.html?return_to=' + returnTo; });
+          return;
+        }
+        return window.dwPaywall.hasAccess(user, 'a1_exam_vault').then(function (ok) {
+          if (ok) {
+            ctas.forEach(function (a) {
+              a.href = 'exam-vault.html?level=A1';
+              a.textContent = 'Open Exam Vault →';
+            });
+          } else {
+            ctas.forEach(function (a) { a.href = FREISCHALTEN_URL; });
+          }
+        });
+      })
+      .catch(function () { /* static signup.html default stands */ });
+  })();
 </script>
 
 </body>

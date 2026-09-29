@@ -58,6 +58,7 @@
     text-transform: uppercase; padding: 5px 14px; border-radius: 50px;
     margin-bottom: 16px;
   }
+  .chip-a1 { background: #ECFEFF; color: #0E7490; border: 1px solid #A5F3FC; }
   .chip-a2 { background: #F5F3FF; color: #5B21B6; border: 1px solid #DDD6FE; }
   .chip-b1 { background: var(--blue-light); color: var(--blue); border: 1px solid var(--blue-mid); }
   .chip-b2 { background: #FDF2F8; color: #9D174D; border: 1px solid #FBCFE8; }
@@ -140,13 +141,20 @@
   // (Not the path — Cloudflare Pages' clean-URL resolution for the sibling
   // freischalten.html asset 308s /freischalten/a2 down to plain /freischalten,
   // dropping any path segment. Query strings survive that redirect intact.)
-  var level = (location.search.match(/[?&]level=(a2|b1|b2)\b/) || [])[1];
+  var level = (location.search.match(/[?&]level=(a1|a2|b1|b2)\b/) || [])[1];
   if (!level) { location.href = '/dashboard'; return; }
 
   // Prices come from paywall.js's CATALOG — the single source of truth.
   // Everything else here (name, description, feature list) is unlock-page
   // copy that has no bearing on the amount charged.
   var LEVEL_INFO = {
+    a1: {
+      name: 'A1 Exam Vault',
+      chipClass: 'chip-a1',
+      title: 'Unlock A1 Exam Vault',
+      desc: '60 days of focused A1 exam preparation — the free A1 Learning Journeys stay free either way; this is exam-day readiness on top.',
+      features: ['10 mock exam sets + Complete Mock Exam mode', '10 Schreiben AI evaluations', '10 Sprechen AI sessions', '60 days access'],
+    },
     a2: {
       name: 'A2 — Grundstufe',
       chipClass: 'chip-a2',
@@ -171,7 +179,11 @@
   };
 
   var info = LEVEL_INFO[level];
-  var catalogEntry = window.dwPaywall && window.dwPaywall.catalog[level + '_module'];
+  // a1's product key is a1_exam_vault, not a1_module (no such product
+  // exists — the A1 Learning Path stays free) — every other level really
+  // is `${level}_module`.
+  var catalogKey = level === 'a1' ? 'a1_exam_vault' : (level + '_module');
+  var catalogEntry = window.dwPaywall && window.dwPaywall.catalog[catalogKey];
   if (info && catalogEntry) info.price = catalogEntry.priceLabel;
   var card = document.getElementById('unlockCard');
 
@@ -226,6 +238,19 @@
       // Not logged in — store destination and redirect to signup
       try { sessionStorage.setItem('dw_post_auth_return', location.href); } catch(_) {}
       location.href = '/signup.html?return_to=' + encodeURIComponent(location.pathname + location.search);
+      return;
+    }
+    // Duplicate-purchase protection for A1 Exam Vault specifically — an
+    // already-entitled learner who lands here (e.g. an old bookmark, or
+    // the offer page before its own CTA state has loaded) goes straight to
+    // the real product instead of seeing a fresh €29 checkout button.
+    // Scoped to level==='a1' only — A2/B1/B2 keep their existing behavior
+    // unchanged, out of scope for this task.
+    if (level === 'a1' && window.dwPaywall) {
+      window.dwPaywall.hasAccess(user, 'a1_exam_vault').then(function(ok) {
+        if (ok) { location.href = '/exam-vault.html?level=A1'; return; }
+        init(user.id);
+      });
       return;
     }
     init(user.id);
